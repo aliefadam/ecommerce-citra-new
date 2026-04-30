@@ -88,10 +88,16 @@
 
         .sticky-bottom {
             position: fixed;
-            bottom: 0;
+            bottom: 64px;
             left: 0;
             right: 0;
             z-index: 40;
+        }
+
+        @media (min-width: 768px) {
+            .sticky-bottom {
+                bottom: 0;
+            }
         }
 
         .nav-link {
@@ -361,40 +367,48 @@
             <div>
                 <!-- Brand & Status -->
                 <div class="flex items-center justify-between mb-2">
-                    <span class="text-blue-600 font-semibold text-sm bg-blue-50 px-3 py-1 rounded-full">Kemeja &
+                    <span class="text-blue-600 font-semibold text-xs sm:text-sm bg-blue-50 px-2.5 py-1 rounded-full">Kemeja &
                         Atasan</span>
-                    <span class="text-blue-600 text-sm font-medium flex items-center gap-1">
-                        <span class="w-2 h-2 bg-blue-500 rounded-full"></span> Stok Tersedia
-                    </span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-blue-600 text-xs sm:text-sm font-medium flex items-center gap-1">
+                            <span class="w-2 h-2 bg-blue-500 rounded-full"></span> Stok Tersedia
+                        </span>
+                        <button onclick="shareProduct()" title="Bagikan produk"
+                            class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-blue-50 hover:text-blue-600 text-slate-500 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
 
-                <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 mb-3">Kemeja Oxford Slim Fit Premium</h1>
+                <h1 class="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 mb-3 leading-tight">Kemeja Oxford Slim Fit Premium</h1>
 
                 <!-- Rating & Sales -->
-                <div class="flex items-center gap-4 mb-4 flex-wrap">
+                <div class="flex items-center gap-2 sm:gap-4 mb-4 flex-wrap">
                     <div class="flex items-center gap-1">
-                        <span class="text-yellow-400 text-lg">★★★★★</span>
-                        <span class="font-bold text-slate-800">4.8</span>
-                        <span class="text-slate-500 text-sm">(234 ulasan)</span>
+                        <span class="text-yellow-400 text-sm sm:text-base">★★★★★</span>
+                        <span class="font-bold text-slate-800 text-sm">4.8</span>
+                        <span class="text-slate-500 text-xs sm:text-sm">(234 ulasan)</span>
                     </div>
-                    <span class="text-slate-300">|</span>
-                    <span class="text-slate-600 text-sm">1.245 terjual</span>
-                    <span class="text-slate-300">|</span>
-                    <span class="text-slate-600 text-sm">Wishlist: 456</span>
+                    <span class="text-slate-300 hidden xs:inline">|</span>
+                    <span class="text-slate-600 text-xs sm:text-sm">1.245 terjual</span>
+                    <span class="text-slate-300 hidden xs:inline">|</span>
+                    <span class="text-slate-600 text-xs sm:text-sm">Wishlist: 456</span>
                 </div>
 
                 <!-- Price -->
-                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-4 mb-5">
-                    <div class="flex items-baseline gap-3 flex-wrap">
-                        <span class="text-3xl font-extrabold text-blue-600">Rp 189.000</span>
-                        <span class="text-lg text-slate-400 line-through">Rp 270.000</span>
-                        <span class="bg-red-100 text-red-600 text-sm font-bold px-2.5 py-0.5 rounded-full">Hemat 30%</span>
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-3 sm:p-4 mb-5">
+                    <div class="flex items-center gap-2 flex-wrap mb-1">
+                        <span class="text-2xl sm:text-3xl font-extrabold text-blue-600">Rp 189.000</span>
+                        <span class="text-sm sm:text-base text-slate-400 line-through">Rp 270.000</span>
+                        <span class="bg-red-100 text-red-600 text-xs font-bold px-2 py-0.5 rounded-md">Hemat 30%</span>
                     </div>
-                    <div class="flex items-center gap-2 mt-2 text-sm text-slate-600">
-                        <span class="bg-yellow-100 text-yellow-700 text-xs font-semibold px-2 py-0.5 rounded">Flash
-                            Sale</span>
-                        Berakhir dalam:
-                        <span class="font-mono font-bold text-red-600" id="saleTimer">04:23:17</span>
+                    <div class="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                        <span class="bg-yellow-100 text-yellow-700 text-xs font-semibold px-2 py-0.5 rounded">Flash Sale</span>
+                        <span class="text-xs text-slate-600">Berakhir dalam:</span>
+                        <span class="font-mono font-bold text-red-600 text-sm" id="saleTimer">04:23:17</span>
                     </div>
                 </div>
 
@@ -714,9 +728,16 @@
     </div>
 
     <!-- STICKY BOTTOM BAR (Mobile) -->
-    <div class="sticky-bottom md:hidden bg-white border-t border-slate-200 p-4 flex gap-3">
+    <div class="sticky bottom-[55px] md:hidden bg-white border-t border-slate-200 px-3 py-2.5 flex gap-2">
+        <button onclick="shareProduct()"
+            class="w-10 h-10 shrink-0 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl flex items-center justify-center transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+            </svg>
+        </button>
         <button onclick="addToCart()"
-            class="flex-1 bg-blue-50 border-2 border-blue-400 text-blue-700 font-bold py-3 rounded-xl text-sm flex items-center justify-center gap-1.5">
+            class="flex-1 bg-blue-50 border-2 border-blue-400 text-blue-700 font-bold py-2.5 rounded-xl text-sm flex items-center justify-center gap-1.5">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -724,7 +745,7 @@
             Keranjang
         </button>
         <a href="{{ route('frontend.checkout') }}"
-            class="flex-1 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold py-3 rounded-xl text-sm flex items-center justify-center gap-1.5 shadow-lg shadow-blue-200">
+            class="flex-1 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold py-2.5 rounded-xl text-sm flex items-center justify-center gap-1.5 shadow-md shadow-blue-200">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
@@ -1168,6 +1189,24 @@
         function toggleMobileSearch() {
             document.getElementById('mobileSearch').classList.toggle('hidden');
         }
+
+        function shareProduct() {
+            const url = window.location.href;
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Kemeja Oxford Slim Fit Premium',
+                    text: 'Cek produk ini di Ecommerce Citra!',
+                    url: url
+                }).catch(() => {});
+            } else {
+                navigator.clipboard.writeText(url).then(() => {
+                    showToast('Link produk berhasil disalin!');
+                }).catch(() => {
+                    showToast('Gagal menyalin link.');
+                });
+            }
+        }
+
         setMegaCategory('rumah-tangga');
     </script>
 @endsection

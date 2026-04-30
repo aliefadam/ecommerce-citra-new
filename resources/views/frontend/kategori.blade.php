@@ -135,7 +135,8 @@
                     <div class="search-wrapper relative flex-1">
                         <form action="{{ route('frontend.search') }}" method="GET"
                             class="flex border border-slate-200 rounded-xl overflow-hidden focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
-                            <input type="text" id="mainSearch" name="q" placeholder="Cari produk, merek, kategori..."
+                            <input type="text" id="mainSearch" name="q"
+                                placeholder="Cari produk, merek, kategori..."
                                 class="flex-1 px-4 py-2.5 text-sm outline-none bg-white" />
                             <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 transition-colors">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -238,7 +239,8 @@
         <div id="mobileSearch" class="hidden md:hidden px-4 pb-3 border-t border-slate-100 pt-3">
             <form action="{{ route('frontend.search') }}" method="GET"
                 class="flex border border-slate-200 rounded-xl overflow-hidden focus-within:border-blue-400">
-                <input type="text" name="q" placeholder="Cari produk..." class="flex-1 px-4 py-2.5 text-sm outline-none" />
+                <input type="text" name="q" placeholder="Cari produk..."
+                    class="flex-1 px-4 py-2.5 text-sm outline-none" />
                 <button type="submit" class="bg-blue-500 text-white px-4"><svg class="w-4 h-4" fill="none"
                         stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -267,17 +269,17 @@
             <h1 class="text-2xl md:text-3xl font-bold mb-2" id="pageTitle">Semua Kategori</h1>
             <p class="text-blue-100 text-sm">Temukan produk terbaik dari berbagai kategori pilihan</p>
             <!-- Search Mobile -->
-            <div class="flex mt-4 md:hidden">
-                <input type="text" id="mobileSearchInput" placeholder="Cari produk..."
-                    class="flex-1 px-4 py-2.5 text-sm outline-none rounded-l-xl text-slate-800"
-                    oninput="searchProducts()" />
-                <button class="bg-white/20 text-white px-4 rounded-r-xl">
+            <form action="{{ route('frontend.search') }}" method="GET"
+                class="mt-4 md:hidden flex items-center bg-white/15 border border-white/30 rounded-xl overflow-hidden backdrop-blur-sm">
+                <input type="text" id="mobileSearchInput" name="q" placeholder="Cari produk..."
+                    class="flex-1 px-4 py-2.5 text-sm outline-none bg-white/95 text-slate-800" />
+                <button type="submit" class="w-14 h-full text-white flex items-center justify-center transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                 </button>
-            </div>
+            </form>
         </div>
     </div>
 
@@ -381,10 +383,16 @@
         <div class="flex flex-col lg:flex-row gap-8">
 
             <!-- SIDEBAR -->
-            <aside class="lg:w-64 flex-shrink-0">
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden sticky top-20">
+            <aside id="filterSidebar" class="hidden lg:block lg:w-64 flex-shrink-0">
+                <div id="filterPanel"
+                    class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden sticky top-20">
+                    <div class="lg:hidden w-14 h-1 bg-slate-300 rounded-full mx-auto mt-3"></div>
                     <div class="p-4 border-b border-slate-100">
-                        <h3 class="font-bold text-slate-800">Filter</h3>
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-bold text-slate-800">Filter</h3>
+                            <button onclick="closeMobileFilter()"
+                                class="lg:hidden text-xs text-slate-500 hover:text-slate-700 font-medium">Tutup</button>
+                        </div>
                     </div>
 
                     <!-- Sub Kategori -->
@@ -481,9 +489,19 @@
                     <div>
                         <p class="text-sm text-slate-500" id="resultCount">Menampilkan 16 produk</p>
                     </div>
-                    <div class="flex flex-wrap items-center gap-3">
+                    <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                        <div class="flex items-center gap-2 sm:hidden">
+                            <button type="button" onclick="openMobileFilter()"
+                                class="w-9 h-9 rounded-xl border border-slate-200 bg-white text-slate-600 flex items-center justify-center">
+                                <i class="ri-filter-3-line text-base"></i>
+                            </button>
+                            <button type="button" onclick="cycleSortMobile()"
+                                class="w-9 h-9 rounded-xl border border-slate-200 bg-white text-slate-600 flex items-center justify-center">
+                                <i class="ri-arrow-up-down-line text-base"></i>
+                            </button>
+                        </div>
                         <select id="sortSel" onchange="sortProds()"
-                            class="border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-blue-400 bg-white">
+                            class="hidden sm:block border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-blue-400 bg-white">
                             <option value="newest">Terbaru</option>
                             <option value="cheap">Harga Termurah</option>
                             <option value="expensive">Harga Termahal</option>
@@ -491,14 +509,14 @@
                             <option value="sold">Terlaris</option>
                         </select>
                         <button id="gridViewBtn" onclick="toggleView('grid')"
-                            class="p-2 rounded-lg bg-blue-500 text-white">
+                            class="hidden sm:block p-2 rounded-lg bg-blue-500 text-white">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                 <path
                                     d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                             </svg>
                         </button>
                         <button id="listViewBtn" onclick="toggleView('list')"
-                            class="p-2 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-slate-600">
+                            class="hidden sm:block p-2 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-slate-600">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd"
                                     d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
@@ -918,16 +936,33 @@
             render(prods);
         }
 
+        function cycleSortMobile() {
+            const select = document.getElementById('sortSel');
+            if (!select) return;
+            const order = ['newest', 'cheap', 'expensive', 'rating', 'sold'];
+            const current = order.indexOf(select.value);
+            select.value = order[(current + 1) % order.length];
+            sortProds();
+            const labels = {
+                newest: 'Urut: Terbaru',
+                cheap: 'Urut: Termurah',
+                expensive: 'Urut: Termahal',
+                rating: 'Urut: Rating Tertinggi',
+                sold: 'Urut: Terlaris'
+            };
+            showToast(labels[select.value] || 'Urutan diubah');
+        }
+
         function toggleView(mode) {
             viewMode = mode;
             if (mode === 'grid') {
-                document.getElementById('gridViewBtn').className = 'p-2 rounded-lg bg-blue-500 text-white';
+                document.getElementById('gridViewBtn').className = 'hidden sm:block p-2 rounded-lg bg-blue-500 text-white';
                 document.getElementById('listViewBtn').className =
-                    'p-2 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-slate-600';
+                    'hidden sm:block p-2 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-slate-600';
             } else {
-                document.getElementById('listViewBtn').className = 'p-2 rounded-lg bg-blue-500 text-white';
+                document.getElementById('listViewBtn').className = 'hidden sm:block p-2 rounded-lg bg-blue-500 text-white';
                 document.getElementById('gridViewBtn').className =
-                    'p-2 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-slate-600';
+                    'hidden sm:block p-2 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-slate-600';
             }
             render(getFiltered());
         }
@@ -946,6 +981,27 @@
             priceMax = 9999999;
             searchQuery = '';
             render(getFiltered());
+        }
+
+        function openMobileFilter() {
+            const sidebar = document.getElementById('filterSidebar');
+            const panel = document.getElementById('filterPanel');
+            if (!sidebar || !panel || window.innerWidth >= 1024) return;
+            sidebar.classList.remove('hidden');
+            sidebar.classList.add('fixed', 'inset-0', 'z-[60]', 'bg-black/40', 'flex', 'items-end', 'p-0');
+            panel.classList.remove('rounded-2xl', 'sticky', 'top-20');
+            panel.classList.add('w-full', 'rounded-t-3xl', 'rounded-b-none', 'max-h-[85vh]', 'overflow-y-auto', 'border-0');
+        }
+
+        function closeMobileFilter() {
+            const sidebar = document.getElementById('filterSidebar');
+            const panel = document.getElementById('filterPanel');
+            if (!sidebar || !panel || window.innerWidth >= 1024) return;
+            sidebar.classList.add('hidden');
+            sidebar.classList.remove('fixed', 'inset-0', 'z-[60]', 'bg-black/40', 'flex', 'items-end', 'p-0');
+            panel.classList.add('rounded-2xl', 'sticky', 'top-20');
+            panel.classList.remove('w-full', 'rounded-t-3xl', 'rounded-b-none', 'max-h-[85vh]', 'overflow-y-auto',
+                'border-0');
         }
 
         function addCart(id) {
@@ -1131,8 +1187,14 @@
         document.addEventListener('click', function(e) {
             const menu = document.getElementById('category-dropdown');
             const trigger = document.getElementById('category-trigger');
-            if (!menu || !trigger) return;
-            if (!menu.contains(e.target) && !trigger.contains(e.target)) menu.classList.add('hidden');
+            if (menu && trigger && !menu.contains(e.target) && !trigger.contains(e.target)) menu.classList.add(
+                'hidden');
+
+            const sidebar = document.getElementById('filterSidebar');
+            const panel = document.getElementById('filterPanel');
+            if (sidebar && panel && window.innerWidth < 1024 && sidebar.classList.contains('fixed')) {
+                if (e.target === sidebar) closeMobileFilter();
+            }
         });
 
         function toggleMobileSearch() {

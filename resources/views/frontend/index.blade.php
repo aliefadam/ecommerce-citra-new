@@ -1,4 +1,4 @@
-@extends('layouts.user')
+﻿@extends('layouts.user')
 
 @section('title', 'Ecommerce Citra - Belanja Online Terpercaya')
 
@@ -37,6 +37,32 @@
         ::-webkit-scrollbar-thumb {
             background: #94a3b8;
             border-radius: 3px;
+        }
+
+        #flashSaleTrack::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        #flashSaleTrack::-webkit-scrollbar-track {
+            background: #e2e8f0;
+        }
+
+        #flashSaleTrack::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 9999px;
+        }
+
+        #categoryTrack::-webkit-scrollbar {
+            height: 3px;
+        }
+
+        #categoryTrack::-webkit-scrollbar-track {
+            background: #e2e8f0;
+        }
+
+        #categoryTrack::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 9999px;
         }
 
         .badge-new {
@@ -157,7 +183,8 @@
                     <div class="search-wrapper relative flex-1">
                         <form action="{{ route('frontend.search') }}" method="GET"
                             class="flex border border-slate-200 rounded-xl overflow-hidden focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
-                            <input type="text" id="searchInput" name="q" placeholder="Cari produk, merek, kategori..."
+                            <input type="text" id="searchInput" name="q"
+                                placeholder="Cari produk, merek, kategori..."
                                 class="flex-1 px-4 py-2.5 text-sm outline-none bg-white" />
                             <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 transition-colors">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -269,7 +296,8 @@
         <div id="mobileSearch" class="hidden md:hidden px-4 pb-3 border-t border-slate-100 pt-3">
             <form action="{{ route('frontend.search') }}" method="GET"
                 class="flex border border-slate-200 rounded-xl overflow-hidden focus-within:border-blue-400">
-                <input type="text" name="q" placeholder="Cari produk..." class="flex-1 px-4 py-2.5 text-sm outline-none" />
+                <input type="text" name="q" placeholder="Cari produk..."
+                    class="flex-1 px-4 py-2.5 text-sm outline-none" />
                 <button type="submit" class="bg-blue-500 text-white px-4">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -291,7 +319,7 @@
             <!-- Track -->
             <div id="carouselTrack" class="flex transition-transform duration-600 ease-in-out">
 
-                {{-- Placeholder banner 1: Gajian Sale – Fashion --}}
+                {{-- Placeholder banner 1: Gajian Sale â€“ Fashion --}}
                 <div class="min-w-full h-[180px] sm:h-[260px] md:h-[340px] relative overflow-hidden flex-shrink-0">
                     <div class="absolute inset-0 flex"
                         style="background: linear-gradient(120deg, #1a1a2e 0%, #16213e 35%, #c2185b 75%, #e91e63 100%);">
@@ -328,7 +356,7 @@
                     </div>
                 </div>
 
-                {{-- Placeholder banner 2: New Arrival – Elektronik & Gadget --}}
+                {{-- Placeholder banner 2: New Arrival â€“ Elektronik & Gadget --}}
                 <div class="min-w-full h-[180px] sm:h-[260px] md:h-[340px] relative overflow-hidden flex-shrink-0">
                     <div class="absolute inset-0 flex"
                         style="background: linear-gradient(120deg, #0a0a23 0%, #0d2137 35%, #00838f 80%, #00bcd4 100%);">
@@ -434,8 +462,8 @@
     <section class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
         <div class="flex items-center justify-between mb-4">
             <div>
-                <h2 class="text-2xl font-bold text-slate-800">Kategori Produk</h2>
-                <p class="text-slate-500 text-sm mt-1">Temukan apa yang kamu cari</p>
+                <h2 class="text-xl sm:text-2xl font-bold text-slate-800">Kategori Produk</h2>
+                <p class="text-slate-500 text-xs sm:text-sm mt-1">Temukan apa yang kamu cari</p>
             </div>
             <a href="{{ route('frontend.kategori') }}"
                 class="text-blue-600 hover:text-blue-700 font-medium text-sm flex items-center gap-1">
@@ -444,7 +472,8 @@
                 </svg>
             </a>
         </div>
-        <div class="flex flex-wrap items-start gap-3 sm:gap-5">
+        <div id="categoryTrack"
+            class="flex flex-nowrap sm:flex-wrap items-start gap-3 sm:gap-5 overflow-x-auto sm:overflow-visible pb-1">
             <a href="{{ route('frontend.kategori') }}"
                 class="w-[88px] sm:w-[96px] flex flex-col items-center gap-2 group">
                 <div
@@ -514,50 +543,49 @@
 
     <!-- PRODUK SECTION -->
     <section class="max-w-7xl mx-auto px-4 sm:px-6 pb-8">
-        <div class="flex flex-col lg:flex-row gap-8">
-
-            <!-- SIDEBAR FILTER -->
-            <aside class="lg:w-64 flex-shrink-0">
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 sticky top-20">
+        <div class="flex flex-col lg:flex-row gap-8"> <!-- SIDEBAR FILTER -->
+            <aside id="filterSidebar" class="hidden lg:block lg:w-64 flex-shrink-0">
+                <div id="filterPanel" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 sticky top-20">
+                    <div class="lg:hidden w-14 h-1 bg-slate-300 rounded-full mx-auto mb-3"></div>
                     <div class="flex items-center justify-between mb-5">
                         <h3 class="font-bold text-slate-800">Filter Produk</h3>
-                        <button onclick="resetFilter()"
-                            class="text-xs text-blue-600 hover:text-blue-700 font-medium">Reset</button>
-                    </div>
-
-                    <!-- Filter Kategori -->
-                    <div class="mb-6">
-                        <h4 class="text-sm font-semibold text-slate-700 mb-3">Kategori</h4>
-                        <div class="space-y-2">
-                            <label class="flex items-center gap-2 cursor-pointer group">
-                                <input type="checkbox" class="filter-cat w-4 h-4 rounded accent-blue-500" value="fashion"
-                                    checked onchange="applyFilter()" />
-                                <span class="text-sm text-slate-600 group-hover:text-slate-800">Fashion (124)</span>
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer group">
-                                <input type="checkbox" class="filter-cat w-4 h-4 rounded accent-blue-500"
-                                    value="elektronik" onchange="applyFilter()" />
-                                <span class="text-sm text-slate-600 group-hover:text-slate-800">Elektronik (89)</span>
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer group">
-                                <input type="checkbox" class="filter-cat w-4 h-4 rounded accent-blue-500" value="rumah"
-                                    onchange="applyFilter()" />
-                                <span class="text-sm text-slate-600 group-hover:text-slate-800">Rumah & Dapur (67)</span>
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer group">
-                                <input type="checkbox" class="filter-cat w-4 h-4 rounded accent-blue-500"
-                                    value="olahraga" onchange="applyFilter()" />
-                                <span class="text-sm text-slate-600 group-hover:text-slate-800">Olahraga (45)</span>
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer group">
-                                <input type="checkbox" class="filter-cat w-4 h-4 rounded accent-blue-500"
-                                    value="kecantikan" onchange="applyFilter()" />
-                                <span class="text-sm text-slate-600 group-hover:text-slate-800">Kecantikan (56)</span>
-                            </label>
+                        <div class="flex items-center gap-3">
+                            <button onclick="resetFilter()"
+                                class="text-xs text-blue-600 hover:text-blue-700 font-medium">Reset</button>
+                            <button onclick="closeMobileFilter()"
+                                class="lg:hidden text-xs text-slate-500 hover:text-slate-700 font-medium">Tutup</button>
                         </div>
                     </div>
 
-                    <!-- Filter Harga -->
+                    <div class="mb-6">
+                        <h4 class="text-sm font-semibold text-slate-700 mb-3">Kategori</h4>
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-2 cursor-pointer group"><input type="checkbox"
+                                    class="filter-cat w-4 h-4 rounded accent-blue-500" value="fashion" checked
+                                    onchange="applyFilter()" /><span
+                                    class="text-sm text-slate-600 group-hover:text-slate-800">Fashion (124)</span></label>
+                            <label class="flex items-center gap-2 cursor-pointer group"><input type="checkbox"
+                                    class="filter-cat w-4 h-4 rounded accent-blue-500" value="elektronik"
+                                    onchange="applyFilter()" /><span
+                                    class="text-sm text-slate-600 group-hover:text-slate-800">Elektronik
+                                    (89)</span></label>
+                            <label class="flex items-center gap-2 cursor-pointer group"><input type="checkbox"
+                                    class="filter-cat w-4 h-4 rounded accent-blue-500" value="rumah"
+                                    onchange="applyFilter()" /><span
+                                    class="text-sm text-slate-600 group-hover:text-slate-800">Rumah & Dapur
+                                    (67)</span></label>
+                            <label class="flex items-center gap-2 cursor-pointer group"><input type="checkbox"
+                                    class="filter-cat w-4 h-4 rounded accent-blue-500" value="olahraga"
+                                    onchange="applyFilter()" /><span
+                                    class="text-sm text-slate-600 group-hover:text-slate-800">Olahraga (45)</span></label>
+                            <label class="flex items-center gap-2 cursor-pointer group"><input type="checkbox"
+                                    class="filter-cat w-4 h-4 rounded accent-blue-500" value="kecantikan"
+                                    onchange="applyFilter()" /><span
+                                    class="text-sm text-slate-600 group-hover:text-slate-800">Kecantikan
+                                    (56)</span></label>
+                        </div>
+                    </div>
+
                     <div class="mb-6">
                         <h4 class="text-sm font-semibold text-slate-700 mb-3">Rentang Harga</h4>
                         <div class="space-y-2">
@@ -576,31 +604,25 @@
                                 </div>
                             </div>
                             <div class="space-y-1.5">
-                                <label class="flex items-center gap-2 cursor-pointer">
-                                    <input type="radio" name="priceRange" class="accent-blue-500"
-                                        onchange="setPriceRange(0, 100000)" /> <span class="text-sm text-slate-600">Di
-                                        bawah Rp 100.000</span>
-                                </label>
-                                <label class="flex items-center gap-2 cursor-pointer">
-                                    <input type="radio" name="priceRange" class="accent-blue-500"
+                                <label class="flex items-center gap-2 cursor-pointer"><input type="radio"
+                                        name="priceRange" class="accent-blue-500" onchange="setPriceRange(0, 100000)" />
+                                    <span class="text-sm text-slate-600">Di bawah Rp 100.000</span></label>
+                                <label class="flex items-center gap-2 cursor-pointer"><input type="radio"
+                                        name="priceRange" class="accent-blue-500"
                                         onchange="setPriceRange(100000, 500000)" /> <span
-                                        class="text-sm text-slate-600">Rp 100.000 – Rp 500.000</span>
-                                </label>
-                                <label class="flex items-center gap-2 cursor-pointer">
-                                    <input type="radio" name="priceRange" class="accent-blue-500"
+                                        class="text-sm text-slate-600">Rp 100.000 – Rp 500.000</span></label>
+                                <label class="flex items-center gap-2 cursor-pointer"><input type="radio"
+                                        name="priceRange" class="accent-blue-500"
                                         onchange="setPriceRange(500000, 1000000)" /> <span
-                                        class="text-sm text-slate-600">Rp 500.000 – Rp 1 Juta</span>
-                                </label>
-                                <label class="flex items-center gap-2 cursor-pointer">
-                                    <input type="radio" name="priceRange" class="accent-blue-500"
+                                        class="text-sm text-slate-600">Rp 500.000 – Rp 1 Juta</span></label>
+                                <label class="flex items-center gap-2 cursor-pointer"><input type="radio"
+                                        name="priceRange" class="accent-blue-500"
                                         onchange="setPriceRange(1000000, 9999999)" /> <span
-                                        class="text-sm text-slate-600">Di atas Rp 1 Juta</span>
-                                </label>
+                                        class="text-sm text-slate-600">Di atas Rp 1 Juta</span></label>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Filter Warna -->
                     <div class="mb-6">
                         <h4 class="text-sm font-semibold text-slate-700 mb-3">Warna</h4>
                         <div class="flex flex-wrap gap-2">
@@ -631,22 +653,15 @@
                         </div>
                     </div>
 
-                    <!-- Filter Rating -->
                     <div>
                         <h4 class="text-sm font-semibold text-slate-700 mb-3">Rating</h4>
                         <div class="space-y-2">
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="radio" name="rating" class="accent-blue-500" />
-                                <span class="flex gap-0.5">⭐⭐⭐⭐⭐</span>
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="radio" name="rating" class="accent-blue-500" />
-                                <span class="flex gap-0.5">⭐⭐⭐⭐ ke atas</span>
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="radio" name="rating" class="accent-blue-500" />
-                                <span class="flex gap-0.5">⭐⭐⭐ ke atas</span>
-                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="rating"
+                                    class="accent-blue-500" /><span class="flex gap-0.5">★★★★★</span></label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="rating"
+                                    class="accent-blue-500" /><span class="flex gap-0.5">★★★★ ke atas</span></label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="rating"
+                                    class="accent-blue-500" /><span class="flex gap-0.5">★★★ ke atas</span></label>
                         </div>
                     </div>
 
@@ -661,12 +676,22 @@
                 <!-- Sort & View -->
                 <div class="flex items-center justify-between mb-6">
                     <div>
-                        <h2 class="text-xl font-bold text-slate-800">Produk Terbaru</h2>
-                        <p class="text-sm text-slate-500 mt-0.5" id="productCount">Menampilkan 12 produk</p>
+                        <h2 class="text-lg sm:text-xl font-bold text-slate-800">Produk Terbaru</h2>
+                        <p class="text-xs sm:text-sm text-slate-500 mt-0.5" id="productCount">Menampilkan 12 produk</p>
                     </div>
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2 sm:gap-3">
+                        <div class="flex items-center gap-2 sm:hidden">
+                            <button type="button" onclick="openMobileFilter()"
+                                class="w-9 h-9 rounded-xl border border-slate-200 bg-white text-slate-600 flex items-center justify-center">
+                                <i class="ri-filter-3-line text-base"></i>
+                            </button>
+                            <button type="button" onclick="cycleSortMobile()"
+                                class="w-9 h-9 rounded-xl border border-slate-200 bg-white text-slate-600 flex items-center justify-center">
+                                <i class="ri-arrow-up-down-line text-base"></i>
+                            </button>
+                        </div>
                         <select id="sortSelect" onchange="sortProducts()"
-                            class="border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-blue-400 bg-white">
+                            class="hidden sm:block border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-blue-400 bg-white">
                             <option value="newest">Terbaru</option>
                             <option value="price-low">Harga Terendah</option>
                             <option value="price-high">Harga Tertinggi</option>
@@ -726,7 +751,7 @@
     <section class="max-w-7xl mx-auto px-4 sm:px-6 py-5">
         <div class="bg-gradient-to-r from-red-50 to-orange-50 rounded-3xl p-6 border border-red-100">
             <!-- Header -->
-            <div class="flex items-center justify-between mb-6">
+            <div class="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
                 <div class="flex items-center gap-4 flex-wrap">
                     <div class="flex items-center gap-3">
                         <div
@@ -735,10 +760,10 @@
                         </div>
                         <div>
                             <div class="flex items-center gap-1.5">
-                                <h2 class="text-2xl font-extrabold text-slate-800">Flash Sale</h2>
+                                <h2 class="text-xl sm:text-2xl font-extrabold text-slate-800">Flash Sale</h2>
                                 <span class="text-xl">🔥</span>
                             </div>
-                            <p class="text-slate-500 text-xs">Penawaran terbatas, jangan sampai habis!</p>
+                            <p class="text-slate-500 text-[11px] sm:text-xs">Penawaran terbatas, jangan sampai habis!</p>
                         </div>
                     </div>
                     <!-- Countdown -->
@@ -763,14 +788,33 @@
                     </div>
                 </div>
                 <a href="{{ route('frontend.flash-sale') }}"
-                    class="text-red-500 hover:text-red-600 font-semibold text-sm flex items-center gap-1 bg-white px-4 py-2 rounded-xl border border-red-200 hover:border-red-300 transition-colors whitespace-nowrap">
+                    class="text-red-500 hover:text-red-600 font-semibold text-xs sm:text-sm flex items-center gap-1 bg-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl border border-red-200 hover:border-red-300 transition-colors whitespace-nowrap self-start sm:self-auto">
                     Lihat Semua <i class="ri-arrow-right-line"></i>
                 </a>
             </div>
+            <div class="sm:hidden flex items-center gap-1.5 mb-3">
+                <span class="text-slate-500 text-[11px]">Berakhir:</span>
+                <div class="bg-red-500 text-white rounded-md px-2 py-1 text-xs font-bold" id="fs-hours-mobile">05</div>
+                <span class="text-red-400 font-bold text-xs">:</span>
+                <div class="bg-red-500 text-white rounded-md px-2 py-1 text-xs font-bold" id="fs-minutes-mobile">23</div>
+                <span class="text-red-400 font-bold text-xs">:</span>
+                <div class="bg-red-500 text-white rounded-md px-2 py-1 text-xs font-bold" id="fs-seconds-mobile">47</div>
+            </div>
+            <div class="sm:hidden flex items-center justify-end gap-2 mb-3">
+                <button type="button" onclick="flashSalePrev()"
+                    class="w-8 h-8 rounded-xl border border-red-200 bg-white text-red-500 hover:bg-red-50 transition-colors flex items-center justify-center">
+                    <i class="ri-arrow-left-s-line text-lg"></i>
+                </button>
+                <button type="button" onclick="flashSaleNext()"
+                    class="w-8 h-8 rounded-xl border border-red-200 bg-white text-red-500 hover:bg-red-50 transition-colors flex items-center justify-center">
+                    <i class="ri-arrow-right-s-line text-lg"></i>
+                </button>
+            </div>
             <!-- Flash Sale Products -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <div id="flashSaleTrack"
+                class="flex sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 overflow-x-auto sm:overflow-visible scroll-smooth pb-1">
                 <a href="{{ route('frontend.detail-produk') }}"
-                    class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow card-hover group border border-red-50">
+                    class="min-w-[220px] w-[220px] sm:min-w-0 sm:w-auto bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow card-hover group border border-red-50">
                     <div class="relative">
                         <img src="https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=300&h=300&fit=crop"
                             class="w-full h-36 object-cover group-hover:scale-105 transition-transform duration-300" />
@@ -778,9 +822,10 @@
                             class="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">-30%</span>
                     </div>
                     <div class="p-3">
-                        <p class="text-xs font-semibold text-slate-800 line-clamp-2 mb-1">Kemeja Oxford Slim Fit</p>
-                        <p class="text-base font-bold text-red-500">Rp 189.000</p>
-                        <p class="text-xs text-slate-400 line-through">Rp 270.000</p>
+                        <p class="text-[11px] sm:text-xs font-semibold text-slate-800 line-clamp-2 mb-1">Kemeja Oxford Slim
+                            Fit</p>
+                        <p class="text-sm sm:text-base font-bold text-red-500">Rp 189.000</p>
+                        <p class="text-[11px] sm:text-xs text-slate-400 line-through">Rp 270.000</p>
                         <div class="mt-2 w-full bg-red-100 rounded-full h-1.5">
                             <div class="bg-red-500 h-1.5 rounded-full" style="width:78%"></div>
                         </div>
@@ -788,7 +833,7 @@
                     </div>
                 </a>
                 <a href="{{ route('frontend.detail-produk') }}"
-                    class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow card-hover group border border-red-50">
+                    class="min-w-[220px] w-[220px] sm:min-w-0 sm:w-auto bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow card-hover group border border-red-50">
                     <div class="relative">
                         <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300&h=300&fit=crop"
                             class="w-full h-36 object-cover group-hover:scale-105 transition-transform duration-300" />
@@ -796,9 +841,10 @@
                             class="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">-29%</span>
                     </div>
                     <div class="p-3">
-                        <p class="text-xs font-semibold text-slate-800 line-clamp-2 mb-1">Sneakers Urban Street</p>
-                        <p class="text-base font-bold text-red-500">Rp 459.000</p>
-                        <p class="text-xs text-slate-400 line-through">Rp 650.000</p>
+                        <p class="text-[11px] sm:text-xs font-semibold text-slate-800 line-clamp-2 mb-1">Sneakers Urban
+                            Street</p>
+                        <p class="text-sm sm:text-base font-bold text-red-500">Rp 459.000</p>
+                        <p class="text-[11px] sm:text-xs text-slate-400 line-through">Rp 650.000</p>
                         <div class="mt-2 w-full bg-red-100 rounded-full h-1.5">
                             <div class="bg-red-500 h-1.5 rounded-full" style="width:60%"></div>
                         </div>
@@ -806,7 +852,7 @@
                     </div>
                 </a>
                 <a href="{{ route('frontend.detail-produk') }}"
-                    class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow card-hover group border border-red-50">
+                    class="min-w-[220px] w-[220px] sm:min-w-0 sm:w-auto bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow card-hover group border border-red-50">
                     <div class="relative">
                         <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&h=300&fit=crop"
                             class="w-full h-36 object-cover group-hover:scale-105 transition-transform duration-300" />
@@ -814,9 +860,10 @@
                             class="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">-28%</span>
                     </div>
                     <div class="p-3">
-                        <p class="text-xs font-semibold text-slate-800 line-clamp-2 mb-1">Smart Watch Series 5</p>
-                        <p class="text-base font-bold text-red-500">Rp 1.299.000</p>
-                        <p class="text-xs text-slate-400 line-through">Rp 1.800.000</p>
+                        <p class="text-[11px] sm:text-xs font-semibold text-slate-800 line-clamp-2 mb-1">Smart Watch Series
+                            5</p>
+                        <p class="text-sm sm:text-base font-bold text-red-500">Rp 1.299.000</p>
+                        <p class="text-[11px] sm:text-xs text-slate-400 line-through">Rp 1.800.000</p>
                         <div class="mt-2 w-full bg-red-100 rounded-full h-1.5">
                             <div class="bg-red-500 h-1.5 rounded-full" style="width:85%"></div>
                         </div>
@@ -824,7 +871,7 @@
                     </div>
                 </a>
                 <a href="{{ route('frontend.detail-produk') }}"
-                    class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow card-hover group border border-red-50">
+                    class="min-w-[220px] w-[220px] sm:min-w-0 sm:w-auto bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow card-hover group border border-red-50">
                     <div class="relative">
                         <img src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=300&h=300&fit=crop"
                             class="w-full h-36 object-cover group-hover:scale-105 transition-transform duration-300" />
@@ -832,9 +879,10 @@
                             class="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">-24%</span>
                     </div>
                     <div class="p-3">
-                        <p class="text-xs font-semibold text-slate-800 line-clamp-2 mb-1">Skincare Serum Vitamin C</p>
-                        <p class="text-base font-bold text-red-500">Rp 189.000</p>
-                        <p class="text-xs text-slate-400 line-through">Rp 250.000</p>
+                        <p class="text-[11px] sm:text-xs font-semibold text-slate-800 line-clamp-2 mb-1">Skincare Serum
+                            Vitamin C</p>
+                        <p class="text-sm sm:text-base font-bold text-red-500">Rp 189.000</p>
+                        <p class="text-[11px] sm:text-xs text-slate-400 line-through">Rp 250.000</p>
                         <div class="mt-2 w-full bg-red-100 rounded-full h-1.5">
                             <div class="bg-red-500 h-1.5 rounded-full" style="width:92%"></div>
                         </div>
@@ -842,7 +890,7 @@
                     </div>
                 </a>
                 <a href="{{ route('frontend.detail-produk') }}"
-                    class="hidden lg:block bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow card-hover group border border-red-50">
+                    class="min-w-[220px] w-[220px] sm:min-w-0 sm:w-auto bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow card-hover group border border-red-50">
                     <div class="relative">
                         <img src="https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?w=300&h=300&fit=crop"
                             class="w-full h-36 object-cover group-hover:scale-105 transition-transform duration-300" />
@@ -850,9 +898,10 @@
                             class="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">-29%</span>
                     </div>
                     <div class="p-3">
-                        <p class="text-xs font-semibold text-slate-800 line-clamp-2 mb-1">Wireless Earbuds Pro</p>
-                        <p class="text-base font-bold text-red-500">Rp 599.000</p>
-                        <p class="text-xs text-slate-400 line-through">Rp 850.000</p>
+                        <p class="text-[11px] sm:text-xs font-semibold text-slate-800 line-clamp-2 mb-1">Wireless Earbuds
+                            Pro</p>
+                        <p class="text-sm sm:text-base font-bold text-red-500">Rp 599.000</p>
+                        <p class="text-[11px] sm:text-xs text-slate-400 line-through">Rp 850.000</p>
                         <div class="mt-2 w-full bg-red-100 rounded-full h-1.5">
                             <div class="bg-red-500 h-1.5 rounded-full" style="width:55%"></div>
                         </div>
@@ -947,7 +996,7 @@
                 </div>
             </div>
             <div class="border-t border-slate-800 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
-                <p class="text-sm text-slate-500">© 2025 Ecommerce Citra. All rights reserved.</p>
+                <p class="text-sm text-slate-500">Â© 2025 Ecommerce Citra. All rights reserved.</p>
                 <div class="flex items-center gap-3 flex-wrap justify-center">
                     <div class="bg-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-400 font-medium">Visa</div>
                     <div class="bg-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-400 font-medium">Mastercard</div>
@@ -1151,7 +1200,7 @@
                     p.badge === 'best' ?
                     `<span class="bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">TERLARIS</span>` :
                     '';
-                const stars = '★'.repeat(Math.floor(p.rating)) + (p.rating % 1 >= 0.5 ? '½' : '');
+                const stars = 'â˜…'.repeat(Math.floor(p.rating)) + (p.rating % 1 >= 0.5 ? 'Â½' : '');
                 return `
           <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden card-hover group h-full flex flex-col" data-id="${p.id}">
             <div class="relative overflow-hidden">
@@ -1168,10 +1217,10 @@
                 <h3 class="text-sm font-semibold text-slate-800 hover:text-blue-600 transition-colors line-clamp-2 min-h-[40px] mb-1">${p.name}</h3>
               </a>
               <div class="flex items-center gap-1 mb-2">
-                <span class="text-yellow-400 text-xs">★</span>
+                <span class="text-yellow-400 text-xs">â˜…</span>
                 <span class="text-xs font-medium text-slate-700">${p.rating}</span>
                 <span class="text-xs text-slate-400">(${p.reviews.toLocaleString()})</span>
-                <span class="text-xs text-slate-300 mx-1">•</span>
+                <span class="text-xs text-slate-300 mx-1">â€¢</span>
                 <span class="text-xs text-slate-400">${p.sold.toLocaleString()} terjual</span>
               </div>
               <div class="flex items-center gap-2 flex-wrap min-h-[28px] mb-3">
@@ -1196,7 +1245,7 @@
 
         function addToWishlist(id) {
             const p = products.find(x => x.id === id);
-            showToast(`"${p.name}" ditambahkan ke wishlist! ❤️`);
+            showToast(`"${p.name}" ditambahkan ke wishlist! â¤ï¸`);
         }
 
         function showToast(msg) {
@@ -1260,6 +1309,22 @@
             renderProducts(sorted);
         }
 
+        function cycleSortMobile() {
+            const select = document.getElementById('sortSelect');
+            if (!select) return;
+            const order = ['newest', 'price-low', 'price-high', 'popular'];
+            const current = order.indexOf(select.value);
+            select.value = order[(current + 1) % order.length];
+            sortProducts();
+            const labels = {
+                'newest': 'Urut: Terbaru',
+                'price-low': 'Urut: Termurah',
+                'price-high': 'Urut: Termahal',
+                'popular': 'Urut: Terpopuler'
+            };
+            showToast(labels[select.value] || 'Urutan diubah');
+        }
+
         function setView(v) {
             currentView = v;
             const grid = document.getElementById('productGrid');
@@ -1278,6 +1343,27 @@
         function toggleMobileSearch() {
             const el = document.getElementById('mobileSearch');
             el.classList.toggle('hidden');
+        }
+
+        function openMobileFilter() {
+            const sidebar = document.getElementById('filterSidebar');
+            const panel = document.getElementById('filterPanel');
+            if (!sidebar || !panel || window.innerWidth >= 1024) return;
+            sidebar.classList.remove('hidden');
+            sidebar.classList.add('fixed', 'inset-0', 'z-[60]', 'bg-black/40', 'flex', 'items-end', 'p-0');
+            panel.classList.remove('rounded-2xl', 'sticky', 'top-20');
+            panel.classList.add('w-full', 'rounded-t-3xl', 'rounded-b-none', 'max-h-[85vh]', 'overflow-y-auto', 'border-0');
+        }
+
+        function closeMobileFilter() {
+            const sidebar = document.getElementById('filterSidebar');
+            const panel = document.getElementById('filterPanel');
+            if (!sidebar || !panel || window.innerWidth >= 1024) return;
+            sidebar.classList.add('hidden');
+            sidebar.classList.remove('fixed', 'inset-0', 'z-[60]', 'bg-black/40', 'flex', 'items-end', 'p-0');
+            panel.classList.add('rounded-2xl', 'sticky', 'top-20');
+            panel.classList.remove('w-full', 'rounded-t-3xl', 'rounded-b-none', 'max-h-[85vh]', 'overflow-y-auto',
+                'border-0');
         }
 
         function toggleCategoryMenu(event) {
@@ -1433,13 +1519,13 @@
             container.innerHTML = `
         <div class="grid grid-cols-4 gap-6">
           ${sections.map(section => `
-                                                    <div>
-                                                      <h5 class="text-sm font-semibold text-slate-800 mb-3">${section.title}</h5>
-                                                      <ul class="space-y-2">
-                                                        ${section.items.map(item => `<li><a href="{{ route('frontend.kategori') }}" class="text-sm text-slate-600 hover:text-blue-600">${item}</a></li>`).join('')}
-                                                      </ul>
-                                                    </div>
-                                                  `).join('')}
+                                                                        <div>
+                                                                          <h5 class="text-sm font-semibold text-slate-800 mb-3">${section.title}</h5>
+                                                                          <ul class="space-y-2">
+                                                                            ${section.items.map(item => `<li><a href="{{ route('frontend.kategori') }}" class="text-sm text-slate-600 hover:text-blue-600">${item}</a></li>`).join('')}
+                                                                          </ul>
+                                                                        </div>
+                                                                      `).join('')}
         </div>
       `;
         }
@@ -1466,6 +1552,14 @@
             if (!menu.contains(e.target) && !trigger.contains(e.target)) {
                 menu.classList.add('hidden');
             }
+
+            const sidebar = document.getElementById('filterSidebar');
+            const panel = document.getElementById('filterPanel');
+            if (sidebar && panel && window.innerWidth < 1024 && sidebar.classList.contains('fixed')) {
+                if (e.target === sidebar) {
+                    closeMobileFilter();
+                }
+            }
         });
 
         // Flash Sale Countdown Timer
@@ -1477,9 +1571,21 @@
             const h = Math.floor(diff / 3600000);
             const m = Math.floor((diff % 3600000) / 60000);
             const s = Math.floor((diff % 60000) / 1000);
-            document.getElementById('fs-hours').textContent = String(h).padStart(2, '0');
-            document.getElementById('fs-minutes').textContent = String(m).padStart(2, '0');
-            document.getElementById('fs-seconds').textContent = String(s).padStart(2, '0');
+            const hh = String(h).padStart(2, '0');
+            const mm = String(m).padStart(2, '0');
+            const ss = String(s).padStart(2, '0');
+            const fsHours = document.getElementById('fs-hours');
+            const fsMinutes = document.getElementById('fs-minutes');
+            const fsSeconds = document.getElementById('fs-seconds');
+            const fsHoursMobile = document.getElementById('fs-hours-mobile');
+            const fsMinutesMobile = document.getElementById('fs-minutes-mobile');
+            const fsSecondsMobile = document.getElementById('fs-seconds-mobile');
+            if (fsHours) fsHours.textContent = hh;
+            if (fsMinutes) fsMinutes.textContent = mm;
+            if (fsSeconds) fsSeconds.textContent = ss;
+            if (fsHoursMobile) fsHoursMobile.textContent = hh;
+            if (fsMinutesMobile) fsMinutesMobile.textContent = mm;
+            if (fsSecondsMobile) fsSecondsMobile.textContent = ss;
         }
         setInterval(updateTimer, 1000);
         updateTimer();
@@ -1517,6 +1623,24 @@
         function resetCarouselTimer() {
             clearInterval(carouselTimer);
             carouselTimer = setInterval(carouselNext, 5000);
+        }
+
+        function flashSalePrev() {
+            const track = document.getElementById('flashSaleTrack');
+            if (!track) return;
+            track.scrollBy({
+                left: -(track.clientWidth * 0.85),
+                behavior: 'smooth'
+            });
+        }
+
+        function flashSaleNext() {
+            const track = document.getElementById('flashSaleTrack');
+            if (!track) return;
+            track.scrollBy({
+                left: track.clientWidth * 0.85,
+                behavior: 'smooth'
+            });
         }
 
         carouselGoTo(0);
