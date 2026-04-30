@@ -89,46 +89,7 @@
 
 @section('content')
     <!-- NAVBAR -->
-    <nav class="bg-white border-b border-slate-100 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-            <a href="{{ route('frontend.index') }}" class="flex items-center gap-2">
-                <div
-                    class="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
-                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                            d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3z" />
-                        <path d="M16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
-                    </svg>
-                </div>
-                <span
-                    class="text-lg sm:text-xl font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Ecommerce
-                    Citra</span>
-            </a>
-            <!-- Steps -->
-            <div class="hidden sm:flex items-center gap-2">
-                <div class="flex items-center gap-2">
-                    <div id="step1"
-                        class="step-active w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold">1</div>
-                    <span class="text-sm font-medium text-blue-600">Keranjang</span>
-                </div>
-                <div class="w-8 h-0.5 bg-blue-300"></div>
-                <div class="flex items-center gap-2">
-                    <div id="step2"
-                        class="step-active w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold">2</div>
-                    <span class="text-sm font-medium text-blue-600">Checkout</span>
-                </div>
-                <div class="w-8 h-0.5 bg-slate-200"></div>
-                <div class="flex items-center gap-2">
-                    <div id="step3"
-                        class="step-inactive w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold">3
-                    </div>
-                    <span class="text-sm font-medium text-slate-400">Pembayaran</span>
-                </div>
-            </div>
-            <a href="{{ route('frontend.profil') }}"
-                class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white text-sm font-bold">A</a>
-        </div>
-    </nav>
+    @include('partials.navbar-user')
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <div class="grid lg:grid-cols-3 gap-8">

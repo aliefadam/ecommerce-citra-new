@@ -1,4 +1,4 @@
-﻿@extends('layouts.user')
+@extends('layouts.user')
 
 @section('title', 'Ecommerce Citra - Belanja Online Terpercaya')
 
@@ -154,159 +154,7 @@
     </div>
 
     <!-- NAVBAR -->
-    <nav class="bg-white sticky top-0 z-50 shadow-sm border-b border-slate-100">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6">
-            <div class="flex items-center justify-between h-16">
-                <!-- Logo -->
-                <a href="{{ route('frontend.index') }}" class="flex items-center gap-2 flex-shrink-0">
-                    <div
-                        class="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
-                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path
-                                d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3z" />
-                            <path d="M16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
-                        </svg>
-                    </div>
-                    <span
-                        class="text-lg sm:text-xl font-800 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent font-extrabold">Ecommerce
-                        Citra</span>
-                </a> <!-- Search Bar (Desktop) -->
-                <div class="hidden md:flex flex-1 max-w-xl mx-6 relative items-center gap-2">
-                    <button id="category-trigger" type="button" onclick="toggleCategoryMenu(event)"
-                        class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium transition-colors flex items-center gap-2 whitespace-nowrap">
-                        Kategori
-                        <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </button>
-
-                    <div class="search-wrapper relative flex-1">
-                        <form action="{{ route('frontend.search') }}" method="GET"
-                            class="flex border border-slate-200 rounded-xl overflow-hidden focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
-                            <input type="text" id="searchInput" name="q"
-                                placeholder="Cari produk, merek, kategori..."
-                                class="flex-1 px-4 py-2.5 text-sm outline-none bg-white" />
-                            <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg>
-                            </button>
-                        </form>
-                        <div
-                            class="search-dropdown absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-xl border border-slate-100 z-50 p-2">
-                            <p class="text-xs text-slate-400 px-3 py-1">Pencarian populer</p>
-                            <a href="{{ route('frontend.detail-produk') }}"
-                                class="block px-3 py-2 rounded-lg hover:bg-slate-50 text-sm text-slate-700">Sepatu
-                                Sneakers</a>
-                            <a href="{{ route('frontend.detail-produk') }}"
-                                class="block px-3 py-2 rounded-lg hover:bg-slate-50 text-sm text-slate-700">Kemeja Pria</a>
-                            <a href="{{ route('frontend.detail-produk') }}"
-                                class="block px-3 py-2 rounded-lg hover:bg-slate-50 text-sm text-slate-700">Laptop
-                                Gaming</a>
-                        </div>
-                    </div>
-
-                    <div id="category-dropdown"
-                        class="hidden absolute top-full left-0 mt-2 w-[820px] max-w-[88vw] bg-white rounded-2xl shadow-xl border border-slate-100 z-50">
-                        <div class="grid grid-cols-5 min-h-[360px]">
-                            <div class="col-span-1 border-r border-slate-100 p-4 overflow-y-auto">
-                                <h4 class="text-sm font-semibold text-slate-800 mb-3">Semua Kategori</h4>
-                                <div id="category-menu-list" class="space-y-1">
-                                    <button type="button" data-cat-key="rumah-tangga"
-                                        onclick="setMegaCategory('rumah-tangga')"
-                                        class="mega-cat-btn w-full text-left px-3 py-2 rounded-lg text-sm bg-blue-50 text-blue-700 font-semibold">Rumah
-                                        Tangga</button>
-                                    <button type="button" data-cat-key="fashion-pria"
-                                        onclick="setMegaCategory('fashion-pria')"
-                                        class="mega-cat-btn w-full text-left px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-slate-50">Fashion
-                                        Pria</button>
-                                    <button type="button" data-cat-key="fashion-wanita"
-                                        onclick="setMegaCategory('fashion-wanita')"
-                                        class="mega-cat-btn w-full text-left px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-slate-50">Fashion
-                                        Wanita</button>
-                                    <button type="button" data-cat-key="elektronik" onclick="setMegaCategory('elektronik')"
-                                        class="mega-cat-btn w-full text-left px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-slate-50">Elektronik</button>
-                                    <button type="button" data-cat-key="kecantikan" onclick="setMegaCategory('kecantikan')"
-                                        class="mega-cat-btn w-full text-left px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-slate-50">Kecantikan</button>
-                                    <button type="button" data-cat-key="olahraga" onclick="setMegaCategory('olahraga')"
-                                        class="mega-cat-btn w-full text-left px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-slate-50">Olahraga</button>
-                                    <button type="button" data-cat-key="ibu-bayi" onclick="setMegaCategory('ibu-bayi')"
-                                        class="mega-cat-btn w-full text-left px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-slate-50">Ibu
-                                        & Bayi</button>
-                                    <button type="button" data-cat-key="makanan-minuman"
-                                        onclick="setMegaCategory('makanan-minuman')"
-                                        class="mega-cat-btn w-full text-left px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-slate-50">Makanan
-                                        & Minuman</button>
-                                </div>
-                                <a href="{{ route('frontend.kategori') }}"
-                                    class="mt-4 inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium px-3 py-2">
-                                    Lihat Semua Kategori
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </a>
-                            </div>
-                            <div id="category-mega-content" class="col-span-4 p-6 overflow-y-auto"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Nav Right -->
-                <div class="flex items-center gap-1 sm:gap-2">
-                    <!-- Mobile Search -->
-                    <button class="md:hidden p-2 rounded-lg hover:bg-slate-100" onclick="toggleMobileSearch()">
-                        <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </button>
-                    <!-- Wishlist -->
-                    <button class="hidden sm:flex p-2 rounded-lg hover:bg-slate-100 relative">
-                        <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                        </svg>
-                    </button>
-                    <!-- Cart -->
-                    <a href="{{ route('frontend.checkout') }}" class="p-2 rounded-lg hover:bg-slate-100 relative">
-                        <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                        <span id="cartBadge"
-                            class="absolute -top-1 -right-1 bg-blue-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">3</span>
-                    </a>
-                    <!-- Profile -->
-                    <a href="{{ route('frontend.profil') }}"
-                        class="flex items-center gap-2 p-1 rounded-lg hover:bg-slate-100">
-                        <div
-                            class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white text-sm font-bold">
-                            A</div>
-                        <span class="hidden sm:block text-sm font-medium text-slate-700">Andi</span>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Category Nav -->
-        </div>
-
-        <!-- Mobile Search Bar -->
-        <div id="mobileSearch" class="hidden md:hidden px-4 pb-3 border-t border-slate-100 pt-3">
-            <form action="{{ route('frontend.search') }}" method="GET"
-                class="flex border border-slate-200 rounded-xl overflow-hidden focus-within:border-blue-400">
-                <input type="text" name="q" placeholder="Cari produk..."
-                    class="flex-1 px-4 py-2.5 text-sm outline-none" />
-                <button type="submit" class="bg-blue-500 text-white px-4">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                </button>
-            </form>
-        </div>
-    </nav>
+    @include('partials.navbar-user')
 
     {{-- HERO SECTION (dinonaktifkan, diganti carousel)
     <section class="hero-gradient text-white overflow-hidden relative">...</section>
@@ -319,7 +167,7 @@
             <!-- Track -->
             <div id="carouselTrack" class="flex transition-transform duration-600 ease-in-out">
 
-                {{-- Placeholder banner 1: Gajian Sale â€“ Fashion --}}
+                {{-- Placeholder banner 1: Gajian Sale – Fashion --}}
                 <div class="min-w-full h-[180px] sm:h-[260px] md:h-[340px] relative overflow-hidden flex-shrink-0">
                     <div class="absolute inset-0 flex"
                         style="background: linear-gradient(120deg, #1a1a2e 0%, #16213e 35%, #c2185b 75%, #e91e63 100%);">
@@ -356,7 +204,7 @@
                     </div>
                 </div>
 
-                {{-- Placeholder banner 2: New Arrival â€“ Elektronik & Gadget --}}
+                {{-- Placeholder banner 2: New Arrival – Elektronik & Gadget --}}
                 <div class="min-w-full h-[180px] sm:h-[260px] md:h-[340px] relative overflow-hidden flex-shrink-0">
                     <div class="absolute inset-0 flex"
                         style="background: linear-gradient(120deg, #0a0a23 0%, #0d2137 35%, #00838f 80%, #00bcd4 100%);">
@@ -598,7 +446,7 @@
                                 </div>
                                 <div class="flex-1">
                                     <label class="text-xs text-slate-500 mb-1 block">Max</label>
-                                    <input type="number" id="priceMax" placeholder="∞"
+                                    <input type="number" id="priceMax" placeholder="8"
                                         class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
                                         onchange="applyFilter()" />
                                 </div>
@@ -610,11 +458,11 @@
                                 <label class="flex items-center gap-2 cursor-pointer"><input type="radio"
                                         name="priceRange" class="accent-blue-500"
                                         onchange="setPriceRange(100000, 500000)" /> <span
-                                        class="text-sm text-slate-600">Rp 100.000 – Rp 500.000</span></label>
+                                        class="text-sm text-slate-600">Rp 100.000 � Rp 500.000</span></label>
                                 <label class="flex items-center gap-2 cursor-pointer"><input type="radio"
                                         name="priceRange" class="accent-blue-500"
                                         onchange="setPriceRange(500000, 1000000)" /> <span
-                                        class="text-sm text-slate-600">Rp 500.000 – Rp 1 Juta</span></label>
+                                        class="text-sm text-slate-600">Rp 500.000 � Rp 1 Juta</span></label>
                                 <label class="flex items-center gap-2 cursor-pointer"><input type="radio"
                                         name="priceRange" class="accent-blue-500"
                                         onchange="setPriceRange(1000000, 9999999)" /> <span
@@ -657,11 +505,11 @@
                         <h4 class="text-sm font-semibold text-slate-700 mb-3">Rating</h4>
                         <div class="space-y-2">
                             <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="rating"
-                                    class="accent-blue-500" /><span class="flex gap-0.5">★★★★★</span></label>
+                                    class="accent-blue-500" /><span class="flex gap-0.5">?????</span></label>
                             <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="rating"
-                                    class="accent-blue-500" /><span class="flex gap-0.5">★★★★ ke atas</span></label>
+                                    class="accent-blue-500" /><span class="flex gap-0.5">???? ke atas</span></label>
                             <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="rating"
-                                    class="accent-blue-500" /><span class="flex gap-0.5">★★★ ke atas</span></label>
+                                    class="accent-blue-500" /><span class="flex gap-0.5">??? ke atas</span></label>
                         </div>
                     </div>
 
@@ -761,7 +609,7 @@
                         <div>
                             <div class="flex items-center gap-1.5">
                                 <h2 class="text-xl sm:text-2xl font-extrabold text-slate-800">Flash Sale</h2>
-                                <span class="text-xl">🔥</span>
+                                <span class="text-xl">??</span>
                             </div>
                             <p class="text-slate-500 text-[11px] sm:text-xs">Penawaran terbatas, jangan sampai habis!</p>
                         </div>
@@ -996,7 +844,7 @@
                 </div>
             </div>
             <div class="border-t border-slate-800 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
-                <p class="text-sm text-slate-500">Â© 2025 Ecommerce Citra. All rights reserved.</p>
+                <p class="text-sm text-slate-500">© 2025 Ecommerce Citra. All rights reserved.</p>
                 <div class="flex items-center gap-3 flex-wrap justify-center">
                     <div class="bg-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-400 font-medium">Visa</div>
                     <div class="bg-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-400 font-medium">Mastercard</div>
@@ -1200,7 +1048,7 @@
                     p.badge === 'best' ?
                     `<span class="bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">TERLARIS</span>` :
                     '';
-                const stars = 'â˜…'.repeat(Math.floor(p.rating)) + (p.rating % 1 >= 0.5 ? 'Â½' : '');
+                const stars = '★'.repeat(Math.floor(p.rating)) + (p.rating % 1 >= 0.5 ? '½' : '');
                 return `
           <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden card-hover group h-full flex flex-col" data-id="${p.id}">
             <div class="relative overflow-hidden">
@@ -1217,10 +1065,10 @@
                 <h3 class="text-sm font-semibold text-slate-800 hover:text-blue-600 transition-colors line-clamp-2 min-h-[40px] mb-1">${p.name}</h3>
               </a>
               <div class="flex items-center gap-1 mb-2">
-                <span class="text-yellow-400 text-xs">â˜…</span>
+                <span class="text-yellow-400 text-xs">★</span>
                 <span class="text-xs font-medium text-slate-700">${p.rating}</span>
                 <span class="text-xs text-slate-400">(${p.reviews.toLocaleString()})</span>
-                <span class="text-xs text-slate-300 mx-1">â€¢</span>
+                <span class="text-xs text-slate-300 mx-1">•</span>
                 <span class="text-xs text-slate-400">${p.sold.toLocaleString()} terjual</span>
               </div>
               <div class="flex items-center gap-2 flex-wrap min-h-[28px] mb-3">
@@ -1245,7 +1093,7 @@
 
         function addToWishlist(id) {
             const p = products.find(x => x.id === id);
-            showToast(`"${p.name}" ditambahkan ke wishlist! â¤ï¸`);
+            showToast(`"${p.name}" ditambahkan ke wishlist! ❤️`);
         }
 
         function showToast(msg) {
@@ -1650,3 +1498,4 @@
         renderProducts(products);
     </script>
 @endsection
+
