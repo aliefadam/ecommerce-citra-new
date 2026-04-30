@@ -12,7 +12,7 @@
                 </div>
                 <span
                     class="text-lg sm:text-xl font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Ecommerce
-                    Citra</span>
+                    Citrax</span>
             </a>
 
             <div class="hidden md:flex flex-1 max-w-xl mx-6 relative items-center gap-2">
