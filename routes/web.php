@@ -3,7 +3,9 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BackendController;
 use App\Http\Controllers\FrontendController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\VariantController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -20,6 +22,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/settings', [BackendController::class, 'settings'])->name('pages.settings');
 
         Route::resource('products', ProductController::class)->except(['show']);
+
+        Route::post('categories/quick-add', [CategoryController::class, 'quickStore'])->name('categories.quick-add');
+        Route::resource('categories', CategoryController::class)->except(['show']);
+
+        Route::post('variants/quick-add', [VariantController::class, 'quickStore'])->name('variants.quick-add');
+        Route::resource('variants', VariantController::class)->except(['show']);
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     });
 });

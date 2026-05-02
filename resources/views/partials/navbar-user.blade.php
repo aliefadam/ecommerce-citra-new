@@ -12,7 +12,7 @@
                 </div>
                 <span
                     class="text-lg sm:text-xl font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Ecommerce
-                    Citrax</span>
+                    Citra</span>
             </a>
 
             <div class="hidden md:flex flex-1 max-w-xl mx-6 relative items-center gap-2">
@@ -83,7 +83,8 @@
                     <span
                         class="absolute -top-1 -right-1 bg-blue-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">3</span>
                 </a>
-                <a href="{{ route('frontend.profil') }}" class="flex items-center gap-2 p-1 rounded-lg hover:bg-slate-100">
+                <a href="{{ route('frontend.profil') }}"
+                    class="flex items-center gap-2 p-1 rounded-lg hover:bg-slate-100">
                     <div
                         class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white text-sm font-bold">
                         A</div>
@@ -348,6 +349,7 @@
             renderColumns();
 
             categoryMenu.addEventListener('click', (e) => {
+                e.stopPropagation();
                 const target = e.target.closest('[data-key]');
                 if (!target) return;
                 active = target.getAttribute('data-key') || megaCategories[0].key;
@@ -364,7 +366,8 @@
         document.addEventListener('click', (e) => {
             const categoryDropdownEl = document.getElementById('ecCategoryDropdown');
             const categoryTriggerEl = document.getElementById('ecCategoryTrigger');
-            if (categoryDropdownEl && categoryTriggerEl && !categoryDropdownEl.contains(e.target) && !categoryTriggerEl
+            if (categoryDropdownEl && categoryTriggerEl && !categoryDropdownEl.contains(e.target) && !
+                categoryTriggerEl
                 .contains(e.target)) {
                 categoryDropdownEl.classList.add('hidden');
             }
