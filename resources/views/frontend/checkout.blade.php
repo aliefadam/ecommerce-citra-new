@@ -134,36 +134,32 @@
                             </svg>
                             Alamat Pengiriman
                         </h2>
-                        <button onclick="showAddressModal()" class="text-blue-600 text-sm font-medium hover:text-blue-700">+
-                            Tambah Alamat</button>
+                        <a href="{{ route('frontend.profil') }}" class="text-blue-600 text-sm font-medium hover:text-blue-700">
+                            Kelola Alamat
+                        </a>
                     </div>
                     <div class="p-6 space-y-3" id="addressList">
-                        <label
-                            class="flex items-start gap-3 p-4 border-2 border-blue-400 bg-blue-50 rounded-xl cursor-pointer">
-                            <input type="radio" name="address" class="mt-1 accent-blue-500" checked />
-                            <div class="flex-1">
-                                <div class="flex items-center gap-2 mb-1">
-                                    <p class="font-semibold text-slate-800">Andi Pratama</p>
-                                    <span
-                                        class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full font-medium">Utama</span>
+                        @forelse(($addresses ?? collect()) as $address)
+                            <label
+                                class="flex items-start gap-3 p-4 border-2 {{ $address->is_primary ? 'border-blue-400 bg-blue-50' : 'border-slate-200' }} rounded-xl cursor-pointer hover:border-slate-300 transition-colors">
+                                <input type="radio" name="address" class="mt-1 accent-blue-500" {{ $address->is_primary ? 'checked' : '' }} />
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <p class="font-semibold text-slate-800">{{ $address->recipient_name }}</p>
+                                        <span class="bg-slate-100 text-slate-700 text-xs px-2 py-0.5 rounded-full font-medium">{{ $address->label }}</span>
+                                        @if($address->is_primary)
+                                            <span class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full font-medium">Utama</span>
+                                        @endif
+                                    </div>
+                                    <p class="text-sm text-slate-600">{{ $address->phone_country_code }} {{ $address->phone_number }}</p>
+                                    <p class="text-sm text-slate-600">{{ $address->address_line }}, {{ $address->city }}, {{ $address->province }}{{ $address->postal_code ? ', '.$address->postal_code : '' }}</p>
                                 </div>
-                                <p class="text-sm text-slate-600">0812-3456-7890</p>
-                                <p class="text-sm text-slate-600">Jl. Sudirman No. 123, Kel. Karet Semanggi, Kec. Setiabudi,
-                                    Jakarta Selatan, DKI Jakarta, 12920</p>
+                            </label>
+                        @empty
+                            <div class="text-sm text-slate-500">
+                                Belum ada alamat tersimpan. Silakan tambahkan alamat di halaman profil.
                             </div>
-                            <button class="text-xs text-blue-600 hover:underline flex-shrink-0">Ubah</button>
-                        </label>
-                        <label
-                            class="flex items-start gap-3 p-4 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-slate-300 transition-colors">
-                            <input type="radio" name="address" class="mt-1 accent-blue-500" />
-                            <div class="flex-1">
-                                <p class="font-semibold text-slate-800 mb-1">Kantor</p>
-                                <p class="text-sm text-slate-600">0812-3456-7890</p>
-                                <p class="text-sm text-slate-600">Gedung Menara BRI Lt. 5, Jl. Gatot Subroto, Jakarta
-                                    Selatan</p>
-                            </div>
-                            <button class="text-xs text-blue-600 hover:underline flex-shrink-0">Ubah</button>
-                        </label>
+                        @endforelse
                     </div>
                 </div>
 
@@ -182,7 +178,7 @@
                     <div class="p-6 space-y-3">
                         <label
                             class="shipping-card active flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all"
-                            onclick="setShipping(15000, 'Reguler')">
+                            onclick="setShipping(this, 15000, 'Reguler')">
                             <input type="radio" name="shipping" class="accent-blue-500" checked />
                             <div class="flex-1">
                                 <div class="flex items-center gap-2 mb-0.5">
@@ -195,7 +191,7 @@
                         </label>
                         <label
                             class="shipping-card flex items-center gap-4 p-4 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-slate-300 transition-all"
-                            onclick="setShipping(25000, 'Ekspres')">
+                            onclick="setShipping(this, 25000, 'Ekspres')">
                             <input type="radio" name="shipping" class="accent-blue-500" />
                             <div class="flex-1">
                                 <div class="flex items-center gap-2 mb-0.5">
@@ -208,7 +204,7 @@
                         </label>
                         <label
                             class="shipping-card flex items-center gap-4 p-4 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-slate-300 transition-all"
-                            onclick="setShipping(0, 'Gratis')">
+                            onclick="setShipping(this, 0, 'Gratis')">
                             <input type="radio" name="shipping" class="accent-blue-500" />
                             <div class="flex-1">
                                 <div class="flex items-center gap-2 mb-0.5">
@@ -222,7 +218,7 @@
                         </label>
                         <label
                             class="shipping-card flex items-center gap-4 p-4 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-slate-300 transition-all"
-                            onclick="setShipping(35000, 'Same Day')">
+                            onclick="setShipping(this, 35000, 'Same Day')">
                             <input type="radio" name="shipping" class="accent-blue-500" />
                             <div class="flex-1">
                                 <div class="flex items-center gap-2 mb-0.5">
@@ -656,42 +652,70 @@
 
 @section('script')
     <script>
-        const cartItems = [{
-                id: 1,
-                name: "Kemeja Oxford Slim Fit Premium",
-                variant: "Biru Navy • M",
-                price: 189000,
-                origPrice: 270000,
-                qty: 1,
-                image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=100&h=100&fit=crop"
-            },
-            {
-                id: 2,
-                name: "Sneakers Urban Street",
-                variant: "Hitam • Size 42",
-                price: 459000,
-                origPrice: 650000,
-                qty: 1,
-                image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100&h=100&fit=crop"
-            },
-            {
-                id: 3,
-                name: "Skincare Serum Vitamin C",
-                variant: "30ml • 1 Box",
-                price: 189000,
-                origPrice: 250000,
-                qty: 2,
-                image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=100&h=100&fit=crop"
-            },
-        ];
-
+        let cartItems = [];
+        let checkoutSource = 'cart';
         let shippingCost = 15000;
         let shippingLabel = 'Reguler';
         let voucherDiscount = 0;
         let selectedPayment = 'GoPay';
+        const FALLBACK_IMAGE = 'https://via.placeholder.com/100x100?text=No+Image';
+        function normalizeItem(item, index = 0) {
+            const price = Number(item?.price || 0);
+            return {
+                key: item?.key || `${item?.product_id || item?.id || 'item'}::${item?.variant || '-'}`,
+                id: item?.product_id || item?.id || index + 1,
+                slug: item?.slug || '',
+                name: item?.name || 'Produk',
+                variant: item?.variant || '-',
+                price,
+                origPrice: Number(item?.origPrice || item?.orig_price || price),
+                qty: Math.max(1, Number(item?.qty || 1)),
+                image: item?.image || FALLBACK_IMAGE,
+            };
+        }
+        function persistCartIfNeeded() {
+            if (checkoutSource === 'buy_now') return;
+            localStorage.setItem('ec_cart', JSON.stringify(cartItems));
+        }
+        function loadCheckoutItems() {
+            let buyNow = null;
+            let storedCart = [];
+            try {
+                buyNow = JSON.parse(localStorage.getItem('ec_buy_now') || 'null');
+            } catch (e) {
+                buyNow = null;
+            }
+            try {
+                storedCart = JSON.parse(localStorage.getItem('ec_cart') || '[]');
+                if (!Array.isArray(storedCart)) storedCart = [];
+            } catch (e) {
+                storedCart = [];
+            }
+            if (buyNow && typeof buyNow === 'object') {
+                checkoutSource = 'buy_now';
+                cartItems = [normalizeItem(buyNow)];
+            } else if (storedCart.length > 0) {
+                checkoutSource = 'cart';
+                cartItems = storedCart.map((item, idx) => normalizeItem(item, idx));
+            } else {
+                checkoutSource = 'cart';
+                cartItems = [];
+            }
+        }
 
         function renderCart() {
             const container = document.getElementById('cartItems');
+            if (!cartItems.length) {
+                container.innerHTML = `
+                    <div class="py-10 text-center">
+                        <p class="text-slate-500 text-sm mb-3">Keranjang masih kosong.</p>
+                        <a href="{{ route('frontend.index') }}" class="inline-flex items-center gap-2 text-blue-600 text-sm font-semibold hover:text-blue-700">
+                            Belanja sekarang
+                        </a>
+                    </div>`;
+                updateSummary();
+                return;
+            }
             container.innerHTML = cartItems.map((item, i) => `
         <div class="relative flex gap-3 py-4 pr-7 ${i > 0 ? 'border-t border-slate-100' : ''}">
           <input type="checkbox" class="mt-10 sm:mt-1 accent-blue-500 flex-shrink-0" checked />
@@ -720,11 +744,13 @@
 
         function changeQty(idx, d) {
             cartItems[idx].qty = Math.max(1, cartItems[idx].qty + d);
+            persistCartIfNeeded();
             renderCart();
         }
 
         function removeItem(idx) {
             cartItems.splice(idx, 1);
+            persistCartIfNeeded();
             renderCart();
         }
 
@@ -740,17 +766,23 @@
                 .toLocaleString('id-ID');
             document.getElementById('grandTotal').textContent = 'Rp ' + grandTotal.toLocaleString('id-ID');
             document.getElementById('totalPaid').textContent = 'Rp ' + grandTotal.toLocaleString('id-ID');
+            const payBtn = document.getElementById('payBtn');
+            if (payBtn) payBtn.disabled = totalItems <= 0;
         }
 
-        function setShipping(cost, label) {
+        function setShipping(el, cost, label) {
             shippingCost = cost;
             shippingLabel = label;
             document.querySelectorAll('.shipping-card').forEach(c => {
                 c.classList.remove('active', 'border-blue-400');
                 c.classList.add('border-slate-200');
             });
-            event.currentTarget.classList.add('active', 'border-blue-400');
-            event.currentTarget.classList.remove('border-slate-200');
+            if (el) {
+                el.classList.add('active', 'border-blue-400');
+                el.classList.remove('border-slate-200');
+                const radio = el.querySelector('input[type="radio"]');
+                if (radio) radio.checked = true;
+            }
             updateSummary();
         }
 
@@ -830,6 +862,10 @@
         }
 
         function processPayment() {
+            if (!cartItems.length) {
+                alert('Keranjang masih kosong. Silakan pilih produk terlebih dahulu.');
+                return;
+            }
             const btn = document.getElementById('payBtn');
             btn.disabled = true;
             btn.innerHTML = `
@@ -843,6 +879,11 @@
                 const orderNum = generateOrderNum();
                 document.getElementById('orderNum').textContent = orderNum;
                 document.getElementById('payMethod').textContent = selectedPayment;
+                if (checkoutSource === 'buy_now') {
+                    localStorage.removeItem('ec_buy_now');
+                } else {
+                    localStorage.setItem('ec_cart', '[]');
+                }
                 const modal = document.getElementById('successModal');
                 modal.classList.remove('hidden');
                 modal.classList.add('flex');
@@ -854,6 +895,8 @@
             input.value = val.replace(/(.{4})/g, '$1 ').trim();
         }
 
+        loadCheckoutItems();
         renderCart();
     </script>
 @endsection
+

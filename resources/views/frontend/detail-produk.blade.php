@@ -1,6 +1,6 @@
 @extends('layouts.user')
 
-@section('title', 'Detail Produk - Ecommerce Citra')
+@section('title', ($productData['name'] ?? 'Detail Produk') . ' - Ecommerce Citra')
 
 @section('style')
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
@@ -130,6 +130,16 @@
 @endsection
 
 @section('content')
+    @php
+        $displayPrice = $productData['isFlashSale'] ? $productData['flashSalePrice'] : $productData['price'];
+        $savingPercent =
+            $productData['origPrice'] > 0 ? round((1 - $displayPrice / $productData['origPrice']) * 100) : 0;
+        $variantGroups = collect($productData['variantGroups'] ?? []);
+        $colorGroup = $variantGroups->first(fn($g) => str_contains(strtolower($g['key'] ?? ''), 'warna'));
+        $otherGroups = $variantGroups->filter(fn($g) => !str_contains(strtolower($g['key'] ?? ''), 'warna'))->values();
+        $defaultColor = $colorGroup['values'][0] ?? null;
+        $defaultOther = $otherGroups->mapWithKeys(fn($g) => [$g['key'] => $g['values'][0] ?? null])->all();
+    @endphp
     <!-- Toast -->
     <div id="toast" class="fixed top-4 right-4 z-[9999] hidden">
         <div class="toast bg-blue-500 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3">
@@ -151,11 +161,12 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                 </svg>
-                <a href="{{ route('frontend.kategori') }}" class="hover:text-blue-600">Fashion Pria</a>
+                <a href="{{ route('frontend.kategori') }}"
+                    class="hover:text-blue-600">{{ $productData['categoryName'] }}</a>
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                 </svg>
-                <span class="text-slate-800 font-medium">Kemeja Oxford Slim Fit Premium</span>
+                <span class="text-slate-800 font-medium">{{ $productData['name'] }}</span>
             </nav>
         </div>
     </div>
@@ -168,13 +179,14 @@
             <div>
                 <!-- Main Image -->
                 <div class="relative rounded-2xl overflow-hidden bg-white shadow-sm border border-slate-100 mb-4">
-                    <img id="mainImg"
-                        src="https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=700&h=700&fit=crop"
-                        alt="Produk" class="w-full h-80 md:h-[450px] object-cover main-img" />
-                    <div class="absolute top-3 left-3 flex gap-2">
-                        <span class="bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full">-30%</span>
-                        <span class="bg-blue-500 text-white text-xs font-bold px-2.5 py-1 rounded-full">BEST SELLER</span>
-                    </div>
+                    <img id="mainImg" src="{{ $productData['image'] }}" alt="{{ $productData['name'] }}"
+                        class="w-full h-80 md:h-[450px] object-cover main-img" />
+                    @if ($productData['isFlashSale'])
+                        <div class="absolute top-3 left-3 flex gap-2">
+                            <span
+                                class="bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full">-{{ max(0, $savingPercent) }}%</span>
+                        </div>
+                    @endif
                     <button onclick="toggleWishlist()" id="wishBtn"
                         class="absolute top-3 right-3 w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center hover:bg-pink-50 transition-colors">
                         <svg id="wishIcon" class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor"
@@ -200,31 +212,12 @@
                 </div>
                 <!-- Thumbnails -->
                 <div class="flex gap-3 overflow-x-auto pb-2">
-                    <button onclick="setImg(0)"
-                        class="thumb-btn flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 thumb-active">
-                        <img src="https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=150&h=150&fit=crop"
-                            class="w-full h-full object-cover" />
-                    </button>
-                    <button onclick="setImg(1)"
-                        class="thumb-btn flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 border-slate-200">
-                        <img src="https://images.unsplash.com/photo-1603251579431-8041402bdeda?w=150&h=150&fit=crop"
-                            class="w-full h-full object-cover" />
-                    </button>
-                    <button onclick="setImg(2)"
-                        class="thumb-btn flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 border-slate-200">
-                        <img src="https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=150&h=150&fit=crop"
-                            class="w-full h-full object-cover" />
-                    </button>
-                    <button onclick="setImg(3)"
-                        class="thumb-btn flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 border-slate-200">
-                        <img src="https://images.unsplash.com/photo-1571945153237-4929e783af4a?w=150&h=150&fit=crop"
-                            class="w-full h-full object-cover" />
-                    </button>
-                    <button onclick="setImg(4)"
-                        class="thumb-btn flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 border-slate-200">
-                        <img src="https://images.unsplash.com/photo-1598522325074-042db73aa4e6?w=150&h=150&fit=crop"
-                            class="w-full h-full object-cover" />
-                    </button>
+                    @foreach ($productData['images'] ?? [$productData['image']] as $idx => $thumb)
+                        <button onclick="setImg({{ $idx }})"
+                            class="thumb-btn flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 {{ $idx === 0 ? 'thumb-active border-blue-400' : 'border-slate-200' }}">
+                            <img src="{{ $thumb }}" class="w-full h-full object-cover" />
+                        </button>
+                    @endforeach
                 </div>
             </div>
 
@@ -232,8 +225,8 @@
             <div>
                 <!-- Brand & Status -->
                 <div class="flex items-center justify-between mb-2">
-                    <span class="text-blue-600 font-semibold text-xs sm:text-sm bg-blue-50 px-2.5 py-1 rounded-full">Kemeja &
-                        Atasan</span>
+                    <span
+                        class="text-blue-600 font-semibold text-xs sm:text-sm bg-blue-50 px-2.5 py-1 rounded-full">{{ $productData['categoryName'] }}</span>
                     <div class="flex items-center gap-2">
                         <span class="text-blue-600 text-xs sm:text-sm font-medium flex items-center gap-1">
                             <span class="w-2 h-2 bg-blue-500 rounded-full"></span> Stok Tersedia
@@ -248,17 +241,21 @@
                     </div>
                 </div>
 
-                <h1 class="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 mb-3 leading-tight">Kemeja Oxford Slim Fit Premium</h1>
+                <h1 class="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 mb-3 leading-tight">
+                    {{ $productData['name'] }}</h1>
 
                 <!-- Rating & Sales -->
                 <div class="flex items-center gap-2 sm:gap-4 mb-4 flex-wrap">
                     <div class="flex items-center gap-1">
                         <span class="text-yellow-400 text-sm sm:text-base">★★★★★</span>
-                        <span class="font-bold text-slate-800 text-sm">4.8</span>
-                        <span class="text-slate-500 text-xs sm:text-sm">(234 ulasan)</span>
+                        <span
+                            class="font-bold text-slate-800 text-sm">{{ number_format($productData['rating'], 1) }}</span>
+                        <span class="text-slate-500 text-xs sm:text-sm">({{ number_format($productData['reviews']) }}
+                            ulasan)</span>
                     </div>
                     <span class="text-slate-300 hidden xs:inline">|</span>
-                    <span class="text-slate-600 text-xs sm:text-sm">1.245 terjual</span>
+                    <span class="text-slate-600 text-xs sm:text-sm">{{ number_format($productData['sold']) }}
+                        terjual</span>
                     <span class="text-slate-300 hidden xs:inline">|</span>
                     <span class="text-slate-600 text-xs sm:text-sm">Wishlist: 456</span>
                 </div>
@@ -266,79 +263,87 @@
                 <!-- Price -->
                 <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-3 sm:p-4 mb-5">
                     <div class="flex items-center gap-2 flex-wrap mb-1">
-                        <span class="text-2xl sm:text-3xl font-extrabold text-blue-600">Rp 189.000</span>
-                        <span class="text-sm sm:text-base text-slate-400 line-through">Rp 270.000</span>
-                        <span class="bg-red-100 text-red-600 text-xs font-bold px-2 py-0.5 rounded-md">Hemat 30%</span>
+                        <span class="text-2xl sm:text-3xl font-extrabold text-blue-600">Rp
+                            {{ number_format($displayPrice, 0, ',', '.') }}</span>
+                        <span class="text-sm sm:text-base text-slate-400 line-through">Rp
+                            {{ number_format($productData['origPrice'], 0, ',', '.') }}</span>
+                        @if ($productData['isFlashSale'])
+                            <span class="bg-red-100 text-red-600 text-xs font-bold px-2 py-0.5 rounded-md">Hemat
+                                {{ max(0, $savingPercent) }}%</span>
+                        @endif
                     </div>
-                    <div class="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                        <span class="bg-yellow-100 text-yellow-700 text-xs font-semibold px-2 py-0.5 rounded">Flash Sale</span>
-                        <span class="text-xs text-slate-600">Berakhir dalam:</span>
-                        <span class="font-mono font-bold text-red-600 text-sm" id="saleTimer">04:23:17</span>
-                    </div>
+                    @if ($productData['isFlashSale'])
+                        <div class="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                            <span class="bg-yellow-100 text-yellow-700 text-xs font-semibold px-2 py-0.5 rounded">Flash
+                                Sale</span>
+                            <span class="text-xs text-slate-600">Berakhir dalam:</span>
+                            <span class="font-mono font-bold text-red-600 text-sm" id="saleTimer">00:00:00</span>
+                        </div>
+                    @endif
                 </div>
 
-                <!-- Color Variants -->
-                <div class="mb-5">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-sm font-semibold text-slate-700">Warna: <span id="selectedColor"
-                                class="text-blue-600 font-bold">Biru Navy</span></span>
+                @if ($colorGroup)
+                    <div class="mb-5">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-semibold text-slate-700">{{ $colorGroup['label'] }}: <span
+                                    id="selectedColor" class="text-blue-600 font-bold">{{ $defaultColor }}</span></span>
+                        </div>
+                        <div class="flex gap-3 flex-wrap">
+                            @foreach ($colorGroup['values'] as $idx => $color)
+                                @php
+                                    $key = strtolower(trim($color));
+                                    $swatchClass = match (true) {
+                                        str_contains($key, 'putih') => 'bg-white border-2 border-slate-200',
+                                        str_contains($key, 'hitam') => 'bg-slate-900',
+                                        str_contains($key, 'abu') => 'bg-slate-400',
+                                        str_contains($key, 'biru') => 'bg-blue-700',
+                                        str_contains($key, 'merah') => 'bg-red-500',
+                                        str_contains($key, 'hijau') => 'bg-green-600',
+                                        str_contains($key, 'kuning') => 'bg-yellow-400',
+                                        str_contains($key, 'ungu') => 'bg-purple-600',
+                                        str_contains($key, 'pink') => 'bg-pink-400',
+                                        str_contains($key, 'orange') => 'bg-orange-500',
+                                        default => 'bg-slate-300',
+                                    };
+                                @endphp
+                                <button onclick="selectColor(this, '{{ $color }}')"
+                                    class="color-swatch w-10 h-10 rounded-full {{ $swatchClass }} {{ $idx === 0 ? 'outline outline-2 outline-blue-500 outline-offset-2' : '' }} hover:scale-110 transition-transform"
+                                    title="{{ $color }}"></button>
+                            @endforeach
+                        </div>
                     </div>
-                    <div class="flex gap-3 flex-wrap">
-                        <button onclick="selectColor(this, 'Biru Navy')"
-                            class="color-swatch w-10 h-10 rounded-full bg-blue-800 outline outline-2 outline-blue-500 outline-offset-2 hover:scale-110 transition-transform"
-                            title="Biru Navy"></button>
-                        <button onclick="selectColor(this, 'Putih Bersih')"
-                            class="color-swatch w-10 h-10 rounded-full bg-white border-2 border-slate-200 hover:scale-110 transition-transform"
-                            title="Putih"></button>
-                        <button onclick="selectColor(this, 'Abu-abu')"
-                            class="color-swatch w-10 h-10 rounded-full bg-slate-400 hover:scale-110 transition-transform"
-                            title="Abu"></button>
-                        <button onclick="selectColor(this, 'Hitam')"
-                            class="color-swatch w-10 h-10 rounded-full bg-slate-900 hover:scale-110 transition-transform"
-                            title="Hitam"></button>
-                        <button onclick="selectColor(this, 'Hijau Sage')"
-                            class="color-swatch w-10 h-10 rounded-full bg-blue-700 hover:scale-110 transition-transform"
-                            title="Hijau"></button>
-                    </div>
-                </div>
+                @endif
 
-                <!-- Size Variants -->
-                <div class="mb-5">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-sm font-semibold text-slate-700">Ukuran: <span id="selectedSize"
-                                class="text-blue-600 font-bold">M</span></span>
-                        <button class="text-blue-600 text-xs hover:underline" onclick="showSizeGuide()">Panduan Ukuran
-                            📏</button>
+                @foreach ($otherGroups as $group)
+                    <div class="mb-5">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-semibold text-slate-700">{{ $group['label'] }}:
+                                <span id="selected-{{ $group['key'] }}"
+                                    class="text-blue-600 font-bold">{{ $defaultOther[$group['key']] ?? '-' }}</span>
+                            </span>
+                        </div>
+                        <div class="flex gap-2 flex-wrap">
+                            @foreach ($group['values'] as $idx => $value)
+                                <button onclick="selectVariantValue(this, '{{ $group['key'] }}', '{{ $value }}')"
+                                    class="variant-btn {{ $idx === 0 ? 'active border-blue-400' : 'border-slate-200 text-slate-600' }} border-2 rounded-xl px-4 py-2 text-sm font-medium hover:border-blue-300 transition-all">{{ $value }}</button>
+                            @endforeach
+                        </div>
                     </div>
-                    <div class="flex gap-2 flex-wrap">
-                        <button onclick="selectSize(this, 'XS')"
-                            class="variant-btn border-2 border-slate-200 rounded-xl px-4 py-2 text-sm font-medium text-slate-600 hover:border-blue-300 transition-all">XS</button>
-                        <button onclick="selectSize(this, 'S')"
-                            class="variant-btn border-2 border-slate-200 rounded-xl px-4 py-2 text-sm font-medium text-slate-600 hover:border-blue-300 transition-all">S</button>
-                        <button onclick="selectSize(this, 'M')"
-                            class="variant-btn active border-2 border-blue-400 rounded-xl px-4 py-2 text-sm">M</button>
-                        <button onclick="selectSize(this, 'L')"
-                            class="variant-btn border-2 border-slate-200 rounded-xl px-4 py-2 text-sm font-medium text-slate-600 hover:border-blue-300 transition-all">L</button>
-                        <button onclick="selectSize(this, 'XL')"
-                            class="variant-btn border-2 border-slate-200 rounded-xl px-4 py-2 text-sm font-medium text-slate-600 hover:border-blue-300 transition-all">XL</button>
-                        <button onclick="selectSize(this, 'XXL')"
-                            class="variant-btn border-2 border-slate-200 rounded-xl px-4 py-2 text-sm font-medium text-slate-600 hover:border-blue-300 transition-all">XXL</button>
-                    </div>
-                </div>
-
+                @endforeach
                 <!-- Quantity -->
                 <div class="mb-6">
                     <span class="text-sm font-semibold text-slate-700 block mb-2">Jumlah</span>
                     <div class="flex flex-wrap items-center gap-4">
                         <div class="flex items-center border-2 border-slate-200 rounded-xl overflow-hidden">
                             <button onclick="changeQty(-1)"
-                                class="px-4 py-2.5 text-slate-600 hover:bg-slate-50 font-bold text-lg transition-colors">−</button>
+                                class="px-2.5 py-1.5 text-slate-600 hover:bg-slate-50 font-bold text-sm transition-colors">−</button>
                             <span id="qtyDisplay"
-                                class="px-5 py-2.5 font-bold text-slate-800 min-w-[50px] text-center border-x-2 border-slate-200">1</span>
+                                class="px-4 py-1.5 font-bold text-slate-800 min-w-[44px] text-center border-x-2 border-slate-200 text-sm">1</span>
                             <button onclick="changeQty(1)"
-                                class="px-4 py-2.5 text-slate-600 hover:bg-slate-50 font-bold text-lg transition-colors">+</button>
+                                class="px-2.5 py-1.5 text-slate-600 hover:bg-slate-50 font-bold text-sm transition-colors">+</button>
                         </div>
-                        <span class="text-sm text-slate-500">Stok: <span class="text-slate-700 font-semibold">87
+                        <span class="text-sm text-slate-500">Stok: <span
+                                class="text-slate-700 font-semibold">{{ $productData['stock'] }}
                                 item</span></span>
                     </div>
                 </div>
@@ -384,47 +389,10 @@
             <!-- Deskripsi -->
             <div id="content-desc" class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
                 <h3 class="font-bold text-slate-800 mb-4 text-lg">Tentang Produk</h3>
-                <div class="prose text-slate-600 text-sm leading-relaxed space-y-3">
-                    <p>Kemeja Oxford Slim Fit Premium adalah kemeja pria berkualitas tinggi yang dirancang dengan potongan
-                        slim fit modern. Cocok untuk tampilan kasual maupun semi-formal.</p>
-                    <p><strong class="text-slate-800">Bahan:</strong> 100% Cotton Oxford 120s yang lembut dan breathable,
-                        nyaman dipakai sepanjang hari bahkan di cuaca panas sekalipun.</p>
-                    <p><strong class="text-slate-800">Detail Produk:</strong></p>
-                    <ul class="space-y-1 list-none">
-                        <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
-                            Kerah button-down klasik</li>
-                        <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
-                            Kancing mother of pearl berkualitas tinggi</li>
-                        <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
-                            Jahitan presisi double-stitched</li>
-                        <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
-                            Saku dada kiri fungsional</li>
-                        <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
-                            Label bahan anti-gatal</li>
-                    </ul>
-                    <p><strong class="text-slate-800">Cara Perawatan:</strong> Cuci dengan mesin pada suhu 30°C. Jangan
-                        diputar. Setrika pada suhu sedang.</p>
-                </div>
-                <div class="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <div class="bg-slate-50 rounded-xl p-3 text-center">
-                        <p class="text-xs text-slate-500">Bahan</p>
-                        <p class="font-semibold text-slate-800 text-sm">100% Cotton</p>
-                    </div>
-                    <div class="bg-slate-50 rounded-xl p-3 text-center">
-                        <p class="text-xs text-slate-500">Fit</p>
-                        <p class="font-semibold text-slate-800 text-sm">Slim Fit</p>
-                    </div>
-                    <div class="bg-slate-50 rounded-xl p-3 text-center">
-                        <p class="text-xs text-slate-500">Panjang Lengan</p>
-                        <p class="font-semibold text-slate-800 text-sm">Panjang</p>
-                    </div>
-                    <div class="bg-slate-50 rounded-xl p-3 text-center">
-                        <p class="text-xs text-slate-500">Motif</p>
-                        <p class="font-semibold text-slate-800 text-sm">Polos</p>
-                    </div>
+                <div class="prose text-slate-600 text-sm leading-relaxed">
+                    {!! $productData['description'] ?: '<p>Belum ada deskripsi produk.</p>' !!}
                 </div>
             </div>
-
             <!-- Review -->
             <div id="content-review" class="hidden bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
                 <div class="grid md:grid-cols-3 gap-8 mb-8">
@@ -609,7 +577,7 @@
             </svg>
             Keranjang
         </button>
-        <a href="{{ route('frontend.checkout') }}"
+        <a href="{{ route('frontend.checkout') }}" onclick="buyNow()"
             class="flex-1 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold py-2.5 rounded-xl text-sm flex items-center justify-center gap-1.5 shadow-md shadow-blue-200">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -617,31 +585,12 @@
             Beli Sekarang
         </a>
     </div>
-
-    <!-- Size Guide Modal -->
-    <div id="sizeModal" class="fixed inset-0 z-[999] hidden items-center justify-center bg-black/50 p-4">
-        <div class="bg-white rounded-2xl max-w-lg w-full p-6">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="font-bold text-slate-800 text-lg">Panduan Ukuran</h3>
-                <button onclick="closeSizeGuide()" class="text-slate-400 hover:text-slate-600">✕</button>
-            </div>
-            <p class="text-sm text-slate-600 mb-4">Ukur lingkar dada Anda pada bagian terlebar, lalu pilih ukuran yang
-                sesuai.</p>
-            <div class="bg-blue-50 rounded-xl p-4 text-sm text-blue-700 font-medium">💡 Tips: Jika ragu antara dua ukuran,
-                pilih ukuran yang lebih besar untuk kenyamanan maksimal.</div>
-        </div>
-    </div>
 @endsection
 
 @section('script')
     <script>
-        const images = [
-            "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=700&h=700&fit=crop",
-            "https://images.unsplash.com/photo-1603251579431-8041402bdeda?w=700&h=700&fit=crop",
-            "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=700&h=700&fit=crop",
-            "https://images.unsplash.com/photo-1571945153237-4929e783af4a?w=700&h=700&fit=crop",
-            "https://images.unsplash.com/photo-1598522325074-042db73aa4e6?w=700&h=700&fit=crop"
-        ];
+        const productData = @json($productData);
+        const images = (productData.images && productData.images.length ? productData.images : [productData.image]);
         let currentImg = 0;
         let qty = 1;
         let isWishlisted = false;
@@ -671,7 +620,7 @@
         }
 
         function changeQty(d) {
-            qty = Math.max(1, Math.min(87, qty + d));
+            qty = Math.max(1, Math.min(productData.stock || 1, qty + d));
             document.getElementById('qtyDisplay').textContent = qty;
         }
 
@@ -679,17 +628,22 @@
             document.querySelectorAll('.color-swatch').forEach(b => b.style.outline = 'none');
             btn.style.outline = '2px solid #2563eb';
             btn.style.outlineOffset = '2px';
-            document.getElementById('selectedColor').textContent = color;
+            const label = document.getElementById('selectedColor');
+            if (label) label.textContent = color;
         }
 
-        function selectSize(btn, size) {
-            document.querySelectorAll('.variant-btn').forEach(b => {
-                b.classList.remove('active', 'border-blue-400');
-                b.classList.add('border-slate-200', 'text-slate-600');
-            });
+        function selectVariantValue(btn, groupKey, value) {
+            const wrapper = btn.closest('.mb-5');
+            if (wrapper) {
+                wrapper.querySelectorAll('.variant-btn').forEach(b => {
+                    b.classList.remove('active', 'border-blue-400');
+                    b.classList.add('border-slate-200', 'text-slate-600');
+                });
+            }
             btn.classList.add('active', 'border-blue-400');
             btn.classList.remove('border-slate-200', 'text-slate-600');
-            document.getElementById('selectedSize').textContent = size;
+            const label = document.getElementById('selected-' + groupKey);
+            if (label) label.textContent = value;
         }
 
         function toggleWishlist() {
@@ -706,22 +660,73 @@
         }
 
         function addToCart() {
-            const color = document.getElementById('selectedColor').textContent;
-            const size = document.getElementById('selectedSize').textContent;
-            showToast(`Kemeja ${color} ukuran ${size} (${qty} item) ditambahkan ke keranjang!`);
+            const color = document.getElementById('selectedColor')?.textContent || '';
+            const variantSelections = Array.from(document.querySelectorAll('[id^=\"selected-\"]'))
+                .map(el => el.textContent)
+                .filter(Boolean)
+                .join(', ');
+            const variantText = [color, variantSelections].filter(Boolean).join(' | ');
+            const price = productData.isFlashSale && productData.flashSalePrice ? productData.flashSalePrice : productData
+                .price;
+            const itemKey = `${productData.id}::${variantText || '-'}`;
+            const newItem = {
+                key: itemKey,
+                product_id: productData.id,
+                slug: productData.slug,
+                name: productData.name,
+                variant: variantText || '-',
+                price: Number(price || 0),
+                origPrice: Number(productData.origPrice || price || 0),
+                qty,
+                image: productData.image,
+            };
+
+            let cart = [];
+            try {
+                cart = JSON.parse(localStorage.getItem('ec_cart') || '[]');
+                if (!Array.isArray(cart)) cart = [];
+            } catch (e) {
+                cart = [];
+            }
+
+            const existingIdx = cart.findIndex(item => item.key === itemKey);
+            if (existingIdx >= 0) {
+                cart[existingIdx].qty = Number(cart[existingIdx].qty || 0) + qty;
+            } else {
+                cart.push(newItem);
+            }
+            localStorage.setItem('ec_cart', JSON.stringify(cart));
+
+            showToast(
+                `${productData.name}${variantText ? ' (' + variantText + ')' : ''} (${qty} item) ditambahkan ke keranjang!`
+                );
             const badge = document.getElementById('cartCount');
-            badge.textContent = parseInt(badge.textContent) + qty;
+            if (badge) {
+                const totalQty = cart.reduce((sum, item) => sum + Number(item.qty || 0), 0);
+                badge.textContent = String(totalQty);
+                badge.classList.toggle('hidden', totalQty <= 0);
+            }
         }
 
         function buyNow() {
-            const color = document.getElementById('selectedColor').textContent;
-            const size = document.getElementById('selectedSize').textContent;
-            localStorage.setItem('lastProduct', JSON.stringify({
-                name: 'Kemeja Oxford Slim Fit Premium',
-                color,
-                size,
+            const color = document.getElementById('selectedColor')?.textContent || '';
+            const variantSelections = Array.from(document.querySelectorAll('[id^=\"selected-\"]'))
+                .map(el => el.textContent)
+                .filter(Boolean)
+                .join(', ');
+            const variantText = [color, variantSelections].filter(Boolean).join(' | ');
+            const price = productData.isFlashSale && productData.flashSalePrice ? productData.flashSalePrice : productData
+                .price;
+            localStorage.setItem('ec_buy_now', JSON.stringify({
+                key: `${productData.id}::${variantText || '-'}`,
+                product_id: productData.id,
+                slug: productData.slug,
+                name: productData.name,
+                variant: variantText || '-',
                 qty,
-                price: 189000
+                price: Number(price || 0),
+                origPrice: Number(productData.origPrice || price || 0),
+                image: productData.image,
             }));
         }
 
@@ -743,17 +748,7 @@
             document.getElementById('content-' + tab).classList.remove('hidden');
         }
 
-        function showSizeGuide() {
-            const modal = document.getElementById('sizeModal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
 
-        function closeSizeGuide() {
-            const modal = document.getElementById('sizeModal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }
 
         // Reviews
         const reviews = [{
@@ -875,8 +870,10 @@
             const el = document.getElementById('saleTimer');
             if (el) el.textContent = `${h}:${m}:${s}`;
         }
-        setInterval(updateSaleTimer, 1000);
-        updateSaleTimer();
+        if (document.getElementById('saleTimer')) {
+            setInterval(updateSaleTimer, 1000);
+            updateSaleTimer();
+        }
 
         // Navbar mega dropdown
         function toggleCategoryMenu(event) {
@@ -1059,7 +1056,7 @@
             const url = window.location.href;
             if (navigator.share) {
                 navigator.share({
-                    title: 'Kemeja Oxford Slim Fit Premium',
+                    title: productData.name,
                     text: 'Cek produk ini di Ecommerce Citra!',
                     url: url
                 }).catch(() => {});
@@ -1075,4 +1072,3 @@
         setMegaCategory('rumah-tangga');
     </script>
 @endsection
-

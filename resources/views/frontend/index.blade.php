@@ -286,9 +286,8 @@
 
             <!-- Dot Indicators (bawah kiri, gaya Tokopedia) -->
             <div class="absolute bottom-3 left-4 flex gap-1.5 z-10" id="carouselDots">
-                <button onclick="carouselGoTo(0)"
-                    class="carousel-dot h-2 rounded-full bg-white transition-all duration-300" style="width:20px"
-                    data-index="0"></button>
+                <button onclick="carouselGoTo(0)" class="carousel-dot h-2 rounded-full bg-white transition-all duration-300"
+                    style="width:20px" data-index="0"></button>
                 <button onclick="carouselGoTo(1)"
                     class="carousel-dot h-2 w-2 rounded-full bg-white/50 transition-all duration-300"
                     data-index="1"></button>
@@ -458,11 +457,11 @@
                                 <label class="flex items-center gap-2 cursor-pointer"><input type="radio"
                                         name="priceRange" class="accent-blue-500"
                                         onchange="setPriceRange(100000, 500000)" /> <span
-                                        class="text-sm text-slate-600">Rp 100.000 – Rp 500.000</span></label>
+                                        class="text-sm text-slate-600">Rp 100.000 ï¿½ Rp 500.000</span></label>
                                 <label class="flex items-center gap-2 cursor-pointer"><input type="radio"
                                         name="priceRange" class="accent-blue-500"
                                         onchange="setPriceRange(500000, 1000000)" /> <span
-                                        class="text-sm text-slate-600">Rp 500.000 – Rp 1 Juta</span></label>
+                                        class="text-sm text-slate-600">Rp 500.000 ï¿½ Rp 1 Juta</span></label>
                                 <label class="flex items-center gap-2 cursor-pointer"><input type="radio"
                                         name="priceRange" class="accent-blue-500"
                                         onchange="setPriceRange(1000000, 9999999)" /> <span
@@ -609,7 +608,6 @@
                         <div>
                             <div class="flex items-center gap-1.5">
                                 <h2 class="text-xl sm:text-2xl font-extrabold text-slate-800">Flash Sale</h2>
-                                <span class="text-xl">??</span>
                             </div>
                             <p class="text-slate-500 text-[11px] sm:text-xs">Penawaran terbatas, jangan sampai habis!</p>
                         </div>
@@ -661,101 +659,30 @@
             <!-- Flash Sale Products -->
             <div id="flashSaleTrack"
                 class="flex sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 overflow-x-auto sm:overflow-visible scroll-smooth pb-1">
-                <a href="{{ route('frontend.detail-produk') }}"
-                    class="min-w-[220px] w-[220px] sm:min-w-0 sm:w-auto bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow card-hover group border border-red-50">
-                    <div class="relative">
-                        <img src="https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=300&h=300&fit=crop"
-                            class="w-full h-36 object-cover group-hover:scale-105 transition-transform duration-300" />
-                        <span
-                            class="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">-30%</span>
-                    </div>
-                    <div class="p-3">
-                        <p class="text-[11px] sm:text-xs font-semibold text-slate-800 line-clamp-2 mb-1">Kemeja Oxford Slim
-                            Fit</p>
-                        <p class="text-sm sm:text-base font-bold text-red-500">Rp 189.000</p>
-                        <p class="text-[11px] sm:text-xs text-slate-400 line-through">Rp 270.000</p>
-                        <div class="mt-2 w-full bg-red-100 rounded-full h-1.5">
-                            <div class="bg-red-500 h-1.5 rounded-full" style="width:78%"></div>
+                @forelse (collect($flashSale['items'] ?? [])->take(10) as $fs)
+                    <a href="{{ url('/detail-produk/' . $fs['slug']) }}"
+                        class="min-w-[220px] w-[220px] sm:min-w-0 sm:w-auto bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow card-hover group border border-red-50">
+                        <div class="relative">
+                            <img src="{{ $fs['image'] }}"
+                                class="w-full h-36 object-cover group-hover:scale-105 transition-transform duration-300" />
+                            <span
+                                class="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">-{{ $fs['discountPercent'] }}%</span>
                         </div>
-                        <p class="text-[10px] text-slate-500 mt-0.5">Tersisa 22%</p>
-                    </div>
-                </a>
-                <a href="{{ route('frontend.detail-produk') }}"
-                    class="min-w-[220px] w-[220px] sm:min-w-0 sm:w-auto bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow card-hover group border border-red-50">
-                    <div class="relative">
-                        <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300&h=300&fit=crop"
-                            class="w-full h-36 object-cover group-hover:scale-105 transition-transform duration-300" />
-                        <span
-                            class="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">-29%</span>
-                    </div>
-                    <div class="p-3">
-                        <p class="text-[11px] sm:text-xs font-semibold text-slate-800 line-clamp-2 mb-1">Sneakers Urban
-                            Street</p>
-                        <p class="text-sm sm:text-base font-bold text-red-500">Rp 459.000</p>
-                        <p class="text-[11px] sm:text-xs text-slate-400 line-through">Rp 650.000</p>
-                        <div class="mt-2 w-full bg-red-100 rounded-full h-1.5">
-                            <div class="bg-red-500 h-1.5 rounded-full" style="width:60%"></div>
+                        <div class="p-3">
+                            <p class="text-[11px] sm:text-xs font-semibold text-slate-800 line-clamp-2 mb-1">{{ $fs['name'] }}</p>
+                            <p class="text-sm sm:text-base font-bold text-red-500">Rp {{ number_format($fs['price'], 0, ',', '.') }}</p>
+                            <p class="text-[11px] sm:text-xs text-slate-400 line-through">Rp {{ number_format($fs['originalPrice'], 0, ',', '.') }}</p>
+                            <div class="mt-2 w-full bg-red-100 rounded-full h-1.5">
+                                <div class="bg-red-500 h-1.5 rounded-full" style="width:{{ 100 - $fs['remainingPercent'] }}%"></div>
+                            </div>
+                            <p class="text-[10px] text-slate-500 mt-0.5">Tersisa {{ $fs['remainingPercent'] }}%</p>
                         </div>
-                        <p class="text-[10px] text-slate-500 mt-0.5">Tersisa 40%</p>
+                    </a>
+                @empty
+                    <div class="col-span-full min-w-[220px] w-full bg-white rounded-2xl border border-red-100 p-6 text-center text-sm text-slate-500">
+                        Belum ada flash sale aktif saat ini.
                     </div>
-                </a>
-                <a href="{{ route('frontend.detail-produk') }}"
-                    class="min-w-[220px] w-[220px] sm:min-w-0 sm:w-auto bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow card-hover group border border-red-50">
-                    <div class="relative">
-                        <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&h=300&fit=crop"
-                            class="w-full h-36 object-cover group-hover:scale-105 transition-transform duration-300" />
-                        <span
-                            class="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">-28%</span>
-                    </div>
-                    <div class="p-3">
-                        <p class="text-[11px] sm:text-xs font-semibold text-slate-800 line-clamp-2 mb-1">Smart Watch Series
-                            5</p>
-                        <p class="text-sm sm:text-base font-bold text-red-500">Rp 1.299.000</p>
-                        <p class="text-[11px] sm:text-xs text-slate-400 line-through">Rp 1.800.000</p>
-                        <div class="mt-2 w-full bg-red-100 rounded-full h-1.5">
-                            <div class="bg-red-500 h-1.5 rounded-full" style="width:85%"></div>
-                        </div>
-                        <p class="text-[10px] text-slate-500 mt-0.5">Tersisa 15%</p>
-                    </div>
-                </a>
-                <a href="{{ route('frontend.detail-produk') }}"
-                    class="min-w-[220px] w-[220px] sm:min-w-0 sm:w-auto bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow card-hover group border border-red-50">
-                    <div class="relative">
-                        <img src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=300&h=300&fit=crop"
-                            class="w-full h-36 object-cover group-hover:scale-105 transition-transform duration-300" />
-                        <span
-                            class="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">-24%</span>
-                    </div>
-                    <div class="p-3">
-                        <p class="text-[11px] sm:text-xs font-semibold text-slate-800 line-clamp-2 mb-1">Skincare Serum
-                            Vitamin C</p>
-                        <p class="text-sm sm:text-base font-bold text-red-500">Rp 189.000</p>
-                        <p class="text-[11px] sm:text-xs text-slate-400 line-through">Rp 250.000</p>
-                        <div class="mt-2 w-full bg-red-100 rounded-full h-1.5">
-                            <div class="bg-red-500 h-1.5 rounded-full" style="width:92%"></div>
-                        </div>
-                        <p class="text-[10px] text-slate-500 mt-0.5">Tersisa 8%</p>
-                    </div>
-                </a>
-                <a href="{{ route('frontend.detail-produk') }}"
-                    class="min-w-[220px] w-[220px] sm:min-w-0 sm:w-auto bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow card-hover group border border-red-50">
-                    <div class="relative">
-                        <img src="https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?w=300&h=300&fit=crop"
-                            class="w-full h-36 object-cover group-hover:scale-105 transition-transform duration-300" />
-                        <span
-                            class="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">-29%</span>
-                    </div>
-                    <div class="p-3">
-                        <p class="text-[11px] sm:text-xs font-semibold text-slate-800 line-clamp-2 mb-1">Wireless Earbuds
-                            Pro</p>
-                        <p class="text-sm sm:text-base font-bold text-red-500">Rp 599.000</p>
-                        <p class="text-[11px] sm:text-xs text-slate-400 line-through">Rp 850.000</p>
-                        <div class="mt-2 w-full bg-red-100 rounded-full h-1.5">
-                            <div class="bg-red-500 h-1.5 rounded-full" style="width:55%"></div>
-                        </div>
-                        <p class="text-[10px] text-slate-500 mt-0.5">Tersisa 45%</p>
-                    </div>
-                </a>
+                @endforelse
             </div>
         </div>
     </section>
@@ -862,175 +789,8 @@
 @section('script')
     <script>
         // PRODUCT DATA
-        const products = [{
-                id: 1,
-                name: "Kemeja Oxford Slim Fit",
-                price: 189000,
-                originalPrice: 270000,
-                category: "fashion",
-                rating: 4.8,
-                reviews: 234,
-                image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop",
-                colors: ["biru", "putih", "hitam"],
-                badge: "promo",
-                sold: 1245,
-                isNew: false
-            },
-            {
-                id: 2,
-                name: "Sneakers Urban Street",
-                price: 459000,
-                originalPrice: 650000,
-                category: "fashion",
-                rating: 4.9,
-                reviews: 567,
-                image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop",
-                colors: ["hitam", "putih", "merah"],
-                badge: "best",
-                sold: 3421,
-                isNew: false
-            },
-            {
-                id: 3,
-                name: "Smart Watch Series 5",
-                price: 1299000,
-                originalPrice: 1800000,
-                category: "elektronik",
-                rating: 4.7,
-                reviews: 189,
-                image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop",
-                colors: ["hitam", "silver", "gold"],
-                badge: "promo",
-                sold: 892,
-                isNew: true
-            },
-            {
-                id: 4,
-                name: "Tas Ransel Laptop 15\"",
-                price: 345000,
-                originalPrice: 420000,
-                category: "fashion",
-                rating: 4.6,
-                reviews: 312,
-                image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=400&fit=crop",
-                colors: ["hitam", "abu", "biru"],
-                badge: "new",
-                sold: 2134,
-                isNew: true
-            },
-            {
-                id: 5,
-                name: "Skincare Serum Vitamin C",
-                price: 189000,
-                originalPrice: 250000,
-                category: "kecantikan",
-                rating: 4.9,
-                reviews: 789,
-                image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400&h=400&fit=crop",
-                colors: ["putih"],
-                badge: "promo",
-                sold: 5678,
-                isNew: false
-            },
-            {
-                id: 6,
-                name: "Celana Chino Slim",
-                price: 229000,
-                originalPrice: 320000,
-                category: "fashion",
-                rating: 4.5,
-                reviews: 156,
-                image: "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=400&h=400&fit=crop",
-                colors: ["beige", "hitam", "navy"],
-                badge: null,
-                sold: 987,
-                isNew: false
-            },
-            {
-                id: 7,
-                name: "Wireless Earbuds Pro",
-                price: 599000,
-                originalPrice: 850000,
-                category: "elektronik",
-                rating: 4.8,
-                reviews: 423,
-                image: "https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?w=400&h=400&fit=crop",
-                colors: ["hitam", "putih"],
-                badge: "promo",
-                sold: 3210,
-                isNew: false
-            },
-            {
-                id: 8,
-                name: "Dress Floral Premium",
-                price: 279000,
-                originalPrice: 399000,
-                category: "fashion",
-                rating: 4.7,
-                reviews: 234,
-                image: "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400&h=400&fit=crop",
-                colors: ["pink", "merah", "biru"],
-                badge: "new",
-                sold: 1567,
-                isNew: true
-            },
-            {
-                id: 9,
-                name: "Running Shoes Lite",
-                price: 539000,
-                originalPrice: 720000,
-                category: "olahraga",
-                rating: 4.6,
-                reviews: 345,
-                image: "https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=400&h=400&fit=crop",
-                colors: ["hitam", "biru", "hijau"],
-                badge: "promo",
-                sold: 2345,
-                isNew: false
-            },
-            {
-                id: 10,
-                name: "Blender Portable Mini",
-                price: 149000,
-                originalPrice: 199000,
-                category: "rumah",
-                rating: 4.4,
-                reviews: 167,
-                image: "https://images.unsplash.com/photo-1570222094114-d054a817e56b?w=400&h=400&fit=crop",
-                colors: ["putih", "merah", "biru"],
-                badge: null,
-                sold: 789,
-                isNew: false
-            },
-            {
-                id: 11,
-                name: "Hoodie Oversized Fleece",
-                price: 299000,
-                originalPrice: 399000,
-                category: "fashion",
-                rating: 4.8,
-                reviews: 512,
-                image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop",
-                colors: ["abu", "hitam", "cream"],
-                badge: "best",
-                sold: 4321,
-                isNew: false
-            },
-            {
-                id: 12,
-                name: "Kamera Mirrorless Entry",
-                price: 5499000,
-                originalPrice: 6800000,
-                category: "elektronik",
-                rating: 4.9,
-                reviews: 98,
-                image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400&h=400&fit=crop",
-                colors: ["hitam", "silver"],
-                badge: "promo",
-                sold: 234,
-                isNew: true
-            },
-        ];
+        const products = @json($productsJson);
+        const flashSaleEndAt = @json($flashSale['end_at'] ?? null);
 
         let filteredProducts = [...products];
         let selectedColors = [];
@@ -1052,7 +812,7 @@
                 return `
           <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden card-hover group h-full flex flex-col" data-id="${p.id}">
             <div class="relative overflow-hidden">
-              <a href="{{ route('frontend.detail-produk') }}">
+              <a href="{{ url('/detail-produk') }}/${p.slug}">
                 <img src="${p.image}" alt="${p.name}" class="w-full h-44 sm:h-52 object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
               </a>
               <div class="absolute top-2 left-2 flex gap-1 flex-wrap">${badgeHtml}</div>
@@ -1061,7 +821,7 @@
               </button>
             </div>
             <div class="p-3 flex-1 flex flex-col">
-              <a href="{{ route('frontend.detail-produk') }}" class="block">
+              <a href="{{ url('/detail-produk') }}/${p.slug}" class="block">
                 <h3 class="text-sm font-semibold text-slate-800 hover:text-blue-600 transition-colors line-clamp-2 min-h-[40px] mb-1">${p.name}</h3>
               </a>
               <div class="flex items-center gap-1 mb-2">
@@ -1367,13 +1127,13 @@
             container.innerHTML = `
         <div class="grid grid-cols-4 gap-6">
           ${sections.map(section => `
-                                                                        <div>
-                                                                          <h5 class="text-sm font-semibold text-slate-800 mb-3">${section.title}</h5>
-                                                                          <ul class="space-y-2">
-                                                                            ${section.items.map(item => `<li><a href="{{ route('frontend.kategori') }}" class="text-sm text-slate-600 hover:text-blue-600">${item}</a></li>`).join('')}
-                                                                          </ul>
-                                                                        </div>
-                                                                      `).join('')}
+                                                                            <div>
+                                                                              <h5 class="text-sm font-semibold text-slate-800 mb-3">${section.title}</h5>
+                                                                              <ul class="space-y-2">
+                                                                                ${section.items.map(item => `<li><a href="{{ route('frontend.kategori') }}" class="text-sm text-slate-600 hover:text-blue-600">${item}</a></li>`).join('')}
+                                                                              </ul>
+                                                                            </div>
+                                                                          `).join('')}
         </div>
       `;
         }
@@ -1413,9 +1173,8 @@
         // Flash Sale Countdown Timer
         function updateTimer() {
             const now = new Date();
-            const end = new Date();
-            end.setHours(23, 59, 59, 0);
-            const diff = end - now;
+            const end = flashSaleEndAt ? new Date(flashSaleEndAt) : null;
+            const diff = end ? Math.max(end - now, 0) : 0;
             const h = Math.floor(diff / 3600000);
             const m = Math.floor((diff % 3600000) / 60000);
             const s = Math.floor((diff % 60000) / 1000);

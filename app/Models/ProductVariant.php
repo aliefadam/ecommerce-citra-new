@@ -17,4 +17,9 @@ class ProductVariant extends Model
     {
         return $this->belongsTo(Variant::class);
     }
+
+    public function flashSaleItems()
+    {
+        return $this->hasMany(FlashSaleItem::class);
+    }
 }

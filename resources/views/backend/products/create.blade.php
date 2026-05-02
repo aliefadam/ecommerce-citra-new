@@ -4,25 +4,39 @@
 
 @section('content')
     @php
-        $oldCatId   = old('category_id');
-        $oldCatName = $oldCatId ? ($categories->find($oldCatId)?->name ?? '') : '';
+        $oldCatId = old('category_id');
+        $oldCatName = $oldCatId ? $categories->find($oldCatId)?->name ?? '' : '';
 
-        $oldVariants = collect(old('variants', []))->map(function ($v) use ($variants) {
-            $variantModel = $variants->find($v['variant_id'] ?? null);
-            return [
-                'variantId'    => (int) ($v['variant_id'] ?? 0) ?: null,
-                'variantName'  => $variantModel?->name ?? '',
-                'variantValue' => $variantModel?->value ?? '',
-                'sku'          => $v['sku'] ?? '',
-                'price'        => $v['price'] ?? '',
-                'stock'        => $v['stock'] ?? '',
-                'imagePath'    => null,
-                'imageStoredPath' => '',
-            ];
-        })->values()->toArray();
+        $oldVariants = collect(old('variants', []))
+            ->map(function ($v) use ($variants) {
+                $variantModel = $variants->find($v['variant_id'] ?? null);
+                return [
+                    'variantId' => (int) ($v['variant_id'] ?? 0) ?: null,
+                    'variantName' => $variantModel?->name ?? '',
+                    'variantValue' => $variantModel?->value ?? '',
+                    'sku' => $v['sku'] ?? '',
+                    'price' => $v['price'] ?? '',
+                    'stock' => $v['stock'] ?? '',
+                    'imagePath' => null,
+                    'imageStoredPath' => '',
+                ];
+            })
+            ->values()
+            ->toArray();
 
         if (empty($oldVariants)) {
-            $oldVariants = [['variantId' => null, 'variantName' => '', 'variantValue' => '', 'sku' => '', 'price' => '', 'stock' => '', 'imagePath' => null, 'imageStoredPath' => '']];
+            $oldVariants = [
+                [
+                    'variantId' => null,
+                    'variantName' => '',
+                    'variantValue' => '',
+                    'sku' => '',
+                    'price' => '',
+                    'stock' => '',
+                    'imagePath' => null,
+                    'imageStoredPath' => '',
+                ],
+            ];
         }
     @endphp
 
@@ -32,16 +46,16 @@
             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Tambahkan produk baru dengan varian.</p>
         </div>
 
-        <form action="{{ route('products.store') }}" method="POST" enctype="multipart/form-data"
-            x-data="productForm({
-                categories: {{ $categories->map(fn($c) => ['id' => $c->id, 'name' => $c->name]) }},
-                allVariants: {{ $variants->map(fn($v) => ['id' => $v->id, 'name' => $v->name, 'value' => $v->value]) }},
-                oldCategoryId: {{ $oldCatId ?? 'null' }},
-                oldCategoryName: {{ json_encode($oldCatName) }},
-                oldRows: {{ json_encode($oldVariants) }},
-                categoryQuickAddUrl: {{ json_encode(route('categories.quick-add')) }},
-                variantQuickAddUrl: {{ json_encode(route('variants.quick-add')) }},
-            })">
+        <form action="{{ route('products.store') }}" method="POST" enctype="multipart/form-data" x-data="productForm({
+            categories: {{ $categories->map(fn($c) => ['id' => $c->id, 'name' => $c->name]) }},
+            allVariants: {{ $variants->map(fn($v) => ['id' => $v->id, 'name' => $v->name, 'value' => $v->value]) }},
+            oldProductName: {{ json_encode(old('name')) }},
+            oldCategoryId: {{ $oldCatId ?? 'null' }},
+            oldCategoryName: {{ json_encode($oldCatName) }},
+            oldRows: {{ json_encode($oldVariants) }},
+            categoryQuickAddUrl: {{ json_encode(route('categories.quick-add')) }},
+            variantQuickAddUrl: {{ json_encode(route('variants.quick-add')) }},
+        })">
             @csrf
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -54,24 +68,56 @@
                         <h2 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4">Informasi Produk</h2>
                         <div class="space-y-4">
                             <div>
-                                <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Nama Produk</label>
-                                <input type="text" name="name" value="{{ old('name') }}" placeholder="Masukkan nama produk..."
+                                <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Nama
+                                    Produk</label>
+                                <input type="text" name="name" value="{{ old('name') }}"
+                                    x-model="productName"
+                                    placeholder="Masukkan nama produk..."
                                     class="w-full px-4 py-2.5 text-sm rounded-xl focus:outline-none focus:ring-2 dark:text-slate-200 placeholder-slate-400 {{ $errors->has('name') ? 'border-2 border-red-400 bg-red-50 dark:bg-red-900/10 dark:border-red-600 focus:ring-red-400' : 'border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 focus:ring-blue-500' }}" />
                                 @error('name')
                                     <p class="text-xs text-red-500 mt-1.5 flex items-center gap-1">
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="10" />
+                                            <line x1="12" y1="8" x2="12" y2="12" />
+                                            <line x1="12" y1="16" x2="12.01" y2="16" />
+                                        </svg>
                                         {{ $message }}
                                     </p>
                                 @enderror
                             </div>
 
                             <div>
-                                <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Deskripsi</label>
-                                <textarea name="description" rows="4" placeholder="Deskripsi produk (opsional)..."
-                                    class="w-full px-4 py-2.5 text-sm rounded-xl focus:outline-none focus:ring-2 dark:text-slate-200 placeholder-slate-400 {{ $errors->has('description') ? 'border-2 border-red-400 bg-red-50 dark:bg-red-900/10 dark:border-red-600 focus:ring-red-400' : 'border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 focus:ring-blue-500' }}">{{ old('description') }}</textarea>
+                                <label
+                                    class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Deskripsi</label>
+                                <div
+                                    class="rounded-xl overflow-hidden border {{ $errors->has('description') ? 'border-2 border-red-400 bg-red-50 dark:bg-red-900/10 dark:border-red-600' : 'border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700' }}">
+                                    <div
+                                        class="flex flex-wrap items-center gap-1 p-2 border-b border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800">
+                                        <button type="button" data-editor-action="bold"
+                                            class="px-2 py-1 text-xs rounded hover:bg-slate-100 dark:hover:bg-slate-700">Bold</button>
+                                        <button type="button" data-editor-action="italic"
+                                            class="px-2 py-1 text-xs rounded hover:bg-slate-100 dark:hover:bg-slate-700">Italic</button>
+                                        <button type="button" data-editor-action="insertUnorderedList"
+                                            class="px-2 py-1 text-xs rounded hover:bg-slate-100 dark:hover:bg-slate-700">Bullet</button>
+                                        <button type="button" data-editor-action="insertOrderedList"
+                                            class="px-2 py-1 text-xs rounded hover:bg-slate-100 dark:hover:bg-slate-700">Number</button>
+                                    </div>
+                                    <div id="description-editor" contenteditable="true"
+                                        class="min-h-[140px] px-4 py-3 text-sm focus:outline-none dark:text-slate-200">
+                                        {!! old('description') !!}</div>
+                                </div>
+                                <textarea id="description-input" name="description" class="hidden">{{ old('description') }}</textarea>
                                 @error('description')
                                     <p class="text-xs text-red-500 mt-1.5 flex items-center gap-1">
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="10" />
+                                            <line x1="12" y1="8" x2="12" y2="12" />
+                                            <line x1="12" y1="16" x2="12.01" y2="16" />
+                                        </svg>
                                         {{ $message }}
                                     </p>
                                 @enderror
@@ -86,108 +132,173 @@
                                 <h2 class="text-sm font-bold text-slate-700 dark:text-slate-300">Varian Produk</h2>
                                 <p class="text-xs text-slate-400 mt-0.5">Minimal satu varian harus diisi.</p>
                             </div>
-                            <a href="{{ route('variants.create') }}" target="_blank"
-                                class="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                                Kelola Master Varian
-                            </a>
+                            <button type="button" @click="addRow"
+                                class="mt-3 flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium px-1 py-1 transition-colors">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="12" y1="5" x2="12" y2="19" />
+                                    <line x1="5" y1="12" x2="19" y2="12" />
+                                </svg>
+                                Tambah Varian
+                            </button>
                         </div>
 
                         @error('variants')
-                            <div class="mb-3 px-3 py-2 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-700 rounded-lg text-xs text-red-500">
+                            <div
+                                class="mb-3 px-3 py-2 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-700 rounded-lg text-xs text-red-500">
                                 {{ $message }}
                             </div>
                         @enderror
 
                         <div class="space-y-3">
                             <template x-for="(row, index) in rows" :key="row.id">
-                                <div class="border border-slate-200 dark:border-slate-600 rounded-xl p-4 space-y-3 bg-slate-50/50 dark:bg-slate-700/20">
+                                <div
+                                    class="border border-slate-200 dark:border-slate-600 rounded-xl p-4 space-y-3 bg-slate-50/50 dark:bg-slate-700/20">
 
                                     {{-- Tipe + Nilai + Delete --}}
                                     <div class="grid grid-cols-[1fr_1fr_auto] gap-2 items-start">
 
                                         {{-- Tipe Varian --}}
                                         <div class="relative" @click.outside="row.nameOpen = false">
-                                            <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Tipe <span class="text-red-400">*</span></label>
-                                            <div class="flex items-center gap-1 w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 cursor-text">
+                                            <label
+                                                class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Tipe
+                                                <span class="text-red-400">*</span></label>
+                                            <div
+                                                class="flex items-center gap-1 w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 cursor-text">
                                                 <input type="text" x-model="row.nameSearch"
                                                     @input="row.nameOpen = true; row.selectedName = null; row.valueSearch = ''; row.variantId = null"
-                                                    @focus="row.nameOpen = true"
-                                                    placeholder="Cari tipe..."
+                                                    @focus="row.nameOpen = true" placeholder="Cari tipe..."
                                                     class="flex-1 bg-transparent outline-none text-sm text-slate-700 dark:text-slate-200 placeholder-slate-400 min-w-0" />
-                                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400 flex-shrink-0"><polyline points="6 9 12 15 18 9"/></svg>
+                                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                    stroke-linejoin="round" class="text-slate-400 flex-shrink-0">
+                                                    <polyline points="6 9 12 15 18 9" />
+                                                </svg>
                                             </div>
-                                            <div x-show="row.nameOpen" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 -translate-y-1" x-transition:enter-end="opacity-100 translate-y-0"
+                                            <div x-show="row.nameOpen"
+                                                x-transition:enter="transition ease-out duration-100"
+                                                x-transition:enter-start="opacity-0 -translate-y-1"
+                                                x-transition:enter-end="opacity-100 translate-y-0"
                                                 class="absolute z-30 top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl shadow-lg overflow-hidden max-h-44 overflow-y-auto">
-                                                <template x-for="n in filteredNames(row.nameSearch)" :key="n">
+                                                <template x-for="n in filteredNames(row.nameSearch)"
+                                                    :key="n">
                                                     <button type="button" @click="selectName(row, n)"
                                                         class="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 transition-colors"
-                                                        :class="row.selectedName === n ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 font-medium' : ''"
+                                                        :class="row.selectedName === n ?
+                                                            'bg-blue-50 dark:bg-blue-900/20 text-blue-600 font-medium' :
+                                                            ''"
                                                         x-text="n"></button>
                                                 </template>
-                                                <button type="button" x-show="nameShowAddNew(row)" @click="addLocalName(row)"
+                                                <button type="button" x-show="nameShowAddNew(row)"
+                                                    @click="addLocalName(row)"
                                                     class="w-full text-left px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors border-t border-slate-100 dark:border-slate-700 flex items-center gap-2">
-                                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                                    <svg width="13" height="13" viewBox="0 0 24 24"
+                                                        fill="none" stroke="currentColor" stroke-width="2.5"
+                                                        stroke-linecap="round" stroke-linejoin="round">
+                                                        <line x1="12" y1="5" x2="12"
+                                                            y2="19" />
+                                                        <line x1="5" y1="12" x2="19"
+                                                            y2="12" />
+                                                    </svg>
                                                     Tambah "<span x-text="row.nameSearch"></span>"
                                                 </button>
-                                                <div x-show="filteredNames(row.nameSearch).length === 0 && !nameShowAddNew(row)" class="px-3 py-2 text-sm text-slate-400">Ketik untuk mencari...</div>
+                                                <div x-show="filteredNames(row.nameSearch).length === 0 && !nameShowAddNew(row)"
+                                                    class="px-3 py-2 text-sm text-slate-400">Ketik untuk mencari...</div>
                                             </div>
                                         </div>
 
                                         {{-- Nilai Varian --}}
                                         <div class="relative" @click.outside="row.valueOpen = false">
-                                            <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Nilai <span class="text-red-400">*</span></label>
+                                            <label
+                                                class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Nilai
+                                                <span class="text-red-400">*</span></label>
                                             <div class="flex items-center gap-1 w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 cursor-text"
                                                 :class="!row.selectedName ? 'opacity-60' : ''">
                                                 <input type="text" x-model="row.valueSearch"
                                                     @input="row.valueOpen = true; row.variantId = null"
                                                     @focus="if(row.selectedName) row.valueOpen = true"
-                                                    :disabled="!row.selectedName"
-                                                    placeholder="Cari nilai..."
+                                                    :disabled="!row.selectedName" placeholder="Cari nilai..."
                                                     class="flex-1 bg-transparent outline-none text-sm text-slate-700 dark:text-slate-200 placeholder-slate-400 min-w-0 disabled:cursor-not-allowed" />
-                                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400 flex-shrink-0"><polyline points="6 9 12 15 18 9"/></svg>
+                                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                    stroke-linejoin="round" class="text-slate-400 flex-shrink-0">
+                                                    <polyline points="6 9 12 15 18 9" />
+                                                </svg>
                                             </div>
-                                            <input type="hidden" :name="`variants[${index}][variant_id]`" :value="row.variantId ?? ''">
-                                            <div x-show="row.valueOpen && row.selectedName" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 -translate-y-1" x-transition:enter-end="opacity-100 translate-y-0"
+                                            <input type="hidden" :name="`variants[${index}][variant_id]`"
+                                                :value="row.variantId ?? ''">
+                                            <div x-show="row.valueOpen && row.selectedName"
+                                                x-transition:enter="transition ease-out duration-100"
+                                                x-transition:enter-start="opacity-0 -translate-y-1"
+                                                x-transition:enter-end="opacity-100 translate-y-0"
                                                 class="absolute z-30 top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl shadow-lg overflow-hidden max-h-44 overflow-y-auto">
                                                 <template x-for="v in filteredValues(row)" :key="v.id">
                                                     <button type="button" @click="selectValue(row, v)"
                                                         class="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 transition-colors"
-                                                        :class="row.variantId === v.id ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 font-medium' : ''"
+                                                        :class="row.variantId === v.id ?
+                                                            'bg-blue-50 dark:bg-blue-900/20 text-blue-600 font-medium' :
+                                                            ''"
                                                         x-text="v.value"></button>
                                                 </template>
-                                                <button type="button" x-show="valueShowAddNew(row)" @click="addNewValue(row)"
+                                                <button type="button" x-show="valueShowAddNew(row)"
+                                                    @click="addNewValue(row)"
                                                     class="w-full text-left px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors border-t border-slate-100 dark:border-slate-700 flex items-center gap-2">
-                                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                                    <svg width="13" height="13" viewBox="0 0 24 24"
+                                                        fill="none" stroke="currentColor" stroke-width="2.5"
+                                                        stroke-linecap="round" stroke-linejoin="round">
+                                                        <line x1="12" y1="5" x2="12"
+                                                            y2="19" />
+                                                        <line x1="5" y1="12" x2="19"
+                                                            y2="12" />
+                                                    </svg>
                                                     Tambah "<span x-text="row.valueSearch"></span>"
                                                 </button>
-                                                <div x-show="filteredValues(row).length === 0 && !valueShowAddNew(row)" class="px-3 py-2 text-sm text-slate-400">Tidak ada nilai untuk tipe ini</div>
+                                                <div x-show="filteredValues(row).length === 0 && !valueShowAddNew(row)"
+                                                    class="px-3 py-2 text-sm text-slate-400">Tidak ada nilai untuk tipe ini
+                                                </div>
                                             </div>
                                         </div>
 
                                         {{-- Delete button --}}
                                         <div class="flex items-end pb-0.5">
-                                            <button type="button" @click="removeRow(row.id)"
-                                                :disabled="rows.length <= 1"
-                                                :class="rows.length <= 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500'"
+                                            <button type="button" @click="removeRow(row.id)" :disabled="rows.length <= 1"
+                                                :class="rows.length <= 1 ? 'opacity-30 cursor-not-allowed' :
+                                                    'hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500'"
                                                 class="mt-5 p-1.5 rounded-lg text-slate-400 transition-colors">
-                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                    stroke-linejoin="round">
+                                                    <polyline points="3 6 5 6 21 6" />
+                                                    <path
+                                                        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                                                </svg>
                                             </button>
                                         </div>
                                     </div>
 
                                     {{-- Gambar --}}
                                     <div>
-                                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Gambar</label>
+                                        <label
+                                            class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Gambar</label>
                                         <div class="flex items-center gap-3">
                                             <div x-show="row.imagePreview" class="flex-shrink-0">
-                                                <img :src="row.imagePreview" class="w-14 h-14 object-cover rounded-lg border border-slate-200 dark:border-slate-600" />
+                                                <img :src="row.imagePreview"
+                                                    class="w-14 h-14 object-cover rounded-lg border border-slate-200 dark:border-slate-600" />
                                             </div>
-                                            <label class="flex-1 flex items-center gap-2 px-3 py-2.5 rounded-xl border border-dashed border-slate-300 dark:border-slate-500 cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 transition-colors bg-white dark:bg-slate-700/50">
-                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400 flex-shrink-0"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                                                <span class="text-xs text-slate-400 truncate" x-text="row.imagePreview ? 'Ganti gambar...' : 'Pilih gambar...'"></span>
-                                                <input type="file" :name="`variants[${index}][image]`" accept="image/*"
-                                                    @change="handleImageChange(row, $event)" class="hidden" />
+                                            <label
+                                                class="flex-1 flex items-center gap-2 px-3 py-2.5 rounded-xl border border-dashed border-slate-300 dark:border-slate-500 cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 transition-colors bg-white dark:bg-slate-700/50">
+                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                    stroke-linejoin="round" class="text-slate-400 flex-shrink-0">
+                                                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                                                    <circle cx="8.5" cy="8.5" r="1.5" />
+                                                    <polyline points="21 15 16 10 5 21" />
+                                                </svg>
+                                                <span class="text-xs text-slate-400 truncate"
+                                                    x-text="row.imagePreview ? 'Ganti gambar...' : 'Pilih gambar...'"></span>
+                                                <input type="file" :name="`variants[${index}][image]`"
+                                                    accept="image/*" @change="handleImageChange(row, $event)"
+                                                    class="hidden" />
                                             </label>
                                         </div>
                                     </div>
@@ -195,21 +306,26 @@
                                     {{-- SKU + Harga + Stok --}}
                                     <div class="grid grid-cols-3 gap-2">
                                         <div>
-                                            <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">SKU</label>
-                                            <input type="text" :name="`variants[${index}][sku]`" x-model="row.sku"
-                                                placeholder="Opsional"
+                                            <label
+                                                class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">SKU</label>
+                                            <input type="text" :name="`variants[${index}][sku]`" :value="generatedSku(row)"
+                                                readonly
+                                                class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-700/70 dark:text-slate-200 text-slate-600 focus:outline-none" />
+                                        </div>
+                                        <div>
+                                            <label
+                                                class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Harga
+                                                (Rp) <span class="text-red-400">*</span></label>
+                                            <input type="number" min="0" step="100"
+                                                :name="`variants[${index}][price]`" x-model="row.price" placeholder="0"
                                                 class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
                                         </div>
                                         <div>
-                                            <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Harga (Rp) <span class="text-red-400">*</span></label>
-                                            <input type="number" min="0" step="100" :name="`variants[${index}][price]`" x-model="row.price"
-                                                placeholder="0"
-                                                class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Stok <span class="text-red-400">*</span></label>
-                                            <input type="number" min="0" :name="`variants[${index}][stock]`" x-model="row.stock"
-                                                placeholder="0"
+                                            <label
+                                                class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Stok
+                                                <span class="text-red-400">*</span></label>
+                                            <input type="number" min="0" :name="`variants[${index}][stock]`"
+                                                x-model="row.stock" placeholder="0"
                                                 class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
                                         </div>
                                     </div>
@@ -217,12 +333,6 @@
                                 </div>
                             </template>
                         </div>
-
-                        <button type="button" @click="addRow"
-                            class="mt-3 flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium px-1 py-1 transition-colors">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                            Tambah Varian
-                        </button>
                     </div>
 
                 </div>
@@ -235,30 +345,43 @@
                         <h2 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4">Kategori</h2>
                         <div class="relative" @click.outside="categoryOpen = false">
                             <input type="text" x-model="categorySearch"
-                                @input="categoryOpen = true; categoryId = null"
-                                @focus="categoryOpen = true"
+                                @input="categoryOpen = true; categoryId = null" @focus="categoryOpen = true"
                                 placeholder="Cari atau tambah kategori..."
                                 class="w-full px-4 py-2.5 text-sm rounded-xl border focus:outline-none focus:ring-2 dark:text-slate-200 placeholder-slate-400 {{ $errors->has('category_id') ? 'border-2 border-red-400 bg-red-50 dark:bg-red-900/10 dark:border-red-600 focus:ring-red-400' : 'border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 focus:ring-blue-500' }}" />
                             <input type="hidden" name="category_id" :value="categoryId ?? ''">
-                            <div x-show="categoryOpen" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 -translate-y-1" x-transition:enter-end="opacity-100 translate-y-0"
+                            <div x-show="categoryOpen" x-transition:enter="transition ease-out duration-100"
+                                x-transition:enter-start="opacity-0 -translate-y-1"
+                                x-transition:enter-end="opacity-100 translate-y-0"
                                 class="absolute z-20 top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl shadow-lg overflow-hidden max-h-48 overflow-y-auto">
                                 <template x-for="cat in filteredCategories" :key="cat.id">
                                     <button type="button" @click="selectCategory(cat)"
                                         class="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 transition-colors"
-                                        :class="categoryId === cat.id ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 font-medium' : ''"
+                                        :class="categoryId === cat.id ?
+                                            'bg-blue-50 dark:bg-blue-900/20 text-blue-600 font-medium' : ''"
                                         x-text="cat.name"></button>
                                 </template>
                                 <button type="button" x-show="categoryShowAddNew" @click="addNewCategory"
                                     class="w-full text-left px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors border-t border-slate-100 dark:border-slate-700 flex items-center gap-2">
-                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <line x1="12" y1="5" x2="12" y2="19" />
+                                        <line x1="5" y1="12" x2="19" y2="12" />
+                                    </svg>
                                     Tambah "<span x-text="categorySearch"></span>"
                                 </button>
-                                <div x-show="filteredCategories.length === 0 && !categoryShowAddNew" class="px-3 py-2 text-sm text-slate-400">Tidak ada kategori</div>
+                                <div x-show="filteredCategories.length === 0 && !categoryShowAddNew"
+                                    class="px-3 py-2 text-sm text-slate-400">Tidak ada kategori</div>
                             </div>
                         </div>
                         @error('category_id')
                             <p class="text-xs text-red-500 mt-1.5 flex items-center gap-1">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <line x1="12" y1="8" x2="12" y2="12" />
+                                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                                </svg>
                                 {{ $message }}
                             </p>
                         @enderror
@@ -294,32 +417,77 @@
 
 @section('script')
     <script>
-        function productForm({ categories, allVariants, oldCategoryId, oldCategoryName, oldRows, categoryQuickAddUrl, variantQuickAddUrl }) {
+        (function() {
+            const editor = document.getElementById('description-editor');
+            const input = document.getElementById('description-input');
+            if (!editor || !input) return;
+
+            document.querySelectorAll('[data-editor-action]').forEach((button) => {
+                button.addEventListener('click', () => {
+                    document.execCommand(button.dataset.editorAction, false, null);
+                    editor.focus();
+                    input.value = editor.innerHTML.trim();
+                });
+            });
+
+            editor.addEventListener('input', () => {
+                input.value = editor.innerHTML.trim();
+            });
+
+            const form = editor.closest('form');
+            if (form) {
+                form.addEventListener('submit', () => {
+                    input.value = editor.innerHTML.trim();
+                });
+            }
+        })();
+
+        function productForm({
+            categories,
+            allVariants,
+            oldProductName,
+            oldCategoryId,
+            oldCategoryName,
+            oldRows,
+            categoryQuickAddUrl,
+            variantQuickAddUrl
+        }) {
             return {
                 categories,
                 allVariants,
+                productName: oldProductName || '',
                 categorySearch: oldCategoryName || '',
                 categoryId: oldCategoryId || null,
                 categoryOpen: false,
 
                 get filteredCategories() {
                     if (!this.categorySearch.trim()) return this.categories;
-                    return this.categories.filter(c => c.name.toLowerCase().includes(this.categorySearch.toLowerCase()));
+                    return this.categories.filter(c => c.name.toLowerCase().includes(this.categorySearch
+                        .toLowerCase()));
                 },
                 get categoryShowAddNew() {
                     const s = this.categorySearch.trim().toLowerCase();
                     return s && !this.filteredCategories.some(c => c.name.toLowerCase() === s);
                 },
                 selectCategory(cat) {
-                    this.categoryId     = cat.id;
+                    this.categoryId = cat.id;
                     this.categorySearch = cat.name;
-                    this.categoryOpen   = false;
+                    this.categoryOpen = false;
                 },
                 async addNewCategory() {
                     const name = this.categorySearch.trim();
                     if (!name) return;
                     try {
-                        const res  = await fetch(categoryQuickAddUrl, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content }, body: JSON.stringify({ name }) });
+                        const res = await fetch(categoryQuickAddUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
+                            },
+                            body: JSON.stringify({
+                                name
+                            })
+                        });
                         const data = await res.json();
                         this.categories = [...this.categories, data];
                         this.selectCategory(data);
@@ -358,19 +526,36 @@
                 selectName(row, name) {
                     if (row.selectedName !== name) {
                         row.valueSearch = '';
-                        row.variantId   = null;
+                        row.variantId = null;
                     }
                     row.selectedName = name;
-                    row.nameSearch   = name;
-                    row.nameOpen     = false;
+                    row.nameSearch = name;
+                    row.nameOpen = false;
                 },
                 addLocalName(row) {
                     const name = (row.nameSearch || '').trim();
                     if (!name) return;
                     row.selectedName = name;
-                    row.nameOpen     = false;
-                    row.valueSearch  = '';
-                    row.variantId    = null;
+                    row.nameOpen = false;
+                    row.valueSearch = '';
+                    row.variantId = null;
+                },
+                slugify(value) {
+                    return String(value || '')
+                        .normalize('NFKD')
+                        .replace(/[^\w\s-]/g, '')
+                        .trim()
+                        .replace(/\s+/g, '-')
+                        .replace(/-+/g, '-')
+                        .toUpperCase();
+                },
+                generatedSku(row) {
+                    const parts = [
+                        this.slugify(this.productName),
+                        this.slugify(row.selectedName || row.nameSearch),
+                        this.slugify(row.valueSearch),
+                    ].filter(Boolean);
+                    return parts.join('-');
                 },
 
                 filteredValues(row) {
@@ -385,16 +570,26 @@
                     return s && !this.filteredValues(row).some(v => v.value.toLowerCase() === s);
                 },
                 selectValue(row, variant) {
-                    row.variantId   = variant.id;
+                    row.variantId = variant.id;
                     row.valueSearch = variant.value;
-                    row.valueOpen   = false;
+                    row.valueOpen = false;
                 },
                 async addNewValue(row) {
-                    const name  = row.selectedName;
+                    const name = row.selectedName;
                     const value = (row.valueSearch || '').trim();
                     if (!name || !value) return;
                     try {
-                        const res  = await fetch(variantQuickAddUrl, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content }, body: JSON.stringify({ name, value }) });
+                        const res = await fetch(variantQuickAddUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
+                            },
+                            body: JSON.stringify({
+                                name,
+                                value
+                            })
+                        });
                         const data = await res.json();
                         this.allVariants = [...this.allVariants, data];
                         this.selectValue(row, data);
@@ -402,7 +597,21 @@
                 },
 
                 addRow() {
-                    this.rows.push({ id: this.nextId++, nameSearch: '', nameOpen: false, selectedName: null, valueSearch: '', valueOpen: false, variantId: null, imagePreview: null, imageExisting: null, imageStoredPath: '', sku: '', price: '', stock: '' });
+                    this.rows.push({
+                        id: this.nextId++,
+                        nameSearch: '',
+                        nameOpen: false,
+                        selectedName: null,
+                        valueSearch: '',
+                        valueOpen: false,
+                        variantId: null,
+                        imagePreview: null,
+                        imageExisting: null,
+                        imageStoredPath: '',
+                        sku: '',
+                        price: '',
+                        stock: ''
+                    });
                 },
                 removeRow(id) {
                     if (this.rows.length <= 1) return;
@@ -412,7 +621,9 @@
                     const file = event.target.files[0];
                     if (!file) return;
                     const reader = new FileReader();
-                    reader.onload = (e) => { row.imagePreview = e.target.result; };
+                    reader.onload = (e) => {
+                        row.imagePreview = e.target.result;
+                    };
                     reader.readAsDataURL(file);
                 },
             };

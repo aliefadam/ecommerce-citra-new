@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
-    protected $fillable = ['name', 'category_id', 'description', 'status'];
+    protected $fillable = ['name', 'slug', 'category_id', 'description', 'status'];
 
     public function category()
     {
@@ -16,5 +16,10 @@ class Product extends Model
     public function productVariants()
     {
         return $this->hasMany(ProductVariant::class);
+    }
+
+    public function flashSaleItems()
+    {
+        return $this->hasManyThrough(FlashSaleItem::class, ProductVariant::class);
     }
 }

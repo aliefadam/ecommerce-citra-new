@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\Variant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
@@ -35,7 +36,6 @@ class ProductController extends Controller
             'description'           => ['nullable', 'string'],
             'variants'              => ['required', 'array', 'min:1'],
             'variants.*.variant_id' => ['required', 'exists:variants,id', 'distinct'],
-            'variants.*.sku'        => ['nullable', 'string', 'max:100'],
             'variants.*.price'      => ['required', 'numeric', 'min:0'],
             'variants.*.stock'      => ['required', 'integer', 'min:0'],
             'variants.*.image'      => ['nullable', 'image', 'max:2048'],
@@ -44,17 +44,26 @@ class ProductController extends Controller
         $files = $request->file('variants', []);
 
         DB::transaction(function () use ($validated, $files) {
+            $slug = $this->makeUniqueProductSlug($validated['name']);
+
             $product = Product::create([
                 'name'        => $validated['name'],
+                'slug'        => $slug,
                 'category_id' => $validated['category_id'] ?? null,
                 'status'      => $validated['status'],
                 'description' => $validated['description'] ?? null,
             ]);
 
+            $variantNamesById = Variant::whereIn('id', collect($validated['variants'])->pluck('variant_id'))
+                ->get()
+                ->keyBy('id');
+
             foreach ($validated['variants'] as $i => $v) {
                 $v['image'] = isset($files[$i]['image'])
                     ? $files[$i]['image']->store('product-variants', 'public')
                     : null;
+                $variant = $variantNamesById->get($v['variant_id']);
+                $v['sku'] = $this->buildVariantSku($validated['name'], $variant?->name, $variant?->value);
 
                 $product->productVariants()->create($v);
             }
@@ -86,7 +95,6 @@ class ProductController extends Controller
             'description'           => ['nullable', 'string'],
             'variants'              => ['required', 'array', 'min:1'],
             'variants.*.variant_id' => ['required', 'exists:variants,id', 'distinct'],
-            'variants.*.sku'        => ['nullable', 'string', 'max:100'],
             'variants.*.price'      => ['required', 'numeric', 'min:0'],
             'variants.*.stock'      => ['required', 'integer', 'min:0'],
             'variants.*.image'      => ['nullable', 'image', 'max:2048'],
@@ -95,14 +103,21 @@ class ProductController extends Controller
         $files = $request->file('variants', []);
 
         DB::transaction(function () use ($validated, $files, $request, $product) {
+            $slug = $this->makeUniqueProductSlug($validated['name'], $product->id);
+
             $product->update([
                 'name'        => $validated['name'],
+                'slug'        => $slug,
                 'category_id' => $validated['category_id'] ?? null,
                 'status'      => $validated['status'],
                 'description' => $validated['description'] ?? null,
             ]);
 
             $product->productVariants()->delete();
+
+            $variantNamesById = Variant::whereIn('id', collect($validated['variants'])->pluck('variant_id'))
+                ->get()
+                ->keyBy('id');
 
             foreach ($validated['variants'] as $i => $v) {
                 if (isset($files[$i]['image'])) {
@@ -111,6 +126,8 @@ class ProductController extends Controller
                     $existing = $request->input("variants.{$i}.existing_image");
                     $v['image'] = $existing ?: null;
                 }
+                $variant = $variantNamesById->get($v['variant_id']);
+                $v['sku'] = $this->buildVariantSku($validated['name'], $variant?->name, $variant?->value);
 
                 $product->productVariants()->create($v);
             }
@@ -124,5 +141,36 @@ class ProductController extends Controller
         $product->delete();
 
         return redirect()->route('products.index')->with('success', 'Product berhasil dihapus.');
+    }
+
+    private function makeUniqueProductSlug(string $name, ?int $ignoreId = null): string
+    {
+        $base = Str::slug($name);
+        $base = $base !== '' ? $base : 'product';
+        $slug = $base;
+        $counter = 2;
+
+        while (
+            Product::query()
+                ->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))
+                ->where('slug', $slug)
+                ->exists()
+        ) {
+            $slug = $base . '-' . $counter;
+            $counter++;
+        }
+
+        return $slug;
+    }
+
+    private function buildVariantSku(string $productName, ?string $variantName, ?string $variantValue): string
+    {
+        $productPart = Str::upper(Str::slug($productName, '-'));
+        $namePart = Str::upper(Str::slug((string) $variantName, '-'));
+        $valuePart = Str::upper(Str::slug((string) $variantValue, '-'));
+
+        $segments = array_filter([$productPart, $namePart, $valuePart], fn ($s) => $s !== '');
+
+        return implode('-', $segments);
     }
 }

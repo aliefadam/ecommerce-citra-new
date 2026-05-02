@@ -12,7 +12,7 @@
                 if (saved === 'dark' || (!saved && prefersDark)) html.classList.add('dark');
             })();
         </script>
-        <title>AdminKit - Login</title>
+        <title>AdminKit - Register</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
             rel="stylesheet" />
@@ -50,9 +50,8 @@
                             class="text-blue-200">Kit</span></span>
                 </div>
                 <div>
-                    <h1 class="text-3xl font-bold leading-tight">Welcome back</h1>
-                    <p class="mt-3 text-blue-100">Sign in untuk mengakses dashboard, datatables, dan product management.
-                    </p>
+                    <h1 class="text-3xl font-bold leading-tight">Create your account</h1>
+                    <p class="mt-3 text-blue-100">Daftar akun baru untuk mengakses dashboard admin.</p>
                 </div>
                 <p class="text-sm text-blue-200">Template Admin Panel</p>
             </section>
@@ -61,9 +60,8 @@
                 <div class="w-full max-w-md">
                     <div class="flex items-center justify-between mb-6">
                         <div>
-                            <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Sign In</h2>
-                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Masukkan akun Anda untuk
-                                melanjutkan.</p>
+                            <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Register</h2>
+                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Masukkan data akun Anda.</p>
                         </div>
                     </div>
 
@@ -76,8 +74,14 @@
 
                     <div
                         class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-sm">
-                        <form action="{{ route('login.attempt') }}" method="POST" class="space-y-4">
+                        <form action="{{ route('register.attempt') }}" method="POST" class="space-y-4">
                             @csrf
+                            <div>
+                                <label
+                                    class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Nama</label>
+                                <input type="text" name="name" value="{{ old('name') }}" placeholder="Nama lengkap"
+                                    class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200 placeholder-slate-400" />
+                            </div>
                             <div>
                                 <label
                                     class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Email</label>
@@ -91,33 +95,27 @@
                                 <input type="password" name="password" placeholder="••••••••"
                                     class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200 placeholder-slate-400" />
                             </div>
-                            <label class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
-                                <input type="checkbox" name="remember"
-                                    class="rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500" />
-                                Remember me
-                            </label>
+                            <div>
+                                <label
+                                    class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Konfirmasi Password</label>
+                                <input type="password" name="password_confirmation" placeholder="••••••••"
+                                    class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200 placeholder-slate-400" />
+                            </div>
 
                             <button type="submit"
                                 class="w-full inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-lg shadow-blue-200 dark:shadow-blue-900/40">
-                                Sign In
+                                Register
                             </button>
                         </form>
+
                         <p class="text-sm text-slate-600 dark:text-slate-300 mt-4 text-center">
-                            Belum punya akun?
-                            <a href="{{ route('register') }}" class="text-blue-600 hover:text-blue-700 font-semibold">Register</a>
+                            Sudah punya akun?
+                            <a href="{{ route('login') }}" class="text-blue-600 hover:text-blue-700 font-semibold">Sign In</a>
                         </p>
                     </div>
                 </div>
             </section>
         </div>
-
-        <script>
-            function toggleDark() {
-                const html = document.documentElement;
-                html.classList.toggle('dark');
-                localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
-            }
-        </script>
     </body>
 
 </html>

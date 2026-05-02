@@ -1,4 +1,10 @@
 <nav class="bg-white sticky top-0 z-50 shadow-sm border-b border-slate-100">
+    @php
+        $authUser = auth()->user();
+        $displayName = $authUser?->name ?: 'Guest';
+        $displayFirstName = trim(explode(' ', $displayName)[0] ?? $displayName);
+        $initial = strtoupper(substr($displayFirstName, 0, 1));
+    @endphp
     <div class="max-w-7xl mx-auto px-4 sm:px-6">
         <div class="flex items-center justify-between h-16">
             <a href="{{ route('frontend.index') }}" class="flex items-center gap-2 flex-shrink-0">
@@ -80,15 +86,15 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
-                    <span
+                    <span id="cartCount"
                         class="absolute -top-1 -right-1 bg-blue-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">3</span>
                 </a>
                 <a href="{{ route('frontend.profil') }}"
                     class="flex items-center gap-2 p-1 rounded-lg hover:bg-slate-100">
                     <div
                         class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white text-sm font-bold">
-                        A</div>
-                    <span class="hidden sm:block text-sm font-medium text-slate-700">Andi</span>
+                        {{ $initial }}</div>
+                    <span class="hidden sm:block text-sm font-medium text-slate-700">{{ $displayFirstName }}</span>
                 </a>
             </div>
         </div>
@@ -311,6 +317,24 @@
 
         bindLiveSearch('ecNavSearchDesktop', 'ecNavSearchDropdownDesktop');
         bindLiveSearch('ecNavSearchMobile', 'ecNavSearchDropdownMobile');
+
+        function syncCartBadge() {
+            const badge = document.getElementById('cartCount');
+            if (!badge) return;
+            let totalQty = 0;
+            try {
+                const cart = JSON.parse(localStorage.getItem('ec_cart') || '[]');
+                if (Array.isArray(cart)) {
+                    totalQty = cart.reduce((sum, item) => sum + Number(item.qty || 0), 0);
+                }
+            } catch (e) {}
+            badge.textContent = String(totalQty);
+            badge.classList.toggle('hidden', totalQty <= 0);
+        }
+        syncCartBadge();
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'ec_cart') syncCartBadge();
+        });
 
         const mobileSearch = document.getElementById('ecMobileSearch');
         const mobileSearchToggle = document.getElementById('ecMobileSearchToggle');

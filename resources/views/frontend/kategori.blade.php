@@ -445,215 +445,7 @@
 
 @section('script')
     <script>
-        const allProducts = [{
-                id: 1,
-                name: "Kemeja Oxford Slim Fit",
-                price: 189000,
-                origPrice: 270000,
-                cat: "fashion-pria",
-                rating: 4.8,
-                reviews: 234,
-                image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop",
-                badge: "promo",
-                sold: 1245,
-                isNew: false
-            },
-            {
-                id: 2,
-                name: "Sneakers Urban Street",
-                price: 459000,
-                origPrice: 650000,
-                cat: "fashion-pria",
-                rating: 4.9,
-                reviews: 567,
-                image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop",
-                badge: "best",
-                sold: 3421,
-                isNew: false
-            },
-            {
-                id: 3,
-                name: "Smart Watch Series 5",
-                price: 1299000,
-                origPrice: 1800000,
-                cat: "elektronik",
-                rating: 4.7,
-                reviews: 189,
-                image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop",
-                badge: "promo",
-                sold: 892,
-                isNew: true
-            },
-            {
-                id: 4,
-                name: "Tas Ransel Laptop 15\"",
-                price: 345000,
-                origPrice: 420000,
-                cat: "fashion-pria",
-                rating: 4.6,
-                reviews: 312,
-                image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=400&fit=crop",
-                badge: "new",
-                sold: 2134,
-                isNew: true
-            },
-            {
-                id: 5,
-                name: "Serum Vitamin C",
-                price: 189000,
-                origPrice: 250000,
-                cat: "kecantikan",
-                rating: 4.9,
-                reviews: 789,
-                image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400&h=400&fit=crop",
-                badge: "promo",
-                sold: 5678,
-                isNew: false
-            },
-            {
-                id: 6,
-                name: "Celana Chino Slim",
-                price: 229000,
-                origPrice: 320000,
-                cat: "fashion-pria",
-                rating: 4.5,
-                reviews: 156,
-                image: "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=400&h=400&fit=crop",
-                badge: null,
-                sold: 987,
-                isNew: false
-            },
-            {
-                id: 7,
-                name: "Wireless Earbuds Pro",
-                price: 599000,
-                origPrice: 850000,
-                cat: "elektronik",
-                rating: 4.8,
-                reviews: 423,
-                image: "https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?w=400&h=400&fit=crop",
-                badge: "promo",
-                sold: 3210,
-                isNew: false
-            },
-            {
-                id: 8,
-                name: "Dress Floral Premium",
-                price: 279000,
-                origPrice: 399000,
-                cat: "fashion-wanita",
-                rating: 4.7,
-                reviews: 234,
-                image: "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400&h=400&fit=crop",
-                badge: "new",
-                sold: 1567,
-                isNew: true
-            },
-            {
-                id: 9,
-                name: "Running Shoes Lite",
-                price: 539000,
-                origPrice: 720000,
-                cat: "olahraga",
-                rating: 4.6,
-                reviews: 345,
-                image: "https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=400&h=400&fit=crop",
-                badge: "promo",
-                sold: 2345,
-                isNew: false
-            },
-            {
-                id: 10,
-                name: "Blender Portable Mini",
-                price: 149000,
-                origPrice: 199000,
-                cat: "rumah",
-                rating: 4.4,
-                reviews: 167,
-                image: "https://images.unsplash.com/photo-1570222094114-d054a817e56b?w=400&h=400&fit=crop",
-                badge: null,
-                sold: 789,
-                isNew: false
-            },
-            {
-                id: 11,
-                name: "Hoodie Oversized Fleece",
-                price: 299000,
-                origPrice: 399000,
-                cat: "fashion-pria",
-                rating: 4.8,
-                reviews: 512,
-                image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop",
-                badge: "best",
-                sold: 4321,
-                isNew: false
-            },
-            {
-                id: 12,
-                name: "Kamera Mirrorless Entry",
-                price: 5499000,
-                origPrice: 6800000,
-                cat: "elektronik",
-                rating: 4.9,
-                reviews: 98,
-                image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400&h=400&fit=crop",
-                badge: "promo",
-                sold: 234,
-                isNew: true
-            },
-            {
-                id: 13,
-                name: "Rok Midi Pleated",
-                price: 199000,
-                origPrice: 280000,
-                cat: "fashion-wanita",
-                rating: 4.6,
-                reviews: 178,
-                image: "https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?w=400&h=400&fit=crop",
-                badge: "new",
-                sold: 876,
-                isNew: true
-            },
-            {
-                id: 14,
-                name: "Sepatu Boots Kulit",
-                price: 899000,
-                origPrice: 1200000,
-                cat: "fashion-pria",
-                rating: 4.8,
-                reviews: 290,
-                image: "https://images.unsplash.com/photo-1605812860427-4024433a70fd?w=400&h=400&fit=crop",
-                badge: "promo",
-                sold: 1890,
-                isNew: false
-            },
-            {
-                id: 15,
-                name: "Yoga Mat Premium",
-                price: 349000,
-                origPrice: 450000,
-                cat: "olahraga",
-                rating: 4.7,
-                reviews: 234,
-                image: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400&h=400&fit=crop",
-                badge: null,
-                sold: 1456,
-                isNew: false
-            },
-            {
-                id: 16,
-                name: "Lip Gloss Set Korea",
-                price: 89000,
-                origPrice: 120000,
-                cat: "kecantikan",
-                rating: 4.5,
-                reviews: 456,
-                image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=400&fit=crop",
-                badge: "new",
-                sold: 3456,
-                isNew: true
-            },
-        ];
+        const allProducts = @json($productsJson);
 
         let currentCat = 'semua';
         let currentSubcat = 'semua';
@@ -706,13 +498,13 @@
 
                 if (viewMode === 'list') {
                     return `<div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex gap-4 p-4 card-hover">
-            <a href="{{ route('frontend.detail-produk') }}" class="flex-shrink-0">
+            <a href="{{ url('/detail-produk') }}/${p.slug}" class="flex-shrink-0">
               <img src="${p.image}" alt="${p.name}" class="w-28 h-28 object-cover rounded-xl" />
             </a>
             <div class="flex-1 flex flex-col justify-between">
               <div>
                 <div class="flex gap-2 mb-1">${badge}</div>
-                <a href="{{ route('frontend.detail-produk') }}" class="font-semibold text-slate-800 hover:text-blue-600 transition-colors">${p.name}</a>
+                <a href="{{ url('/detail-produk') }}/${p.slug}" class="font-semibold text-slate-800 hover:text-blue-600 transition-colors">${p.name}</a>
                 <div class="flex items-center gap-1 mt-1">
                   <span class="text-yellow-400 text-xs">★</span>
                   <span class="text-xs font-medium text-slate-700">${p.rating}</span>
@@ -731,7 +523,7 @@
                 }
                 return `<div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden card-hover group">
           <div class="relative overflow-hidden">
-            <a href="{{ route('frontend.detail-produk') }}">
+            <a href="{{ url('/detail-produk') }}/${p.slug}">
               <img src="${p.image}" alt="${p.name}" class="w-full h-44 object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
             </a>
             <div class="absolute top-2 left-2 flex gap-1">${badge}</div>
@@ -740,7 +532,7 @@
             </button>
           </div>
           <div class="p-3">
-            <a href="{{ route('frontend.detail-produk') }}" class="block text-sm font-semibold text-slate-800 hover:text-blue-600 transition-colors line-clamp-2 mb-1">${p.name}</a>
+            <a href="{{ url('/detail-produk') }}/${p.slug}" class="block text-sm font-semibold text-slate-800 hover:text-blue-600 transition-colors line-clamp-2 mb-1">${p.name}</a>
             <div class="flex items-center gap-1 mb-2">
               <span class="text-yellow-400 text-xs">★</span>
               <span class="text-xs font-medium text-slate-700">${p.rating}</span>
@@ -1061,3 +853,4 @@
         setMegaCategory('rumah-tangga');
     </script>
 @endsection
+
