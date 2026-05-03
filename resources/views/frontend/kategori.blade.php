@@ -143,19 +143,16 @@
 
     <!-- CATEGORY GRID (All Categories) -->
     <div id="allCategoriesSection" class="max-w-7xl mx-auto px-4 sm:px-6 pt-5 pb-4">
-        {{-- <h2 class="text-xl font-bold text-slate-800 mb-6">Jelajahi Kategori</h2> --}}
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4 mb-6">
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-6">
             @foreach (($categoryTree ?? collect()) as $mainCategory)
                 <button onclick="selectCategory('{{ $mainCategory->slug }}', '{{ $mainCategory->name }}')"
-                    class="cat-card bg-white rounded-2xl p-6 flex flex-col items-center gap-3 shadow-sm border border-slate-100 hover:border-blue-300 hover:shadow-md transition-all group card-hover">
-                    <div
-                        class="w-16 h-16 rounded-2xl bg-white flex items-center justify-center group-hover:bg-slate-100 group-hover:scale-110 transition-all shadow-sm border border-slate-200">
-                        <i class="ri-folder-2-line text-2xl text-blue-600"></i>
+                    class="cat-card flex items-center gap-3 bg-white rounded-xl px-4 py-3 border border-slate-100 shadow-sm hover:border-blue-300 hover:bg-blue-50/40 hover:shadow-md transition-all group text-left">
+                    <div class="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center shrink-0 group-hover:bg-blue-100 transition-colors">
+                        <i class="ri-folder-2-line text-base text-blue-600"></i>
                     </div>
-                    <div class="text-center">
-                        <p class="font-semibold text-blue-600 text-sm">{{ $mainCategory->name }}</p>
-                        <p class="text-xs text-slate-500 mt-0.5">{{ $mainCategory->categoryDetails->count() }} kategori detail
-                        </p>
+                    <div class="min-w-0">
+                        <p class="text-sm font-semibold text-slate-800 truncate">{{ $mainCategory->name }}</p>
+                        <p class="text-xs text-slate-400 mt-0.5">{{ $mainCategory->categoryDetails->count() }} sub kategori</p>
                     </div>
                 </button>
             @endforeach
@@ -165,107 +162,109 @@
     <!-- MAIN CONTENT: SIDEBAR + PRODUCTS -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 pb-10">
         <div class="flex flex-col lg:flex-row gap-8">
-
             <!-- SIDEBAR -->
             <aside id="filterSidebar" class="hidden lg:block lg:w-64 flex-shrink-0">
-                <div id="filterPanel"
-                    class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden sticky top-20">
-                    <div class="lg:hidden w-14 h-1 bg-slate-300 rounded-full mx-auto mt-3"></div>
-                    <div class="p-4 border-b border-slate-100">
-                        <div class="flex items-center justify-between">
-                            <h3 class="font-bold text-slate-800">Filter</h3>
+                <div id="filterPanel" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 sticky top-20">
+                    <div class="lg:hidden w-14 h-1 bg-slate-300 rounded-full mx-auto mb-3"></div>
+                    <div class="flex items-center justify-between mb-5">
+                        <h3 class="font-bold text-slate-800">Filter Produk</h3>
+                        <div class="flex items-center gap-3">
+                            <button onclick="resetFilter()"
+                                class="text-xs text-blue-600 hover:text-blue-700 font-medium">Reset</button>
                             <button onclick="closeMobileFilter()"
                                 class="lg:hidden text-xs text-slate-500 hover:text-slate-700 font-medium">Tutup</button>
                         </div>
                     </div>
 
-                    <!-- Sub Kategori -->
-                    <div class="p-4 border-b border-slate-100">
-                        <h4 class="text-sm font-semibold text-slate-700 mb-3">Sub Kategori</h4>
-                        <ul class="space-y-1" id="subCatList">
-                            <li><button
-                                    class="sidebar-item active w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-all"
-                                    onclick="filterSubcat(this, 'semua')">Semua Produk</button></li>
-                            <li><button
-                                    class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-50 transition-all"
-                                    onclick="filterSubcat(this, 'new')">Produk Baru</button></li>
-                            <li><button
-                                    class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-50 transition-all"
-                                    onclick="filterSubcat(this, 'promo')">Sedang Promo</button></li>
-                            <li><button
-                                    class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-50 transition-all"
-                                    onclick="filterSubcat(this, 'best')">Best Seller</button></li>
-                        </ul>
+                    <div class="mb-6">
+                        <h4 class="text-sm font-semibold text-slate-700 mb-3">Kategori</h4>
+                        <div class="space-y-2" id="filterCategoryList"></div>
                     </div>
 
-                    <!-- Harga -->
-                    <div class="p-4 border-b border-slate-100">
-                        <h4 class="text-sm font-semibold text-slate-700 mb-3">Harga</h4>
+                    <div class="mb-6">
+                        <h4 class="text-sm font-semibold text-slate-700 mb-3">Rentang Harga</h4>
                         <div class="space-y-2">
-                            <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="price"
-                                    class="accent-blue-500" onchange="setPriceRange(0,100000)" /> <span
-                                    class="text-sm text-slate-600">
-                                    < Rp 100.000</span></label>
-                            <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="price"
-                                    class="accent-blue-500" onchange="setPriceRange(100000,500000)" /> <span
-                                    class="text-sm text-slate-600">Rp 100.000 – 500.000</span></label>
-                            <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="price"
-                                    class="accent-blue-500" onchange="setPriceRange(500000,1000000)" /> <span
-                                    class="text-sm text-slate-600">Rp 500.000 – 1 Juta</span></label>
-                            <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="price"
-                                    class="accent-blue-500" onchange="setPriceRange(1000000,9999999)" /> <span
-                                    class="text-sm text-slate-600">> Rp 1 Juta</span></label>
+                            <div class="flex gap-2">
+                                <div class="flex-1">
+                                    <label class="text-xs text-slate-500 mb-1 block">Min</label>
+                                    <input type="number" id="priceMin" placeholder="0"
+                                        class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
+                                        onchange="applyFilter()" />
+                                </div>
+                                <div class="flex-1">
+                                    <label class="text-xs text-slate-500 mb-1 block">Max</label>
+                                    <input type="number" id="priceMax" placeholder="8"
+                                        class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
+                                        onchange="applyFilter()" />
+                                </div>
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="flex items-center gap-2 cursor-pointer"><input type="radio"
+                                        name="priceRange" class="accent-blue-500" onchange="setPriceRange(0, 100000)" />
+                                    <span class="text-sm text-slate-600">Di bawah Rp 100.000</span></label>
+                                <label class="flex items-center gap-2 cursor-pointer"><input type="radio"
+                                        name="priceRange" class="accent-blue-500"
+                                        onchange="setPriceRange(100000, 500000)" /> <span
+                                        class="text-sm text-slate-600">Rp 100.000 - Rp 500.000</span></label>
+                                <label class="flex items-center gap-2 cursor-pointer"><input type="radio"
+                                        name="priceRange" class="accent-blue-500"
+                                        onchange="setPriceRange(500000, 1000000)" /> <span
+                                        class="text-sm text-slate-600">Rp 500.000 - Rp 1 Juta</span></label>
+                                <label class="flex items-center gap-2 cursor-pointer"><input type="radio"
+                                        name="priceRange" class="accent-blue-500"
+                                        onchange="setPriceRange(1000000, 9999999)" /> <span
+                                        class="text-sm text-slate-600">Di atas Rp 1 Juta</span></label>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Rating -->
-                    <div class="p-4 border-b border-slate-100">
+                    <div class="mb-6">
+                        <h4 class="text-sm font-semibold text-slate-700 mb-3">Warna</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="toggleColor(this, 'hitam')"
+                                class="color-btn w-8 h-8 rounded-full bg-slate-900 border-2 border-transparent hover:border-slate-400 transition-all"
+                                title="Hitam"></button>
+                            <button onclick="toggleColor(this, 'putih')"
+                                class="color-btn w-8 h-8 rounded-full bg-white border-2 border-slate-200 hover:border-slate-400 transition-all"
+                                title="Putih"></button>
+                            <button onclick="toggleColor(this, 'merah')"
+                                class="color-btn w-8 h-8 rounded-full bg-red-500 border-2 border-transparent hover:border-red-400 transition-all"
+                                title="Merah"></button>
+                            <button onclick="toggleColor(this, 'biru')"
+                                class="color-btn w-8 h-8 rounded-full bg-blue-500 border-2 border-transparent hover:border-blue-400 transition-all"
+                                title="Biru"></button>
+                            <button onclick="toggleColor(this, 'hijau')"
+                                class="color-btn w-8 h-8 rounded-full bg-blue-500 border-2 border-transparent hover:border-blue-400 transition-all"
+                                title="Hijau"></button>
+                            <button onclick="toggleColor(this, 'kuning')"
+                                class="color-btn w-8 h-8 rounded-full bg-yellow-400 border-2 border-transparent hover:border-yellow-400 transition-all"
+                                title="Kuning"></button>
+                            <button onclick="toggleColor(this, 'ungu')"
+                                class="color-btn w-8 h-8 rounded-full bg-purple-500 border-2 border-transparent hover:border-purple-400 transition-all"
+                                title="Ungu"></button>
+                            <button onclick="toggleColor(this, 'pink')"
+                                class="color-btn w-8 h-8 rounded-full bg-pink-400 border-2 border-transparent hover:border-pink-400 transition-all"
+                                title="Pink"></button>
+                        </div>
+                    </div>
+
+                    <div>
                         <h4 class="text-sm font-semibold text-slate-700 mb-3">Rating</h4>
                         <div class="space-y-2">
                             <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="rating"
-                                    class="accent-blue-500" /> <span class="text-yellow-400">★★★★★</span></label>
+                                    class="accent-blue-500" /><span class="flex gap-0.5">★★★★★</span></label>
                             <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="rating"
-                                    class="accent-blue-500" /> <span class="text-yellow-400">★★★★</span><span
-                                    class="text-slate-400 text-xs"> ke atas</span></label>
+                                    class="accent-blue-500" /><span class="flex gap-0.5">★★★★ ke atas</span></label>
                             <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="rating"
-                                    class="accent-blue-500" /> <span class="text-yellow-400">★★★</span><span
-                                    class="text-slate-400 text-xs"> ke atas</span></label>
+                                    class="accent-blue-500" /><span class="flex gap-0.5">★★★ ke atas</span></label>
                         </div>
                     </div>
 
-                    <!-- Warna -->
-                    <div class="p-4">
-                        <h4 class="text-sm font-semibold text-slate-700 mb-3">Warna</h4>
-                        <div class="flex flex-wrap gap-2">
-                            <button
-                                class="w-7 h-7 rounded-full bg-slate-900 hover:ring-2 hover:ring-slate-400 hover:ring-offset-1 transition-all"
-                                title="Hitam"></button>
-                            <button
-                                class="w-7 h-7 rounded-full bg-white border border-slate-200 hover:ring-2 hover:ring-slate-400 hover:ring-offset-1 transition-all"
-                                title="Putih"></button>
-                            <button
-                                class="w-7 h-7 rounded-full bg-red-500 hover:ring-2 hover:ring-red-400 hover:ring-offset-1 transition-all"
-                                title="Merah"></button>
-                            <button
-                                class="w-7 h-7 rounded-full bg-blue-500 hover:ring-2 hover:ring-blue-400 hover:ring-offset-1 transition-all"
-                                title="Biru"></button>
-                            <button
-                                class="w-7 h-7 rounded-full bg-blue-500 hover:ring-2 hover:ring-blue-400 hover:ring-offset-1 transition-all"
-                                title="Hijau"></button>
-                            <button
-                                class="w-7 h-7 rounded-full bg-yellow-400 hover:ring-2 hover:ring-yellow-400 hover:ring-offset-1 transition-all"
-                                title="Kuning"></button>
-                            <button
-                                class="w-7 h-7 rounded-full bg-pink-400 hover:ring-2 hover:ring-pink-400 hover:ring-offset-1 transition-all"
-                                title="Pink"></button>
-                            <button
-                                class="w-7 h-7 rounded-full bg-purple-500 hover:ring-2 hover:ring-purple-400 hover:ring-offset-1 transition-all"
-                                title="Ungu"></button>
-                        </div>
-                    </div>
+                    <button onclick="applyFilter()"
+                        class="w-full mt-6 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 rounded-xl transition-colors text-sm">Terapkan
+                        Filter</button>
                 </div>
             </aside>
-
             <!-- PRODUCT AREA -->
             <main class="flex-1">
                 <!-- Toolbar -->
@@ -345,55 +344,47 @@
                 </div>
             </main>
         </div>
-    </div>
-
-    <!-- FOOTER -->
-    <footer class="bg-slate-900 text-slate-400 py-8 mt-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-            <div class="flex items-center gap-2">
-                <div class="w-7 h-7 bg-blue-500 rounded-lg flex items-center justify-center">
-                    <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                            d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3z" />
-                    </svg>
-                </div>
-                <span class="text-white font-bold">Ecommerce Citra</span>
-            </div>
-            <p class="text-sm">© 2025 Ecommerce Citra. All rights reserved.</p>
-            <div class="flex gap-4 text-sm">
-                <a href="{{ route('frontend.index') }}" class="hover:text-blue-400">Beranda</a>
-                <a href="{{ route('frontend.profil') }}" class="hover:text-blue-400">Profil</a>
-                <a href="{{ route('frontend.checkout') }}" class="hover:text-blue-400">Checkout</a>
-            </div>
-        </div>
-    </footer>
+    </div>
 @endsection
 
 @section('script')
+    @php
+        $filterMainCategories = collect($categoryTree ?? [])
+            ->map(function ($mainCategory) use ($productsJson) {
+                $count = collect($productsJson ?? [])->where('parentCategorySlug', $mainCategory->slug)->count();
+                return [
+                    'slug' => $mainCategory->slug,
+                    'name' => $mainCategory->name,
+                    'count' => $count,
+                ];
+            })
+            ->all();
+    @endphp
     <script>
         const allProducts = @json($productsJson);
+        const filterMainCategories = @json($filterMainCategories);
+        const initialParentSlug = @json($selectedParentSlug ?? '');
         const isAuthenticated = @json(auth()->check());
         const loginUrl = @json(route('login'));
         const cartStoreUrl = @json(route('frontend.cart.store'));
         const csrfToken = @json(csrf_token());
 
-        let currentCat = 'semua';
-        let currentSubcat = 'semua';
-        let priceMin = 0,
-            priceMax = 9999999;
+        let selectedColors = [];
+        let filteredProducts = [...allProducts];
         let viewMode = 'grid';
         let searchQuery = '';
 
         function getFiltered() {
-            return allProducts.filter(p => {
-                const catMatch = currentCat === 'semua' || p.parentCategorySlug === currentCat || p.categorySlug === currentCat;
-                const subcatMatch = currentSubcat === 'semua' ||
-                    (currentSubcat === 'new' && p.isNew) ||
-                    (currentSubcat === 'promo' && p.isFlashSale) ||
-                    (currentSubcat === 'best' && p.badge === 'best');
-                const priceMatch = p.price >= priceMin && p.price <= priceMax;
+            const cats = Array.from(document.querySelectorAll('.filter-cat:checked')).map(c => c.value);
+            const min = parseInt(document.getElementById('priceMin')?.value || '0', 10) || 0;
+            const max = parseInt(document.getElementById('priceMax')?.value || '9999999', 10) || 9999999;
+            return allProducts.filter((p) => {
+                const catMatch = cats.length === 0 || cats.includes(p.parentCategorySlug);
+                const colorMatch = selectedColors.length === 0 || selectedColors.some((c) =>
+                    Array.isArray(p.colors) && p.colors.includes(c));
+                const priceMatch = p.price >= min && p.price <= max;
                 const searchMatch = !searchQuery || p.name.toLowerCase().includes(searchQuery.toLowerCase());
-                return catMatch && subcatMatch && priceMatch && searchMatch;
+                return catMatch && colorMatch && priceMatch && searchMatch;
             });
         }
 
@@ -436,7 +427,7 @@
                 <div class="flex gap-2 mb-1">${badge}</div>
                 <a href="{{ url('/detail-produk') }}/${p.slug}" class="font-semibold text-slate-800 hover:text-blue-600 transition-colors">${p.name}</a>
                 <div class="flex items-center gap-1 mt-1">
-                  <span class="text-yellow-400 text-xs">★</span>
+                  <span class="text-yellow-400 text-xs">?</span>
                   <span class="text-xs font-medium text-slate-700">${p.rating}</span>
                   <span class="text-xs text-slate-400">(${p.reviews}) • ${p.sold.toLocaleString()} terjual</span>
                 </div>
@@ -464,7 +455,7 @@
           <div class="p-3">
             <a href="{{ url('/detail-produk') }}/${p.slug}" class="block text-sm font-semibold text-slate-800 hover:text-blue-600 transition-colors line-clamp-2 mb-1">${p.name}</a>
             <div class="flex items-center gap-1 mb-2">
-              <span class="text-yellow-400 text-xs">★</span>
+              <span class="text-yellow-400 text-xs">?</span>
               <span class="text-xs font-medium text-slate-700">${p.rating}</span>
               <span class="text-xs text-slate-400">(${p.reviews})</span>
             </div>
@@ -477,37 +468,75 @@
             }).join('');
         }
 
+        function renderFilterCategories() {
+            const container = document.getElementById('filterCategoryList');
+            if (!container) return;
+            const allChecked = initialParentSlug === '';
+            const items = filterMainCategories.map((cat) => {
+                const checked = initialParentSlug !== '' ? cat.slug === initialParentSlug : true;
+                return `<label class="flex items-center gap-2 cursor-pointer group"><input type="checkbox"
+                                    class="filter-cat w-4 h-4 rounded accent-blue-500" value="${cat.slug}" ${checked ? 'checked' : ''}
+                                    onchange="applyFilter()" /><span
+                                    class="text-sm text-slate-600 group-hover:text-slate-800">${cat.name} (${cat.count})</span></label>`;
+            }).join('');
+            container.innerHTML = items;
+        }
+
         function selectCategory(cat, label) {
-            currentCat = cat;
             document.getElementById('breadcrumb-cat').textContent = label;
             document.getElementById('pageTitle').textContent = label;
-            render(getFiltered());
+            const checks = Array.from(document.querySelectorAll('.filter-cat'));
+            checks.forEach((el) => {
+                el.checked = (cat === 'semua') ? true : (el.value === cat);
+            });
+            applyFilter();
             window.scrollTo({
                 top: 0,
                 behavior: 'smooth'
             });
         }
 
-        function filterSubcat(btn, sub) {
-            currentSubcat = sub;
-            document.querySelectorAll('.sidebar-item').forEach(b => {
-                b.classList.remove('active');
-                b.classList.add('text-slate-600');
-            });
-            btn.classList.add('active');
-            btn.classList.remove('text-slate-600');
-            render(getFiltered());
+        function setPriceRange(min, max) {
+            document.getElementById('priceMin').value = min;
+            document.getElementById('priceMax').value = max;
+            applyFilter();
         }
 
-        function setPriceRange(min, max) {
-            priceMin = min;
-            priceMax = max;
-            render(getFiltered());
+        function toggleColor(btn, color) {
+            const idx = selectedColors.indexOf(color);
+            if (idx === -1) {
+                selectedColors.push(color);
+                btn.classList.add('ring-2', 'ring-blue-500', 'ring-offset-2');
+            } else {
+                selectedColors.splice(idx, 1);
+                btn.classList.remove('ring-2', 'ring-blue-500', 'ring-offset-2');
+            }
+            applyFilter();
+        }
+
+        function applyFilter() {
+            filteredProducts = getFiltered();
+            sortProds();
+        }
+
+        function resetFilter() {
+            document.querySelectorAll('.filter-cat').forEach((el) => {
+                el.checked = true;
+            });
+            document.getElementById('priceMin').value = '';
+            document.getElementById('priceMax').value = '';
+            document.querySelectorAll('input[name="priceRange"]').forEach((r) => r.checked = false);
+            document.querySelectorAll('input[name="rating"]').forEach((r) => r.checked = false);
+            selectedColors = [];
+            document.querySelectorAll('.color-btn').forEach((b) => b.classList.remove('ring-2', 'ring-blue-500',
+                'ring-offset-2'));
+            filteredProducts = [...allProducts];
+            sortProds();
         }
 
         function sortProds() {
             const val = document.getElementById('sortSel').value;
-            let prods = getFiltered();
+            let prods = [...filteredProducts];
             if (val === 'cheap') prods.sort((a, b) => a.price - b.price);
             else if (val === 'expensive') prods.sort((a, b) => b.price - a.price);
             else if (val === 'rating') prods.sort((a, b) => b.rating - a.rating);
@@ -551,16 +580,12 @@
             const val = document.getElementById('mainSearch')?.value || document.getElementById('mobileSearchInput')
                 ?.value || '';
             searchQuery = val;
-            render(getFiltered());
+            applyFilter();
         }
 
         function resetAll() {
-            currentCat = 'semua';
-            currentSubcat = 'semua';
-            priceMin = 0;
-            priceMax = 9999999;
             searchQuery = '';
-            render(getFiltered());
+            resetFilter();
         }
 
         function openMobileFilter() {
@@ -615,7 +640,8 @@
             setTimeout(() => toast.classList.add('hidden'), 3000);
         }
 
-        render(allProducts);
+        renderFilterCategories();
+        applyFilter();
 
         // Navbar mega dropdown
         function toggleCategoryMenu(event) {
@@ -802,4 +828,7 @@
         setMegaCategory('rumah-tangga');
     </script>
 @endsection
+
+
+
 

@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(php artisan *)"
+      "Bash(php artisan *)",
+      "Bash(find \"c:\\\\\\\\laragon\\\\\\\\www\\\\\\\\citra-ecommerce-new\\\\\\\\resources\\\\\\\\js\" -type f)"
     ]
   }
 }

@@ -1,4 +1,4 @@
-@extends('layouts.user')
+﻿@extends('layouts.user')
 
 @section('title', 'Profil - Ecommerce Citra')
 
@@ -105,6 +105,11 @@
         .badge-batal {
             background: #fee2e2;
             color: #dc2626;
+        }
+
+        .badge-menunggu {
+            background: #fef3c7;
+            color: #92400e;
         }
 
         .avatar-ring {
@@ -536,13 +541,17 @@
                                     </div>
                                     <div class="mt-2 space-y-1">
                                         <div id="req-len" class="flex items-center gap-2 text-xs text-slate-400">
-                                            <span>?</span> Min. 8 karakter</div>
+                                            <span>?</span> Min. 8 karakter
+                                        </div>
                                         <div id="req-upper" class="flex items-center gap-2 text-xs text-slate-400">
-                                            <span>?</span> Huruf kapital</div>
+                                            <span>?</span> Huruf kapital
+                                        </div>
                                         <div id="req-num" class="flex items-center gap-2 text-xs text-slate-400">
-                                            <span>?</span> Angka</div>
+                                            <span>?</span> Angka
+                                        </div>
                                         <div id="req-sym" class="flex items-center gap-2 text-xs text-slate-400">
-                                            <span>?</span> Simbol (!@#$...)</div>
+                                            <span>?</span> Simbol (!@#$...)
+                                        </div>
                                     </div>
                                 </div>
                                 <div>
@@ -597,37 +606,53 @@
                                     <div class="border-2 border-blue-400 bg-blue-50 rounded-2xl p-5">
                                         <div class="flex items-start justify-between mb-3">
                                             <div class="flex items-center gap-2">
-                                                <span class="bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-1 rounded-full">{{ $address->label }}</span>
-                                                <span class="bg-blue-500 text-white text-xs font-bold px-2.5 py-1 rounded-full">Utama</span>
+                                                <span
+                                                    class="bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-1 rounded-full">{{ $address->label }}</span>
+                                                <span
+                                                    class="bg-blue-500 text-white text-xs font-bold px-2.5 py-1 rounded-full">Utama</span>
                                             </div>
                                             <div class="flex gap-2">
-                                                <button class="text-xs text-blue-600 hover:text-blue-700 font-semibold border border-blue-300 px-3 py-1 rounded-lg hover:bg-blue-100 transition-colors">Ubah</button>
-                                                <button class="text-xs text-red-400 hover:text-red-500 font-semibold border border-red-200 px-3 py-1 rounded-lg hover:bg-red-50 transition-colors">Hapus</button>
+                                                <button onclick="editAddress(this)" data-id="{{ $address->id }}"
+                                                    class="text-xs text-blue-600 hover:text-blue-700 font-semibold border border-blue-300 px-3 py-1 rounded-lg hover:bg-blue-100 transition-colors">Ubah</button>
+                                                <button onclick="deleteAddress(this)" data-id="{{ $address->id }}"
+                                                    class="text-xs text-red-400 hover:text-red-500 font-semibold border border-red-200 px-3 py-1 rounded-lg hover:bg-red-50 transition-colors">Hapus</button>
                                             </div>
                                         </div>
                                         <p class="font-semibold text-slate-800 mb-0.5">{{ $address->recipient_name }}</p>
-                                        <p class="text-sm text-slate-600 mb-0.5">{{ $address->phone_country_code }} {{ $address->phone_number }}</p>
-                                        <p class="text-sm text-slate-600">{{ $address->address_line }}, {{ $address->city }}, {{ $address->province }}{{ $address->postal_code ? ' ' . $address->postal_code : '' }}</p>
+                                        <p class="text-sm text-slate-600 mb-0.5">{{ $address->phone_country_code }}
+                                            {{ $address->phone_number }}</p>
+                                        <p class="text-sm text-slate-600">{{ $address->address_line }},
+                                            {{ $address->city }},
+                                            {{ $address->province }}{{ $address->postal_code ? ' ' . $address->postal_code : '' }}
+                                        </p>
                                     </div>
                                 @else
                                     <div class="border border-slate-200 rounded-2xl p-5">
                                         <div class="flex items-start justify-between mb-3">
-                                            <span class="bg-slate-100 text-slate-600 text-xs font-bold px-2.5 py-1 rounded-full">{{ $address->label }}</span>
+                                            <span
+                                                class="bg-slate-100 text-slate-600 text-xs font-bold px-2.5 py-1 rounded-full">{{ $address->label }}</span>
                                             <div class="flex gap-2">
                                                 <button onclick="setMainAddress(this)" data-id="{{ $address->id }}"
-                                                    class="text-xs text-blue-600 hover:text-blue-700 font-semibold border border-blue-300 px-3 py-1 rounded-lg hover:bg-blue-50 transition-colors">Jadikan Utama</button>
-                                                <button class="text-xs text-slate-500 hover:text-slate-700 font-semibold border border-slate-200 px-3 py-1 rounded-lg hover:bg-slate-50 transition-colors">Ubah</button>
-                                                <button class="text-xs text-red-400 hover:text-red-500 font-semibold border border-red-200 px-3 py-1 rounded-lg hover:bg-red-50 transition-colors">Hapus</button>
+                                                    class="text-xs text-blue-600 hover:text-blue-700 font-semibold border border-blue-300 px-3 py-1 rounded-lg hover:bg-blue-50 transition-colors">Jadikan
+                                                    Utama</button>
+                                                <button onclick="editAddress(this)" data-id="{{ $address->id }}"
+                                                    class="text-xs text-slate-500 hover:text-slate-700 font-semibold border border-slate-200 px-3 py-1 rounded-lg hover:bg-slate-50 transition-colors">Ubah</button>
+                                                <button onclick="deleteAddress(this)" data-id="{{ $address->id }}"
+                                                    class="text-xs text-red-400 hover:text-red-500 font-semibold border border-red-200 px-3 py-1 rounded-lg hover:bg-red-50 transition-colors">Hapus</button>
                                             </div>
                                         </div>
                                         <p class="font-semibold text-slate-800 mb-0.5">{{ $address->recipient_name }}</p>
-                                        <p class="text-sm text-slate-600 mb-0.5">{{ $address->phone_country_code }} {{ $address->phone_number }}</p>
-                                        <p class="text-sm text-slate-600">{{ $address->address_line }}, {{ $address->city }}, {{ $address->province }}{{ $address->postal_code ? ' ' . $address->postal_code : '' }}</p>
+                                        <p class="text-sm text-slate-600 mb-0.5">{{ $address->phone_country_code }}
+                                            {{ $address->phone_number }}</p>
+                                        <p class="text-sm text-slate-600">{{ $address->address_line }},
+                                            {{ $address->city }},
+                                            {{ $address->province }}{{ $address->postal_code ? ' ' . $address->postal_code : '' }}
+                                        </p>
                                     </div>
                                 @endif
                             @empty
                                 <div class="text-center py-12">
-                                    <div class="text-5xl mb-3">📍</div>
+                                    <div class="text-5xl mb-3">??</div>
                                     <p class="text-slate-500 font-medium">Belum ada alamat tersimpan</p>
                                     <p class="text-slate-400 text-sm mt-1">Tambahkan alamat pengiriman kamu</p>
                                 </div>
@@ -637,7 +662,21 @@
                         <!-- New Address Form (hidden by default) -->
                         <div id="newAddressForm" class="hidden px-6 pb-6">
                             <div class="border-2 border-dashed border-blue-300 rounded-2xl p-5 bg-blue-50">
-                                <h3 class="font-bold text-slate-800 mb-4">Tambah Alamat Baru</h3>
+                                <h3 id="addressFormTitle" class="font-bold text-slate-800 mb-4">Tambah Alamat Baru</h3>
+                                <div id="addressFormLoading" class="hidden mb-4">
+                                    <div
+                                        class="rounded-xl border border-blue-200 bg-white px-4 py-3 text-sm text-slate-600 flex items-center gap-3">
+                                        <svg class="w-4 h-4 animate-spin text-blue-500" viewBox="0 0 24 24" fill="none"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"
+                                                class="opacity-20"></circle>
+                                            <path d="M22 12a10 10 0 00-10-10" stroke="currentColor" stroke-width="3"
+                                                stroke-linecap="round"></path>
+                                        </svg>
+                                        <span>Memuat data alamat...</span>
+                                    </div>
+                                </div>
+                                <div id="addressFormBody">
                                 <input data-address-field="label" type="hidden" value="Rumah" />
                                 <input data-address-field="phone_country_code" type="hidden" value="+62" />
                                 <input data-address-field="is_primary" type="hidden" value="0" />
@@ -693,7 +732,8 @@
                                     </div>
                                     <div>
                                         <label class="text-xs font-medium text-slate-600 mb-1 block">Kode Pos</label>
-                                        <input data-address-field="postal_code" id="postalCodeInput" type="text" placeholder="Kode Pos"
+                                        <input data-address-field="postal_code" id="postalCodeInput" type="text"
+                                            placeholder="Kode Pos"
                                             class="w-full border border-slate-200 bg-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-400" />
                                     </div>
                                     <div class="sm:col-span-2">
@@ -706,9 +746,10 @@
                                 <div class="flex gap-3 mt-4">
                                     <button onclick="hideNewAddressForm()"
                                         class="flex-1 border border-slate-200 text-slate-600 text-sm font-semibold py-2.5 rounded-xl bg-white hover:bg-slate-50 transition-colors">Batal</button>
-                                    <button type="button" onclick="saveNewAddress()"
+                                    <button id="addressFormSubmitBtn" type="button" onclick="saveNewAddress()"
                                         class="flex-1 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors">Simpan
                                         Alamat</button>
+                                </div>
                                 </div>
                             </div>
                         </div>
@@ -725,10 +766,13 @@
                         <div class="flex overflow-x-auto border-b border-slate-100">
                             <button onclick="filterOrder('semua')"
                                 class="order-tab px-5 py-3 text-sm font-semibold text-blue-600 border-b-2 border-blue-500 whitespace-nowrap">Semua</button>
-                            <button onclick="filterOrder('proses')"
-                                class="order-tab px-5 py-3 text-sm font-medium text-slate-500 whitespace-nowrap hover:text-slate-700">Diproses</button>
+                            <button onclick="filterOrder('menunggu')"
+                                class="order-tab px-5 py-3 text-sm font-medium text-slate-500 whitespace-nowrap hover:text-slate-700">Menunggu
+                                Pembayaran</button>
                             <button onclick="filterOrder('dibayar')"
                                 class="order-tab px-5 py-3 text-sm font-medium text-slate-500 whitespace-nowrap hover:text-slate-700">Dibayar</button>
+                            <button onclick="filterOrder('proses')"
+                                class="order-tab px-5 py-3 text-sm font-medium text-slate-500 whitespace-nowrap hover:text-slate-700">Diproses</button>
                             <button onclick="filterOrder('kirim')"
                                 class="order-tab px-5 py-3 text-sm font-medium text-slate-500 whitespace-nowrap hover:text-slate-700">Dikirim</button>
                             <button onclick="filterOrder('selesai')"
@@ -830,39 +874,79 @@
         </div>
     </div>
 
-    <!-- FOOTER -->
-    <footer class="bg-slate-900 text-slate-400 py-8 mt-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-            <div class="flex items-center gap-2">
-                <div class="w-7 h-7 bg-blue-500 rounded-lg flex items-center justify-center">
-                    <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                            d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3z" />
-                    </svg>
+    
+    <div id="orderDetailModal" class="fixed inset-0 z-[99999] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl border border-slate-100 flex flex-col max-h-[90vh]">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 shrink-0">
+                <div>
+                    <h3 class="font-bold text-lg text-slate-800">Detail Pesanan</h3>
+                    <p id="orderDetailInvoice" class="text-xs text-slate-400 mt-0.5"></p>
                 </div>
-                <span class="text-white font-bold">Ecommerce Citra</span>
+                <button type="button" onclick="closeOrderDetailModal()"
+                    class="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M18 6L6 18M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </button>
             </div>
-            <p class="text-sm">?</p>
-            <div class="flex flex-wrap justify-center gap-4 text-sm">
-                <a href="{{ route('frontend.index') }}" class="hover:text-blue-400">Beranda</a>
-                <a href="{{ route('frontend.kategori') }}" class="hover:text-blue-400">Kategori</a>
-                <a href="{{ route('frontend.checkout') }}" class="hover:text-blue-400">Checkout</a>
-            </div>
+            <div id="orderDetailContent" class="overflow-y-auto flex-1 px-6 py-4 space-y-5"></div>
         </div>
-    </footer>
-
-    <!-- Logout Modal -->
-    <div id="logoutModal" class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/50 p-4">
-        <div class="bg-white rounded-2xl max-w-sm w-full p-6 text-center">
-            <div class="text-5xl mb-4">?</div>
-            <h3 class="font-bold text-slate-800 text-lg mb-2">Keluar Akun?</h3>
-            <p class="text-slate-500 text-sm mb-6">Kamu akan keluar dari akun Ecommerce Citra. Sampai jumpa lagi!</p>
-            <div class="flex gap-3">
-                <button onclick="closeLogout()"
-                    class="flex-1 border border-slate-200 text-slate-600 font-semibold py-2.5 rounded-xl hover:bg-slate-50 transition-colors">Batal</button>
-                <a href="{{ route('frontend.index') }}"
-                    class="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2.5 rounded-xl transition-colors">Keluar</a>
+    </div>
+    <div id="reviewModal" class="fixed inset-0 z-[99999] hidden items-center justify-center bg-black/50 p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h3 class="font-bold text-slate-800 text-lg">Beri Ulasan</h3>
+                    <p id="reviewInvoiceText" class="text-xs text-slate-400 mt-0.5"></p>
+                </div>
+                <button type="button" onclick="closeReviewModal()" class="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
             </div>
+
+                        <form id="reviewForm" method="POST" action="{{ route('frontend.profil.reviews.store') }}" enctype="multipart/form-data" class="space-y-4">
+                @csrf
+                <input type="hidden" name="transaction_id" id="reviewTransactionId" />
+                <input type="hidden" name="transaction_detail_id" id="reviewTransactionDetailId" />
+                <input type="hidden" name="rating" id="reviewRatingInput" value="5" />
+
+                <div>
+                    <label class="text-sm font-semibold text-slate-700 mb-1.5 block">Pilih Produk</label>
+                    <select id="reviewProductSelect"
+                        class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400"
+                        onchange="onReviewProductChange(this.value)"></select>
+                </div>
+
+                <div>
+                    <label class="text-sm font-semibold text-slate-700 mb-2 block">Rating Bintang</label>
+                    <div class="flex items-center gap-2" id="reviewStarsWrap">
+                        <button type="button" data-star="1" onclick="setReviewRating(1)" class="review-star text-2xl text-slate-300">&#9733;</button>
+                        <button type="button" data-star="2" onclick="setReviewRating(2)" class="review-star text-2xl text-slate-300">&#9733;</button>
+                        <button type="button" data-star="3" onclick="setReviewRating(3)" class="review-star text-2xl text-slate-300">&#9733;</button>
+                        <button type="button" data-star="4" onclick="setReviewRating(4)" class="review-star text-2xl text-slate-300">&#9733;</button>
+                        <button type="button" data-star="5" onclick="setReviewRating(5)" class="review-star text-2xl text-slate-300">&#9733;</button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-sm font-semibold text-slate-700 mb-1.5 block">Pesan</label>
+                    <textarea name="message" id="reviewMessageInput" placeholder="Bagikan pengalaman belanja kamu..."
+                        class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 resize-none h-24"></textarea>
+                </div>
+
+                <div>
+                    <label class="text-sm font-semibold text-slate-700 mb-1.5 block">Foto</label>
+                    <input type="file" name="photos[]" id="reviewPhotosInput" multiple accept="image/*"
+                        class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-400" />
+                    <div id="reviewPhotoPreview" class="mt-2 flex flex-wrap gap-2"></div>
+                    <p class="text-xs text-slate-400 mt-1">Maksimal 8 foto, masing-masing maksimal 2MB.</p>
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeReviewModal()"
+                        class="flex-1 border border-slate-200 text-slate-600 font-semibold py-2.5 rounded-xl hover:bg-slate-50 transition-colors">Batal</button>
+                    <button type="submit"
+                        class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 rounded-xl transition-colors">Kirim Ulasan</button>
+                </div>
+            </form>
         </div>
     </div>
 @endsection
@@ -914,19 +998,57 @@
                         in_array($statusRaw, ['kirim', 'shipping', 'shipped']) => 'kirim',
                         in_array($statusRaw, ['process', 'processing']) => 'proses',
                         in_array($statusRaw, ['cancel', 'expire', 'deny', 'failure', 'failed']) => 'batal',
-                        default => 'proses',
+                        default => 'menunggu',
                     };
 
-                    $firstDetail = $tx->details->first();
+                    $resolveImg = function ($img) {
+                        $img = (string) ($img ?? '');
+                        if ($img === '') {
+                            return 'https://via.placeholder.com/80x80?text=No+Image';
+                        }
+                        if (
+                            str_starts_with($img, 'http://') ||
+                            str_starts_with($img, 'https://') ||
+                            str_starts_with($img, '//') ||
+                            str_starts_with($img, 'data:')
+                        ) {
+                            return $img;
+                        }
+                        return asset(ltrim($img, '/'));
+                    };
                     return [
+                        'transaction_id' => (int) $tx->id,
                         'id' => (string) $tx->invoice_no,
+                        'order_id' => (string) $tx->order_id,
                         'date' => optional($tx->created_at)->translatedFormat('d M Y'),
                         'status' => $status,
                         'status_raw' => $tx->status,
+                        'payment_method' => (string) ($tx->payment_method ?? '-'),
                         'tracking_number' => (string) ($tx->tracking_number ?? ''),
-                        'items' => $tx->details->pluck('product_name')->values()->all(),
+                        'shipping_cost' => (int) $tx->shipping_cost,
+                        'shipping_label' => (string) ($tx->shipping_label ?? ''),
+                        'shipping_recipient_name' => (string) ($tx->shipping_recipient_name ?? ''),
+                        'shipping_phone' => (string) ($tx->shipping_phone ?? ''),
+                        'shipping_address_line' => (string) ($tx->shipping_address_line ?? ''),
+                        'shipping_city' => (string) ($tx->shipping_city ?? ''),
+                        'shipping_province' => (string) ($tx->shipping_province ?? ''),
+                        'shipping_postal_code' => (string) ($tx->shipping_postal_code ?? ''),
+                        'items' => $tx->details
+                            ->map(
+                                fn($d) => [
+                                    'detail_id' => (int) $d->id,
+                                    'name' => $d->product_name,
+                                    'variant' => (string) ($d->variant_name ?? ''),
+                                    'qty' => (int) $d->quantity,
+                                    'price' => (int) $d->price,
+                                    'subtotal' => (int) $d->subtotal,
+                                    'image' => $resolveImg($d->image),
+                                    'is_reviewed' => $d->productReviews->isNotEmpty(),
+                                ],
+                            )
+                            ->values()
+                            ->all(),
                         'total' => (int) $tx->grand_total,
-                        'img' => $firstDetail?->image ?: 'https://via.placeholder.com/80x80?text=No+Image',
                     ];
                 })
                 ->values()
@@ -947,9 +1069,26 @@
         let roCities = [];
         let roDistricts = [];
         let roSubdistricts = [];
+        let editingAddressId = null;
 
         function byField(name) {
             return document.querySelector(`#newAddressForm [data-address-field="${name}"]`);
+        }
+
+        function setAddressFormLoading(isLoading) {
+            const loading = document.getElementById('addressFormLoading');
+            const body = document.getElementById('addressFormBody');
+            const submitBtn = document.getElementById('addressFormSubmitBtn');
+            if (!loading || !body || !submitBtn) return;
+            if (isLoading) {
+                loading.classList.remove('hidden');
+                body.classList.add('opacity-50', 'pointer-events-none');
+                submitBtn.disabled = true;
+                return;
+            }
+            loading.classList.add('hidden');
+            body.classList.remove('opacity-50', 'pointer-events-none');
+            submitBtn.disabled = false;
         }
 
         function fillDatalist(id, items, toLabel) {
@@ -994,7 +1133,8 @@
 
         async function onProvinceChange() {
             const name = (byField('province').value || '').trim().toLowerCase();
-            const found = roProvinces.find((p) => String(p.name || p.province_name || '').trim().toLowerCase() === name);
+            const found = roProvinces.find((p) => String(p.name || p.province_name || '').trim().toLowerCase() ===
+            name);
             byField('province_id').value = found ? String(found.id || found.province_id || '') : '';
             resetLocationFields(2);
             if (!found) return;
@@ -1026,15 +1166,17 @@
 
         async function onDistrictChange() {
             const name = (byField('district').value || '').trim().toLowerCase();
-            const found = roDistricts.find((d) => String(d.name || d.district_name || '').trim().toLowerCase() === name);
+            const found = roDistricts.find((d) => String(d.name || d.district_name || '').trim().toLowerCase() ===
+            name);
             byField('district_id').value = found ? String(found.id || found.district_id || '') : '';
             resetLocationFields(4);
             if (!found) return;
-            const res = await fetch(`${roSubdistrictsUrl}?district_id=${encodeURIComponent(byField('district_id').value)}`, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            });
+            const res = await fetch(
+                `${roSubdistrictsUrl}?district_id=${encodeURIComponent(byField('district_id').value)}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
             const json = await res.json();
             roSubdistricts = Array.isArray(json?.data) ? json.data : [];
             fillDatalist('subdistrictList', roSubdistricts, (s) => s.name || s.subdistrict_name || '');
@@ -1042,17 +1184,23 @@
 
         function onSubdistrictChange() {
             const name = (byField('subdistrict').value || '').trim().toLowerCase();
-            const found = roSubdistricts.find((s) => String(s.name || s.subdistrict_name || '').trim().toLowerCase() === name);
+            const found = roSubdistricts.find((s) => String(s.name || s.subdistrict_name || '').trim().toLowerCase() ===
+                name);
             byField('subdistrict_id').value = found ? String(found.id || found.subdistrict_id || '') : '';
             byField('destination_id').value = found ? String(found.destination_id || found.id || '') : '';
             if (found) {
-                byField('postal_code').value = String(found.zip_code || found.postal_code || byField('postal_code').value || '');
+                byField('postal_code').value = String(found.zip_code || found.postal_code || byField('postal_code').value ||
+                    '');
             }
         }
 
         const orders = Array.isArray(profileOrders) ? profileOrders : [];
 
         const statusMap = {
+            menunggu: {
+                label: 'Menunggu Pembayaran',
+                class: 'badge-menunggu'
+            },
             selesai: {
                 label: 'Selesai',
                 class: 'badge-selesai'
@@ -1084,25 +1232,30 @@
                 return;
             }
             list.innerHTML = filtered.map(o => {
-                const s = statusMap[o.status];
+                const s = statusMap[o.status] || {
+                    label: o.status,
+                    class: 'badge-menunggu'
+                };
                 const items = Array.isArray(o.items) ? o.items : [];
-                const firstItem = items[0] || '-';
-                const extraCount = Math.max(0, items.length - 1);
+                const itemsHtml = items.map(item => `
+                    <div class="flex items-center gap-3">
+                        <img src="${item.image}" alt="${item.name}" class="w-12 h-12 rounded-xl object-cover flex-shrink-0 border border-slate-100"
+                             onerror="this.src='https://via.placeholder.com/80x80?text=No+Image'" />
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-slate-700 leading-snug">${item.name}${item.variant ? ` <span class="text-slate-400 font-normal">(${item.variant})</span>` : ''}</p>
+                            <p class="text-xs text-slate-400">x${item.qty}</p>
+                        </div>
+                    </div>
+                `).join('');
                 return `<div class="border border-slate-200 rounded-2xl p-5 hover:border-slate-300 transition-colors">
           <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-3">
             <div>
               <span class="font-mono font-bold text-slate-800 text-sm">${o.id}</span>
-              <span class="text-slate-400 text-xs ml-2">• ${o.date}</span>
+              <span class="text-slate-400 text-xs ml-2">&bull; ${o.date}</span>
             </div>
             <span class="status-badge ${s.class}">${s.label}</span>
           </div>
-          <div class="flex gap-3 mb-3">
-            <img src="${o.img}" class="w-14 h-14 rounded-xl object-cover flex-shrink-0" />
-            <div>
-              <p class="text-sm font-medium text-slate-700">${firstItem}</p>
-              ${extraCount > 0 ? `<p class="text-xs text-slate-400">+${extraCount} produk lainnya</p>` : ''}
-            </div>
-          </div>
+          <div class="space-y-2 mb-3">${itemsHtml}</div>
           <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-3 border-t border-slate-100">
             <div>
               <span class="text-xs text-slate-500">Total: </span>
@@ -1110,14 +1263,187 @@
               ${o.status === 'kirim' && o.tracking_number ? `<p class="text-xs text-slate-500 mt-1">No. Resi: <span class="font-semibold text-slate-700">${o.tracking_number}</span></p>` : ''}
             </div>
             <div class="flex flex-wrap gap-2">
-              ${o.status === 'selesai' ? '<button onclick="showToast(\'Ulasan berhasil dikirim!\')" class="text-xs border border-yellow-300 text-yellow-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-yellow-50 transition-colors">Beri Ulasan</button>' : ''}
+              ${Array.isArray(o.items) && o.items.some((it) => !it.is_reviewed) ? '<button onclick="openReviewModal(\'' + o.id + '\')" class="text-xs border border-yellow-300 text-yellow-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-yellow-50 transition-colors">Beri Ulasan</button>' : ''}
               ${o.status === 'kirim' ? '<button onclick="showToast(\'Lacak pesanan dibuka\')" class="text-xs border border-blue-300 text-blue-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors">Lacak Pesanan</button>' : ''}
-              <a href="{{ route('frontend.detail-produk') }}" class="text-xs border border-blue-300 text-blue-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors">Beli Lagi</a>
+              <button type="button" onclick="openOrderDetailModal('${o.id}')" class="text-xs border border-slate-300 text-slate-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors">Lihat Detail</button>
             </div>
           </div>
         </div>`;
             }).join('');
         }
+
+        function setReviewRating(star) {
+            const rating = Math.max(1, Math.min(5, Number(star || 5)));
+            const ratingInput = document.getElementById('reviewRatingInput');
+            if (ratingInput) ratingInput.value = String(rating);
+            document.querySelectorAll('#reviewStarsWrap .review-star').forEach((btn) => {
+                const s = Number(btn.dataset.star || 0);
+                btn.classList.toggle('text-yellow-400', s <= rating);
+                btn.classList.toggle('text-slate-300', s > rating);
+            });
+        }
+
+                function onReviewProductChange(detailId) {
+            const hidden = document.getElementById('reviewTransactionDetailId');
+            if (hidden) hidden.value = String(detailId || '');
+        }
+
+        function renderReviewPhotoPreview(files) {
+            const wrap = document.getElementById('reviewPhotoPreview');
+            if (!wrap) return;
+            wrap.innerHTML = '';
+            Array.from(files || []).slice(0, 8).forEach((file) => {
+                if (!file || !file.type || !file.type.startsWith('image/')) return;
+                const img = document.createElement('img');
+                img.className = 'w-14 h-14 rounded-lg object-cover border border-slate-200';
+                img.src = URL.createObjectURL(file);
+                img.onload = () => URL.revokeObjectURL(img.src);
+                wrap.appendChild(img);
+            });
+        }
+
+        function openReviewModal(invoiceNo) {
+            const order = orders.find((x) => x.id === invoiceNo);
+            if (!order) return;
+            const modal = document.getElementById('reviewModal');
+            if (!modal) return;
+            document.getElementById('reviewTransactionId').value = String(order.transaction_id || '');
+            document.getElementById('reviewInvoiceText').textContent = `Invoice: ${order.id}`;
+            document.getElementById('reviewMessageInput').value = '';
+            document.getElementById('reviewPhotosInput').value = '';
+
+            const select = document.getElementById('reviewProductSelect');
+            const items = (Array.isArray(order.items) ? order.items : []).filter((item) => !item.is_reviewed);
+            if (!items.length) {
+                showToast('Semua produk pada transaksi ini sudah diulas.');
+                return;
+            }
+            select.innerHTML = items.map((item, idx) => {
+                const did = Number(item.detail_id || 0);
+                const label = `${item.name}${item.variant ? ' (' + item.variant + ')' : ''}`;
+                return `<option value="${did}" ${idx === 0 ? 'selected' : ''}>${label}</option>`;
+            }).join('');
+
+            const firstDetailId = Number(items[0]?.detail_id || 0);
+            document.getElementById('reviewTransactionDetailId').value = firstDetailId ? String(firstDetailId) : '';
+            setReviewRating(5);
+            renderReviewPhotoPreview([]);
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeReviewModal() {
+            const modal = document.getElementById('reviewModal');
+            if (!modal) return;
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+        function openOrderDetailModal(invoiceNo) {
+            const o = orders.find(x => x.id === invoiceNo);
+            if (!o) return;
+
+            document.getElementById('orderDetailInvoice').textContent = o.id;
+
+            const s = statusMap[o.status] || {
+                label: o.status,
+                class: 'badge-menunggu'
+            };
+
+            const infoHtml = `
+                <div>
+                    <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Informasi Pesanan</h4>
+                    <div class="grid grid-cols-2 gap-x-4 gap-y-2.5 text-sm">
+                        <div>
+                            <p class="text-xs text-slate-400 mb-0.5">Tanggal</p>
+                            <p class="font-medium text-slate-800">${o.date}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400 mb-0.5">Metode Pembayaran</p>
+                            <p class="font-medium text-slate-800">${o.payment_method}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400 mb-0.5">Status</p>
+                            <span class="status-badge ${s.class}">${s.label}</span>
+                        </div>
+                        ${o.tracking_number ? `<div>
+                                <p class="text-xs text-slate-400 mb-0.5">Nomor Resi</p>
+                                <p class="font-medium text-slate-800">${o.tracking_number}</p>
+                            </div>` : ''}
+                    </div>
+                </div>
+            `;
+
+            const hasAddress = o.shipping_recipient_name || o.shipping_phone || o.shipping_address_line;
+            const addressHtml = hasAddress ? `
+                <div>
+                    <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Alamat Pengiriman</h4>
+                    <div class="bg-slate-50 rounded-xl p-4 space-y-1.5">
+                        ${o.shipping_recipient_name ? `<p class="font-semibold text-slate-800 text-sm">${o.shipping_recipient_name}</p>` : ''}
+                        ${o.shipping_phone ? `<p class="text-sm text-slate-600 flex items-center gap-1.5"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.62 4.45 2 2 0 0 1 3.6 2.24h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.09 6.09l.95-.95a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 21.73 17z"/></svg>${o.shipping_phone}</p>` : ''}
+                        ${o.shipping_address_line ? `<p class="text-sm text-slate-600">${o.shipping_address_line}${o.shipping_city ? ', ' + o.shipping_city : ''}${o.shipping_province ? ', ' + o.shipping_province : ''}${o.shipping_postal_code ? ' ' + o.shipping_postal_code : ''}</p>` : ''}
+                        ${o.shipping_label ? `<span class="inline-block mt-1 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">${o.shipping_label}</span>` : ''}
+                    </div>
+                </div>
+            ` : '';
+
+            const items = Array.isArray(o.items) ? o.items : [];
+            const productsHtml = `
+                <div>
+                    <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Produk</h4>
+                    <div class="space-y-3">
+                        ${items.map(d => `
+                                <div class="flex items-start gap-3">
+                                    <div class="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-slate-100 border border-slate-200">
+                                        <img src="${d.image}" alt="${d.name}" class="w-full h-full object-cover"
+                                             onerror="this.src='https://via.placeholder.com/80x80?text=No+Image'" />
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-slate-800 leading-snug">${d.name}${d.variant ? " <span style='font-size:11px;color:#94a3b8;font-weight:400'>(" + d.variant + ")</span>" : ""}</p>
+                                        <p class="text-xs text-slate-500 mt-0.5">${d.qty} × Rp ${Number(d.price || 0).toLocaleString('id-ID')}</p>
+                                    </div>
+                                    <div class="text-sm font-semibold text-slate-800 shrink-0">Rp ${Number(d.subtotal || 0).toLocaleString('id-ID')}</div>
+                                </div>
+                            `).join('')}
+                    </div>
+                </div>
+            `;
+
+            const summaryHtml = `
+                <div class="bg-slate-50 rounded-xl p-4 space-y-2 text-sm">
+                    <div class="flex justify-between text-slate-500">
+                        <span>Ongkos Kirim</span>
+                        <span>Rp ${Number(o.shipping_cost || 0).toLocaleString('id-ID')}</span>
+                    </div>
+                    <div class="flex justify-between items-center pt-2 border-t border-slate-200">
+                        <span class="font-bold text-slate-800">Grand Total</span>
+                        <span class="font-bold text-blue-600 text-base">Rp ${Number(o.total || 0).toLocaleString('id-ID')}</span>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('orderDetailContent').innerHTML = infoHtml + addressHtml + productsHtml + summaryHtml;
+            const modal = document.getElementById('orderDetailModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeOrderDetailModal() {
+            const modal = document.getElementById('orderDetailModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        document.getElementById('orderDetailModal')?.addEventListener('click', function(e) {
+            if (e.target === this) closeOrderDetailModal();
+        });
+        document.getElementById('reviewModal')?.addEventListener('click', function(e) {
+            if (e.target === this) closeReviewModal();
+        });
+        document.getElementById('reviewPhotosInput')?.addEventListener('change', function(e) {
+            renderReviewPhotoPreview(e?.target?.files || []);
+        });
+
+
 
         function filterOrder(status) {
             document.querySelectorAll('.order-tab').forEach(t => {
@@ -1304,11 +1630,35 @@
 
         function showNewAddressForm() {
             document.getElementById('newAddressForm').classList.remove('hidden');
+            document.getElementById('addressFormTitle').textContent = 'Tambah Alamat Baru';
+            document.getElementById('addressFormSubmitBtn').textContent = 'Simpan Alamat';
+            editingAddressId = null;
+            setAddressFormLoading(false);
+            document.querySelectorAll('#newAddressForm [data-address-field]').forEach((field) => {
+                if (field.type === 'hidden') return;
+                field.value = '';
+            });
+            byField('label').value = 'Rumah';
+            byField('phone_country_code').value = '+62';
+            byField('is_primary').value = '0';
+            byField('province_id').value = '';
+            byField('city_id').value = '';
+            byField('district_id').value = '';
+            byField('subdistrict_id').value = '';
+            byField('destination_id').value = '';
+            byField('postal_code').value = '';
+            roCities = [];
+            roDistricts = [];
+            roSubdistricts = [];
+            fillDatalist('cityList', [], () => '');
+            fillDatalist('districtList', [], () => '');
+            fillDatalist('subdistrictList', [], () => '');
             if (!roProvinces.length) loadProvinces();
         }
 
         function hideNewAddressForm() {
             document.getElementById('newAddressForm').classList.add('hidden');
+            editingAddressId = null;
         }
 
         function saveNewAddress() {
@@ -1318,7 +1668,89 @@
                 payload[field.dataset.addressField] = field.type === 'checkbox' ? (field.checked ? 1 : 0) : field
                     .value;
             });
+            if (editingAddressId) {
+                payload._method = 'PUT';
+                postForm(`{{ url('/profil/addresses') }}/${editingAddressId}`, payload);
+                return;
+            }
             postForm("{{ route('frontend.profil.addresses.store') }}", payload);
+        }
+
+        async function editAddress(btn) {
+            const id = btn?.dataset?.id;
+            if (!id) return;
+            const found = profileAddresses.find((a) => String(a.id) === String(id));
+            if (!found) return;
+
+            editingAddressId = String(id);
+            document.getElementById('newAddressForm').classList.remove('hidden');
+            document.getElementById('addressFormTitle').textContent = 'Ubah Alamat';
+            document.getElementById('addressFormSubmitBtn').textContent = 'Update Alamat';
+            setAddressFormLoading(true);
+
+            byField('label').value = found.label || 'Rumah';
+            byField('recipient_name').value = found.recipient_name || '';
+            byField('phone_country_code').value = found.phone_country_code || '+62';
+            byField('phone_number').value = found.phone_number || '';
+            byField('province').value = found.province || '';
+            byField('city').value = found.city || '';
+            byField('district').value = found.district || '';
+            byField('subdistrict').value = found.subdistrict || '';
+            byField('postal_code').value = found.postal_code || '';
+            byField('address_line').value = found.address_line || '';
+            byField('is_primary').value = found.is_primary ? '1' : '0';
+            byField('province_id').value = found.province_id || '';
+            byField('city_id').value = found.city_id || '';
+            byField('district_id').value = found.district_id || '';
+            byField('subdistrict_id').value = found.subdistrict_id || '';
+            byField('destination_id').value = found.destination_id || '';
+
+            try {
+                if (!roProvinces.length) await loadProvinces();
+
+                if (found.province_id) {
+                    const cityRes = await fetch(`${roCitiesUrl}?province_id=${encodeURIComponent(found.province_id)}`, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+                    const cityJson = await cityRes.json();
+                    roCities = Array.isArray(cityJson?.data) ? cityJson.data : [];
+                    fillDatalist('cityList', roCities, (c) => c.name || c.city_name || '');
+                }
+                if (found.city_id) {
+                    const distRes = await fetch(`${roDistrictsUrl}?city_id=${encodeURIComponent(found.city_id)}`, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+                    const distJson = await distRes.json();
+                    roDistricts = Array.isArray(distJson?.data) ? distJson.data : [];
+                    fillDatalist('districtList', roDistricts, (d) => d.name || d.district_name || '');
+                }
+                if (found.district_id) {
+                    const subdistRes = await fetch(
+                        `${roSubdistrictsUrl}?district_id=${encodeURIComponent(found.district_id)}`, {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+                    const subdistJson = await subdistRes.json();
+                    roSubdistricts = Array.isArray(subdistJson?.data) ? subdistJson.data : [];
+                    fillDatalist('subdistrictList', roSubdistricts, (s) => s.name || s.subdistrict_name || '');
+                }
+            } finally {
+                setAddressFormLoading(false);
+            }
+        }
+
+        function deleteAddress(btn) {
+            const id = btn?.dataset?.id;
+            if (!id) return;
+            if (!confirm('Hapus alamat ini?')) return;
+            postForm(`{{ url('/profil/addresses') }}/${id}`, {
+                _method: 'DELETE'
+            });
         }
 
         function postForm(url, payload) {
@@ -1383,8 +1815,10 @@
         document.getElementById('cityInput')?.addEventListener('change', onCityChange);
         document.getElementById('districtInput')?.addEventListener('change', onDistrictChange);
         document.getElementById('subdistrictInput')?.addEventListener('change', onSubdistrictChange);
+        setReviewRating(5);
         renderOrders();
-        if (initialProfileTab && ['biodata', 'keamanan', 'alamat', 'pesanan', 'wishlist', 'notif'].includes(initialProfileTab)) {
+        if (initialProfileTab && ['biodata', 'keamanan', 'alamat', 'pesanan', 'wishlist', 'notif'].includes(
+                initialProfileTab)) {
             showTab(initialProfileTab);
         }
 
@@ -1567,3 +2001,21 @@
         setMegaCategory('rumah-tangga');
     </script>
 @endsection
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

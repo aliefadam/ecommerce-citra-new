@@ -20,6 +20,12 @@ class Transaction extends Model
         'shipping_cost',
         'grand_total',
         'shipping_label',
+        'shipping_recipient_name',
+        'shipping_phone',
+        'shipping_address_line',
+        'shipping_city',
+        'shipping_province',
+        'shipping_postal_code',
         'tracking_number',
         'processed_at',
         'shipped_at',
@@ -42,5 +48,10 @@ class Transaction extends Model
     public function details(): HasMany
     {
         return $this->hasMany(TransactionDetail::class);
+    }
+
+    public function productReviews(): HasMany
+    {
+        return $this->hasMany(TransactionProductReview::class);
     }
 }

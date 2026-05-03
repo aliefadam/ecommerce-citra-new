@@ -13,7 +13,8 @@ class CategoryDetailController extends Controller
     public function index()
     {
         $categoryDetails = CategoryDetail::query()->with('mainCategory')->latest()->get();
-        return view('backend.category-details.index', compact('categoryDetails'));
+        $mainCategories  = MainCategory::query()->orderBy('name')->get();
+        return view('backend.category-details.index', compact('categoryDetails', 'mainCategories'));
     }
 
     public function create()

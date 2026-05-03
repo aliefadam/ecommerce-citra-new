@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
+use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
 {
@@ -65,6 +69,126 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('login');
+    }
+
+    public function showForgotPassword()
+    {
+        return view('auth.forgot-password');
+    }
+
+    public function sendResetLink(Request $request)
+    {
+        $validated = $request->validate([
+            'email' => ['required', 'email'],
+        ]);
+
+        $exists = User::query()->where('email', $validated['email'])->exists();
+        if (!$exists) {
+            return back()
+                ->withErrors(['email' => 'Email tidak ditemukan.'])
+                ->withInput();
+        }
+
+        try {
+            $status = Password::sendResetLink(['email' => $validated['email']]);
+        } catch (\Throwable $e) {
+            report($e);
+            return back()
+                ->withErrors(['email' => 'Gagal mengirim email reset password. Periksa konfigurasi email SMTP Anda.'])
+                ->withInput();
+        }
+        if ($status !== Password::RESET_LINK_SENT) {
+            return back()
+                ->withErrors(['email' => __($status)])
+                ->withInput();
+        }
+
+        return back()->with('status', 'Link reset password berhasil dikirim ke email Anda.');
+    }
+
+    public function showResetPassword(string $token, Request $request)
+    {
+        return view('auth.reset-password', [
+            'token' => $token,
+            'email' => (string) $request->query('email', ''),
+        ]);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $validated = $request->validate([
+            'token' => ['required', 'string'],
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string', 'min:6', 'confirmed'],
+        ]);
+
+        $status = Password::reset(
+            $validated,
+            function (User $user, string $password): void {
+                $user->forceFill([
+                    'password' => Hash::make($password),
+                    'remember_token' => Str::random(60),
+                ])->save();
+            }
+        );
+
+        if ($status !== Password::PASSWORD_RESET) {
+            return back()
+                ->withErrors(['email' => __($status)])
+                ->withInput();
+        }
+
+        return redirect()->route('login')->with('status', 'Password berhasil direset. Silakan login.');
+    }
+
+    public function redirectToGoogle()
+    {
+        return Socialite::driver('google')->redirect();
+    }
+
+    public function handleGoogleCallback(Request $request)
+    {
+        try {
+            $googleUser = Socialite::driver('google')->user();
+        } catch (\Throwable $e) {
+            return redirect()->route('login')->withErrors([
+                'email' => 'Login Google gagal. Silakan coba lagi.',
+            ]);
+        }
+
+        $email = (string) ($googleUser->getEmail() ?? '');
+        if ($email === '') {
+            return redirect()->route('login')->withErrors([
+                'email' => 'Akun Google tidak memiliki email yang valid.',
+            ]);
+        }
+
+        $user = User::query()->where('email', $email)->first();
+        if (!$user) {
+            $user = User::create([
+                'name' => (string) ($googleUser->getName() ?? 'Google User'),
+                'email' => $email,
+                'password' => Str::random(32),
+                'role' => 'user',
+                'google_id' => (string) $googleUser->getId(),
+                'avatar' => (string) ($googleUser->getAvatar() ?? ''),
+                'email_verified_at' => now(),
+            ]);
+        } else {
+            $user->google_id = (string) $googleUser->getId();
+            if (empty($user->avatar)) {
+                $user->avatar = (string) ($googleUser->getAvatar() ?? '');
+            }
+            if (!$user->email_verified_at) {
+                $user->email_verified_at = now();
+            }
+            $user->save();
+        }
+
+        Auth::login($user, true);
+        $request->session()->regenerate();
+
+        return $this->redirectByRole($user->role);
     }
 
     private function redirectByRole(?string $role)

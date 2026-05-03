@@ -14,6 +14,19 @@ class TransactionController extends Controller
             ->latest()
             ->get();
 
+        $transactions->transform(function ($tx) {
+            $tx->details->transform(function ($d) {
+                $image = (string) ($d->image ?? '');
+                $isAbsolute = str_starts_with($image, 'http://') || str_starts_with($image, 'https://') || str_starts_with($image, '//') || str_starts_with($image, 'data:');
+                if ($image !== '' && !$isAbsolute) {
+                    $image = asset(ltrim($image, '/'));
+                }
+                $d->image_url = $image;
+                return $d;
+            });
+            return $tx;
+        });
+
         return view('backend.transactions.index', compact('transactions'));
     }
 

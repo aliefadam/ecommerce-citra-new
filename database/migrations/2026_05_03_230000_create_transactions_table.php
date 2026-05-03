@@ -21,6 +21,12 @@ return new class extends Migration
             $table->unsignedBigInteger('shipping_cost')->default(0);
             $table->unsignedBigInteger('grand_total')->default(0);
             $table->string('shipping_label')->nullable();
+            $table->string('shipping_recipient_name')->nullable();
+            $table->string('shipping_phone')->nullable();
+            $table->text('shipping_address_line')->nullable();
+            $table->string('shipping_city')->nullable();
+            $table->string('shipping_province')->nullable();
+            $table->string('shipping_postal_code')->nullable();
             $table->timestamp('paid_at')->nullable();
             $table->timestamp('expires_at')->nullable();
             $table->timestamps();

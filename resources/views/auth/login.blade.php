@@ -35,7 +35,7 @@
         </style>
     </head>
 
-    <body class="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100">
+    <body class="h-screen overflow-hidden bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100">
         <div class="min-h-screen grid lg:grid-cols-2">
             <section
                 class="hidden lg:flex flex-col justify-between p-10 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 text-white">
@@ -74,9 +74,26 @@
                             <p class="text-sm font-semibold text-red-700 dark:text-red-300">{{ $errors->first() }}</p>
                         </div>
                     @endif
+                    @if (session('status'))
+                        <div
+                            class="mb-4 p-4 rounded-xl border border-green-200 bg-green-50 dark:bg-green-900/20 dark:border-green-900/50">
+                            <p class="text-sm font-semibold text-green-700 dark:text-green-300">{{ session('status') }}</p>
+                        </div>
+                    @endif
 
                     <div
                         class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-sm">
+                        <a href="{{ route('auth.google.redirect') }}"
+                            class="w-full inline-flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-sm font-semibold px-4 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors mb-4">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                                <path d="M21.805 10.023h-9.56v3.957h5.478c-.236 1.272-.952 2.35-2.025 3.072v2.55h3.283c1.922-1.77 3.024-4.378 3.024-7.463 0-.704-.063-1.38-.2-2.116z" fill="#4285F4"/>
+                                <path d="M12.245 22c2.735 0 5.029-.907 6.706-2.448l-3.283-2.55c-.906.61-2.066.972-3.423.972-2.64 0-4.88-1.782-5.68-4.185H3.174v2.625A10.13 10.13 0 0012.245 22z" fill="#34A853"/>
+                                <path d="M6.565 13.79a6.082 6.082 0 010-3.58V7.586H3.174a10.13 10.13 0 000 9.829l3.391-2.625z" fill="#FBBC05"/>
+                                <path d="M12.245 6.026c1.486 0 2.825.51 3.874 1.511l2.907-2.907C17.27 2.999 14.976 2 12.245 2A10.13 10.13 0 003.174 7.586l3.391 2.625c.8-2.404 3.04-4.185 5.68-4.185z" fill="#EA4335"/>
+                            </svg>
+                            Login dengan Google
+                        </a>
+
                         <form action="{{ route('login.attempt') }}" method="POST" class="space-y-4">
                             @csrf
                             <div>
@@ -97,6 +114,10 @@
                                     class="rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500" />
                                 Remember me
                             </label>
+                            <div class="text-right -mt-2">
+                                <a href="{{ route('password.request') }}"
+                                    class="text-sm text-blue-600 hover:text-blue-700 font-semibold">Lupa password?</a>
+                            </div>
 
                             <button type="submit"
                                 class="w-full inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-lg shadow-blue-200 dark:shadow-blue-900/40">

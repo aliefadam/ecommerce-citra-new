@@ -29,6 +29,8 @@ class ProductController extends Controller
             ->get()
             ->map(function ($category) {
                 $category->name = ($category->mainCategory?->name ? $category->mainCategory->name . ' > ' : '') . $category->name;
+                $category->group_name = (string) ($category->mainCategory?->name ?? 'Lainnya');
+                $category->detail_name = (string) $category->getOriginal('name');
                 return $category;
             });
         $variants   = Variant::orderBy('name')->orderBy('value')->get();
@@ -58,7 +60,7 @@ class ProductController extends Controller
 
         $files = $request->file('variants', []);
 
-        DB::transaction(function () use ($validated, $files) {
+        DB::transaction(function () use ($validated, $files, $detail) {
             $slug = $this->makeUniqueProductSlug($validated['name']);
 
             $product = Product::create([
@@ -104,6 +106,8 @@ class ProductController extends Controller
             ->get()
             ->map(function ($category) {
                 $category->name = ($category->mainCategory?->name ? $category->mainCategory->name . ' > ' : '') . $category->name;
+                $category->group_name = (string) ($category->mainCategory?->name ?? 'Lainnya');
+                $category->detail_name = (string) $category->getOriginal('name');
                 return $category;
             });
         $variants   = Variant::orderBy('name')->orderBy('value')->get();
@@ -133,7 +137,7 @@ class ProductController extends Controller
 
         $files = $request->file('variants', []);
 
-        DB::transaction(function () use ($validated, $files, $request, $product) {
+        DB::transaction(function () use ($validated, $files, $request, $product, $detail) {
             $slug = $this->makeUniqueProductSlug($validated['name'], $product->id);
 
             $product->update([

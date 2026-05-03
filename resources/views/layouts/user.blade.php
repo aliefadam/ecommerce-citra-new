@@ -18,6 +18,7 @@
 
     <body class="@yield('body_class', 'bg-slate-50 text-slate-800 pb-20 md:pb-0')">
         @yield('content')
+        @include('partials.footer-user')
 
         <!-- Mobile Bottom Bar -->
         <nav class="md:hidden fixed bottom-0 inset-x-0 z-50 bg-white border-t border-slate-200">

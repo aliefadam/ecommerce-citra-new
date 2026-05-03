@@ -1,4 +1,4 @@
-@extends('layouts.user')
+﻿@extends('layouts.user')
 
 @section('title', ($productData['name'] ?? 'Detail Produk') . ' - Ecommerce Citra')
 
@@ -139,6 +139,8 @@
         $otherGroups = $variantGroups->filter(fn($g) => !str_contains(strtolower($g['key'] ?? ''), 'warna'))->values();
         $defaultColor = $colorGroup['values'][0] ?? null;
         $defaultOther = $otherGroups->mapWithKeys(fn($g) => [$g['key'] => $g['values'][0] ?? null])->all();
+        $reviewItems = collect($productData['reviewItems'] ?? []);
+        $reviewDistribution = collect($productData['reviewDistribution'] ?? []);
     @endphp
     <!-- Toast -->
     <div id="toast" class="fixed bottom-6 right-6 z-50 hidden">
@@ -370,20 +372,16 @@
             </div>
         </div>
 
-        <!-- TABS: Deskripsi, Ulasan, Info Pengiriman -->
+        <!-- TABS: Deskripsi, Ulasan, Variant -->
         <div class="mt-10">
             <div class="flex border-b border-slate-200 mb-6 gap-4 sm:gap-8 overflow-x-auto">
                 <button onclick="switchTab('desc')" id="tab-desc"
                     class="tab-btn active pb-3 text-sm font-semibold text-blue-600 whitespace-nowrap border-b-2 border-blue-500">Deskripsi</button>
                 <button onclick="switchTab('review')" id="tab-review"
                     class="tab-btn pb-3 text-sm font-semibold text-slate-500 hover:text-slate-700 whitespace-nowrap">Ulasan
-                    (234)</button>
-                <button onclick="switchTab('info')" id="tab-info"
-                    class="tab-btn pb-3 text-sm font-semibold text-slate-500 hover:text-slate-700 whitespace-nowrap">Info
-                    Pengiriman</button>
+                    ({{ number_format($productData['reviews']) }})</button>
                 <button onclick="switchTab('size')" id="tab-size"
-                    class="tab-btn pb-3 text-sm font-semibold text-slate-500 hover:text-slate-700 whitespace-nowrap">Tabel
-                    Ukuran</button>
+                    class="tab-btn pb-3 text-sm font-semibold text-slate-500 hover:text-slate-700 whitespace-nowrap">Variant</button>
             </div>
 
             <!-- Deskripsi -->
@@ -397,46 +395,20 @@
             <div id="content-review" class="hidden bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
                 <div class="grid md:grid-cols-3 gap-8 mb-8">
                     <div class="text-center">
-                        <div class="text-6xl font-extrabold text-slate-800 mb-1">4.8</div>
+                        <div class="text-6xl font-extrabold text-slate-800 mb-1">{{ number_format($productData['rating'], 1) }}</div>
                         <div class="text-yellow-400 text-2xl mb-2">★★★★★</div>
-                        <p class="text-slate-500 text-sm">dari 234 ulasan</p>
+                        <p class="text-slate-500 text-sm">dari {{ number_format($productData['reviews']) }} ulasan</p>
                     </div>
                     <div class="md:col-span-2 space-y-2">
-                        <div class="flex items-center gap-3">
-                            <span class="text-xs text-slate-600 w-8">5 ★</span>
-                            <div class="flex-1 review-bar">
-                                <div class="review-fill" style="width:82%"></div>
+                        @foreach ($reviewDistribution as $dist)
+                            <div class="flex items-center gap-3">
+                                <span class="text-xs text-slate-600 w-8">{{ $dist['star'] }} ★</span>
+                                <div class="flex-1 review-bar">
+                                    <div class="review-fill" style="width:{{ $dist['percent'] }}%"></div>
+                                </div>
+                                <span class="text-xs text-slate-500 w-8">{{ $dist['percent'] }}%</span>
                             </div>
-                            <span class="text-xs text-slate-500 w-8">82%</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-xs text-slate-600 w-8">4 ★</span>
-                            <div class="flex-1 review-bar">
-                                <div class="review-fill" style="width:12%"></div>
-                            </div>
-                            <span class="text-xs text-slate-500 w-8">12%</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-xs text-slate-600 w-8">3 ★</span>
-                            <div class="flex-1 review-bar">
-                                <div class="review-fill" style="width:4%"></div>
-                            </div>
-                            <span class="text-xs text-slate-500 w-8">4%</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-xs text-slate-600 w-8">2 ★</span>
-                            <div class="flex-1 review-bar">
-                                <div class="review-fill" style="width:1%"></div>
-                            </div>
-                            <span class="text-xs text-slate-500 w-8">1%</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-xs text-slate-600 w-8">1 ★</span>
-                            <div class="flex-1 review-bar">
-                                <div class="review-fill" style="width:1%"></div>
-                            </div>
-                            <span class="text-xs text-slate-500 w-8">1%</span>
-                        </div>
+                        @endforeach
                     </div>
                 </div>
                 <div class="space-y-5">
@@ -445,103 +417,37 @@
                 </div>
             </div>
 
-            <!-- Info Pengiriman -->
-            <div id="content-info" class="hidden bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                <h3 class="font-bold text-slate-800 mb-6">Informasi Pengiriman</h3>
-                <div class="space-y-4">
-                    <div class="flex gap-4 p-4 bg-slate-50 rounded-xl">
-                        <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">🚚
-                        </div>
-                        <div>
-                            <p class="font-semibold text-slate-800 mb-0.5">Gratis Ongkir</p>
-                            <p class="text-sm text-slate-600">Gratis ongkos kirim ke seluruh Indonesia untuk pembelian min.
-                                Rp 100.000</p>
-                        </div>
-                    </div>
-                    <div class="flex gap-4 p-4 bg-slate-50 rounded-xl">
-                        <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">⚡
-                        </div>
-                        <div>
-                            <p class="font-semibold text-slate-800 mb-0.5">Pengiriman Same Day</p>
-                            <p class="text-sm text-slate-600">Tersedia untuk area Jabodetabek, pesan sebelum jam 12.00 WIB
-                            </p>
-                        </div>
-                    </div>
-                    <div class="flex gap-4 p-4 bg-slate-50 rounded-xl">
-                        <div class="w-10 h-10 bg-yellow-100 rounded-xl flex items-center justify-center flex-shrink-0">📦
-                        </div>
-                        <div>
-                            <p class="font-semibold text-slate-800 mb-0.5">Estimasi Tiba</p>
-                            <p class="text-sm text-slate-600">2-3 hari kerja (Reguler) | 1 hari kerja (Ekspres) | Same Day
-                                (Instan)</p>
-                        </div>
-                    </div>
-                    <div class="flex gap-4 p-4 bg-slate-50 rounded-xl">
-                        <div class="w-10 h-10 bg-pink-100 rounded-xl flex items-center justify-center flex-shrink-0">🔄
-                        </div>
-                        <div>
-                            <p class="font-semibold text-slate-800 mb-0.5">Kebijakan Retur</p>
-                            <p class="text-sm text-slate-600">Retur mudah dalam 30 hari. Produk harus dalam kondisi asli
-                                dan belum dipakai.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- Size Guide -->
             <div id="content-size" class="hidden bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                <h3 class="font-bold text-slate-800 mb-4">Tabel Ukuran</h3>
+                <h3 class="font-bold text-slate-800 mb-4">Daftar Variant</h3>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left">
                         <thead class="bg-slate-50">
                             <tr>
-                                <th class="px-4 py-3 font-semibold text-slate-700 rounded-tl-xl">Ukuran</th>
-                                <th class="px-4 py-3 font-semibold text-slate-700">Lingkar Dada (cm)</th>
-                                <th class="px-4 py-3 font-semibold text-slate-700">Lebar Bahu (cm)</th>
-                                <th class="px-4 py-3 font-semibold text-slate-700 rounded-tr-xl">Panjang (cm)</th>
+                                <th class="px-4 py-3 font-semibold text-slate-700 rounded-tl-xl">Variant</th>
+                                <th class="px-4 py-3 font-semibold text-slate-700">Harga</th>
+                                <th class="px-4 py-3 font-semibold text-slate-700">Stok</th>
+                                <th class="px-4 py-3 font-semibold text-slate-700 rounded-tr-xl">Status</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
-                            <tr>
-                                <td class="px-4 py-3 font-medium text-slate-800">XS</td>
-                                <td class="px-4 py-3 text-slate-600">84-88</td>
-                                <td class="px-4 py-3 text-slate-600">40</td>
-                                <td class="px-4 py-3 text-slate-600">68</td>
-                            </tr>
-                            <tr class="bg-slate-50">
-                                <td class="px-4 py-3 font-medium text-slate-800">S</td>
-                                <td class="px-4 py-3 text-slate-600">88-92</td>
-                                <td class="px-4 py-3 text-slate-600">42</td>
-                                <td class="px-4 py-3 text-slate-600">70</td>
-                            </tr>
-                            <tr>
-                                <td class="px-4 py-3 font-medium text-blue-600 bg-blue-50">M ✓</td>
-                                <td class="px-4 py-3 text-slate-600 bg-blue-50">92-96</td>
-                                <td class="px-4 py-3 text-slate-600 bg-blue-50">44</td>
-                                <td class="px-4 py-3 text-slate-600 bg-blue-50">72</td>
-                            </tr>
-                            <tr class="bg-slate-50">
-                                <td class="px-4 py-3 font-medium text-slate-800">L</td>
-                                <td class="px-4 py-3 text-slate-600">96-100</td>
-                                <td class="px-4 py-3 text-slate-600">46</td>
-                                <td class="px-4 py-3 text-slate-600">74</td>
-                            </tr>
-                            <tr>
-                                <td class="px-4 py-3 font-medium text-slate-800">XL</td>
-                                <td class="px-4 py-3 text-slate-600">100-108</td>
-                                <td class="px-4 py-3 text-slate-600">48</td>
-                                <td class="px-4 py-3 text-slate-600">76</td>
-                            </tr>
-                            <tr class="bg-slate-50">
-                                <td class="px-4 py-3 font-medium text-slate-800">XXL</td>
-                                <td class="px-4 py-3 text-slate-600">108-116</td>
-                                <td class="px-4 py-3 text-slate-600">50</td>
-                                <td class="px-4 py-3 text-slate-600">78</td>
-                            </tr>
+                            @forelse (($productData['variantOptions'] ?? []) as $option)
+                                <tr>
+                                    <td class="px-4 py-3 font-medium text-slate-800">{{ $option['name'] }}: {{ $option['value'] }}</td>
+                                    <td class="px-4 py-3 text-slate-600">
+                                        Rp {{ number_format($productData['isFlashSale'] ? ($option['displayPrice'] ?? 0) : ($option['price'] ?? 0), 0, ',', '.') }}
+                                    </td>
+                                    <td class="px-4 py-3 text-slate-600">{{ number_format((int) ($option['stock'] ?? 0)) }}</td>
+                                    <td class="px-4 py-3 text-slate-600">{{ ((int) ($option['stock'] ?? 0)) > 0 ? 'Tersedia' : 'Habis' }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="4" class="px-4 py-3 text-slate-500">Belum ada data variant.</td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
-                <p class="text-xs text-slate-500 mt-3">* Ukuran dapat bervariasi ±1-2 cm</p>
             </div>
         </div>
 
@@ -591,6 +497,15 @@
         <input type="hidden" name="product_variant_id" id="buyNowVariantId" value="{{ $productData['productVariantId'] ?? 0 }}">
         <input type="hidden" name="quantity" id="buyNowQty" value="1">
     </form>
+
+    <div id="reviewImageModal" class="fixed inset-0 z-[99999] hidden items-center justify-center bg-black/70 p-4">
+        <div class="relative max-w-3xl w-full">
+            <button type="button" onclick="closeReviewImageModal()"
+                class="absolute -top-10 right-0 text-white text-sm font-semibold">Tutup</button>
+            <img id="reviewImageModalImg" src="" alt="Review Image"
+                class="w-full max-h-[80vh] object-contain rounded-xl bg-white" />
+        </div>
+    </div>
 @endsection
 
 @section('script')
@@ -787,7 +702,7 @@
         applySelectedVariantData();
 
         function switchTab(tab) {
-            ['desc', 'review', 'info', 'size'].forEach(t => {
+            ['desc', 'review', 'size'].forEach(t => {
                 document.getElementById('tab-' + t).className =
                     'tab-btn pb-3 text-sm font-semibold text-slate-500 hover:text-slate-700 whitespace-nowrap';
                 document.getElementById('content-' + t).classList.add('hidden');
@@ -800,65 +715,46 @@
 
 
         // Reviews
-        const reviews = [{
-                name: "Budi Santoso",
-                rating: 5,
-                date: "15 Jan 2025",
-                color: "Biru Navy",
-                size: "L",
-                text: "Kemeja ini kualitasnya luar biasa! Bahan terasa adem dan nyaman sepanjang hari. Jahitannya rapi dan ukurannya pas sesuai chart. Highly recommended!",
-                avatar: "B",
-                verified: true,
-                helpful: 24
-            },
-            {
-                name: "Ahmad Rizki",
-                rating: 5,
-                date: "10 Jan 2025",
-                color: "Putih",
-                size: "M",
-                text: "Sudah beli ke-3 kalinya nih. Emang gak kecewa. Bahan adem, jahitan kuat, dan warnanya gak cepet pudar meski sering dicuci.",
-                avatar: "A",
-                verified: true,
-                helpful: 18
-            },
-            {
-                name: "Denny Wijaya",
-                rating: 4,
-                date: "5 Jan 2025",
-                color: "Hitam",
-                size: "XL",
-                text: "Barang sesuai deskripsi. Pengiriman cepat dan packaging aman. Hanya saja kancingnya agak keras di awal, tapi sudah mulai longgar setelah beberapa kali pakai.",
-                avatar: "D",
-                verified: true,
-                helpful: 12
-            },
-        ];
+        const reviews = @json($reviewItems->values()->all());
 
         const reviewColors = ['bg-blue-400', 'bg-blue-400', 'bg-orange-400', 'bg-purple-400'];
-        document.getElementById('reviews-container').innerHTML = reviews.map((r, i) => `
+        document.getElementById('reviews-container').innerHTML = reviews.length ? reviews.map((r, i) => `
       <div class="${i > 0 ? 'pt-5 border-t border-slate-100 mt-5' : ''}">
         <div class="flex items-start gap-3">
-          <div class="w-10 h-10 rounded-full ${reviewColors[i % reviewColors.length]} flex items-center justify-center text-white font-bold flex-shrink-0">${r.avatar}</div>
+          <div class="w-10 h-10 rounded-full ${reviewColors[i % reviewColors.length]} flex items-center justify-center text-white font-bold flex-shrink-0">${(r.name || 'U').substring(0, 1).toUpperCase()}</div>
           <div class="flex-1">
             <div class="flex items-center gap-2 mb-1 flex-wrap">
               <p class="font-semibold text-slate-800 text-sm">${r.name}</p>
-              ${r.verified ? '<span class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full font-medium">✓ Terverifikasi</span>' : ''}
               <span class="text-xs text-slate-400 ml-auto">${r.date}</span>
             </div>
             <div class="text-yellow-400 text-sm mb-1">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</div>
-            <div class="flex gap-2 mb-2">
-              <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded">Warna: ${r.color}</span>
-              <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded">Ukuran: ${r.size}</span>
-            </div>
+            ${r.variant ? '<div class="flex gap-2 mb-2"><span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded">' + r.variant + '</span></div>' : ''}
             <p class="text-sm text-slate-600 leading-relaxed">${r.text}</p>
-            <button class="mt-2 text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"/></svg>
-              Membantu (${r.helpful})
-            </button>
+            ${Array.isArray(r.photos) && r.photos.length ? `<div class="mt-3 flex flex-wrap gap-2">${r.photos.map((photo) => `<button type="button" onclick="openReviewImageModal('${String(photo).replace(/'/g, "\\'")}')" class="block"><img src="${photo}" alt="Foto ulasan" class="w-14 h-14 rounded-lg object-cover border border-slate-200" /></button>`).join('')}</div>` : ''}
           </div>
         </div>
-      </div>`).join('');
+      </div>`).join('') : '<p class="text-sm text-slate-500">Belum ada ulasan untuk produk ini.</p>';
+
+        function openReviewImageModal(src) {
+            const modal = document.getElementById('reviewImageModal');
+            const img = document.getElementById('reviewImageModalImg');
+            if (!modal || !img || !src) return;
+            img.src = src;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeReviewImageModal() {
+            const modal = document.getElementById('reviewImageModal');
+            const img = document.getElementById('reviewImageModalImg');
+            if (!modal || !img) return;
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            img.src = '';
+        }
+        document.getElementById('reviewImageModal')?.addEventListener('click', function(e) {
+            if (e.target === this) closeReviewImageModal();
+        });
 
         // Rekomendasi
         const recs = [{

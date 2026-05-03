@@ -9,33 +9,72 @@
             ->with(['categoryDetails' => fn($q) => $q->orderBy('name')])
             ->orderBy('name')
             ->get();
-        $megaCategories = $navbarCategoryTree->map(function ($parent) {
-            $children = $parent->categoryDetails->values();
-            $chunkSize = max(1, (int) ceil(max(1, $children->count()) / 4));
-            $columns = $children->chunk($chunkSize)->take(4)->map(function ($chunk) {
+        $navbarSearchProducts = \App\Models\Product::query()
+            ->with(['mainCategory', 'categoryDetail', 'productVariants'])
+            ->where('status', 'active')
+            ->whereNotNull('slug')
+            ->latest()
+            ->take(60)
+            ->get()
+            ->map(function ($product) {
+                $variant = $product->productVariants->first();
+                $image = (string) ($variant?->image ?? '');
+                if ($image !== '' && !str_starts_with($image, 'http://') && !str_starts_with($image, 'https://')) {
+                    $image = asset('storage/' . ltrim($image, '/'));
+                }
+                if ($image === '') {
+                    $image = 'https://via.placeholder.com/120x120?text=No+Image';
+                }
+
                 return [
-                    'title' => 'Kategori',
-                    'items' => $chunk->map(fn($child) => [
-                        'name' => $child->name,
-                        'url' => route('frontend.kategori', ['category' => $child->slug]),
-                    ])->values()->all(),
+                    'name' => (string) $product->name,
+                    'meta' => (string) ($product->categoryDetail?->name ?? $product->mainCategory?->name ?? 'Produk'),
+                    'image' => $image,
+                    'url' => route('frontend.detail-produk', ['slug' => $product->slug]),
                 ];
-            })->values()->all();
+            })
+            ->values()
+            ->all();
+        $megaCategories = $navbarCategoryTree
+            ->map(function ($parent) {
+                $children = $parent->categoryDetails->values();
+                $chunkSize = max(1, (int) ceil(max(1, $children->count()) / 4));
+                $columns = $children
+                    ->chunk($chunkSize)
+                    ->take(4)
+                    ->map(function ($chunk) {
+                        return [
+                            'title' => 'Kategori',
+                            'items' => $chunk
+                                ->map(
+                                    fn($child) => [
+                                        'name' => $child->name,
+                                        'url' => route('frontend.kategori', ['category' => $child->slug]),
+                                    ],
+                                )
+                                ->values()
+                                ->all(),
+                        ];
+                    })
+                    ->values()
+                    ->all();
 
-            if (empty($columns)) {
-                $columns[] = [
-                    'title' => 'Kategori',
-                    'items' => [],
+                if (empty($columns)) {
+                    $columns[] = [
+                        'title' => 'Kategori',
+                        'items' => [],
+                    ];
+                }
+
+                return [
+                    'key' => $parent->slug,
+                    'name' => $parent->name,
+                    'url' => route('frontend.kategori', ['parent' => $parent->slug]),
+                    'columns' => $columns,
                 ];
-            }
-
-            return [
-                'key' => $parent->slug,
-                'name' => $parent->name,
-                'url' => route('frontend.kategori', ['parent' => $parent->slug]),
-                'columns' => $columns,
-            ];
-        })->values()->all();
+            })
+            ->values()
+            ->all();
     @endphp
     <div class="max-w-7xl mx-auto px-4 sm:px-6">
         <div class="flex items-center justify-between h-16">
@@ -107,12 +146,12 @@
                             d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                 </button>
-                <button class="hidden sm:flex p-2 rounded-lg hover:bg-slate-100">
+                {{-- <button class="hidden sm:flex p-2 rounded-lg hover:bg-slate-100">
                     <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                     </svg>
-                </button>
+                </button> --}}
                 <a href="{{ route('frontend.cart') }}" class="p-2 rounded-lg hover:bg-slate-100 relative">
                     <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -135,9 +174,8 @@
     <div id="ecMobileSearch" class="hidden md:hidden px-4 pb-3 border-t border-slate-100 pt-3">
         <form action="{{ route('frontend.search') }}" method="GET"
             class="flex border border-slate-200 rounded-xl overflow-hidden focus-within:border-blue-400">
-            <input type="text" id="ecNavSearchMobile" name="q"
-                value="{{ trim(request('q', $query ?? '')) }}" placeholder="Cari produk..."
-                class="flex-1 px-4 py-2.5 text-sm outline-none" autocomplete="off" />
+            <input type="text" id="ecNavSearchMobile" name="q" value="{{ trim(request('q', $query ?? '')) }}"
+                placeholder="Cari produk..." class="flex-1 px-4 py-2.5 text-sm outline-none" autocomplete="off" />
             <button type="submit" class="bg-blue-500 text-white px-4">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -155,48 +193,7 @@
         if (window.__ecNavbarReady) return;
         window.__ecNavbarReady = true;
 
-        const detailUrl = @json(route('frontend.detail-produk'));
-        const products = [{
-                name: 'Kemeja Oxford Slim Fit',
-                meta: 'Fashion Pria',
-                image: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=120&h=120&fit=crop'
-            },
-            {
-                name: 'Sneakers Urban Street',
-                meta: 'Sepatu',
-                image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=120&h=120&fit=crop'
-            },
-            {
-                name: 'Wireless Earbuds Pro',
-                meta: 'Elektronik',
-                image: 'https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?w=120&h=120&fit=crop'
-            },
-            {
-                name: 'Skincare Serum Vitamin C',
-                meta: 'Kecantikan',
-                image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=120&h=120&fit=crop'
-            },
-            {
-                name: 'Kamera Mirrorless Entry',
-                meta: 'Elektronik',
-                image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=120&h=120&fit=crop'
-            },
-            {
-                name: 'Blender Portable Mini',
-                meta: 'Rumah & Dapur',
-                image: 'https://images.unsplash.com/photo-1570222094114-d054a817e56b?w=120&h=120&fit=crop'
-            },
-            {
-                name: 'Hoodie Oversized Fleece',
-                meta: 'Fashion Pria',
-                image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=120&h=120&fit=crop'
-            },
-            {
-                name: 'Yoga Mat Premium',
-                meta: 'Olahraga',
-                image: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=120&h=120&fit=crop'
-            }
-        ];
+        const products = @json($navbarSearchProducts);
 
         const megaCategories = @json($megaCategories);
 
@@ -238,7 +235,7 @@
                 }
 
                 container.innerHTML = filtered.map((p) => `
-                    <a href="${detailUrl}" class="flex items-center gap-3 px-3 py-3 border-b border-slate-100 last:border-b-0 hover:bg-slate-50 transition-colors">
+                    <a href="${p.url}" class="flex items-center gap-3 px-3 py-3 border-b border-slate-100 last:border-b-0 hover:bg-slate-50 transition-colors">
                         <img src="${p.image}" alt="${p.name}" class="w-12 h-12 rounded-lg object-cover border border-slate-100" />
                         <div class="flex-1 min-w-0">
                             <p class="text-sm font-medium text-slate-800 truncate">${p.name}</p>

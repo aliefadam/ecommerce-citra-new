@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Address;
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
 use Carbon\Carbon;
@@ -28,6 +29,7 @@ class MidtransController extends Controller
             'items.*.qty' => ['required', 'integer', 'min:1'],
             'shipping_cost' => ['required', 'numeric', 'min:0'],
             'shipping_label' => ['nullable', 'string', 'max:100'],
+            'address_id' => ['nullable', 'integer'],
             'payment_method' => ['required', 'string', 'in:bca,bni,bri,mandiri,cimb,qris'],
         ]);
 
@@ -166,6 +168,24 @@ class MidtransController extends Controller
                 ];
             })->values()->all();
 
+            $addressSnapshot = [];
+            if (!empty($validated['address_id'])) {
+                $addr = Address::query()
+                    ->where('id', $validated['address_id'])
+                    ->where('user_id', $request->user()?->id)
+                    ->first();
+                if ($addr) {
+                    $addressSnapshot = [
+                        'shipping_recipient_name' => $addr->recipient_name,
+                        'shipping_phone' => trim(($addr->phone_country_code ?? '') . $addr->phone_number),
+                        'shipping_address_line' => $addr->address_line,
+                        'shipping_city' => $addr->city,
+                        'shipping_province' => $addr->province,
+                        'shipping_postal_code' => $addr->postal_code,
+                    ];
+                }
+            }
+
             $paymentSummary = [
                 'order_id' => $orderId,
                 'transaction_id' => (string) ($json['transaction_id'] ?? ''),
@@ -182,6 +202,7 @@ class MidtransController extends Controller
                 'expiry_time' => $expiryTime,
                 'created_at' => now()->toIso8601String(),
                 'expires_at' => now()->addMinutes(30)->toIso8601String(),
+                'address_snapshot' => $addressSnapshot,
             ];
 
             session()->put('checkout_waiting.' . $orderId, $paymentSummary);
@@ -223,7 +244,10 @@ class MidtransController extends Controller
                     ->where('order_id', $orderId)
                     ->where('user_id', $request->user()?->id)
                     ->first();
-                if ($localTx && in_array(strtolower((string) $localTx->status), ['settlement', 'capture', 'paid'], true)) {
+                // Short-circuit untuk status yang tidak perlu dicek ke Midtrans:
+                // paid/settlement/capture = sudah lunas, process/kirim = sudah dikelola admin
+                $localFinalStatuses = ['settlement', 'capture', 'paid', 'process', 'kirim'];
+                if ($localTx && in_array(strtolower((string) $localTx->status), $localFinalStatuses, true)) {
                     return response()->json([
                         'transaction_status' => (string) $localTx->status,
                         'payment_type' => (string) ($localTx->payment_type ?? ''),
@@ -412,6 +436,7 @@ class MidtransController extends Controller
                 $transaction->invoice_no = $this->generateDailyInvoiceNo();
             }
 
+            $snapshot = $payment['address_snapshot'] ?? [];
             $transaction->fill([
                 'user_id' => $request->user()?->id,
                 'midtrans_transaction_id' => (string) ($payment['transaction_id'] ?? ''),
@@ -422,6 +447,12 @@ class MidtransController extends Controller
                 'shipping_cost' => $shippingCost,
                 'grand_total' => $grandTotal,
                 'shipping_label' => (string) ($payment['shipping_label'] ?? ''),
+                'shipping_recipient_name' => (string) ($snapshot['shipping_recipient_name'] ?? ''),
+                'shipping_phone' => (string) ($snapshot['shipping_phone'] ?? ''),
+                'shipping_address_line' => (string) ($snapshot['shipping_address_line'] ?? ''),
+                'shipping_city' => (string) ($snapshot['shipping_city'] ?? ''),
+                'shipping_province' => (string) ($snapshot['shipping_province'] ?? ''),
+                'shipping_postal_code' => (string) ($snapshot['shipping_postal_code'] ?? ''),
                 'expires_at' => !empty($payment['expires_at']) ? $payment['expires_at'] : null,
             ]);
             $transaction->save();
@@ -456,6 +487,12 @@ class MidtransController extends Controller
     {
         $tx = Transaction::query()->where('order_id', $orderId)->first();
         if (!$tx) {
+            return;
+        }
+
+        // Jangan overwrite status yang sudah dikelola admin (process/kirim)
+        $adminManagedStatuses = ['process', 'kirim'];
+        if (in_array(strtolower((string) $tx->status), $adminManagedStatuses, true)) {
             return;
         }
 

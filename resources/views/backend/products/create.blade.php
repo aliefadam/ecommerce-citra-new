@@ -47,13 +47,12 @@
         </div>
 
         <form action="{{ route('products.store') }}" method="POST" enctype="multipart/form-data" x-data="productForm({
-            categories: {{ $categories->map(fn($c) => ['id' => $c->id, 'name' => $c->name]) }},
+            categories: {{ $categories->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'group' => $c->group_name ?? '-', 'detail' => $c->detail_name ?? $c->name]) }},
             allVariants: {{ $variants->map(fn($v) => ['id' => $v->id, 'name' => $v->name, 'value' => $v->value]) }},
             oldProductName: {{ json_encode(old('name')) }},
             oldCategoryId: {{ $oldCatId ?? 'null' }},
             oldCategoryName: {{ json_encode($oldCatName) }},
             oldRows: {{ json_encode($oldVariants) }},
-            categoryQuickAddUrl: {{ json_encode(route('categories.quick-add')) }},
             variantQuickAddUrl: {{ json_encode(route('variants.quick-add')) }},
         })">
             @csrf
@@ -353,24 +352,20 @@
                                 x-transition:enter-start="opacity-0 -translate-y-1"
                                 x-transition:enter-end="opacity-100 translate-y-0"
                                 class="absolute z-20 top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl shadow-lg overflow-hidden max-h-48 overflow-y-auto">
-                                <template x-for="cat in filteredCategories" :key="cat.id">
-                                    <button type="button" @click="selectCategory(cat)"
-                                        class="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 transition-colors"
-                                        :class="categoryId === cat.id ?
-                                            'bg-blue-50 dark:bg-blue-900/20 text-blue-600 font-medium' : ''"
-                                        x-text="cat.name"></button>
+                                <template x-for="group in filteredCategoryGroups" :key="group.name">
+                                    <div class="border-b border-slate-100 dark:border-slate-700 last:border-b-0">
+                                        <div class="px-3 py-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider"
+                                            x-text="group.name"></div>
+                                        <template x-for="cat in group.items" :key="cat.id">
+                                            <button type="button" @click="selectCategory(cat)"
+                                                class="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 transition-colors"
+                                                :class="categoryId === cat.id ?
+                                                    'bg-blue-50 dark:bg-blue-900/20 text-blue-600 font-medium' : ''"
+                                                x-text="cat.detail"></button>
+                                        </template>
+                                    </div>
                                 </template>
-                                <button type="button" x-show="categoryShowAddNew" @click="addNewCategory"
-                                    class="w-full text-left px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors border-t border-slate-100 dark:border-slate-700 flex items-center gap-2">
-                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-                                        stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <line x1="12" y1="5" x2="12" y2="19" />
-                                        <line x1="5" y1="12" x2="19" y2="12" />
-                                    </svg>
-                                    Tambah "<span x-text="categorySearch"></span>"
-                                </button>
-                                <div x-show="filteredCategories.length === 0 && !categoryShowAddNew"
+                                <div x-show="filteredCategories.length === 0"
                                     class="px-3 py-2 text-sm text-slate-400">Tidak ada kategori</div>
                             </div>
                         </div>
@@ -449,7 +444,6 @@
             oldCategoryId,
             oldCategoryName,
             oldRows,
-            categoryQuickAddUrl,
             variantQuickAddUrl
         }) {
             return {
@@ -461,37 +455,37 @@
                 categoryOpen: false,
 
                 get filteredCategories() {
-                    if (!this.categorySearch.trim()) return this.categories;
-                    return this.categories.filter(c => c.name.toLowerCase().includes(this.categorySearch
-                        .toLowerCase()));
+                    const keyword = this.categorySearch.trim().toLowerCase();
+                    if (!keyword) return this.categories;
+
+                    const selected = this.categories.find((c) => Number(c.id) === Number(this.categoryId));
+                    if (selected && String(selected.name || '').toLowerCase() === keyword) {
+                        return this.categories;
+                    }
+
+                    return this.categories.filter((c) => {
+                        const full = String(c.name || '').toLowerCase();
+                        const group = String(c.group || '').toLowerCase();
+                        const detail = String(c.detail || '').toLowerCase();
+                        return full.includes(keyword) || group.includes(keyword) || detail.includes(keyword);
+                    });
                 },
-                get categoryShowAddNew() {
-                    const s = this.categorySearch.trim().toLowerCase();
-                    return s && !this.filteredCategories.some(c => c.name.toLowerCase() === s);
+                get filteredCategoryGroups() {
+                    const groups = {};
+                    this.filteredCategories.forEach((cat) => {
+                        const key = cat.group || 'Lainnya';
+                        if (!groups[key]) groups[key] = [];
+                        groups[key].push(cat);
+                    });
+                    return Object.keys(groups).map((name) => ({
+                        name,
+                        items: groups[name]
+                    }));
                 },
                 selectCategory(cat) {
                     this.categoryId = cat.id;
                     this.categorySearch = cat.name;
                     this.categoryOpen = false;
-                },
-                async addNewCategory() {
-                    const name = this.categorySearch.trim();
-                    if (!name) return;
-                    try {
-                        const res = await fetch(categoryQuickAddUrl, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
-                            },
-                            body: JSON.stringify({
-                                name
-                            })
-                        });
-                        const data = await res.json();
-                        this.categories = [...this.categories, data];
-                        this.selectCategory(data);
-                    } catch {}
                 },
 
                 rows: oldRows.map((r, i) => ({

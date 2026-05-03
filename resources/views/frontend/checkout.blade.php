@@ -134,10 +134,10 @@
                             </svg>
                             Alamat Pengiriman
                         </h2>
-                        <a href="{{ route('frontend.profil') }}"
+                        <button type="button" onclick="showAddressModal()"
                             class="text-blue-600 text-sm font-medium hover:text-blue-700">
-                            Kelola Alamat
-                        </a>
+                            Tambah Alamat
+                        </button>
                     </div>
                     <div class="p-6 space-y-3" id="addressList">
                         @forelse(($addresses ?? collect()) as $address)
@@ -329,82 +329,94 @@
             </div>
         </div>
     </div>
-
     <!-- ADD ADDRESS MODAL -->
     <div id="addressModal" class="fixed inset-0 z-[999] hidden items-center justify-center bg-black/50 p-4">
-        <div class="bg-white rounded-2xl max-w-lg w-full p-6 modal-enter max-h-[90vh] overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-4xl w-full p-6 modal-enter max-h-[90vh] overflow-y-auto">
             <div class="flex items-center justify-between mb-5">
                 <h3 class="font-bold text-slate-800 text-lg">Tambah Alamat Baru</h3>
-                <button onclick="closeAddressModal()" class="text-slate-400 hover:text-slate-600 text-xl">✕</button>
+                <button type="button" onclick="closeAddressModal()"
+                    class="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
             </div>
-            <div class="space-y-4">
+
+            <form id="checkoutAddressForm" class="space-y-4">
+                <input type="hidden" id="checkoutAddressLabel" value="Rumah" />
+                <input type="hidden" id="checkoutPhoneCountryCode" value="+62" />
+                <input type="hidden" id="checkoutIsPrimary" value="0" />
+                <input type="hidden" id="checkoutProvinceId" />
+                <input type="hidden" id="checkoutCityId" />
+                <input type="hidden" id="checkoutDistrictId" />
+                <input type="hidden" id="checkoutSubdistrictId" />
+                <input type="hidden" id="checkoutDestinationId" />
+
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="text-xs font-medium text-slate-600 mb-1 block">Nama Penerima *</label>
-                        <input type="text" placeholder="Nama lengkap"
+                        <input id="checkoutRecipientName" type="text" placeholder="Nama lengkap"
                             class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400" />
                     </div>
                     <div>
                         <label class="text-xs font-medium text-slate-600 mb-1 block">No. Telepon *</label>
-                        <input type="text" placeholder="08xx-xxxx-xxxx"
+                        <input id="checkoutPhoneNumber" type="text" placeholder="08xx-xxxx-xxxx"
                             class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400" />
                     </div>
                 </div>
-                <div>
-                    <label class="text-xs font-medium text-slate-600 mb-1 block">Label Alamat</label>
-                    <div class="flex flex-wrap gap-2">
-                        <button
-                            class="px-4 py-1.5 rounded-full border-2 border-blue-400 text-blue-600 text-xs font-semibold">Rumah</button>
-                        <button
-                            class="px-4 py-1.5 rounded-full border border-slate-200 text-slate-600 text-xs font-semibold hover:border-slate-300">Kantor</button>
-                        <button
-                            class="px-4 py-1.5 rounded-full border border-slate-200 text-slate-600 text-xs font-semibold hover:border-slate-300">Lainnya</button>
-                    </div>
-                </div>
-                <div>
-                    <label class="text-xs font-medium text-slate-600 mb-1 block">Provinsi *</label>
-                    <select
-                        class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400">
-                        <option>Pilih Provinsi</option>
-                        <option>DKI Jakarta</option>
-                        <option>Jawa Barat</option>
-                        <option>Jawa Tengah</option>
-                        <option>Jawa Timur</option>
-                        <option>Banten</option>
-                    </select>
-                </div>
+
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="text-xs font-medium text-slate-600 mb-1 block">Kota/Kabupaten *</label>
-                        <input type="text" placeholder="Kota"
+                        <label class="text-xs font-medium text-slate-600 mb-1 block">Provinsi *</label>
+                        <input id="checkoutProvinceInput" list="checkoutProvinceList" type="text"
+                            placeholder="Cari provinsi"
                             class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400" />
+                        <datalist id="checkoutProvinceList"></datalist>
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-slate-600 mb-1 block">Kode Pos *</label>
-                        <input type="text" placeholder="12345"
+                        <label class="text-xs font-medium text-slate-600 mb-1 block">Kota/Kabupaten *</label>
+                        <input id="checkoutCityInput" list="checkoutCityList" type="text"
+                            placeholder="Cari kota/kabupaten"
                             class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400" />
+                        <datalist id="checkoutCityList"></datalist>
                     </div>
                 </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs font-medium text-slate-600 mb-1 block">Kecamatan *</label>
+                        <input id="checkoutDistrictInput" list="checkoutDistrictList" type="text"
+                            placeholder="Cari kecamatan"
+                            class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400" />
+                        <datalist id="checkoutDistrictList"></datalist>
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-slate-600 mb-1 block">Kelurahan *</label>
+                        <input id="checkoutSubdistrictInput" list="checkoutSubdistrictList" type="text"
+                            placeholder="Cari kelurahan"
+                            class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400" />
+                        <datalist id="checkoutSubdistrictList"></datalist>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-xs font-medium text-slate-600 mb-1 block">Kode Pos</label>
+                    <input id="checkoutPostalCode" type="text" placeholder="Kode Pos"
+                        class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400" />
+                </div>
+
                 <div>
                     <label class="text-xs font-medium text-slate-600 mb-1 block">Alamat Lengkap *</label>
-                    <textarea placeholder="Nama jalan, nomor, RT/RW, kelurahan, kecamatan..."
+                    <textarea id="checkoutAddressLine" placeholder="Nama jalan, nomor, RT/RW, kelurahan..."
                         class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 resize-none h-20"></textarea>
                 </div>
-                <label class="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" class="accent-blue-500" />
-                    <span class="text-sm text-slate-600">Jadikan sebagai alamat utama</span>
-                </label>
+
                 <div class="flex gap-3 pt-2">
-                    <button onclick="closeAddressModal()"
+                    <button type="button" onclick="closeAddressModal()"
                         class="flex-1 border border-slate-200 text-slate-600 font-semibold py-3 rounded-xl hover:bg-slate-50 transition-colors">Batal</button>
-                    <button onclick="saveAddress()"
+                    <button type="button" onclick="saveAddress()"
                         class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-xl transition-colors">Simpan
                         Alamat</button>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
-
     <!-- SUCCESS MODAL -->
     <div id="successModal" class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/60 p-4">
         <div class="bg-white rounded-3xl max-w-md w-full p-8 text-center modal-enter relative overflow-hidden">
@@ -483,7 +495,16 @@
         const completeCheckoutUrl = @json(route('frontend.checkout.complete'));
         const shippingOptionsUrl = @json(route('frontend.rajaongkir.shipping-options'));
         const midtransChargeUrl = @json(route('frontend.checkout.midtrans.charge'));
+        const roProvincesUrl = @json(route('frontend.rajaongkir.provinces'));
+        const roCitiesUrl = @json(route('frontend.rajaongkir.cities'));
+        const roDistrictsUrl = @json(route('frontend.rajaongkir.districts'));
+        const roSubdistrictsUrl = @json(route('frontend.rajaongkir.subdistricts'));
+        const storeAddressUrl = @json(route('frontend.profil.addresses.store'));
         const FALLBACK_IMAGE = 'https://via.placeholder.com/100x100?text=No+Image';
+        let roProvinces = [];
+        let roCities = [];
+        let roDistricts = [];
+        let roSubdistricts = [];
 
         function normalizeItem(item, index = 0) {
             const price = Number(item?.price || 0);
@@ -714,10 +735,161 @@
             }
         }
 
+        function byCheckoutField(id) {
+            return document.getElementById(id);
+        }
+
+        function fillCheckoutDatalist(listId, items, type) {
+            const list = byCheckoutField(listId);
+            if (!list) return;
+            list.innerHTML = '';
+            items.forEach((item) => {
+                const option = document.createElement('option');
+                const label = String(item.label || item.name || '').trim();
+                const code = String(item.code || '').trim();
+                option.value = code ? `${label} (${code})` : label;
+                option.dataset.id = String(item.id || '');
+                option.dataset.name = label;
+                option.dataset.code = code;
+                option.dataset.type = type;
+                option.dataset.zipCode = String(item.zip_code || item.zipCode || '');
+                option.dataset.postalCode = String(item.postal_code || item.postalCode || '');
+                option.dataset.destinationId = String(item.destination_id || item.destinationId || item.id || '');
+                option.dataset.cityId = String(item.city_id || item.cityId || '');
+                list.appendChild(option);
+            });
+        }
+
+        function resetCheckoutLocationFields(level) {
+            const cityInput = byCheckoutField('checkoutCityInput');
+            const districtInput = byCheckoutField('checkoutDistrictInput');
+            const subdistrictInput = byCheckoutField('checkoutSubdistrictInput');
+            const postalCodeInput = byCheckoutField('checkoutPostalCode');
+
+            if (level === 'province') {
+                if (cityInput) cityInput.value = '';
+                if (districtInput) districtInput.value = '';
+                if (subdistrictInput) subdistrictInput.value = '';
+                byCheckoutField('checkoutCityId').value = '';
+                byCheckoutField('checkoutDistrictId').value = '';
+                byCheckoutField('checkoutSubdistrictId').value = '';
+                byCheckoutField('checkoutDestinationId').value = '';
+                roCities = [];
+                roDistricts = [];
+                roSubdistricts = [];
+                fillCheckoutDatalist('checkoutCityList', [], 'city');
+                fillCheckoutDatalist('checkoutDistrictList', [], 'district');
+                fillCheckoutDatalist('checkoutSubdistrictList', [], 'subdistrict');
+                if (postalCodeInput) postalCodeInput.value = '';
+            }
+
+            if (level === 'city') {
+                if (districtInput) districtInput.value = '';
+                if (subdistrictInput) subdistrictInput.value = '';
+                byCheckoutField('checkoutDistrictId').value = '';
+                byCheckoutField('checkoutSubdistrictId').value = '';
+                byCheckoutField('checkoutDestinationId').value = '';
+                roDistricts = [];
+                roSubdistricts = [];
+                fillCheckoutDatalist('checkoutDistrictList', [], 'district');
+                fillCheckoutDatalist('checkoutSubdistrictList', [], 'subdistrict');
+                if (postalCodeInput) postalCodeInput.value = '';
+            }
+
+            if (level === 'district') {
+                if (subdistrictInput) subdistrictInput.value = '';
+                byCheckoutField('checkoutSubdistrictId').value = '';
+                byCheckoutField('checkoutDestinationId').value = '';
+                roSubdistricts = [];
+                fillCheckoutDatalist('checkoutSubdistrictList', [], 'subdistrict');
+                if (postalCodeInput) postalCodeInput.value = '';
+            }
+        }
+
+        async function loadCheckoutProvinces() {
+            if (roProvinces.length) return;
+            const res = await fetch(roProvincesUrl, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            const json = await res.json();
+            roProvinces = Array.isArray(json?.data) ? json.data : [];
+            fillCheckoutDatalist('checkoutProvinceList', roProvinces, 'province');
+        }
+
+        async function onCheckoutProvinceChange() {
+            const input = byCheckoutField('checkoutProvinceInput');
+            const selected = roProvinces.find((item) => String(item.label || item.name || '') === String(input?.value ||
+                '').replace(/\s*\([^)]*\)\s*$/, '').trim());
+            byCheckoutField('checkoutProvinceId').value = selected?.id ? String(selected.id) : '';
+            resetCheckoutLocationFields('province');
+            if (!selected?.id) return;
+
+            const res = await fetch(`${roCitiesUrl}?province_id=${encodeURIComponent(selected.id)}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            const json = await res.json();
+            roCities = Array.isArray(json?.data) ? json.data : [];
+            fillCheckoutDatalist('checkoutCityList', roCities, 'city');
+        }
+
+        async function onCheckoutCityChange() {
+            const input = byCheckoutField('checkoutCityInput');
+            const selected = roCities.find((item) => String(item.label || item.name || '') === String(input?.value ||
+                '').replace(/\s*\([^)]*\)\s*$/, '').trim());
+            byCheckoutField('checkoutCityId').value = selected?.id ? String(selected.id) : '';
+            resetCheckoutLocationFields('city');
+            if (!selected?.id) return;
+
+            const res = await fetch(`${roDistrictsUrl}?city_id=${encodeURIComponent(selected.id)}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            const json = await res.json();
+            roDistricts = Array.isArray(json?.data) ? json.data : [];
+            fillCheckoutDatalist('checkoutDistrictList', roDistricts, 'district');
+        }
+
+        async function onCheckoutDistrictChange() {
+            const input = byCheckoutField('checkoutDistrictInput');
+            const selected = roDistricts.find((item) => String(item.label || item.name || '') === String(input?.value ||
+                '').replace(/\s*\([^)]*\)\s*$/, '').trim());
+            byCheckoutField('checkoutDistrictId').value = selected?.id ? String(selected.id) : '';
+            resetCheckoutLocationFields('district');
+            if (!selected?.id) return;
+
+            const res = await fetch(`${roSubdistrictsUrl}?district_id=${encodeURIComponent(selected.id)}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            const json = await res.json();
+            roSubdistricts = Array.isArray(json?.data) ? json.data : [];
+            fillCheckoutDatalist('checkoutSubdistrictList', roSubdistricts, 'subdistrict');
+        }
+
+        function onCheckoutSubdistrictChange() {
+            const input = byCheckoutField('checkoutSubdistrictInput');
+            const selected = roSubdistricts.find((item) => String(item.label || item.name || '') === String(input?.value ||
+                '').replace(/\s*\([^)]*\)\s*$/, '').trim());
+            byCheckoutField('checkoutSubdistrictId').value = selected?.id ? String(selected.id) : '';
+            byCheckoutField('checkoutDestinationId').value = selected?.destination_id ? String(selected.destination_id) : (
+                selected?.id ? String(selected.id) : '');
+            const detectedPostal = String(selected?.zip_code || selected?.postal_code || '');
+            if (detectedPostal) {
+                byCheckoutField('checkoutPostalCode').value = detectedPostal;
+            }
+        }
+
         function showAddressModal() {
             const m = document.getElementById('addressModal');
             m.classList.remove('hidden');
             m.classList.add('flex');
+            loadCheckoutProvinces().catch(() => {});
         }
 
         function closeAddressModal() {
@@ -726,9 +898,52 @@
             m.classList.remove('flex');
         }
 
-        function saveAddress() {
-            closeAddressModal();
-            alert('✅ Alamat berhasil disimpan!');
+        async function postForm(url, payload) {
+            const body = new URLSearchParams();
+            Object.entries(payload).forEach(([k, v]) => body.append(k, v ?? ''));
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: body.toString(),
+            });
+            return res;
+        }
+
+        async function saveAddress() {
+            const payload = {
+                label: byCheckoutField('checkoutAddressLabel')?.value || 'Rumah',
+                recipient_name: byCheckoutField('checkoutRecipientName')?.value || '',
+                phone_country_code: byCheckoutField('checkoutPhoneCountryCode')?.value || '+62',
+                phone_number: byCheckoutField('checkoutPhoneNumber')?.value || '',
+                province_id: byCheckoutField('checkoutProvinceId')?.value || '',
+                city_id: byCheckoutField('checkoutCityId')?.value || '',
+                district_id: byCheckoutField('checkoutDistrictId')?.value || '',
+                subdistrict_id: byCheckoutField('checkoutSubdistrictId')?.value || '',
+                destination_id: byCheckoutField('checkoutDestinationId')?.value || '',
+                province: byCheckoutField('checkoutProvinceInput')?.value || '',
+                city: byCheckoutField('checkoutCityInput')?.value || '',
+                district: byCheckoutField('checkoutDistrictInput')?.value || '',
+                subdistrict: byCheckoutField('checkoutSubdistrictInput')?.value || '',
+                postal_code: byCheckoutField('checkoutPostalCode')?.value || '',
+                address_line: byCheckoutField('checkoutAddressLine')?.value || '',
+                is_primary: byCheckoutField('checkoutIsPrimary')?.value || '0',
+            };
+
+            try {
+                const response = await postForm(storeAddressUrl, payload);
+                const json = await response.json().catch(() => null);
+                if (!response.ok) {
+                    const msg = json?.message || 'Gagal menambahkan alamat.';
+                    throw new Error(msg);
+                }
+                window.location.reload();
+            } catch (error) {
+                alert(error?.message || 'Gagal menambahkan alamat.');
+            }
         }
 
         function generateOrderNum() {
@@ -755,6 +970,9 @@
         Memproses Pembayaran...`;
 
             try {
+                const checkedAddress = document.querySelector('input[name="address"]:checked');
+                const selectedAddressId = checkedAddress ? Number(checkedAddress.dataset.addressId || 0) : null;
+
                 const payload = {
                     items: cartItems.map((i) => ({
                         id: i.id,
@@ -768,6 +986,7 @@
                     })),
                     shipping_cost: Number(shippingCost || 0),
                     shipping_label: String(shippingLabel || 'Reguler'),
+                    address_id: selectedAddressId || null,
                     payment_method: selectedPayment,
                 };
 
@@ -810,6 +1029,10 @@
         renderCart();
         setPaymentTab('qris');
         setPayment('qris', 'QRIS');
+        document.getElementById('checkoutProvinceInput')?.addEventListener('change', onCheckoutProvinceChange);
+        document.getElementById('checkoutCityInput')?.addEventListener('change', onCheckoutCityChange);
+        document.getElementById('checkoutDistrictInput')?.addEventListener('change', onCheckoutDistrictChange);
+        document.getElementById('checkoutSubdistrictInput')?.addEventListener('change', onCheckoutSubdistrictChange);
         document.querySelectorAll('input[name="address"]').forEach((el) => {
             el.addEventListener('change', loadShippingOptions);
         });

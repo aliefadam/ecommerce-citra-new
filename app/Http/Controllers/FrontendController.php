@@ -7,8 +7,11 @@ use App\Models\MainCategory;
 use App\Models\CategoryDetail;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\TransactionDetail;
+use App\Models\TransactionProductReview;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class FrontendController extends Controller
 {
@@ -16,10 +19,33 @@ class FrontendController extends Controller
     {
         $products = $this->buildFrontendProducts();
         $flashSaleData = $this->buildActiveFlashSaleData();
+        $mainCategories = MainCategory::query()
+            ->orderBy('name')
+            ->get()
+            ->map(fn($c) => [
+                'slug' => (string) $c->slug,
+                'name' => (string) $c->name,
+                'icon' => $this->homeCategoryIcon((string) $c->name),
+            ])
+            ->values()
+            ->all();
+        $homeCategories = collect($mainCategories)
+            ->map(function ($cat) use ($products) {
+                $count = collect($products['home'])->where('parentCategorySlug', $cat['slug'])->count();
+                return [
+                    'slug' => (string) $cat['slug'],
+                    'name' => (string) $cat['name'],
+                    'count' => (int) $count,
+                ];
+            })
+            ->values()
+            ->all();
 
         return view('frontend.index', [
             'productsJson' => $products['home'],
             'flashSale' => $flashSaleData['featured'],
+            'homeFilterCategories' => $homeCategories,
+            'homeMainCategories' => $mainCategories,
         ]);
     }
 
@@ -62,6 +88,8 @@ class FrontendController extends Controller
             'productsJson' => $filtered,
             'categoryTree' => $categoryTree,
             'selectedLabel' => $selectedLabel,
+            'selectedParentSlug' => $selectedParentSlug,
+            'selectedCategorySlug' => $selectedCategorySlug,
         ]);
     }
 
@@ -139,9 +167,89 @@ class FrontendController extends Controller
         $image = $galleryImages[0];
 
         $price = (int) $variant->price;
-        $sold = (int) max(1, round($variant->stock * 0.6));
-        $rating = 4.8;
-        $reviews = 234;
+        $sold = (int) TransactionDetail::query()
+            ->where('product_id', $product->id)
+            ->whereHas('transaction', function ($q) {
+                $q->whereIn(DB::raw('LOWER(status)'), [
+                    'paid',
+                    'settlement',
+                    'capture',
+                    'process',
+                    'processing',
+                    'kirim',
+                    'shipping',
+                    'shipped',
+                    'selesai',
+                    'completed',
+                    'delivered',
+                ]);
+            })
+            ->sum('quantity');
+
+        $reviewBaseQuery = TransactionProductReview::query()
+            ->join('transaction_details', 'transaction_details.id', '=', 'transaction_product_reviews.transaction_detail_id')
+            ->where('transaction_details.product_id', $product->id);
+
+        $reviewStats = (clone $reviewBaseQuery)
+            ->selectRaw('AVG(transaction_product_reviews.rating) as avg_rating, COUNT(transaction_product_reviews.id) as total_reviews')
+            ->first();
+
+        $rating = $reviewStats && $reviewStats->total_reviews > 0 ? round((float) $reviewStats->avg_rating, 1) : 0.0;
+        $reviews = $reviewStats ? (int) $reviewStats->total_reviews : 0;
+
+        $ratingCounts = (clone $reviewBaseQuery)
+            ->selectRaw('transaction_product_reviews.rating as rating, COUNT(transaction_product_reviews.id) as total')
+            ->groupBy('transaction_product_reviews.rating')
+            ->pluck('total', 'rating');
+
+        $ratingDistribution = collect([5, 4, 3, 2, 1])->map(function ($star) use ($ratingCounts, $reviews) {
+            $count = (int) ($ratingCounts[$star] ?? 0);
+            $percent = $reviews > 0 ? (int) round(($count / $reviews) * 100) : 0;
+            return [
+                'star' => $star,
+                'count' => $count,
+                'percent' => $percent,
+            ];
+        })->values()->all();
+
+        $reviewItems = TransactionProductReview::query()
+            ->with(['user:id,name', 'transactionDetail:id,variant_name'])
+            ->whereHas('transactionDetail', fn ($q) => $q->where('product_id', $product->id))
+            ->latest()
+            ->get()
+            ->map(function ($review) {
+                $photos = collect((array) ($review->photos ?? []))
+                    ->map(function ($photo) {
+                        $photo = (string) $photo;
+                        if ($photo === '') {
+                            return null;
+                        }
+                        if (
+                            str_starts_with($photo, 'http://') ||
+                            str_starts_with($photo, 'https://') ||
+                            str_starts_with($photo, '//') ||
+                            str_starts_with($photo, 'data:') ||
+                            str_starts_with($photo, '/')
+                        ) {
+                            return $photo;
+                        }
+                        return asset(ltrim($photo, '/'));
+                    })
+                    ->filter()
+                    ->values()
+                    ->all();
+
+                return [
+                    'name' => (string) ($review->user->name ?? 'User'),
+                    'rating' => (int) $review->rating,
+                    'date' => $review->created_at ? $review->created_at->translatedFormat('d M Y') : '-',
+                    'variant' => (string) ($review->transactionDetail->variant_name ?? ''),
+                    'text' => (string) ($review->message ?? ''),
+                    'photos' => $photos,
+                ];
+            })
+            ->values()
+            ->all();
 
         $activeFlashSaleItem = $product->flashSaleItems
             ->first(function ($item) {
@@ -202,6 +310,8 @@ class FrontendController extends Controller
                     })
                     ->values()
                     ->all(),
+                'reviewItems' => $reviewItems,
+                'reviewDistribution' => $ratingDistribution,
             ],
         ]);
     }
@@ -243,7 +353,11 @@ class FrontendController extends Controller
         $user = auth()->user();
         $addresses = $user->addresses()->orderByDesc('is_primary')->latest()->get();
         $transactions = Transaction::query()
-            ->with(['details'])
+            ->with([
+                'details.productReviews' => function ($q) use ($user) {
+                    $q->where('user_id', $user->id);
+                },
+            ])
             ->where('user_id', $user->id)
             ->latest()
             ->get();
@@ -253,6 +367,20 @@ class FrontendController extends Controller
 
     private function buildFrontendProducts(): array
     {
+        $deliveredStatuses = [
+            'paid',
+            'settlement',
+            'capture',
+            'process',
+            'processing',
+            'kirim',
+            'shipping',
+            'shipped',
+            'selesai',
+            'completed',
+            'delivered',
+        ];
+
         $products = Product::with([
             'mainCategory',
             'categoryDetail',
@@ -262,6 +390,24 @@ class FrontendController extends Controller
             ->where('status', 'active')
             ->latest()
             ->get();
+        $productIds = $products->pluck('id')->filter()->values()->all();
+
+        $soldMap = TransactionDetail::query()
+            ->selectRaw('product_id, SUM(quantity) as sold_qty')
+            ->whereIn('product_id', $productIds)
+            ->whereHas('transaction', function ($q) use ($deliveredStatuses) {
+                $q->whereIn(DB::raw('LOWER(status)'), $deliveredStatuses);
+            })
+            ->groupBy('product_id')
+            ->pluck('sold_qty', 'product_id');
+
+        $reviewStats = TransactionProductReview::query()
+            ->join('transaction_details', 'transaction_details.id', '=', 'transaction_product_reviews.transaction_detail_id')
+            ->selectRaw('transaction_details.product_id as product_id, AVG(transaction_product_reviews.rating) as avg_rating, COUNT(transaction_product_reviews.id) as total_reviews')
+            ->whereIn('transaction_details.product_id', $productIds)
+            ->groupBy('transaction_details.product_id')
+            ->get()
+            ->keyBy('product_id');
 
         $home = [];
         $category = [];
@@ -275,9 +421,10 @@ class FrontendController extends Controller
             $image = $this->normalizeImageUrl((string) ($variant->image ?? ''), '400x400');
 
             $price = (int) $variant->price;
-            $sold = (int) max(1, round($variant->stock * 0.6));
-            $rating = 4.4 + (($idx % 6) * 0.1);
-            $reviews = 90 + ($idx * 37);
+            $sold = (int) ($soldMap[$product->id] ?? 0);
+            $stat = $reviewStats->get($product->id);
+            $rating = $stat ? round((float) $stat->avg_rating, 1) : 0.0;
+            $reviews = $stat ? (int) $stat->total_reviews : 0;
             $activeFlashSaleItem = $product->flashSaleItems
                 ->first(function ($item) {
                     $sale = $item->flashSale;
@@ -339,6 +486,7 @@ class FrontendController extends Controller
                 'rating' => round($rating, 1),
                 'reviews' => $reviews,
                 'image' => $image,
+                'colors' => [strtolower($variant->variant?->value ?? 'hitam')],
                 'badge' => $badge,
                 'sold' => $sold,
                 'isNew' => $badge === 'new',
@@ -363,6 +511,34 @@ class FrontendController extends Controller
             str_contains($name, 'olahraga') => 'olahraga',
             str_contains($name, 'rumah') => 'rumah',
             default => 'fashion',
+        };
+    }
+
+    private function homeCategoryLabel(string $key): string
+    {
+        return match ($key) {
+            'fashion' => 'Fashion',
+            'elektronik' => 'Elektronik',
+            'rumah' => 'Rumah & Dapur',
+            'olahraga' => 'Olahraga',
+            'kecantikan' => 'Kecantikan',
+            default => ucfirst($key),
+        };
+    }
+
+    private function homeCategoryIcon(string $name): string
+    {
+        $n = strtolower($name);
+        return match (true) {
+            str_contains($n, 'fashion') && str_contains($n, 'pria') => 'ri-t-shirt-line',
+            str_contains($n, 'fashion') && str_contains($n, 'wanita') => 'ri-women-line',
+            str_contains($n, 'elektronik') => 'ri-computer-line',
+            str_contains($n, 'rumah') => 'ri-home-smile-2-line',
+            str_contains($n, 'olahraga') => 'ri-riding-line',
+            str_contains($n, 'kecantikan') => 'ri-magic-line',
+            str_contains($n, 'mainan') => 'ri-gamepad-line',
+            str_contains($n, 'hp') || str_contains($n, 'tablet') => 'ri-smartphone-line',
+            default => 'ri-price-tag-3-line',
         };
     }
 

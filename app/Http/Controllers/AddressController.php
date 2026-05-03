@@ -49,6 +49,25 @@ class AddressController extends Controller
         return back()->with('success', 'Alamat berhasil diperbarui.');
     }
 
+    public function destroy(Request $request, Address $address)
+    {
+        abort_unless($address->user_id === $request->user()->id, 403);
+
+        DB::transaction(function () use ($request, $address) {
+            $wasPrimary = (bool) $address->is_primary;
+            $address->delete();
+
+            if ($wasPrimary) {
+                $next = $request->user()->addresses()->latest('id')->first();
+                if ($next) {
+                    $next->update(['is_primary' => true]);
+                }
+            }
+        });
+
+        return back()->with('success', 'Alamat berhasil dihapus.');
+    }
+
     private function validateAddress(Request $request): array
     {
         return $request->validate([
