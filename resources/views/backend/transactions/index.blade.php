@@ -107,6 +107,42 @@
                 </div>
             </div>
         </div>
+
+        {{-- Tracking Modal --}}
+        <div id="trackingModal" class="fixed inset-0 z-[99999] hidden items-center justify-center p-4">
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeTrackingModal()"></div>
+            <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md border border-slate-200 dark:border-slate-700 flex flex-col max-h-[90vh]">
+                <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700 shrink-0">
+                    <div>
+                        <h3 class="font-bold text-base text-slate-800 dark:text-white">Lacak Pesanan</h3>
+                        <p id="adminTrackingResi" class="text-xs text-slate-400 dark:text-slate-500 mt-0.5"></p>
+                    </div>
+                    <button onclick="closeTrackingModal()"
+                        class="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="overflow-y-auto flex-1 px-6 py-5">
+                    {{-- Courier info --}}
+                    <div class="flex items-center gap-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl p-3 mb-5 border border-slate-100 dark:border-slate-700">
+                        <div class="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
+                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1 13h12l1-13"/>
+                            </svg>
+                        </div>
+                        <div class="min-w-0">
+                            <p id="adminTrackingCourier" class="text-sm font-semibold text-slate-800 dark:text-white"></p>
+                            <p id="adminTrackingResiSmall" class="text-xs text-slate-500 dark:text-slate-400 truncate"></p>
+                        </div>
+                        <span class="ml-auto shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">Dalam Pengiriman</span>
+                    </div>
+                    {{-- Timeline --}}
+                    <div id="adminTrackingTimeline" class="space-y-0"></div>
+                </div>
+            </div>
+        </div>
     </main>
 @endsection
 
@@ -133,6 +169,7 @@
                     'shipping_city' => $tx->shipping_city ?? '',
                     'shipping_province' => $tx->shipping_province ?? '',
                     'shipping_postal_code' => $tx->shipping_postal_code ?? '',
+                    'cancel_reason' => $tx->cancel_reason ?? '',
                     'details' => $tx->details
                         ->map(
                             fn($d) => [
@@ -172,8 +209,8 @@
             if (['kirim'].includes(s)) {
                 return '<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">Dikirim</span>';
             }
-            if (['cancel', 'expire', 'deny', 'failed'].includes(s)) {
-                return '<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400">Failed</span>';
+            if (['cancel', 'expire', 'deny', 'failed', 'dibatalkan'].includes(s)) {
+                return '<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400">Dibatalkan</span>';
             }
             return '<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">Pending</span>';
         }
@@ -219,9 +256,9 @@
                     Kirim Pesanan
                 </button>`;
             }
-            if (s === 'kirim') {
-                html += `<button type="button" onclick="closeFloatingMenu()" class="w-full text-left px-4 py-2.5 text-sm text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700/60 flex items-center gap-2.5 transition-colors cursor-not-allowed opacity-60">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            if (s === 'kirim' && tx.tracking_number) {
+                html += `<button type="button" onclick="openTrackingModal(${tx.id}); closeFloatingMenu()" class="w-full text-left px-4 py-2.5 text-sm text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 flex items-center gap-2.5 transition-colors">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                     Lacak Pesanan
                 </button>`;
             }
@@ -299,6 +336,10 @@
                         ${tx.tracking_number ? `<div>
                                     <p class="text-xs text-slate-400 dark:text-slate-500 mb-1.5">Nomor Resi</p>
                                     <p class="font-medium text-slate-800 dark:text-slate-200">${tx.tracking_number}</p>
+                                </div>` : ''}
+                        ${tx.cancel_reason ? `<div class="col-span-2">
+                                    <p class="text-xs text-slate-400 dark:text-slate-500 mb-1.5">Alasan Pembatalan</p>
+                                    <p class="font-medium text-red-600 dark:text-red-400">${tx.cancel_reason}</p>
                                 </div>` : ''}
                     </div>
                 </div>
@@ -446,5 +487,57 @@
 
         window.addEventListener('scroll', closeFloatingMenu, true);
         window.addEventListener('resize', closeFloatingMenu);
+
+        function openTrackingModal(id) {
+            const tx = txItems.find(t => Number(t.id) === Number(id));
+            if (!tx) return;
+
+            const resi = tx.tracking_number || '-';
+            const courier = tx.shipping_label || 'Ekspedisi';
+
+            document.getElementById('adminTrackingResi').textContent = 'No. Resi: ' + resi;
+            document.getElementById('adminTrackingResiSmall').textContent = resi;
+            document.getElementById('adminTrackingCourier').textContent = courier;
+
+            // Dummy timeline
+            const steps = [
+                { done: true,  label: 'Pesanan Dibuat',       desc: `Invoice ${tx.invoice_no} berhasil dibuat.` },
+                { done: true,  label: 'Pembayaran Diterima',  desc: 'Pembayaran telah dikonfirmasi.' },
+                { done: true,  label: 'Pesanan Diproses',     desc: 'Pesanan sedang disiapkan oleh tim gudang.' },
+                { done: true,  label: 'Diserahkan ke Kurir',  desc: `Paket diserahkan ke ${courier} dengan resi ${resi}.` },
+                { done: false, label: 'Dalam Perjalanan',     desc: 'Paket sedang dalam perjalanan.' },
+                { done: false, label: 'Tiba di Kota Tujuan',  desc: `Paket tiba di kota ${tx.shipping_city || 'tujuan'}.` },
+                { done: false, label: 'Diterima Penerima',    desc: `Paket diterima oleh ${tx.shipping_recipient_name || 'penerima'}.` },
+            ];
+
+            document.getElementById('adminTrackingTimeline').innerHTML = steps.map((step, i) => {
+                const isLast = i === steps.length - 1;
+                const dot  = step.done ? 'bg-blue-500' : 'bg-slate-200 dark:bg-slate-600';
+                const line = step.done ? 'bg-blue-200 dark:bg-blue-800' : 'bg-slate-100 dark:bg-slate-700';
+                const lbl  = step.done ? 'text-slate-800 dark:text-white font-semibold' : 'text-slate-400 dark:text-slate-500';
+                const dsc  = step.done ? 'text-slate-500 dark:text-slate-400' : 'text-slate-300 dark:text-slate-600';
+                return `
+                <div class="flex gap-3">
+                    <div class="flex flex-col items-center shrink-0">
+                        <div class="w-3.5 h-3.5 rounded-full ${dot} mt-0.5 ring-4 ring-white dark:ring-slate-800 relative z-10"></div>
+                        ${!isLast ? `<div class="w-0.5 flex-1 ${line} my-1"></div>` : ''}
+                    </div>
+                    <div class="pb-5 min-w-0 flex-1">
+                        <p class="text-sm ${lbl}">${step.label}</p>
+                        <p class="text-xs ${dsc} mt-0.5 leading-relaxed">${step.desc}</p>
+                    </div>
+                </div>`;
+            }).join('');
+
+            const modal = document.getElementById('trackingModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeTrackingModal() {
+            const modal = document.getElementById('trackingModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
     </script>
 @endsection

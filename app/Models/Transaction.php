@@ -15,6 +15,9 @@ class Transaction extends Model
         'midtrans_transaction_id',
         'payment_type',
         'payment_method',
+        'payment_va_number',
+        'payment_va_bank',
+        'payment_qr_url',
         'status',
         'subtotal_amount',
         'shipping_cost',
@@ -31,6 +34,8 @@ class Transaction extends Model
         'shipped_at',
         'paid_at',
         'expires_at',
+        'cancel_reason',
+        'cancelled_at',
     ];
 
     protected $casts = [
@@ -38,6 +43,7 @@ class Transaction extends Model
         'shipped_at' => 'datetime',
         'paid_at' => 'datetime',
         'expires_at' => 'datetime',
+        'cancelled_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

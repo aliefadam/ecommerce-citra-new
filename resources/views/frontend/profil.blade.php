@@ -187,6 +187,43 @@
         $displayName = $fullName !== '' ? $fullName : $user->name ?? 'User';
         $avatarLetter = strtoupper(substr($displayName, 0, 1));
     @endphp
+    <!-- Modal Lacak Pesanan -->
+    <div id="trackingModal" class="fixed inset-0 z-[9999] hidden items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeTrackingModal()"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md border border-slate-100 flex flex-col max-h-[90vh]">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 shrink-0">
+                <div>
+                    <h3 class="font-bold text-base text-slate-800">Lacak Pesanan</h3>
+                    <p id="trackingResi" class="text-xs text-slate-400 mt-0.5"></p>
+                </div>
+                <button onclick="closeTrackingModal()"
+                    class="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="overflow-y-auto flex-1 px-6 py-5">
+                {{-- Courier info --}}
+                <div class="flex items-center gap-3 bg-slate-50 rounded-xl p-3 mb-5 border border-slate-100">
+                    <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1 13h12l1-13"/>
+                        </svg>
+                    </div>
+                    <div class="min-w-0">
+                        <p id="trackingCourier" class="text-sm font-semibold text-slate-800"></p>
+                        <p id="trackingResiSmall" class="text-xs text-slate-500 truncate"></p>
+                    </div>
+                    <span id="trackingStatusBadge" class="ml-auto shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-100 text-blue-700"></span>
+                </div>
+
+                {{-- Timeline --}}
+                <div id="trackingTimeline" class="space-y-0"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast -->
     <div id="toast" class="fixed top-4 right-4 z-[9999] hidden">
         <div class="toast bg-blue-500 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3">
@@ -802,70 +839,76 @@
                 <!-- ============ NOTIFIKASI ============ -->
                 <div id="tab-notif" class="tab-content">
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                        <div
-                            class="px-6 py-5 border-b border-slate-100 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
-                            <h2 class="font-bold text-slate-800 text-lg">Notifikasi</h2>
-                            <button class="text-sm text-blue-600 font-medium hover:text-blue-700">Tandai semua
-                                dibaca</button>
+                        <div class="px-6 py-5 border-b border-slate-100 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <h2 class="font-bold text-slate-800 text-lg">Notifikasi</h2>
+                                <p class="text-slate-500 text-sm mt-0.5">Semua aktivitas pesanan dan akun kamu</p>
+                            </div>
+                            @php $unreadCount = $notifications->whereNull('read_at')->count(); @endphp
+                            @if($unreadCount > 0)
+                            <form method="POST" action="{{ route('frontend.notifications.read-all') }}">
+                                @csrf
+                                <button type="submit" class="text-sm text-blue-600 font-medium hover:text-blue-700">
+                                    Tandai semua dibaca ({{ $unreadCount }})
+                                </button>
+                            </form>
+                            @endif
                         </div>
+
+                        @php
+                            $typeConfig = [
+                                'transaction_created' => ['bg' => 'bg-blue-100',   'color' => 'text-blue-600'],
+                                'payment_received'    => ['bg' => 'bg-green-100',  'color' => 'text-green-600'],
+                                'order_processed'     => ['bg' => 'bg-indigo-100', 'color' => 'text-indigo-600'],
+                                'order_shipped'       => ['bg' => 'bg-purple-100', 'color' => 'text-purple-600'],
+                            ];
+                            $typeIcons = [
+                                'transaction_created' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>',
+                                'payment_received'    => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>',
+                                'order_processed'     => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>',
+                                'order_shipped'       => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1 13h12l1-13"/>',
+                            ];
+                            $defaultIcon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>';
+                        @endphp
+
                         <div class="divide-y divide-slate-100">
-                            <div class="p-5 flex gap-4 bg-blue-50">
-                                <div
-                                    class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 text-xl">
-                                    ?</div>
-                                <div class="flex-1">
-                                    <p class="font-semibold text-slate-800 text-sm mb-0.5">Pesanan Dikirim!</p>
-                                    <p class="text-sm text-slate-600">Pesanan #TK-2025-ABCD123 sedang dalam perjalanan.
-                                        Estimasi tiba 20 Jan 2025.</p>
-                                    <p class="text-xs text-slate-400 mt-1">5 menit lalu</p>
+                            @forelse($notifications as $notif)
+                                @php
+                                    $cfg  = $typeConfig[$notif->type] ?? ['bg' => 'bg-slate-100', 'color' => 'text-slate-500'];
+                                    $icon = $typeIcons[$notif->type] ?? $defaultIcon;
+                                    $isUnread = is_null($notif->read_at);
+                                @endphp
+                                <div class="p-5 flex gap-4 {{ $isUnread ? 'bg-blue-50/50' : '' }} hover:bg-slate-50 transition-colors">
+                                    <div class="w-10 h-10 {{ $cfg['bg'] }} rounded-full flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-5 h-5 {{ $cfg['color'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            {!! $icon !!}
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="font-semibold text-slate-800 text-sm mb-0.5">{{ $notif->title }}</p>
+                                        <p class="text-sm text-slate-600">{{ $notif->body }}</p>
+                                        <div class="flex items-center gap-3 mt-1.5">
+                                            <p class="text-xs text-slate-400">{{ $notif->created_at->diffForHumans() }}</p>
+                                            @if($notif->url)
+                                                <a href="{{ $notif->url }}" class="text-xs text-blue-600 font-medium hover:underline">Lihat →</a>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    @if($isUnread)
+                                        <span class="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-2"></span>
+                                    @endif
                                 </div>
-                                <span class="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-2"></span>
-                            </div>
-                            <div class="p-5 flex gap-4 bg-blue-50">
-                                <div
-                                    class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 text-xl">
-                                    ?</div>
-                                <div class="flex-1">
-                                    <p class="font-semibold text-slate-800 text-sm mb-0.5">Voucher Baru Tersedia!</p>
-                                    <p class="text-sm text-slate-600">Dapatkan diskon Rp 75.000 untuk pembelian pertama
-                                        bulan ini. Gunakan kode: HEMAT75</p>
-                                    <p class="text-xs text-slate-400 mt-1">1 jam lalu</p>
+                            @empty
+                                <div class="px-6 py-12 text-center">
+                                    <div class="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                        <svg class="w-7 h-7 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                                        </svg>
+                                    </div>
+                                    <p class="text-sm font-medium text-slate-600">Belum ada notifikasi</p>
+                                    <p class="text-xs text-slate-400 mt-1">Notifikasi pesanan dan aktivitas akun akan muncul di sini</p>
                                 </div>
-                                <span class="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-2"></span>
-                            </div>
-                            <div class="p-5 flex gap-4">
-                                <div
-                                    class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0 text-xl">
-                                    ?</div>
-                                <div class="flex-1">
-                                    <p class="font-semibold text-slate-800 text-sm mb-0.5">Beri Ulasan Produk</p>
-                                    <p class="text-sm text-slate-600">Bagaimana pengalamanmu dengan Kemeja Oxford Slim Fit?
-                                        Berikan ulasan dan dapatkan poin.</p>
-                                    <p class="text-xs text-slate-400 mt-1">Kemarin, 15:30</p>
-                                </div>
-                            </div>
-                            <div class="p-5 flex gap-4">
-                                <div
-                                    class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 text-xl">
-                                    ?</div>
-                                <div class="flex-1">
-                                    <p class="font-semibold text-slate-800 text-sm mb-0.5">Pesanan Selesai</p>
-                                    <p class="text-sm text-slate-600">Pesanan #TK-2025-XYZ789 telah selesai. Terima kasih
-                                        sudah berbelanja di Ecommerce Citra!</p>
-                                    <p class="text-xs text-slate-400 mt-1">3 hari lalu</p>
-                                </div>
-                            </div>
-                            <div class="p-5 flex gap-4">
-                                <div
-                                    class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 text-xl">
-                                    ?</div>
-                                <div class="flex-1">
-                                    <p class="font-semibold text-slate-800 text-sm mb-0.5">Flash Sale Dimulai!</p>
-                                    <p class="text-sm text-slate-600">Diskon hingga 70% untuk ribuan produk pilihan. Jangan
-                                        sampai kehabisan!</p>
-                                    <p class="text-xs text-slate-400 mt-1">5 hari lalu</p>
-                                </div>
-                            </div>
+                            @endforelse
                         </div>
                     </div>
                 </div>
@@ -892,6 +935,72 @@
             <div id="orderDetailContent" class="overflow-y-auto flex-1 px-6 py-4 space-y-5"></div>
         </div>
     </div>
+    <!-- Modal Batalkan Pesanan -->
+    <div id="orderCancelModal" class="fixed inset-0 z-[99999] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-slate-100">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-semibold text-slate-800">Batalkan Pesanan</p>
+                    <p class="text-xs text-slate-500">Pilih alasan pembatalan</p>
+                </div>
+            </div>
+            <div id="orderCancelReasonList" class="space-y-2 mb-4">
+                @php
+                $cancelReasons = [
+                    'Berubah pikiran / tidak jadi membeli',
+                    'Salah memilih produk atau varian',
+                    'Ingin menggunakan metode pembayaran lain',
+                    'Harga terlalu mahal',
+                    'Menemukan produk lebih murah di tempat lain',
+                    'Alasan lainnya',
+                ];
+                @endphp
+                @foreach($cancelReasons as $reason)
+                <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer has-[:checked]:border-red-400 has-[:checked]:bg-red-50 transition-colors">
+                    <input type="radio" name="orderCancelReason" value="{{ $reason }}" class="text-red-500 focus:ring-red-400">
+                    <span class="text-sm text-slate-700">{{ $reason }}</span>
+                </label>
+                @endforeach
+                <input type="text" id="orderCancelReasonOther" placeholder="Tulis alasan lainnya..."
+                    class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm hidden focus:outline-none focus:border-red-400">
+            </div>
+            <p id="orderCancelError" class="text-xs text-red-500 mb-2 hidden">Pilih alasan pembatalan terlebih dahulu.</p>
+            <div class="flex gap-3">
+                <button type="button" onclick="closeOrderCancelModal()" class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">Kembali</button>
+                <button type="button" id="orderCancelConfirmBtn" class="flex-1 px-4 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition-colors">Ya, Batalkan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Logout -->
+    <div id="logoutModal" class="fixed inset-0 z-[99999] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-slate-100">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-semibold text-slate-800">Keluar dari akun?</p>
+                    <p class="text-sm text-slate-500">Sesi Anda akan diakhiri.</p>
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="closeLogout()" class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">Batal</button>
+                <form action="{{ route('logout') }}" method="POST" class="flex-1">
+                    @csrf
+                    <button type="submit" class="w-full px-4 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition-colors">Keluar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <div id="reviewModal" class="fixed inset-0 z-[99999] hidden items-center justify-center bg-black/50 p-4">
         <div class="bg-white rounded-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
             <div class="flex items-center justify-between mb-4">
@@ -997,7 +1106,7 @@
                         in_array($statusRaw, ['selesai', 'completed', 'delivered']) => 'selesai',
                         in_array($statusRaw, ['kirim', 'shipping', 'shipped']) => 'kirim',
                         in_array($statusRaw, ['process', 'processing']) => 'proses',
-                        in_array($statusRaw, ['cancel', 'expire', 'deny', 'failure', 'failed']) => 'batal',
+                        in_array($statusRaw, ['cancel', 'expire', 'deny', 'failure', 'failed', 'dibatalkan']) => 'batal',
                         default => 'menunggu',
                     };
 
@@ -1058,6 +1167,7 @@
         const profileUser = @json($profileUserPayload);
         const profileAddresses = @json($profileAddressesPayload);
         const profileOrders = @json($profileOrdersPayload);
+        const waitingUrlTemplate = @json(route('frontend.checkout.waiting', ['orderId' => '__ORDER_ID__']));
         const csrfToken = @json(csrf_token());
         const roProvincesUrl = @json(route('frontend.rajaongkir.provinces'));
         const roCitiesUrl = @json(route('frontend.rajaongkir.cities'));
@@ -1263,8 +1373,10 @@
               ${o.status === 'kirim' && o.tracking_number ? `<p class="text-xs text-slate-500 mt-1">No. Resi: <span class="font-semibold text-slate-700">${o.tracking_number}</span></p>` : ''}
             </div>
             <div class="flex flex-wrap gap-2">
+              ${o.status === 'menunggu' ? `<a href="${waitingUrlTemplate.replace('__ORDER_ID__', o.order_id)}" class="text-xs border border-orange-300 text-orange-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-orange-50 transition-colors flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>Bayar Sekarang</a>` : ''}
+              ${o.status === 'menunggu' ? `<button type="button" onclick="openOrderCancelModal('${o.order_id}')" class="text-xs border border-red-300 text-red-500 font-semibold px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors">Batalkan</button>` : ''}
               ${Array.isArray(o.items) && o.items.some((it) => !it.is_reviewed) ? '<button onclick="openReviewModal(\'' + o.id + '\')" class="text-xs border border-yellow-300 text-yellow-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-yellow-50 transition-colors">Beri Ulasan</button>' : ''}
-              ${o.status === 'kirim' ? '<button onclick="showToast(\'Lacak pesanan dibuka\')" class="text-xs border border-blue-300 text-blue-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors">Lacak Pesanan</button>' : ''}
+              ${o.status === 'kirim' ? `<button onclick="openTrackingModal('${o.id}')" class="text-xs border border-blue-300 text-blue-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors">Lacak Pesanan</button>` : ''}
               <button type="button" onclick="openOrderDetailModal('${o.id}')" class="text-xs border border-slate-300 text-slate-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors">Lihat Detail</button>
             </div>
           </div>
@@ -1509,6 +1621,60 @@
           <button onclick="showToast('Ditambahkan ke keranjang! ?')" class="w-full text-xs bg-blue-50 hover:bg-blue-500 text-blue-600 hover:text-white font-semibold py-1.5 rounded-lg border border-blue-200 hover:border-blue-500 transition-all">+ Keranjang</button>
         </div>
       </div>`).join('');
+
+        function openTrackingModal(orderId) {
+            const o = profileOrders.find(x => x.id === orderId);
+            if (!o) return;
+
+            const resi = o.tracking_number || '-';
+            const courier = o.shipping_label || 'Ekspedisi';
+
+            document.getElementById('trackingResi').textContent = 'No. Resi: ' + resi;
+            document.getElementById('trackingResiSmall').textContent = resi;
+            document.getElementById('trackingCourier').textContent = courier;
+            document.getElementById('trackingStatusBadge').textContent = 'Dalam Pengiriman';
+
+            // Dummy timeline — ganti dengan API tracking nyata saat tersedia
+            const dummySteps = [
+                { done: true,  time: o.date,                            label: 'Pesanan Dibuat',           desc: 'Pesanan berhasil dibuat dan menunggu konfirmasi pembayaran.' },
+                { done: true,  time: '',                                 label: 'Pembayaran Diterima',      desc: 'Pembayaran telah dikonfirmasi oleh sistem.' },
+                { done: true,  time: '',                                 label: 'Pesanan Diproses',         desc: 'Pesanan sedang disiapkan oleh tim gudang.' },
+                { done: true,  time: '',                                 label: 'Diserahkan ke Kurir',      desc: `Paket telah diserahkan ke ${courier} dengan nomor resi ${resi}.` },
+                { done: false, time: '',                                 label: 'Dalam Perjalanan',         desc: 'Paket sedang dalam perjalanan menuju tujuan.' },
+                { done: false, time: '',                                 label: 'Tiba di Kota Tujuan',      desc: `Paket tiba di kota ${o.shipping_city || 'tujuan'}.` },
+                { done: false, time: '',                                 label: 'Diterima',                 desc: `Paket berhasil diterima oleh ${o.shipping_recipient_name || 'penerima'}.` },
+            ];
+
+            document.getElementById('trackingTimeline').innerHTML = dummySteps.map((step, i) => {
+                const isLast = i === dummySteps.length - 1;
+                const dotColor  = step.done ? 'bg-blue-500' : 'bg-slate-200';
+                const lineColor = step.done ? 'bg-blue-200' : 'bg-slate-100';
+                const labelColor = step.done ? 'text-slate-800 font-semibold' : 'text-slate-400';
+                const descColor  = step.done ? 'text-slate-500' : 'text-slate-300';
+                return `
+                <div class="flex gap-3">
+                    <div class="flex flex-col items-center shrink-0">
+                        <div class="w-3.5 h-3.5 rounded-full ${dotColor} mt-0.5 ring-4 ring-white shrink-0 z-10 relative"></div>
+                        ${!isLast ? `<div class="w-0.5 flex-1 ${lineColor} my-1"></div>` : ''}
+                    </div>
+                    <div class="pb-5 min-w-0 flex-1">
+                        <p class="text-sm ${labelColor}">${step.label}</p>
+                        <p class="text-xs ${descColor} mt-0.5 leading-relaxed">${step.desc}</p>
+                        ${step.done && step.time ? `<p class="text-[11px] text-slate-400 mt-1">${step.time}</p>` : ''}
+                    </div>
+                </div>`;
+            }).join('');
+
+            const modal = document.getElementById('trackingModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeTrackingModal() {
+            const modal = document.getElementById('trackingModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
 
         function showTab(tab) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -1999,6 +2165,72 @@
             document.getElementById('mobileSearch').classList.toggle('hidden');
         }
         setMegaCategory('rumah-tangga');
+
+        // Order cancel modal
+        const cancelOrderUrlTemplate = @json(route('frontend.checkout.midtrans.cancel', ['orderId' => '__ORDER_ID__']));
+        const cancelCsrf = @json(csrf_token());
+        let cancelTargetOrderId = null;
+
+        function openOrderCancelModal(orderId) {
+            cancelTargetOrderId = orderId;
+            document.querySelectorAll('input[name="orderCancelReason"]').forEach(r => r.checked = false);
+            document.getElementById('orderCancelReasonOther').classList.add('hidden');
+            document.getElementById('orderCancelReasonOther').value = '';
+            document.getElementById('orderCancelError').classList.add('hidden');
+            const m = document.getElementById('orderCancelModal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        }
+
+        function closeOrderCancelModal() {
+            cancelTargetOrderId = null;
+            const m = document.getElementById('orderCancelModal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        }
+
+        document.querySelectorAll('input[name="orderCancelReason"]').forEach(function(radio) {
+            radio.addEventListener('change', function() {
+                const other = document.getElementById('orderCancelReasonOther');
+                if (this.value === 'Alasan lainnya') { other.classList.remove('hidden'); other.focus(); }
+                else other.classList.add('hidden');
+            });
+        });
+
+        document.getElementById('orderCancelConfirmBtn')?.addEventListener('click', async function() {
+            const selected = document.querySelector('input[name="orderCancelReason"]:checked');
+            const errEl = document.getElementById('orderCancelError');
+            if (!selected) { errEl.classList.remove('hidden'); return; }
+            errEl.classList.add('hidden');
+
+            let reason = selected.value;
+            if (reason === 'Alasan lainnya') {
+                const other = document.getElementById('orderCancelReasonOther').value.trim();
+                reason = other || 'Alasan lainnya';
+            }
+
+            this.disabled = true;
+            this.textContent = 'Membatalkan...';
+            try {
+                const url = cancelOrderUrlTemplate.replace('__ORDER_ID__', cancelTargetOrderId);
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': cancelCsrf },
+                    body: JSON.stringify({ cancel_reason: reason }),
+                });
+                const json = await res.json();
+                if (json.ok || json.transaction_status === 'cancel') {
+                    closeOrderCancelModal();
+                    location.reload();
+                }
+            } catch(e) {}
+            this.disabled = false;
+            this.textContent = 'Ya, Batalkan';
+        });
+
+        document.getElementById('orderCancelModal')?.addEventListener('click', function(e) {
+            if (e.target === this) closeOrderCancelModal();
+        });
     </script>
 @endsection
 

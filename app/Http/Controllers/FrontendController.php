@@ -10,6 +10,7 @@ use App\Models\ProductVariant;
 use App\Models\TransactionDetail;
 use App\Models\TransactionProductReview;
 use App\Models\Transaction;
+use App\Models\UserNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -362,7 +363,12 @@ class FrontendController extends Controller
             ->latest()
             ->get();
 
-        return view('frontend.profil', compact('user', 'addresses', 'transactions'));
+        $notifications = UserNotification::query()
+            ->where('user_id', $user->id)
+            ->latest()
+            ->get();
+
+        return view('frontend.profil', compact('user', 'addresses', 'transactions', 'notifications'));
     }
 
     private function buildFrontendProducts(): array

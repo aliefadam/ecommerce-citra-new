@@ -60,11 +60,20 @@
 
             <section class="flex items-center justify-center p-6 sm:p-10">
                 <div class="w-full max-w-md">
-                    <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center justify-between">
                         <div>
                             <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Sign In</h2>
                             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Masukkan akun Anda untuk
                                 melanjutkan.</p>
+                        </div>
+                        <div
+                            class="mb-4 p-4 rounded-xl border border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-900/50 flex flex-col justify-end items-end">
+                            <p class="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-2">Demo Admin</p>
+
+                            <button type="button" onclick="fillDemo()"
+                                class="text-xs bg-blue-600 hover:bg-blue-700 text-white px-2 py-0.5 rounded font-semibold transition-colors">
+                                Isi Otomatis
+                            </button>
                         </div>
                     </div>
 
@@ -77,22 +86,12 @@
                     @if (session('status'))
                         <div
                             class="mb-4 p-4 rounded-xl border border-green-200 bg-green-50 dark:bg-green-900/20 dark:border-green-900/50">
-                            <p class="text-sm font-semibold text-green-700 dark:text-green-300">{{ session('status') }}</p>
+                            <p class="text-sm font-semibold text-green-700 dark:text-green-300">{{ session('status') }}
+                            </p>
                         </div>
                     @endif
-
                     <div
                         class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-sm">
-                        <a href="{{ route('auth.google.redirect') }}"
-                            class="w-full inline-flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-sm font-semibold px-4 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors mb-4">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                                <path d="M21.805 10.023h-9.56v3.957h5.478c-.236 1.272-.952 2.35-2.025 3.072v2.55h3.283c1.922-1.77 3.024-4.378 3.024-7.463 0-.704-.063-1.38-.2-2.116z" fill="#4285F4"/>
-                                <path d="M12.245 22c2.735 0 5.029-.907 6.706-2.448l-3.283-2.55c-.906.61-2.066.972-3.423.972-2.64 0-4.88-1.782-5.68-4.185H3.174v2.625A10.13 10.13 0 0012.245 22z" fill="#34A853"/>
-                                <path d="M6.565 13.79a6.082 6.082 0 010-3.58V7.586H3.174a10.13 10.13 0 000 9.829l3.391-2.625z" fill="#FBBC05"/>
-                                <path d="M12.245 6.026c1.486 0 2.825.51 3.874 1.511l2.907-2.907C17.27 2.999 14.976 2 12.245 2A10.13 10.13 0 003.174 7.586l3.391 2.625c.8-2.404 3.04-4.185 5.68-4.185z" fill="#EA4335"/>
-                            </svg>
-                            Login dengan Google
-                        </a>
 
                         <form action="{{ route('login.attempt') }}" method="POST" class="space-y-4">
                             @csrf
@@ -124,6 +123,33 @@
                                 Sign In
                             </button>
                         </form>
+
+                        <div class="flex items-center gap-3 my-4">
+                            <div class="flex-1 h-px bg-slate-200 dark:bg-slate-600"></div>
+                            <span class="text-xs font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap">atau
+                                masuk dengan</span>
+                            <div class="flex-1 h-px bg-slate-200 dark:bg-slate-600"></div>
+                        </div>
+
+                        <a href="{{ route('auth.google.redirect') }}"
+                            class="w-full inline-flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-sm font-semibold px-4 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                                <path
+                                    d="M21.805 10.023h-9.56v3.957h5.478c-.236 1.272-.952 2.35-2.025 3.072v2.55h3.283c1.922-1.77 3.024-4.378 3.024-7.463 0-.704-.063-1.38-.2-2.116z"
+                                    fill="#4285F4" />
+                                <path
+                                    d="M12.245 22c2.735 0 5.029-.907 6.706-2.448l-3.283-2.55c-.906.61-2.066.972-3.423.972-2.64 0-4.88-1.782-5.68-4.185H3.174v2.625A10.13 10.13 0 0012.245 22z"
+                                    fill="#34A853" />
+                                <path
+                                    d="M6.565 13.79a6.082 6.082 0 010-3.58V7.586H3.174a10.13 10.13 0 000 9.829l3.391-2.625z"
+                                    fill="#FBBC05" />
+                                <path
+                                    d="M12.245 6.026c1.486 0 2.825.51 3.874 1.511l2.907-2.907C17.27 2.999 14.976 2 12.245 2A10.13 10.13 0 003.174 7.586l3.391 2.625c.8-2.404 3.04-4.185 5.68-4.185z"
+                                    fill="#EA4335" />
+                            </svg>
+                            Login dengan Google
+                        </a>
+
                         <p class="text-sm text-slate-600 dark:text-slate-300 mt-4 text-center">
                             Belum punya akun?
                             <a href="{{ route('register') }}"
@@ -139,6 +165,11 @@
                 const html = document.documentElement;
                 html.classList.toggle('dark');
                 localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+            }
+
+            function fillDemo() {
+                document.querySelector('input[name="email"]').value = 'admin@citra.com';
+                document.querySelector('input[name="password"]').value = '123123';
             }
         </script>
     </body>

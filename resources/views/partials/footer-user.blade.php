@@ -71,15 +71,17 @@
                 <h4 class="text-white font-semibold mb-4">Bantuan</h4>
                 <ul class="space-y-2">
                     <li><a href="#" class="text-sm hover:text-blue-400 transition-colors">Pusat Bantuan</a></li>
-                    <li><a href="#" class="text-sm hover:text-blue-400 transition-colors">Kebijakan Privasi</a></li>
-                    <li><a href="#" class="text-sm hover:text-blue-400 transition-colors">Syarat & Ketentuan</a></li>
+                    <li><a href="#" class="text-sm hover:text-blue-400 transition-colors">Kebijakan Privasi</a>
+                    </li>
+                    <li><a href="#" class="text-sm hover:text-blue-400 transition-colors">Syarat & Ketentuan</a>
+                    </li>
                     <li><a href="#" class="text-sm hover:text-blue-400 transition-colors">Cara Belanja</a></li>
                     <li><a href="#" class="text-sm hover:text-blue-400 transition-colors">Hubungi Kami</a></li>
                 </ul>
             </div>
         </div>
         <div class="border-t border-slate-800 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p class="text-sm text-slate-500">© 2025 Ecommerce Citra. All rights reserved.</p>
+            <p class="text-sm text-slate-500">© 2026 Ecommerce Citra. All rights reserved.</p>
             <div class="flex items-center gap-3 flex-wrap justify-center">
                 <div class="bg-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-400 font-medium">Visa</div>
                 <div class="bg-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-400 font-medium">Mastercard</div>

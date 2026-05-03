@@ -59,7 +59,7 @@
                 <div class="border-b border-slate-100 pb-3">
                     <h3 class="font-bold text-slate-800 mb-3">Informasi Produk</h3>
                     <div class="space-y-3">
-                        @foreach (($payment['items'] ?? []) as $item)
+                        @foreach ($payment['items'] ?? [] as $item)
                             <div class="flex items-start gap-3">
                                 <img src="{{ !empty($item['image']) ? $item['image'] : 'https://via.placeholder.com/80x80?text=No+Image' }}"
                                     alt="{{ $item['name'] }}"
@@ -74,7 +74,8 @@
                                     @endif
                                     <div class="flex items-center justify-between mt-1">
                                         <span class="text-xs text-slate-500">x{{ $item['qty'] }}</span>
-                                        <span class="text-sm font-medium text-slate-800">Rp {{ number_format((int) $item['price'] * (int) $item['qty'], 0, ',', '.') }}</span>
+                                        <span class="text-sm font-medium text-slate-800">Rp
+                                            {{ number_format((int) $item['price'] * (int) $item['qty'], 0, ',', '.') }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -91,13 +92,15 @@
                     <div class="p-4 border-2 border-blue-200 bg-blue-50 rounded-xl">
                         <p class="text-sm text-slate-600 mb-1">Nomor Virtual Account</p>
                         <div class="flex items-center gap-2 flex-wrap">
-                            <p id="vaNumberText" class="text-xl font-extrabold text-blue-700 tracking-wide">{{ $payment['va_number'] }}</p>
+                            <p id="vaNumberText" class="text-xl font-extrabold text-blue-700 tracking-wide">
+                                {{ $payment['va_number'] }}</p>
                             <button id="copyVaBtn" type="button"
                                 class="px-3 py-1.5 rounded-lg border border-blue-300 text-blue-700 text-xs font-semibold hover:bg-blue-100 transition-colors">
                                 Salin
                             </button>
                         </div>
-                        <p class="text-xs text-slate-500 mt-2">Bank: {{ strtoupper((string) ($payment['va_bank'] ?? '-')) }}</p>
+                        <p class="text-xs text-slate-500 mt-2">Bank:
+                            {{ strtoupper((string) ($payment['va_bank'] ?? '-')) }}</p>
                     </div>
                 @endif
 
@@ -105,7 +108,8 @@
                     <div class="p-4 border-2 border-blue-200 bg-blue-50 rounded-xl text-center">
                         <p class="text-sm text-slate-600 mb-2">QRIS Pembayaran</p>
                         @if (!empty($payment['qr_url']))
-                            <img src="{{ $payment['qr_url'] }}" alt="QRIS" class="w-56 h-56 object-contain bg-white p-2 rounded-lg border border-slate-200 mx-auto" />
+                            <img src="{{ $payment['qr_url'] }}" alt="QRIS"
+                                class="w-56 h-56 object-contain bg-white p-2 rounded-lg border border-slate-200 mx-auto" />
                         @else
                             <p class="text-sm text-slate-500">QR belum tersedia, silakan refresh status.</p>
                         @endif
@@ -118,39 +122,91 @@
                 </div>
 
                 <div id="txStatusWrap" class="p-3 rounded-xl bg-yellow-50 text-sm text-yellow-700 border border-yellow-200">
-                    Status saat ini: <span id="txStatus" class="font-semibold">{{ strtoupper($payment['transaction_status'] ?? 'PENDING') }}</span>
+                    Status saat ini: <span id="txStatus"
+                        class="font-semibold">{{ strtoupper($payment['transaction_status'] ?? 'PENDING') }}</span>
                 </div>
 
                 <div class="border-t border-slate-100 pt-2 mt-2">
                     <h3 class="font-bold text-slate-800 mb-3">Ringkasan Pesanan</h3>
                     <div class="space-y-3">
-                        @foreach (($payment['items'] ?? []) as $item)
+                        @foreach ($payment['items'] ?? [] as $item)
                             <div class="flex justify-between text-sm gap-2">
                                 <span class="text-slate-600">{{ $item['name'] }} x{{ $item['qty'] }}</span>
-                                <span class="font-medium text-slate-800">Rp {{ number_format((int) $item['price'] * (int) $item['qty'], 0, ',', '.') }}</span>
+                                <span class="font-medium text-slate-800">Rp
+                                    {{ number_format((int) $item['price'] * (int) $item['qty'], 0, ',', '.') }}</span>
                             </div>
                         @endforeach
                         <div class="flex justify-between text-sm">
                             <span class="text-slate-600">Ongkos Kirim</span>
-                            <span class="font-medium text-slate-800">Rp {{ number_format((int) ($payment['shipping_cost'] ?? 0), 0, ',', '.') }}</span>
+                            <span class="font-medium text-slate-800">Rp
+                                {{ number_format((int) ($payment['shipping_cost'] ?? 0), 0, ',', '.') }}</span>
                         </div>
                         <div class="border-t border-slate-100 pt-3 mt-3">
                             <div class="flex justify-between">
                                 <span class="font-bold text-slate-800">Grand Total</span>
-                                <span class="font-extrabold text-blue-600 text-xl">Rp {{ number_format((int) ($payment['gross_amount'] ?? 0), 0, ',', '.') }}</span>
+                                <span class="font-extrabold text-blue-600 text-xl">Rp
+                                    {{ number_format((int) ($payment['gross_amount'] ?? 0), 0, ',', '.') }}</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="flex flex-col sm:flex-row gap-3 pt-1">
-                    <button id="refreshStatusBtn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-xl transition-colors">
+                    <button id="refreshStatusBtn"
+                        class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-xl transition-colors">
                         Cek Status Pembayaran
                     </button>
-                    <a href="{{ route('frontend.index') }}" class="w-full text-center border border-slate-200 text-slate-600 font-semibold py-3 rounded-xl hover:bg-slate-50 transition-colors">
+                    <a href="{{ route('frontend.index') }}"
+                        class="w-full text-center border border-slate-200 text-slate-600 font-semibold py-3 rounded-xl hover:bg-slate-50 transition-colors">
                         Kembali Belanja
                     </a>
                 </div>
+                <button type="button" onclick="openCancelModal()"
+                    class="w-full mt-1 text-center text-sm text-red-500 hover:text-red-600 font-medium py-2 transition-colors">
+                    Batalkan Transaksi
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Batalkan Transaksi -->
+    <div id="cancelModal" class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-slate-100">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-semibold text-slate-800">Batalkan Transaksi</p>
+                    <p class="text-xs text-slate-500">Pilih alasan pembatalan</p>
+                </div>
+            </div>
+            <div class="space-y-2 mb-4">
+                @php
+                $cancelReasons = [
+                    'Berubah pikiran / tidak jadi membeli',
+                    'Salah memilih produk atau varian',
+                    'Ingin menggunakan metode pembayaran lain',
+                    'Harga terlalu mahal',
+                    'Menemukan produk lebih murah di tempat lain',
+                    'Alasan lainnya',
+                ];
+                @endphp
+                @foreach($cancelReasons as $reason)
+                <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer has-[:checked]:border-red-400 has-[:checked]:bg-red-50 transition-colors">
+                    <input type="radio" name="cancelReason" value="{{ $reason }}" class="text-red-500 focus:ring-red-400">
+                    <span class="text-sm text-slate-700">{{ $reason }}</span>
+                </label>
+                @endforeach
+                <input type="text" id="cancelReasonOther" placeholder="Tulis alasan lainnya..."
+                    class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm hidden focus:outline-none focus:border-red-400">
+            </div>
+            <p id="cancelModalError" class="text-xs text-red-500 mb-2 hidden">Pilih alasan pembatalan terlebih dahulu.</p>
+            <div class="flex gap-3">
+                <button type="button" onclick="closeCancelModal()" class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">Kembali</button>
+                <button type="button" id="confirmCancelBtn" class="flex-1 px-4 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition-colors">Ya, Batalkan</button>
             </div>
         </div>
     </div>
@@ -178,16 +234,16 @@
     <div id="successModal" class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/60 p-4">
         <div class="bg-white rounded-3xl max-w-md w-full p-8 text-center modal-enter relative overflow-hidden">
             <div class="absolute top-0 left-0 right-0 flex justify-around">
-                <div class="w-2 h-6 bg-yellow-400 rounded opacity-70"
-                    style="animation: fall 1.2s 0.1s ease-out forwards;"></div>
+                <div class="w-2 h-6 bg-yellow-400 rounded opacity-70" style="animation: fall 1.2s 0.1s ease-out forwards;">
+                </div>
                 <div class="w-2 h-6 bg-blue-400 rounded opacity-70" style="animation: fall 1.2s 0.3s ease-out forwards;">
                 </div>
                 <div class="w-2 h-6 bg-blue-400 rounded opacity-70" style="animation: fall 1.2s 0.2s ease-out forwards;">
                 </div>
                 <div class="w-2 h-6 bg-pink-400 rounded opacity-70" style="animation: fall 1.2s 0.4s ease-out forwards;">
                 </div>
-                <div class="w-2 h-6 bg-orange-400 rounded opacity-70"
-                    style="animation: fall 1.2s 0.15s ease-out forwards;"></div>
+                <div class="w-2 h-6 bg-orange-400 rounded opacity-70" style="animation: fall 1.2s 0.15s ease-out forwards;">
+                </div>
             </div>
 
             <div
@@ -213,7 +269,8 @@
                     </div>
                     <div class="flex justify-between text-sm">
                         <span class="text-slate-500">Total Dibayar</span>
-                        <span class="font-bold text-blue-600" id="totalPaid">Rp {{ number_format((int) ($payment['gross_amount'] ?? 0), 0, ',', '.') }}</span>
+                        <span class="font-bold text-blue-600" id="totalPaid">Rp
+                            {{ number_format((int) ($payment['gross_amount'] ?? 0), 0, ',', '.') }}</span>
                     </div>
                     <div class="flex justify-between text-sm">
                         <span class="text-slate-500">Estimasi Tiba</span>
@@ -224,7 +281,7 @@
 
             <div class="bg-blue-50 rounded-xl p-3 mb-6 text-sm text-blue-700 flex gap-2">
                 <span>📱</span>
-                <span>Notifikasi status pesanan akan dikirim ke WhatsApp dan email kamu.</span>
+                <span>Notifikasi status pesanan akan dikirim ke email kamu.</span>
             </div>
 
             <div class="flex flex-col sm:flex-row gap-3">
@@ -272,14 +329,22 @@
 
         async function refreshStatus() {
             const res = await fetch(statusUrl, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
             });
             if (!res.ok) return;
             const json = await res.json();
             const status = String(json?.transaction_status || 'pending');
+
+            // Stop polling on any terminal status
+            if (TERMINAL_STATUSES.includes(status)) stopPolling();
+
             const el = document.getElementById('txStatus');
+            if (['cancel', 'expire', 'deny', 'failure', 'dibatalkan'].includes(status)) {
+                if (el) el.textContent = 'DIBATALKAN';
+                paintStatus('cancel');
+                return;
+            }
+
             if (el) el.textContent = status.toUpperCase();
             paintStatus(status);
 
@@ -295,9 +360,7 @@
                             'X-CSRF-TOKEN': csrfToken,
                             'X-Requested-With': 'XMLHttpRequest',
                         },
-                        body: JSON.stringify({
-                            order_id: orderId,
-                        }),
+                        body: JSON.stringify({ order_id: orderId }),
                     });
                 }
             }
@@ -306,16 +369,19 @@
         async function cancelPaymentByTimeout() {
             if (cancelledByTimeout) return;
             cancelledByTimeout = true;
+            stopPolling();
             await fetch(cancelUrl, {
                 method: 'POST',
                 headers: {
+                    'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': csrfToken,
                     'X-Requested-With': 'XMLHttpRequest',
                 },
+                body: JSON.stringify({ cancel_reason: 'Transaksi kadaluarsa (tidak dibayar tepat waktu)' }),
             });
             const el = document.getElementById('txStatus');
-            if (el) el.textContent = 'EXPIRE';
-            paintStatus('expire');
+            if (el) el.textContent = 'DIBATALKAN';
+            paintStatus('cancel');
         }
 
         function paintStatus(statusRaw) {
@@ -455,6 +521,75 @@
             switchToMyTransactionButton();
             showSuccessModal();
         }
-        setInterval(refreshStatus, 12000);
+        const TERMINAL_STATUSES = ['settlement', 'capture', 'paid', 'cancel', 'expire', 'deny', 'failure', 'dibatalkan'];
+        let pollInterval = setInterval(refreshStatus, 12000);
+
+        function stopPolling() {
+            clearInterval(pollInterval);
+        }
+
+        // Stop polling immediately if already in terminal state
+        const initStatus = @json(strtolower((string) ($payment['transaction_status'] ?? 'pending')));
+        if (TERMINAL_STATUSES.includes(initStatus)) stopPolling();
+
+        // Cancel modal
+
+        function openCancelModal() {
+            document.getElementById('cancelModal').classList.remove('hidden');
+            document.getElementById('cancelModal').classList.add('flex');
+        }
+        function closeCancelModal() {
+            document.getElementById('cancelModal').classList.add('hidden');
+            document.getElementById('cancelModal').classList.remove('flex');
+        }
+
+        // Toggle free-text input when "Alasan lainnya" is selected
+        document.querySelectorAll('input[name="cancelReason"]').forEach(function(radio) {
+            radio.addEventListener('change', function() {
+                const other = document.getElementById('cancelReasonOther');
+                if (this.value === 'Alasan lainnya') {
+                    other.classList.remove('hidden');
+                    other.focus();
+                } else {
+                    other.classList.add('hidden');
+                }
+            });
+        });
+
+        document.getElementById('confirmCancelBtn')?.addEventListener('click', async function() {
+            const selected = document.querySelector('input[name="cancelReason"]:checked');
+            const errEl = document.getElementById('cancelModalError');
+            if (!selected) { errEl.classList.remove('hidden'); return; }
+            errEl.classList.add('hidden');
+
+            let reason = selected.value;
+            if (reason === 'Alasan lainnya') {
+                const other = document.getElementById('cancelReasonOther').value.trim();
+                reason = other || 'Alasan lainnya';
+            }
+
+            this.disabled = true;
+            this.textContent = 'Membatalkan...';
+            try {
+                const res = await fetch(cancelUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+                    body: JSON.stringify({ cancel_reason: reason }),
+                });
+                const json = await res.json();
+                if (json.ok || json.transaction_status === 'cancel') {
+                    stopPolling();
+                    closeCancelModal();
+                    paintStatus('cancel');
+                    const el = document.getElementById('txStatus');
+                    if (el) el.textContent = 'DIBATALKAN';
+                    // Hide cancel button after successful cancel
+                    const cancelBtn = document.querySelector('button[onclick="openCancelModal()"]');
+                    if (cancelBtn) cancelBtn.style.display = 'none';
+                }
+            } catch(e) {}
+            this.disabled = false;
+            this.textContent = 'Ya, Batalkan';
+        });
     </script>
 @endsection

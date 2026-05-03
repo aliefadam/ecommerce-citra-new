@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Transaction;
+use App\Models\UserNotification;
 use Illuminate\Http\Request;
 
 class TransactionController extends Controller
@@ -40,6 +41,16 @@ class TransactionController extends Controller
         $transaction->processed_at = now();
         $transaction->save();
 
+        if ($transaction->user_id) {
+            UserNotification::create([
+                'user_id' => $transaction->user_id,
+                'type'    => 'order_processed',
+                'title'   => 'Pesanan Sedang Disiapkan',
+                'body'    => 'Pesanan ' . $transaction->invoice_no . ' sedang disiapkan oleh tim kami dan akan segera dikirim.',
+                'url'     => route('frontend.profil') . '?tab=pesanan',
+            ]);
+        }
+
         return response()->json(['ok' => true, 'message' => 'Transaksi diproses.']);
     }
 
@@ -57,6 +68,16 @@ class TransactionController extends Controller
         $transaction->tracking_number = (string) $validated['tracking_number'];
         $transaction->shipped_at = now();
         $transaction->save();
+
+        if ($transaction->user_id) {
+            UserNotification::create([
+                'user_id' => $transaction->user_id,
+                'type'    => 'order_shipped',
+                'title'   => 'Pesanan Dalam Perjalanan',
+                'body'    => 'Pesanan ' . $transaction->invoice_no . ' sudah dikirim via ' . ($transaction->shipping_label ?: 'kurir') . '. No. Resi: ' . $validated['tracking_number'],
+                'url'     => route('frontend.profil') . '?tab=pesanan',
+            ]);
+        }
 
         return response()->json(['ok' => true, 'message' => 'Pesanan dikirim.']);
     }

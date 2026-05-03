@@ -17,7 +17,9 @@
     </head>
 
     <body class="@yield('body_class', 'bg-slate-50 text-slate-800 pb-20 md:pb-0')">
-        @yield('content')
+        <div class="min-h-screen">
+            @yield('content')
+        </div>
         @include('partials.footer-user')
 
         <!-- Mobile Bottom Bar -->

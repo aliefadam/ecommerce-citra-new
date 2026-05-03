@@ -28,7 +28,7 @@
 
                 return [
                     'name' => (string) $product->name,
-                    'meta' => (string) ($product->categoryDetail?->name ?? $product->mainCategory?->name ?? 'Produk'),
+                    'meta' => (string) ($product->categoryDetail?->name ?? ($product->mainCategory?->name ?? 'Produk')),
                     'image' => $image,
                     'url' => route('frontend.detail-produk', ['slug' => $product->slug]),
                 ];
@@ -152,6 +152,32 @@
                             d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                     </svg>
                 </button> --}}
+                @auth
+                <div class="relative">
+                    <button id="ecNotifTrigger" type="button" class="p-2 rounded-lg hover:bg-slate-100 relative">
+                        <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
+                        <span id="ecNotifBadge"
+                            class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] min-w-4 h-4 px-1 rounded-full hidden items-center justify-center leading-none font-bold"></span>
+                    </button>
+                    <div id="ecNotifDropdown"
+                        class="hidden absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-slate-100 z-50 overflow-hidden">
+                        <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+                            <span class="font-semibold text-sm text-slate-800">Notifikasi</span>
+                            <button id="ecNotifReadAll" class="text-xs text-blue-600 hover:text-blue-700 font-medium">Tandai dibaca</button>
+                        </div>
+                        <div id="ecNotifList" class="divide-y divide-slate-50 max-h-80 overflow-y-auto">
+                            <div class="px-4 py-6 text-center text-sm text-slate-400">Memuat...</div>
+                        </div>
+                        <div class="px-4 py-3 border-t border-slate-100 text-center">
+                            <a href="{{ route('frontend.profil') }}?tab=notif"
+                                class="text-sm text-blue-600 hover:text-blue-700 font-semibold">Lihat Semua Notifikasi</a>
+                        </div>
+                    </div>
+                </div>
+                @endauth
                 <a href="{{ route('frontend.cart') }}" class="p-2 rounded-lg hover:bg-slate-100 relative">
                     <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -160,13 +186,47 @@
                     <span id="cartCount"
                         class="absolute -top-1 -right-1 bg-blue-500 text-white text-[10px] min-w-4 h-4 px-1 rounded-full {{ $cartCount > 0 ? 'flex' : 'hidden' }} items-center justify-center leading-none font-bold">{{ $cartCount }}</span>
                 </a>
-                <a href="{{ route('frontend.profil') }}"
-                    class="flex items-center gap-2 p-1 rounded-lg hover:bg-slate-100">
-                    <div
-                        class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white text-sm font-bold">
-                        {{ $initial }}</div>
-                    <span class="hidden sm:block text-sm font-medium text-slate-700">{{ $displayFirstName }}</span>
-                </a>
+                <div class="relative">
+                    <button id="ecAccountTrigger" type="button"
+                        class="flex items-center gap-2 p-1 rounded-lg hover:bg-slate-100">
+                        <div
+                            class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white text-sm font-bold">
+                            {{ $initial }}</div>
+                        <span class="hidden sm:block text-sm font-medium text-slate-700">{{ $displayFirstName }}</span>
+                    </button>
+                    <div id="ecAccountDropdown"
+                        class="hidden absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-lg border border-slate-100 py-1 z-50">
+                        <a href="{{ route('frontend.profil') }}"
+                            class="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            Profil Saya
+                        </a>
+                        <a href="{{ route('frontend.profil') }}?tab=pesanan"
+                            class="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                            </svg>
+                            Riwayat Pesanan
+                        </a>
+                        <form action="{{ route('logout') }}" method="POST">
+                            @csrf
+                            <button type="submit"
+                                class="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                </svg>
+                                Logout
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -174,8 +234,9 @@
     <div id="ecMobileSearch" class="hidden md:hidden px-4 pb-3 border-t border-slate-100 pt-3">
         <form action="{{ route('frontend.search') }}" method="GET"
             class="flex border border-slate-200 rounded-xl overflow-hidden focus-within:border-blue-400">
-            <input type="text" id="ecNavSearchMobile" name="q" value="{{ trim(request('q', $query ?? '')) }}"
-                placeholder="Cari produk..." class="flex-1 px-4 py-2.5 text-sm outline-none" autocomplete="off" />
+            <input type="text" id="ecNavSearchMobile" name="q"
+                value="{{ trim(request('q', $query ?? '')) }}" placeholder="Cari produk..."
+                class="flex-1 px-4 py-2.5 text-sm outline-none" autocomplete="off" />
             <button type="submit" class="bg-blue-500 text-white px-4">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -266,6 +327,9 @@
 
         const isAuthenticated = @json(auth()->check());
         const cartCountUrl = @json(auth()->check() ? route('frontend.cart.count') : null);
+        const notifUrl = @json(auth()->check() ? route('frontend.notifications.index') : null);
+        const notifReadAllUrl = @json(auth()->check() ? route('frontend.notifications.read-all') : null);
+        const csrfToken = @json(csrf_token());
 
         function syncCartBadge() {
             const badge = document.getElementById('cartCount');
@@ -288,6 +352,7 @@
                     const totalQty = Number(data?.count || 0);
                     badge.textContent = String(totalQty);
                     badge.classList.toggle('hidden', totalQty <= 0);
+                    badge.classList.toggle('flex', totalQty > 0);
                 })
                 .catch(() => {
                     badge.textContent = '0';
@@ -296,6 +361,96 @@
         }
         syncCartBadge();
         window.addEventListener('cart:updated', syncCartBadge);
+
+        // ── Notification dropdown ──
+        const notifTrigger = document.getElementById('ecNotifTrigger');
+        const notifDropdown = document.getElementById('ecNotifDropdown');
+        const notifBadge = document.getElementById('ecNotifBadge');
+        const notifList = document.getElementById('ecNotifList');
+        const notifReadAllBtn = document.getElementById('ecNotifReadAll');
+        let notifLoaded = false;
+
+        const notifTypeIcon = {
+            transaction_created: { bg: 'bg-blue-100', icon: `<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>` },
+            payment_received:    { bg: 'bg-green-100', icon: `<svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>` },
+            order_processed:     { bg: 'bg-indigo-100', icon: `<svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>` },
+            order_shipped:       { bg: 'bg-purple-100', icon: `<svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1 13h12l1-13"/></svg>` },
+        };
+
+        function syncNotifBadge(unread) {
+            if (!notifBadge) return;
+            if (unread > 0) {
+                notifBadge.textContent = unread > 9 ? '9+' : String(unread);
+                notifBadge.classList.remove('hidden');
+                notifBadge.classList.add('flex');
+            } else {
+                notifBadge.classList.add('hidden');
+                notifBadge.classList.remove('flex');
+            }
+        }
+
+        function renderNotifList(notifications) {
+            if (!notifList) return;
+            if (!notifications.length) {
+                notifList.innerHTML = `<div class="px-4 py-6 text-center text-sm text-slate-400">Belum ada notifikasi</div>`;
+                return;
+            }
+            notifList.innerHTML = notifications.slice(0, 5).map(n => {
+                const ic = notifTypeIcon[n.type] || { bg: 'bg-slate-100', icon: `<svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>` };
+                const tag = n.url ? 'a' : 'div';
+                const href = n.url ? `href="${n.url}"` : '';
+                return `<${tag} ${href} class="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 transition-colors cursor-pointer ${n.read ? '' : 'bg-blue-50/40'}">
+                    <div class="w-8 h-8 rounded-full ${ic.bg} flex items-center justify-center shrink-0 mt-0.5">${ic.icon}</div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-slate-800 leading-tight">${n.title}</p>
+                        <p class="text-xs text-slate-500 mt-0.5 line-clamp-2">${n.body}</p>
+                        <p class="text-[11px] text-slate-400 mt-1">${n.created_at}</p>
+                    </div>
+                    ${!n.read ? '<span class="w-2 h-2 rounded-full bg-blue-500 shrink-0 mt-1.5"></span>' : ''}
+                </${tag}>`;
+            }).join('');
+        }
+
+        async function loadNotifications() {
+            if (!notifUrl || !isAuthenticated) return;
+            try {
+                const res = await fetch(notifUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                if (!res.ok) return;
+                const data = await res.json();
+                syncNotifBadge(data.unread || 0);
+                renderNotifList(data.notifications || []);
+                notifLoaded = true;
+            } catch {}
+        }
+
+        if (notifTrigger && notifDropdown && isAuthenticated) {
+            notifTrigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                notifDropdown.classList.toggle('hidden');
+                if (!notifDropdown.classList.contains('hidden') && !notifLoaded) {
+                    loadNotifications();
+                }
+            });
+        }
+
+        if (notifReadAllBtn && isAuthenticated) {
+            notifReadAllBtn.addEventListener('click', async () => {
+                await fetch(notifReadAllUrl, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken, 'X-Requested-With': 'XMLHttpRequest' } });
+                syncNotifBadge(0);
+                loadNotifications();
+            });
+        }
+
+        // Poll unread count setiap 60 detik
+        if (isAuthenticated && notifUrl) {
+            loadNotifications();
+            setInterval(() => {
+                fetch(notifUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                    .then(r => r.ok ? r.json() : null)
+                    .then(d => d && syncNotifBadge(d.unread || 0))
+                    .catch(() => {});
+            }, 60000);
+        }
 
         const mobileSearch = document.getElementById('ecMobileSearch');
         const mobileSearchToggle = document.getElementById('ecMobileSearchToggle');
@@ -349,7 +504,24 @@
             });
         }
 
+        const accountTrigger = document.getElementById('ecAccountTrigger');
+        const accountDropdown = document.getElementById('ecAccountDropdown');
+        if (accountTrigger && accountDropdown) {
+            accountTrigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                accountDropdown.classList.toggle('hidden');
+            });
+        }
+
         document.addEventListener('click', (e) => {
+            if (notifDropdown && notifTrigger && !notifDropdown.contains(e.target) && !notifTrigger.contains(e.target)) {
+                notifDropdown.classList.add('hidden');
+            }
+            if (accountDropdown && accountTrigger && !accountDropdown.contains(e.target) && !accountTrigger
+                .contains(e.target)) {
+                accountDropdown.classList.add('hidden');
+            }
+
             const categoryDropdownEl = document.getElementById('ecCategoryDropdown');
             const categoryTriggerEl = document.getElementById('ecCategoryTrigger');
             if (categoryDropdownEl && categoryTriggerEl && !categoryDropdownEl.contains(e.target) && !

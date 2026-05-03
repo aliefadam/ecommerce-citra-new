@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\InvoiceOrder;
 use App\Models\Address;
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
+use App\Models\UserNotification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use RuntimeException;
 use Throwable;
@@ -63,7 +66,7 @@ class MidtransController extends Controller
                 ];
             }
 
-            $grossAmount = collect($itemDetails)->sum(fn ($i) => ((int) $i['price']) * ((int) $i['quantity']));
+            $grossAmount = collect($itemDetails)->sum(fn($i) => ((int) $i['price']) * ((int) $i['quantity']));
             $orderId = 'ORD-' . now()->format('YmdHis') . '-' . random_int(1000, 9999);
 
             $customer = $request->user();
@@ -222,12 +225,55 @@ class MidtransController extends Controller
     public function waiting(Request $request, string $orderId)
     {
         $data = session('checkout_waiting.' . $orderId);
-        abort_if(!$data, 404);
+
+        if (!$data) {
+            $tx = Transaction::query()
+                ->with('details', 'user')
+                ->where('order_id', $orderId)
+                ->where('user_id', $request->user()?->id)
+                ->first();
+
+            abort_if(!$tx, 404);
+
+            $data = [
+                'order_id'           => (string) $tx->order_id,
+                'transaction_id'     => (string) ($tx->midtrans_transaction_id ?? ''),
+                'transaction_status' => (string) ($tx->status ?? 'pending'),
+                'payment_type'       => (string) ($tx->payment_type ?? ''),
+                'method_label'       => (string) ($tx->payment_method ?? '-'),
+                'va_number'          => (string) ($tx->payment_va_number ?? ''),
+                'va_bank'            => (string) ($tx->payment_va_bank ?? ''),
+                'qr_url'             => (string) ($tx->payment_qr_url ?? ''),
+                'shipping_cost'      => (int) $tx->shipping_cost,
+                'shipping_label'     => (string) ($tx->shipping_label ?? ''),
+                'expires_at'         => $tx->expires_at?->toIso8601String() ?? now()->addMinutes(30)->toIso8601String(),
+                'created_at'         => $tx->created_at?->toIso8601String(),
+                'address_snapshot'   => [
+                    'shipping_recipient_name' => $tx->shipping_recipient_name,
+                    'shipping_phone'          => $tx->shipping_phone,
+                    'shipping_address_line'   => $tx->shipping_address_line,
+                    'shipping_city'           => $tx->shipping_city,
+                    'shipping_province'       => $tx->shipping_province,
+                    'shipping_postal_code'    => $tx->shipping_postal_code,
+                ],
+                'items' => $tx->details->map(fn($d) => [
+                    'name'    => $d->product_name,
+                    'variant' => (string) ($d->variant_name ?? ''),
+                    'note'    => (string) ($d->item_note ?? ''),
+                    'image'   => (string) ($d->image ?? ''),
+                    'price'   => (int) $d->price,
+                    'qty'     => (int) $d->quantity,
+                ])->all(),
+            ];
+
+            session()->put('checkout_waiting.' . $orderId, $data);
+        }
 
         if ($this->isExpired($data)) {
             $this->cancelMidtransTransaction($orderId);
             $data['transaction_status'] = 'expire';
             session()->put('checkout_waiting.' . $orderId, $data);
+            $this->syncTransactionStatus($orderId, 'expire');
         }
 
         return view('frontend.checkout-waiting', [
@@ -246,10 +292,11 @@ class MidtransController extends Controller
                     ->first();
                 // Short-circuit untuk status yang tidak perlu dicek ke Midtrans:
                 // paid/settlement/capture = sudah lunas, process/kirim = sudah dikelola admin
-                $localFinalStatuses = ['settlement', 'capture', 'paid', 'process', 'kirim'];
+                $localFinalStatuses = ['settlement', 'capture', 'paid', 'process', 'kirim', 'dibatalkan'];
                 if ($localTx && in_array(strtolower((string) $localTx->status), $localFinalStatuses, true)) {
+                    $returnStatus = strtolower((string) $localTx->status) === 'dibatalkan' ? 'cancel' : (string) $localTx->status;
                     return response()->json([
-                        'transaction_status' => (string) $localTx->status,
+                        'transaction_status' => $returnStatus,
                         'payment_type' => (string) ($localTx->payment_type ?? ''),
                         'order_id' => $orderId,
                     ]);
@@ -291,6 +338,17 @@ class MidtransController extends Controller
 
             $json = $response->json();
             $status = (string) ($json['transaction_status'] ?? 'pending');
+
+            // If DB already says dibatalkan, don't let Midtrans 'pending' overwrite it
+            $dbTx = Transaction::query()->where('order_id', $orderId)->first();
+            if ($dbTx && strtolower((string) $dbTx->status) === 'dibatalkan') {
+                return response()->json([
+                    'transaction_status' => 'cancel',
+                    'payment_type' => (string) ($json['payment_type'] ?? ''),
+                    'order_id' => $orderId,
+                ]);
+            }
+
             $this->syncTransactionStatus($orderId, $status);
 
             return response()->json([
@@ -307,8 +365,35 @@ class MidtransController extends Controller
 
     public function cancel(Request $request, string $orderId)
     {
+        $validated = $request->validate([
+            'cancel_reason' => ['nullable', 'string', 'max:500'],
+        ]);
+
         try {
             $this->cancelMidtransTransaction($orderId);
+
+            $tx = Transaction::query()
+                ->where('order_id', $orderId)
+                ->where('user_id', $request->user()?->id)
+                ->first();
+
+            if ($tx && !in_array(strtolower((string) $tx->status), ['dibatalkan', 'cancel', 'expire'], true)) {
+                $tx->status = 'dibatalkan';
+                $tx->cancel_reason = $validated['cancel_reason'] ?? null;
+                $tx->cancelled_at = now();
+                $tx->save();
+
+                if ($tx->user_id) {
+                    UserNotification::create([
+                        'user_id' => $tx->user_id,
+                        'type'    => 'order_cancelled',
+                        'title'   => 'Pesanan Dibatalkan',
+                        'body'    => 'Pesanan ' . $tx->invoice_no . ' telah dibatalkan.',
+                        'url'     => route('frontend.profil') . '?tab=pesanan',
+                    ]);
+                }
+            }
+
             $sessionData = session('checkout_waiting.' . $orderId);
             if (is_array($sessionData)) {
                 $sessionData['transaction_status'] = 'cancel';
@@ -432,7 +517,8 @@ class MidtransController extends Controller
             $grandTotal = $subtotal + $shippingCost;
 
             $transaction = Transaction::query()->firstOrNew(['order_id' => $orderId]);
-            if (!$transaction->exists) {
+            $isNew = !$transaction->exists;
+            if ($isNew) {
                 $transaction->invoice_no = $this->generateDailyInvoiceNo();
             }
 
@@ -442,6 +528,9 @@ class MidtransController extends Controller
                 'midtrans_transaction_id' => (string) ($payment['transaction_id'] ?? ''),
                 'payment_type' => (string) ($payment['payment_type'] ?? ''),
                 'payment_method' => (string) ($payment['method_label'] ?? ''),
+                'payment_va_number' => (string) ($payment['va_number'] ?? ''),
+                'payment_va_bank' => (string) ($payment['va_bank'] ?? ''),
+                'payment_qr_url' => (string) ($payment['qr_url'] ?? ''),
                 'status' => (string) ($payment['transaction_status'] ?? 'pending'),
                 'subtotal_amount' => $subtotal,
                 'shipping_cost' => $shippingCost,
@@ -480,6 +569,24 @@ class MidtransController extends Controller
                 TransactionDetail::query()->where('transaction_id', $transaction->id)->delete();
                 TransactionDetail::query()->insert($detailRows);
             }
+
+            if ($isNew) {
+                $userId = $request->user()?->id;
+                $userEmail = $request->user()?->email;
+                if ($userEmail) {
+                    $transaction->load('details', 'user');
+                    Mail::to($userEmail)->send(new InvoiceOrder($transaction));
+                }
+                if ($userId) {
+                    UserNotification::create([
+                        'user_id' => $userId,
+                        'type'    => 'transaction_created',
+                        'title'   => 'Pesanan Berhasil Dibuat',
+                        'body'    => 'Pesanan ' . $transaction->invoice_no . ' sedang menunggu pembayaran. Segera selesaikan pembayaran sebelum kedaluwarsa.',
+                        'url'     => route('frontend.checkout.waiting', ['orderId' => $transaction->order_id]),
+                    ]);
+                }
+            }
         });
     }
 
@@ -496,11 +603,36 @@ class MidtransController extends Controller
             return;
         }
 
-        $tx->status = $status;
-        if (in_array(strtolower($status), ['settlement', 'capture', 'paid'], true) && !$tx->paid_at) {
+        $prevStatus = (string) $tx->status;
+        $isPaid = in_array(strtolower($status), ['settlement', 'capture', 'paid'], true);
+        $isCancelled = in_array(strtolower($status), ['cancel', 'expire', 'deny'], true);
+
+        if ($isCancelled) {
+            $tx->status = 'dibatalkan';
+            if (!$tx->cancelled_at) {
+                $tx->cancelled_at = now();
+            }
+            if (!$tx->cancel_reason) {
+                $tx->cancel_reason = strtolower($status) === 'expire' ? 'Transaksi kadaluarsa (tidak dibayar tepat waktu)' : 'Dibatalkan oleh sistem';
+            }
+        } else {
+            $tx->status = $status;
+        }
+
+        if ($isPaid && !$tx->paid_at) {
             $tx->paid_at = now();
         }
         $tx->save();
+
+        if ($isPaid && !in_array(strtolower($prevStatus), ['settlement', 'capture', 'paid'], true) && $tx->user_id) {
+            UserNotification::create([
+                'user_id' => $tx->user_id,
+                'type'    => 'payment_received',
+                'title'   => 'Pembayaran Dikonfirmasi',
+                'body'    => 'Pembayaran untuk pesanan ' . $tx->invoice_no . ' telah berhasil dikonfirmasi. Pesanan sedang disiapkan.',
+                'url'     => route('frontend.profil') . '?tab=pesanan',
+            ]);
+        }
     }
 
     private function generateDailyInvoiceNo(): string

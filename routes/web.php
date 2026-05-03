@@ -16,6 +16,7 @@ use App\Http\Controllers\RajaOngkirController;
 use App\Http\Controllers\MidtransController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TransactionReviewController;
+use App\Http\Controllers\UserNotificationController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -94,5 +95,10 @@ Route::name('frontend.')->group(function () {
         Route::get('/checkout/midtrans/status/{orderId}', [MidtransController::class, 'status'])->name('checkout.midtrans.status');
         Route::post('/checkout/midtrans/cancel/{orderId}', [MidtransController::class, 'cancel'])->name('checkout.midtrans.cancel');
         Route::post('/checkout/midtrans/simulate', [MidtransController::class, 'simulate'])->name('checkout.midtrans.simulate');
+
+        // Notifikasi user
+        Route::get('/notifications', [UserNotificationController::class, 'index'])->name('notifications.index');
+        Route::post('/notifications/read-all', [UserNotificationController::class, 'markAllRead'])->name('notifications.read-all');
+        Route::post('/notifications/{notification}/read', [UserNotificationController::class, 'markRead'])->name('notifications.read');
     });
 });

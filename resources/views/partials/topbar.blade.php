@@ -11,7 +11,9 @@
             </svg>
         </button>
 
-        @php($currentTitle = trim($__env->yieldContent('title', 'Dashboard')))
+        @php
+            $currentTitle = trim($__env->yieldContent('title', 'Dashboard'));
+        @endphp
         <nav class="hidden sm:flex items-center text-sm" aria-label="Breadcrumb">
             <a href="{{ route('pages.index') }}"
                 class="font-medium text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
@@ -61,6 +63,15 @@
                 </svg>
             </button>
 
+            @php
+                $adminNotifications = $adminNotifications ?? collect();
+                $notifCount = $adminNotifications->count();
+                $colorMap = [
+                    'blue' => ['bg' => 'bg-blue-100 dark:bg-blue-900/40', 'stroke' => '#3b82f6'],
+                    'emerald' => ['bg' => 'bg-emerald-100 dark:bg-emerald-900/40', 'stroke' => '#10b981'],
+                    'slate' => ['bg' => 'bg-slate-100 dark:bg-slate-700', 'stroke' => '#64748b'],
+                ];
+            @endphp
             <div class="relative">
                 <button onclick="toggleNotif()"
                     class="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors relative">
@@ -69,75 +80,73 @@
                         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                         <path d="M13.73 21a2 2 0 0 1-3.46 0" />
                     </svg>
-                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+                    @if ($notifCount > 0)
+                        <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+                    @endif
                 </button>
                 <div id="notif-dropdown"
                     class="hidden absolute right-0 mt-2 w-80 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden z-50">
                     <div
                         class="px-4 py-3 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-                        <span class="font-semibold text-sm">Notifications</span>
-                        <span
-                            class="text-xs bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400 px-2 py-0.5 rounded-full font-semibold">3
-                            new</span>
+                        <span class="font-semibold text-sm">Notifikasi</span>
+                        @if ($notifCount > 0)
+                            <span
+                                class="text-xs bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400 px-2 py-0.5 rounded-full font-semibold">
+                                {{ $notifCount }} transaksi
+                            </span>
+                        @endif
                     </div>
-                    <div class="divide-y divide-slate-100 dark:divide-slate-700">
-                        <div class="px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer">
-                            <div class="flex gap-3 items-start">
-                                <div
-                                    class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                        stroke="#3b82f6" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                                        <circle cx="12" cy="7" r="4" />
-                                    </svg>
+                    <div class="divide-y divide-slate-100 dark:divide-slate-700 max-h-80 overflow-y-auto">
+                        @forelse($adminNotifications as $notif)
+                            @php
+                                $c = $colorMap[$notif['color']] ?? $colorMap['slate'];
+                            @endphp
+                            <a href="{{ $notif['url'] }}"
+                                class="block px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                                <div class="flex gap-3 items-start">
+                                    <div
+                                        class="w-8 h-8 rounded-full {{ $c['bg'] }} flex items-center justify-center shrink-0 mt-0.5">
+                                        @if ($notif['icon'] === 'paid')
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                                stroke="{{ $c['stroke'] }}" stroke-width="2" stroke-linecap="round"
+                                                stroke-linejoin="round">
+                                                <polyline points="20 6 9 17 4 12" />
+                                            </svg>
+                                        @elseif($notif['icon'] === 'new')
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                                stroke="{{ $c['stroke'] }}" stroke-width="2" stroke-linecap="round"
+                                                stroke-linejoin="round">
+                                                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                                                <line x1="3" y1="6" x2="21" y2="6" />
+                                                <path d="M16 10a4 4 0 0 1-8 0" />
+                                            </svg>
+                                        @else
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                                stroke="{{ $c['stroke'] }}" stroke-width="2" stroke-linecap="round"
+                                                stroke-linejoin="round">
+                                                <circle cx="12" cy="12" r="10" />
+                                                <line x1="12" y1="8" x2="12" y2="12" />
+                                                <line x1="12" y1="16" x2="12.01" y2="16" />
+                                            </svg>
+                                        @endif
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p class="text-sm font-medium truncate">{{ $notif['title'] }}</p>
+                                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">
+                                            {{ $notif['body'] }}</p>
+                                        <p class="text-xs text-slate-400 mt-0.5">
+                                            {{ $notif['time']?->diffForHumans() }}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p class="text-sm font-medium">New user registered</p>
-                                    <p class="text-xs text-slate-400 mt-0.5">2 minutes ago</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer">
-                            <div class="flex gap-3 items-start">
-                                <div
-                                    class="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                        stroke="#10b981" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <polyline points="20 6 9 17 4 12" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-medium">Payment received</p>
-                                    <p class="text-xs text-slate-400 mt-0.5">1 hour ago</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer">
-                            <div class="flex gap-3 items-start">
-                                <div
-                                    class="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                        stroke="#f59e0b" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path
-                                            d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                                        <line x1="12" y1="9" x2="12" y2="13" />
-                                        <line x1="12" y1="17" x2="12.01" y2="17" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-medium">Server warning detected</p>
-                                    <p class="text-xs text-slate-400 mt-0.5">3 hours ago</p>
-                                </div>
-                            </div>
-                        </div>
+                            </a>
+                        @empty
+                            <div class="px-4 py-6 text-center text-slate-400 text-sm">Belum ada transaksi.</div>
+                        @endforelse
                     </div>
                     <div class="px-4 py-3 text-center border-t border-slate-200 dark:border-slate-700">
-                        <a href="#"
-                            class="text-sm text-blue-600 dark:text-blue-400 font-medium hover:underline">View all
-                            notifications</a>
+                        <a href="{{ route('transactions.index') }}"
+                            class="text-sm text-blue-600 dark:text-blue-400 font-medium hover:underline">Lihat semua
+                            transaksi</a>
                     </div>
                 </div>
             </div>
