@@ -141,10 +141,10 @@
         $defaultOther = $otherGroups->mapWithKeys(fn($g) => [$g['key'] => $g['values'][0] ?? null])->all();
     @endphp
     <!-- Toast -->
-    <div id="toast" class="fixed top-4 right-4 z-[9999] hidden">
-        <div class="toast bg-blue-500 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+    <div id="toast" class="fixed bottom-6 right-6 z-50 hidden">
+        <div class="flex items-center gap-3 bg-slate-800 text-white px-5 py-3 rounded-xl shadow-xl text-sm font-semibold">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12" />
             </svg>
             <span id="toast-msg">Berhasil!</span>
         </div>
@@ -263,11 +263,11 @@
                 <!-- Price -->
                 <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-3 sm:p-4 mb-5">
                     <div class="flex items-center gap-2 flex-wrap mb-1">
-                        <span class="text-2xl sm:text-3xl font-extrabold text-blue-600">Rp
+                        <span id="productPrice" class="text-2xl sm:text-3xl font-extrabold text-blue-600">Rp
                             {{ number_format($displayPrice, 0, ',', '.') }}</span>
-                        <span class="text-sm sm:text-base text-slate-400 line-through">Rp
-                            {{ number_format($productData['origPrice'], 0, ',', '.') }}</span>
                         @if ($productData['isFlashSale'])
+                            <span id="productOrigPrice" class="text-sm sm:text-base text-slate-400 line-through">Rp
+                                {{ number_format($productData['origPrice'], 0, ',', '.') }}</span>
                             <span class="bg-red-100 text-red-600 text-xs font-bold px-2 py-0.5 rounded-md">Hemat
                                 {{ max(0, $savingPercent) }}%</span>
                         @endif
@@ -343,7 +343,7 @@
                                 class="px-2.5 py-1.5 text-slate-600 hover:bg-slate-50 font-bold text-sm transition-colors">+</button>
                         </div>
                         <span class="text-sm text-slate-500">Stok: <span
-                                class="text-slate-700 font-semibold">{{ $productData['stock'] }}
+                                id="productStock" class="text-slate-700 font-semibold">{{ $productData['stock'] }}
                                 item</span></span>
                     </div>
                 </div>
@@ -358,14 +358,14 @@
                         </svg>
                         Tambah ke Keranjang
                     </button>
-                    <a href="{{ route('frontend.checkout') }}" onclick="buyNow()"
+                    <button type="button" onclick="buyNow()"
                         class="flex-1 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold py-3.5 rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-200 hover:shadow-blue-300">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M13 10V3L4 14h7v7l9-11h-7z" />
                         </svg>
                         Beli Sekarang
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
@@ -577,19 +577,29 @@
             </svg>
             Keranjang
         </button>
-        <a href="{{ route('frontend.checkout') }}" onclick="buyNow()"
+        <button type="button" onclick="buyNow()"
             class="flex-1 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold py-2.5 rounded-xl text-sm flex items-center justify-center gap-1.5 shadow-md shadow-blue-200">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
             Beli Sekarang
-        </a>
+        </button>
     </div>
+
+    <form id="buyNowForm" method="POST" action="{{ route('frontend.checkout.buy-now') }}" class="hidden">
+        @csrf
+        <input type="hidden" name="product_variant_id" id="buyNowVariantId" value="{{ $productData['productVariantId'] ?? 0 }}">
+        <input type="hidden" name="quantity" id="buyNowQty" value="1">
+    </form>
 @endsection
 
 @section('script')
     <script>
         const productData = @json($productData);
+        const isAuthenticated = @json(auth()->check());
+        const loginUrl = @json(route('login'));
+        const cartStoreUrl = @json(route('frontend.cart.store'));
+        const csrfToken = @json(csrf_token());
         const images = (productData.images && productData.images.length ? productData.images : [productData.image]);
         let currentImg = 0;
         let qty = 1;
@@ -624,12 +634,55 @@
             document.getElementById('qtyDisplay').textContent = qty;
         }
 
+        function formatRupiah(value) {
+            return 'Rp ' + Number(value || 0).toLocaleString('id-ID');
+        }
+
+        function applySelectedVariantData() {
+            const options = Array.isArray(productData.variantOptions) ? productData.variantOptions : [];
+            if (!options.length) return;
+
+            const selectedColor = (document.getElementById('selectedColor')?.textContent || '').trim().toLowerCase();
+            const selectedOthers = Array.from(document.querySelectorAll('[id^="selected-"]'))
+                .map((el) => (el.textContent || '').trim().toLowerCase())
+                .filter(Boolean);
+            const selectedValues = [selectedColor, ...selectedOthers].filter(Boolean);
+
+            let selectedVariant = options.find((opt) => selectedValues.includes(String(opt.value || '').trim()
+                .toLowerCase()));
+            if (!selectedVariant) selectedVariant = options[0];
+            if (!selectedVariant) return;
+
+            productData.productVariantId = Number(selectedVariant.id || productData.productVariantId || 0);
+            productData.stock = Number(selectedVariant.stock || 0);
+            productData.price = Number(selectedVariant.price || 0);
+
+            const displayPrice = Number(selectedVariant.displayPrice || selectedVariant.price || 0);
+            const priceEl = document.getElementById('productPrice');
+            if (priceEl) priceEl.textContent = formatRupiah(displayPrice);
+
+            const origPriceEl = document.getElementById('productOrigPrice');
+            if (origPriceEl) origPriceEl.textContent = formatRupiah(selectedVariant.price || 0);
+
+            const stockEl = document.getElementById('productStock');
+            if (stockEl) stockEl.textContent = `${productData.stock} item`;
+
+            qty = Math.min(qty, Math.max(1, productData.stock || 1));
+            document.getElementById('qtyDisplay').textContent = qty;
+
+            if (selectedVariant.image) {
+                const mainImg = document.getElementById('mainImg');
+                if (mainImg) mainImg.src = selectedVariant.image;
+            }
+        }
+
         function selectColor(btn, color) {
             document.querySelectorAll('.color-swatch').forEach(b => b.style.outline = 'none');
             btn.style.outline = '2px solid #2563eb';
             btn.style.outlineOffset = '2px';
             const label = document.getElementById('selectedColor');
             if (label) label.textContent = color;
+            applySelectedVariantData();
         }
 
         function selectVariantValue(btn, groupKey, value) {
@@ -644,6 +697,7 @@
             btn.classList.remove('border-slate-200', 'text-slate-600');
             const label = document.getElementById('selected-' + groupKey);
             if (label) label.textContent = value;
+            applySelectedVariantData();
         }
 
         function toggleWishlist() {
@@ -659,7 +713,25 @@
             }
         }
 
-        function addToCart() {
+        function resolveSelectedVariantId() {
+            const options = Array.isArray(productData.variantOptions) ? productData.variantOptions : [];
+            if (!options.length) return Number(productData.productVariantId || 0);
+            const selectedColor = (document.getElementById('selectedColor')?.textContent || '').trim().toLowerCase();
+            const selectedOthers = Array.from(document.querySelectorAll('[id^="selected-"]'))
+                .map((el) => (el.textContent || '').trim().toLowerCase())
+                .filter(Boolean);
+            const byColor = options.find((opt) => String(opt.value || '').trim().toLowerCase() === selectedColor);
+            if (byColor) return Number(byColor.id || 0);
+            const byOther = options.find((opt) => selectedOthers.includes(String(opt.value || '').trim().toLowerCase()));
+            if (byOther) return Number(byOther.id || 0);
+            return Number(productData.productVariantId || options[0]?.id || 0);
+        }
+
+        async function addToCart() {
+            if (!isAuthenticated) {
+                window.location.href = loginUrl;
+                return;
+            }
             const color = document.getElementById('selectedColor')?.textContent || '';
             const variantSelections = Array.from(document.querySelectorAll('[id^=\"selected-\"]'))
                 .map(el => el.textContent)
@@ -668,66 +740,41 @@
             const variantText = [color, variantSelections].filter(Boolean).join(' | ');
             const price = productData.isFlashSale && productData.flashSalePrice ? productData.flashSalePrice : productData
                 .price;
-            const itemKey = `${productData.id}::${variantText || '-'}`;
-            const newItem = {
-                key: itemKey,
-                product_id: productData.id,
-                slug: productData.slug,
-                name: productData.name,
-                variant: variantText || '-',
-                price: Number(price || 0),
-                origPrice: Number(productData.origPrice || price || 0),
-                qty,
-                image: productData.image,
-            };
-
-            let cart = [];
-            try {
-                cart = JSON.parse(localStorage.getItem('ec_cart') || '[]');
-                if (!Array.isArray(cart)) cart = [];
-            } catch (e) {
-                cart = [];
-            }
-
-            const existingIdx = cart.findIndex(item => item.key === itemKey);
-            if (existingIdx >= 0) {
-                cart[existingIdx].qty = Number(cart[existingIdx].qty || 0) + qty;
-            } else {
-                cart.push(newItem);
-            }
-            localStorage.setItem('ec_cart', JSON.stringify(cart));
+            const variantId = resolveSelectedVariantId();
+            const res = await fetch(cartStoreUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({
+                    product_variant_id: variantId,
+                    quantity: qty,
+                }),
+            });
+            if (!res.ok) return;
 
             showToast(
                 `${productData.name}${variantText ? ' (' + variantText + ')' : ''} (${qty} item) ditambahkan ke keranjang!`
                 );
-            const badge = document.getElementById('cartCount');
-            if (badge) {
-                const totalQty = cart.reduce((sum, item) => sum + Number(item.qty || 0), 0);
-                badge.textContent = String(totalQty);
-                badge.classList.toggle('hidden', totalQty <= 0);
-            }
+            window.dispatchEvent(new Event('cart:updated'));
         }
 
         function buyNow() {
-            const color = document.getElementById('selectedColor')?.textContent || '';
-            const variantSelections = Array.from(document.querySelectorAll('[id^=\"selected-\"]'))
-                .map(el => el.textContent)
-                .filter(Boolean)
-                .join(', ');
-            const variantText = [color, variantSelections].filter(Boolean).join(' | ');
-            const price = productData.isFlashSale && productData.flashSalePrice ? productData.flashSalePrice : productData
-                .price;
-            localStorage.setItem('ec_buy_now', JSON.stringify({
-                key: `${productData.id}::${variantText || '-'}`,
-                product_id: productData.id,
-                slug: productData.slug,
-                name: productData.name,
-                variant: variantText || '-',
-                qty,
-                price: Number(price || 0),
-                origPrice: Number(productData.origPrice || price || 0),
-                image: productData.image,
-            }));
+            if (!isAuthenticated) {
+                window.location.href = loginUrl;
+                return false;
+            }
+            const variantId = resolveSelectedVariantId();
+            const form = document.getElementById('buyNowForm');
+            const variantInput = document.getElementById('buyNowVariantId');
+            const qtyInput = document.getElementById('buyNowQty');
+            if (!form || !variantInput || !qtyInput) return false;
+            variantInput.value = String(variantId || 0);
+            qtyInput.value = String(qty || 1);
+            form.submit();
+            return false;
         }
 
         function showToast(msg) {
@@ -736,6 +783,8 @@
             toast.classList.remove('hidden');
             setTimeout(() => toast.classList.add('hidden'), 3000);
         }
+
+        applySelectedVariantData();
 
         function switchTab(tab) {
             ['desc', 'review', 'info', 'size'].forEach(t => {

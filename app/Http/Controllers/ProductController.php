@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Category;
+use App\Models\MainCategory;
+use App\Models\CategoryDetail;
 use App\Models\Product;
 use App\Models\Variant;
 use Illuminate\Http\Request;
@@ -14,24 +15,35 @@ class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::with(['category', 'productVariants'])->latest()->get();
+        $products = Product::with(['mainCategory', 'categoryDetail', 'productVariants'])->latest()->get();
 
         return view('backend.products.index', compact('products'));
     }
 
     public function create()
     {
-        $categories = Category::orderBy('name')->get();
+        $mainCategories = MainCategory::query()->orderBy('name')->get();
+        $categoryDetails = CategoryDetail::query()
+            ->with('mainCategory')
+            ->orderBy('name')
+            ->get()
+            ->map(function ($category) {
+                $category->name = ($category->mainCategory?->name ? $category->mainCategory->name . ' > ' : '') . $category->name;
+                return $category;
+            });
         $variants   = Variant::orderBy('name')->orderBy('value')->get();
 
-        return view('backend.products.create', compact('categories', 'variants'));
+        $categories = $categoryDetails;
+        return view('backend.products.create', compact('mainCategories', 'categoryDetails', 'categories', 'variants'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
             'name'                  => ['required', 'string', 'max:255'],
-            'category_id'           => ['nullable', 'exists:categories,id'],
+            'main_category_id'      => ['nullable', 'exists:main_categories,id'],
+            'category_detail_id'    => ['nullable', 'exists:category_details,id'],
+            'category_id'           => ['nullable', 'exists:category_details,id'],
             'status'                => ['required', Rule::in(['active', 'inactive'])],
             'description'           => ['nullable', 'string'],
             'variants'              => ['required', 'array', 'min:1'],
@@ -40,6 +52,9 @@ class ProductController extends Controller
             'variants.*.stock'      => ['required', 'integer', 'min:0'],
             'variants.*.image'      => ['nullable', 'image', 'max:2048'],
         ]);
+        $detailId = (int) ($validated['category_detail_id'] ?? $validated['category_id'] ?? 0);
+        $detail = CategoryDetail::query()->find($detailId);
+        abort_unless($detail, 422);
 
         $files = $request->file('variants', []);
 
@@ -49,7 +64,9 @@ class ProductController extends Controller
             $product = Product::create([
                 'name'        => $validated['name'],
                 'slug'        => $slug,
-                'category_id' => $validated['category_id'] ?? null,
+                'main_category_id' => (int) $detail->main_category_id,
+                'category_detail_id' => (int) $detail->id,
+                'category_id' => null,
                 'status'      => $validated['status'],
                 'description' => $validated['description'] ?? null,
             ]);
@@ -80,17 +97,28 @@ class ProductController extends Controller
     public function edit(Product $product)
     {
         $product->load('productVariants.variant');
-        $categories = Category::orderBy('name')->get();
+        $mainCategories = MainCategory::query()->orderBy('name')->get();
+        $categoryDetails = CategoryDetail::query()
+            ->with('mainCategory')
+            ->orderBy('name')
+            ->get()
+            ->map(function ($category) {
+                $category->name = ($category->mainCategory?->name ? $category->mainCategory->name . ' > ' : '') . $category->name;
+                return $category;
+            });
         $variants   = Variant::orderBy('name')->orderBy('value')->get();
 
-        return view('backend.products.edit', compact('product', 'categories', 'variants'));
+        $categories = $categoryDetails;
+        return view('backend.products.edit', compact('product', 'mainCategories', 'categoryDetails', 'categories', 'variants'));
     }
 
     public function update(Request $request, Product $product)
     {
         $validated = $request->validate([
             'name'                  => ['required', 'string', 'max:255'],
-            'category_id'           => ['nullable', 'exists:categories,id'],
+            'main_category_id'      => ['nullable', 'exists:main_categories,id'],
+            'category_detail_id'    => ['nullable', 'exists:category_details,id'],
+            'category_id'           => ['nullable', 'exists:category_details,id'],
             'status'                => ['required', Rule::in(['active', 'inactive'])],
             'description'           => ['nullable', 'string'],
             'variants'              => ['required', 'array', 'min:1'],
@@ -99,6 +127,9 @@ class ProductController extends Controller
             'variants.*.stock'      => ['required', 'integer', 'min:0'],
             'variants.*.image'      => ['nullable', 'image', 'max:2048'],
         ]);
+        $detailId = (int) ($validated['category_detail_id'] ?? $validated['category_id'] ?? 0);
+        $detail = CategoryDetail::query()->find($detailId);
+        abort_unless($detail, 422);
 
         $files = $request->file('variants', []);
 
@@ -108,7 +139,9 @@ class ProductController extends Controller
             $product->update([
                 'name'        => $validated['name'],
                 'slug'        => $slug,
-                'category_id' => $validated['category_id'] ?? null,
+                'main_category_id' => (int) $detail->main_category_id,
+                'category_detail_id' => (int) $detail->id,
+                'category_id' => null,
                 'status'      => $validated['status'],
                 'description' => $validated['description'] ?? null,
             ]);

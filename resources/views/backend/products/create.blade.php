@@ -4,7 +4,7 @@
 
 @section('content')
     @php
-        $oldCatId = old('category_id');
+        $oldCatId = old('category_id', old('category_detail_id'));
         $oldCatName = $oldCatId ? $categories->find($oldCatId)?->name ?? '' : '';
 
         $oldVariants = collect(old('variants', []))

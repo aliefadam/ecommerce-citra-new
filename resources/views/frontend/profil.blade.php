@@ -97,6 +97,11 @@
             color: #854d0e;
         }
 
+        .badge-bayar {
+            background: #dcfce7;
+            color: #166534;
+        }
+
         .badge-batal {
             background: #fee2e2;
             color: #dc2626;
@@ -283,6 +288,14 @@
                             </svg>
                             Alamat Saya
                         </button>
+                        <a href="{{ route('frontend.cart') }}"
+                            class="sidebar-item w-full flex items-center gap-3 px-5 py-3.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                            Keranjang
+                        </a>
                         <button onclick="showTab('pesanan')" id="nav-pesanan"
                             class="sidebar-item w-full flex items-center gap-3 px-5 py-3.5 text-sm font-medium text-slate-600">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -291,7 +304,7 @@
                             </svg>
                             Riwayat Pesanan
                             <span
-                                class="ml-auto bg-blue-100 text-blue-600 text-xs font-bold px-2 py-0.5 rounded-full">3</span>
+                                class="ml-auto bg-blue-100 text-blue-600 text-xs font-bold px-2 py-0.5 rounded-full">{{ isset($transactions) ? $transactions->count() : 0 }}</span>
                         </button>
                         <button onclick="showTab('wishlist')" id="nav-wishlist"
                             class="sidebar-item w-full flex items-center gap-3 px-5 py-3.5 text-sm font-medium text-slate-600">
@@ -628,6 +641,11 @@
                                 <input data-address-field="label" type="hidden" value="Rumah" />
                                 <input data-address-field="phone_country_code" type="hidden" value="+62" />
                                 <input data-address-field="is_primary" type="hidden" value="0" />
+                                <input data-address-field="province_id" type="hidden" value="" />
+                                <input data-address-field="city_id" type="hidden" value="" />
+                                <input data-address-field="district_id" type="hidden" value="" />
+                                <input data-address-field="subdistrict_id" type="hidden" value="" />
+                                <input data-address-field="destination_id" type="hidden" value="" />
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
                                         <label class="text-xs font-medium text-slate-600 mb-1 block">Nama Penerima
@@ -644,18 +662,38 @@
                                     </div>
                                     <div>
                                         <label class="text-xs font-medium text-slate-600 mb-1 block">Provinsi *</label>
-                                        <select data-address-field="province"
-                                            class="w-full border border-slate-200 bg-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-400">
-                                            <option>Pilih Provinsi</option>
-                                            <option>DKI Jakarta</option>
-                                            <option>Jawa Barat</option>
-                                            <option>Jawa Timur</option>
-                                        </select>
+                                        <input id="provinceInput" data-address-field="province" type="text"
+                                            list="provinceList" placeholder="Cari provinsi"
+                                            class="w-full border border-slate-200 bg-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-400" />
+                                        <datalist id="provinceList"></datalist>
                                     </div>
                                     <div>
                                         <label class="text-xs font-medium text-slate-600 mb-1 block">Kota/Kabupaten
                                             *</label>
-                                        <input data-address-field="city" type="text" placeholder="Kota"
+                                        <input id="cityInput" data-address-field="city" type="text" list="cityList"
+                                            placeholder="Cari kota/kabupaten"
+                                            class="w-full border border-slate-200 bg-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-400" />
+                                        <datalist id="cityList"></datalist>
+                                    </div>
+                                    <div>
+                                        <label class="text-xs font-medium text-slate-600 mb-1 block">Kecamatan
+                                            *</label>
+                                        <input id="districtInput" data-address-field="district" type="text"
+                                            list="districtList" placeholder="Cari kecamatan"
+                                            class="w-full border border-slate-200 bg-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-400" />
+                                        <datalist id="districtList"></datalist>
+                                    </div>
+                                    <div>
+                                        <label class="text-xs font-medium text-slate-600 mb-1 block">Kelurahan
+                                            *</label>
+                                        <input id="subdistrictInput" data-address-field="subdistrict" type="text"
+                                            list="subdistrictList" placeholder="Cari kelurahan"
+                                            class="w-full border border-slate-200 bg-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-400" />
+                                        <datalist id="subdistrictList"></datalist>
+                                    </div>
+                                    <div>
+                                        <label class="text-xs font-medium text-slate-600 mb-1 block">Kode Pos</label>
+                                        <input data-address-field="postal_code" id="postalCodeInput" type="text" placeholder="Kode Pos"
                                             class="w-full border border-slate-200 bg-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-400" />
                                     </div>
                                     <div class="sm:col-span-2">
@@ -689,6 +727,8 @@
                                 class="order-tab px-5 py-3 text-sm font-semibold text-blue-600 border-b-2 border-blue-500 whitespace-nowrap">Semua</button>
                             <button onclick="filterOrder('proses')"
                                 class="order-tab px-5 py-3 text-sm font-medium text-slate-500 whitespace-nowrap hover:text-slate-700">Diproses</button>
+                            <button onclick="filterOrder('dibayar')"
+                                class="order-tab px-5 py-3 text-sm font-medium text-slate-500 whitespace-nowrap hover:text-slate-700">Dibayar</button>
                             <button onclick="filterOrder('kirim')"
                                 class="order-tab px-5 py-3 text-sm font-medium text-slate-500 whitespace-nowrap hover:text-slate-700">Dikirim</button>
                             <button onclick="filterOrder('selesai')"
@@ -849,66 +889,177 @@
                     'recipient_name' => $a->recipient_name,
                     'phone_country_code' => $a->phone_country_code,
                     'phone_number' => $a->phone_number,
+                    'province_id' => $a->province_id,
+                    'city_id' => $a->city_id,
+                    'district_id' => $a->district_id,
+                    'subdistrict_id' => $a->subdistrict_id,
                     'province' => $a->province,
                     'city' => $a->city,
+                    'district' => $a->district,
+                    'subdistrict' => $a->subdistrict,
                     'postal_code' => $a->postal_code,
+                    'destination_id' => $a->destination_id,
                     'address_line' => $a->address_line,
                     'is_primary' => (bool) $a->is_primary,
                 ];
             })
             ->values();
+        $profileOrdersPayload = isset($transactions)
+            ? $transactions
+                ->map(function ($tx) {
+                    $statusRaw = strtolower((string) $tx->status);
+                    $status = match (true) {
+                        in_array($statusRaw, ['paid', 'settlement', 'capture']) => 'dibayar',
+                        in_array($statusRaw, ['selesai', 'completed', 'delivered']) => 'selesai',
+                        in_array($statusRaw, ['kirim', 'shipping', 'shipped']) => 'kirim',
+                        in_array($statusRaw, ['process', 'processing']) => 'proses',
+                        in_array($statusRaw, ['cancel', 'expire', 'deny', 'failure', 'failed']) => 'batal',
+                        default => 'proses',
+                    };
+
+                    $firstDetail = $tx->details->first();
+                    return [
+                        'id' => (string) $tx->invoice_no,
+                        'date' => optional($tx->created_at)->translatedFormat('d M Y'),
+                        'status' => $status,
+                        'status_raw' => $tx->status,
+                        'tracking_number' => (string) ($tx->tracking_number ?? ''),
+                        'items' => $tx->details->pluck('product_name')->values()->all(),
+                        'total' => (int) $tx->grand_total,
+                        'img' => $firstDetail?->image ?: 'https://via.placeholder.com/80x80?text=No+Image',
+                    ];
+                })
+                ->values()
+            : collect();
     @endphp
     <script>
         const profileUser = @json($profileUserPayload);
         const profileAddresses = @json($profileAddressesPayload);
+        const profileOrders = @json($profileOrdersPayload);
         const csrfToken = @json(csrf_token());
+        const roProvincesUrl = @json(route('frontend.rajaongkir.provinces'));
+        const roCitiesUrl = @json(route('frontend.rajaongkir.cities'));
+        const roDistrictsUrl = @json(route('frontend.rajaongkir.districts'));
+        const roSubdistrictsUrl = @json(route('frontend.rajaongkir.subdistricts'));
+        const initialProfileTab = @json(request()->query('tab', 'biodata'));
 
-        const orders = [{
-                id: '#TK-2025-ABCD123',
-                date: '18 Jan 2025',
-                status: 'kirim',
-                items: ['Kemeja Oxford Slim Fit', 'Sneakers Urban Street'],
-                total: 648000,
-                img: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=80&h=80&fit=crop'
-            },
-            {
-                id: '#TK-2025-EFGH456',
-                date: '10 Jan 2025',
-                status: 'selesai',
-                items: ['Hoodie Oversized Fleece'],
-                total: 299000,
-                img: 'https://images.unsplash.com/photo-1556821840-3a63f15732ce?w=80&h=80&fit=crop'
-            },
-            {
-                id: '#TK-2025-IJKL789',
-                date: '5 Jan 2025',
-                status: 'selesai',
-                items: ['Serum Vitamin C', 'Lip Gloss Korea'],
-                total: 278000,
-                img: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=80&h=80&fit=crop'
-            },
-            {
-                id: '#TK-2024-XYZ001',
-                date: '25 Des 2024',
-                status: 'proses',
-                items: ['Smart Watch Series 5'],
-                total: 1299000,
-                img: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=80&h=80&fit=crop'
-            },
-            {
-                id: '#TK-2024-MNOP23',
-                date: '15 Des 2024',
-                status: 'batal',
-                items: ['Wireless Earbuds Pro'],
-                total: 599000,
-                img: 'https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?w=80&h=80&fit=crop'
-            },
-        ];
+        let roProvinces = [];
+        let roCities = [];
+        let roDistricts = [];
+        let roSubdistricts = [];
+
+        function byField(name) {
+            return document.querySelector(`#newAddressForm [data-address-field="${name}"]`);
+        }
+
+        function fillDatalist(id, items, toLabel) {
+            const list = document.getElementById(id);
+            if (!list) return;
+            list.innerHTML = items.map((item) => `<option value="${toLabel(item)}"></option>`).join('');
+        }
+
+        function resetLocationFields(level) {
+            if (level <= 2) {
+                roCities = [];
+                byField('city_id').value = '';
+                byField('city').value = '';
+                fillDatalist('cityList', [], () => '');
+            }
+            if (level <= 3) {
+                roDistricts = [];
+                byField('district_id').value = '';
+                byField('district').value = '';
+                fillDatalist('districtList', [], () => '');
+            }
+            if (level <= 4) {
+                roSubdistricts = [];
+                byField('subdistrict_id').value = '';
+                byField('subdistrict').value = '';
+                byField('destination_id').value = '';
+                byField('postal_code').value = '';
+                fillDatalist('subdistrictList', [], () => '');
+            }
+        }
+
+        async function loadProvinces() {
+            const res = await fetch(roProvincesUrl, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            const json = await res.json();
+            roProvinces = Array.isArray(json?.data) ? json.data : [];
+            fillDatalist('provinceList', roProvinces, (p) => p.name || p.province_name || '');
+        }
+
+        async function onProvinceChange() {
+            const name = (byField('province').value || '').trim().toLowerCase();
+            const found = roProvinces.find((p) => String(p.name || p.province_name || '').trim().toLowerCase() === name);
+            byField('province_id').value = found ? String(found.id || found.province_id || '') : '';
+            resetLocationFields(2);
+            if (!found) return;
+            const res = await fetch(`${roCitiesUrl}?province_id=${encodeURIComponent(byField('province_id').value)}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            const json = await res.json();
+            roCities = Array.isArray(json?.data) ? json.data : [];
+            fillDatalist('cityList', roCities, (c) => c.name || c.city_name || '');
+        }
+
+        async function onCityChange() {
+            const name = (byField('city').value || '').trim().toLowerCase();
+            const found = roCities.find((c) => String(c.name || c.city_name || '').trim().toLowerCase() === name);
+            byField('city_id').value = found ? String(found.id || found.city_id || '') : '';
+            resetLocationFields(3);
+            if (!found) return;
+            const res = await fetch(`${roDistrictsUrl}?city_id=${encodeURIComponent(byField('city_id').value)}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            const json = await res.json();
+            roDistricts = Array.isArray(json?.data) ? json.data : [];
+            fillDatalist('districtList', roDistricts, (d) => d.name || d.district_name || '');
+        }
+
+        async function onDistrictChange() {
+            const name = (byField('district').value || '').trim().toLowerCase();
+            const found = roDistricts.find((d) => String(d.name || d.district_name || '').trim().toLowerCase() === name);
+            byField('district_id').value = found ? String(found.id || found.district_id || '') : '';
+            resetLocationFields(4);
+            if (!found) return;
+            const res = await fetch(`${roSubdistrictsUrl}?district_id=${encodeURIComponent(byField('district_id').value)}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            const json = await res.json();
+            roSubdistricts = Array.isArray(json?.data) ? json.data : [];
+            fillDatalist('subdistrictList', roSubdistricts, (s) => s.name || s.subdistrict_name || '');
+        }
+
+        function onSubdistrictChange() {
+            const name = (byField('subdistrict').value || '').trim().toLowerCase();
+            const found = roSubdistricts.find((s) => String(s.name || s.subdistrict_name || '').trim().toLowerCase() === name);
+            byField('subdistrict_id').value = found ? String(found.id || found.subdistrict_id || '') : '';
+            byField('destination_id').value = found ? String(found.destination_id || found.id || '') : '';
+            if (found) {
+                byField('postal_code').value = String(found.zip_code || found.postal_code || byField('postal_code').value || '');
+            }
+        }
+
+        const orders = Array.isArray(profileOrders) ? profileOrders : [];
 
         const statusMap = {
             selesai: {
                 label: 'Selesai',
                 class: 'badge-selesai'
+            },
+            dibayar: {
+                label: 'Dibayar',
+                class: 'badge-bayar'
             },
             proses: {
                 label: 'Diproses',
@@ -934,6 +1085,9 @@
             }
             list.innerHTML = filtered.map(o => {
                 const s = statusMap[o.status];
+                const items = Array.isArray(o.items) ? o.items : [];
+                const firstItem = items[0] || '-';
+                const extraCount = Math.max(0, items.length - 1);
                 return `<div class="border border-slate-200 rounded-2xl p-5 hover:border-slate-300 transition-colors">
           <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-3">
             <div>
@@ -945,14 +1099,15 @@
           <div class="flex gap-3 mb-3">
             <img src="${o.img}" class="w-14 h-14 rounded-xl object-cover flex-shrink-0" />
             <div>
-              ${o.items.map(item => `<p class="text-sm font-medium text-slate-700">${item}</p>`).join('')}
-              ${o.items.length > 1 ? `<p class="text-xs text-slate-400">+${o.items.length - 1} produk lainnya</p>` : ''}
+              <p class="text-sm font-medium text-slate-700">${firstItem}</p>
+              ${extraCount > 0 ? `<p class="text-xs text-slate-400">+${extraCount} produk lainnya</p>` : ''}
             </div>
           </div>
           <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-3 border-t border-slate-100">
             <div>
               <span class="text-xs text-slate-500">Total: </span>
               <span class="font-bold text-slate-800">Rp ${o.total.toLocaleString('id-ID')}</span>
+              ${o.status === 'kirim' && o.tracking_number ? `<p class="text-xs text-slate-500 mt-1">No. Resi: <span class="font-semibold text-slate-700">${o.tracking_number}</span></p>` : ''}
             </div>
             <div class="flex flex-wrap gap-2">
               ${o.status === 'selesai' ? '<button onclick="showToast(\'Ulasan berhasil dikirim!\')" class="text-xs border border-yellow-300 text-yellow-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-yellow-50 transition-colors">Beri Ulasan</button>' : ''}
@@ -969,8 +1124,12 @@
                 t.className =
                     'order-tab px-5 py-3 text-sm font-medium text-slate-500 whitespace-nowrap hover:text-slate-700';
             });
-            event.currentTarget.className =
-                'order-tab px-5 py-3 text-sm font-semibold text-blue-600 border-b-2 border-blue-500 whitespace-nowrap';
+            const activeTabButton = Array.from(document.querySelectorAll('.order-tab'))
+                .find((btn) => (btn.getAttribute('onclick') || '').includes(`filterOrder('${status}')`));
+            if (activeTabButton) {
+                activeTabButton.className =
+                    'order-tab px-5 py-3 text-sm font-semibold text-blue-600 border-b-2 border-blue-500 whitespace-nowrap';
+            }
             renderOrders(status);
         }
 
@@ -1128,9 +1287,16 @@
                 recipient_name: found.recipient_name,
                 phone_country_code: found.phone_country_code,
                 phone_number: found.phone_number,
+                province_id: found.province_id,
+                city_id: found.city_id,
+                district_id: found.district_id,
+                subdistrict_id: found.subdistrict_id,
                 province: found.province,
                 city: found.city,
+                district: found.district,
+                subdistrict: found.subdistrict,
                 postal_code: found.postal_code,
+                destination_id: found.destination_id,
                 address_line: found.address_line,
                 is_primary: 1,
             });
@@ -1138,6 +1304,7 @@
 
         function showNewAddressForm() {
             document.getElementById('newAddressForm').classList.remove('hidden');
+            if (!roProvinces.length) loadProvinces();
         }
 
         function hideNewAddressForm() {
@@ -1145,6 +1312,7 @@
         }
 
         function saveNewAddress() {
+            onSubdistrictChange();
             const payload = {};
             document.querySelectorAll('#newAddressForm [data-address-field]').forEach((field) => {
                 payload[field.dataset.addressField] = field.type === 'checkbox' ? (field.checked ? 1 : 0) : field
@@ -1211,7 +1379,14 @@
         }
 
         hydrateProfileFromBackend();
+        document.getElementById('provinceInput')?.addEventListener('change', onProvinceChange);
+        document.getElementById('cityInput')?.addEventListener('change', onCityChange);
+        document.getElementById('districtInput')?.addEventListener('change', onDistrictChange);
+        document.getElementById('subdistrictInput')?.addEventListener('change', onSubdistrictChange);
         renderOrders();
+        if (initialProfileTab && ['biodata', 'keamanan', 'alamat', 'pesanan', 'wishlist', 'notif'].includes(initialProfileTab)) {
+            showTab(initialProfileTab);
+        }
 
         // Navbar mega dropdown
         function toggleCategoryMenu(event) {

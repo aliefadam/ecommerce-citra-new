@@ -42,6 +42,9 @@
                             <th class="sortable text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400 cursor-pointer select-none"
                                 onclick="sortCategoryTable(1)">Name <span class="text-slate-300 dark:text-slate-600">↕</span>
                             </th>
+                            <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Kategori
+                                Utama</th>
+                            <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Tipe</th>
                             <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Actions</th>
                         </tr>
                     </thead>
@@ -104,7 +107,12 @@
 @section('script')
     @php
         $categoryItems = $categories
-            ->map(fn($cat) => ['id' => $cat->id, 'name' => $cat->name])
+            ->map(fn($cat) => [
+                'id' => $cat->id,
+                'name' => $cat->name,
+                'parent' => $cat->parent?->name ?? '-',
+                'type' => $cat->parent_id ? 'Detail' : 'Utama',
+            ])
             ->values()
             ->all();
     @endphp
@@ -126,6 +134,8 @@
                 <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                     <td class="px-4 py-3.5 text-slate-500 dark:text-slate-400">${visibleIndex + 1}</td>
                     <td class="px-4 py-3.5 font-medium text-slate-800 dark:text-slate-200">${category.name}</td>
+                    <td class="px-4 py-3.5 text-slate-500 dark:text-slate-400">${category.parent}</td>
+                    <td class="px-4 py-3.5 text-slate-500 dark:text-slate-400">${category.type}</td>
                     <td class="px-4 py-3.5">
                         <div class="flex gap-1">
                             <a href="${editUrl}" class="h-fit p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors" title="Edit">
@@ -201,13 +211,13 @@
             tbodyId: 'categoryTableBody',
             paginationInfoId: 'categoryPaginationInfo',
             paginationButtonsId: 'categoryPaginationButtons',
-            searchFields: ['name'],
+            searchFields: ['name', 'parent', 'type'],
             filters: [],
             sortMap: {
                 1: (c) => c.name,
             },
             renderRow: (category, index) => buildCategoryRow(category, index),
-            emptyRowHtml: '<tr><td colspan="3" class="text-center py-12 text-slate-400 dark:text-slate-500">No categories found</td></tr>',
+            emptyRowHtml: '<tr><td colspan="5" class="text-center py-12 text-slate-400 dark:text-slate-500">No categories found</td></tr>',
         });
 
         const toast = document.getElementById('toast');

@@ -2,7 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\Category;
+use App\Models\MainCategory;
+use App\Models\CategoryDetail;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Variant;
@@ -19,7 +20,8 @@ class ProductSeeder extends Seeder
         $products = [
             [
                 'name' => 'Kemeja Oxford Slim Fit',
-                'category' => 'Fashion Pria',
+                'main_category' => 'Fashion Pria',
+                'category_detail' => 'Kemeja',
                 'price' => 189000,
                 'stock' => 1245,
                 'image' => 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop',
@@ -28,7 +30,8 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name' => 'Sneakers Urban Street',
-                'category' => 'Olahraga',
+                'main_category' => 'Olahraga',
+                'category_detail' => 'Sepatu Lari',
                 'price' => 459000,
                 'stock' => 3421,
                 'image' => 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop',
@@ -37,7 +40,8 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name' => 'Smart Watch Series 5',
-                'category' => 'Elektronik',
+                'main_category' => 'Elektronik',
+                'category_detail' => 'Wearable',
                 'price' => 1299000,
                 'stock' => 892,
                 'image' => 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop',
@@ -46,7 +50,8 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name' => 'Tas Ransel Laptop 15',
-                'category' => 'Fashion Pria',
+                'main_category' => 'Fashion Pria',
+                'category_detail' => 'Tas Pria',
                 'price' => 345000,
                 'stock' => 2134,
                 'image' => 'https://images.unsplash.com/photo-1491637639811-60e2756cc1c7?w=400&h=400&fit=crop',
@@ -55,7 +60,8 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name' => 'Skincare Serum Vitamin C',
-                'category' => 'Kecantikan',
+                'main_category' => 'Kecantikan',
+                'category_detail' => 'Skincare',
                 'price' => 189000,
                 'stock' => 5678,
                 'image' => 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400&h=400&fit=crop',
@@ -64,7 +70,8 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name' => 'Celana Chino Slim',
-                'category' => 'Fashion Pria',
+                'main_category' => 'Fashion Pria',
+                'category_detail' => 'Celana Chino',
                 'price' => 229000,
                 'stock' => 987,
                 'image' => 'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=400&h=400&fit=crop',
@@ -73,7 +80,8 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name' => 'Wireless Earbuds Pro',
-                'category' => 'Elektronik',
+                'main_category' => 'Elektronik',
+                'category_detail' => 'Audio',
                 'price' => 599000,
                 'stock' => 3210,
                 'image' => 'https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?w=400&h=400&fit=crop',
@@ -82,7 +90,8 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name' => 'Dress Floral Premium',
-                'category' => 'Fashion Wanita',
+                'main_category' => 'Fashion Wanita',
+                'category_detail' => 'Dress',
                 'price' => 279000,
                 'stock' => 1567,
                 'image' => 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400&h=400&fit=crop',
@@ -91,7 +100,8 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name' => 'Running Shoes Lite',
-                'category' => 'Olahraga',
+                'main_category' => 'Olahraga',
+                'category_detail' => 'Sepatu Lari',
                 'price' => 539000,
                 'stock' => 2345,
                 'image' => 'https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=400&h=400&fit=crop',
@@ -100,7 +110,8 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name' => 'Blender Portable Mini',
-                'category' => 'Rumah Tangga',
+                'main_category' => 'Rumah Tangga',
+                'category_detail' => 'Kebutuhan Rumah',
                 'price' => 149000,
                 'stock' => 789,
                 'image' => 'https://images.unsplash.com/photo-1570222094114-d054a817e56b?w=400&h=400&fit=crop',
@@ -109,7 +120,8 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name' => 'Hoodie Oversized Fleece',
-                'category' => 'Fashion Pria',
+                'main_category' => 'Fashion Pria',
+                'category_detail' => 'Kaos',
                 'price' => 299000,
                 'stock' => 4321,
                 'image' => 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop',
@@ -118,7 +130,8 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name' => 'Kamera Mirrorless Entry',
-                'category' => 'Elektronik',
+                'main_category' => 'Elektronik',
+                'category_detail' => 'Kamera',
                 'price' => 5499000,
                 'stock' => 234,
                 'image' => 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400&h=400&fit=crop',
@@ -127,21 +140,33 @@ class ProductSeeder extends Seeder
             ],
         ];
 
-        $categories = Category::query()->get()->keyBy('name');
+        $mainCategories = MainCategory::query()->get()->keyBy('name');
+        $details = CategoryDetail::query()->get()->groupBy('main_category_id');
         $variants = Variant::query()
             ->get()
             ->keyBy(fn (Variant $v) => $v->name . '::' . $v->value);
 
         foreach ($products as $product) {
             $slug = Str::slug($product['name']);
-            $category = $categories->get($product['category']);
+            $mainCategory = $mainCategories->get($product['main_category']);
+            $detail = $mainCategory
+                ? ($details->get($mainCategory->id)?->firstWhere('name', $product['category_detail']) ?? null)
+                : null;
+            if (!$detail && $mainCategory) {
+                $detail = CategoryDetail::query()->firstOrCreate(
+                    ['main_category_id' => $mainCategory->id, 'name' => $product['category_detail']],
+                    ['slug' => Str::slug($mainCategory->name . '-' . $product['category_detail'])]
+                );
+            }
 
             $savedProduct = Product::updateOrCreate(
                 ['slug' => $slug],
                 [
                     'name' => $product['name'],
                     'slug' => $slug,
-                    'category_id' => $category?->id,
+                    'main_category_id' => $mainCategory?->id,
+                    'category_detail_id' => $detail?->id,
+                    'category_id' => null,
                     'description' => $product['description'],
                     'status' => 'active',
                 ]

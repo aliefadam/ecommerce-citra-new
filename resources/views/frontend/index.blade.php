@@ -144,10 +144,10 @@
 
 @section('content')
     <!-- Toast Notification -->
-    <div id="toast" class="fixed top-4 right-4 z-[9999] hidden">
-        <div class="toast bg-blue-500 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+    <div id="toast" class="fixed bottom-6 right-6 z-50 hidden">
+        <div class="flex items-center gap-3 bg-slate-800 text-white px-5 py-3 rounded-xl shadow-xl text-sm font-semibold">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12" />
             </svg>
             <span id="toast-msg">Produk ditambahkan ke keranjang!</span>
         </div>
@@ -738,7 +738,7 @@
                                 class="text-sm hover:text-blue-400 transition-colors">Produk Baru</a></li>
                         <li><a href="{{ route('frontend.kategori') }}"
                                 class="text-sm hover:text-blue-400 transition-colors">Best Seller</a></li>
-                        <li><a href="{{ route('frontend.checkout') }}"
+                        <li><a href="{{ route('frontend.cart') }}"
                                 class="text-sm hover:text-blue-400 transition-colors">Keranjang</a></li>
                     </ul>
                 </div>
@@ -791,6 +791,10 @@
         // PRODUCT DATA
         const products = @json($productsJson);
         const flashSaleEndAt = @json($flashSale['end_at'] ?? null);
+        const isAuthenticated = @json(auth()->check());
+        const loginUrl = @json(route('login'));
+        const cartStoreUrl = @json(route('frontend.cart.store'));
+        const csrfToken = @json(csrf_token());
 
         let filteredProducts = [...products];
         let selectedColors = [];
@@ -800,8 +804,8 @@
             const grid = document.getElementById('productGrid');
             document.getElementById('productCount').textContent = `Menampilkan ${prods.length} produk`;
             grid.innerHTML = prods.map(p => {
-                const discount = Math.round((1 - p.price / p.originalPrice) * 100);
-                const badgeHtml = p.badge === 'promo' ?
+                const discount = p.originalPrice > p.price ? Math.round((1 - p.price / p.originalPrice) * 100) : 0;
+                const badgeHtml = p.isFlashSale ?
                     `<span class="badge-promo text-white text-[10px] font-bold px-2 py-0.5 rounded-full">-${discount}%</span>` :
                     p.badge === 'new' ?
                     `<span class="badge-new text-white text-[10px] font-bold px-2 py-0.5 rounded-full">BARU</span>` :
@@ -844,11 +848,28 @@
             }).join('');
         }
 
-        function addToCart(id) {
+        async function addToCart(id) {
             const p = products.find(x => x.id === id);
+            if (!p) return;
+            if (!isAuthenticated) {
+                window.location.href = loginUrl;
+                return;
+            }
+            const res = await fetch(cartStoreUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({
+                    product_variant_id: p.productVariantId,
+                    quantity: 1,
+                }),
+            });
+            if (!res.ok) return;
             showToast(`"${p.name}" ditambahkan ke keranjang!`);
-            const badge = document.getElementById('cartBadge');
-            badge.textContent = parseInt(badge.textContent) + 1;
+            window.dispatchEvent(new Event('cart:updated'));
         }
 
         function addToWishlist(id) {
@@ -1257,4 +1278,3 @@
         renderProducts(products);
     </script>
 @endsection
-

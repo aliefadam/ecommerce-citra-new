@@ -46,7 +46,7 @@
                     </svg>
                     <span class="text-[11px] font-medium">Promo</span>
                 </a>
-                <a href="{{ route('frontend.checkout') }}"
+                <a href="{{ route('frontend.cart') }}"
                     class="py-2 flex flex-col items-center justify-center gap-1 text-slate-500 relative">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

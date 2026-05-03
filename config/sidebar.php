@@ -84,6 +84,18 @@ return [
     ],
 
     [
+        'group' => 'Transactions',
+        'items' => [
+            [
+                'name'   => 'Transactions',
+                'route'  => 'transactions.index',
+                'active' => 'transactions.*',
+                'icon'   => 'receipt',
+            ],
+        ],
+    ],
+
+    [
         'group' => 'Master Data',
         'items' => [
             [
@@ -94,9 +106,19 @@ return [
             ],
             [
                 'name'   => 'Categories',
-                'route'  => 'categories.index',
-                'active' => 'categories.*',
                 'icon'   => 'folder',
+                'children' => [
+                    [
+                        'name'   => 'Main Categories',
+                        'route'  => 'main-categories.index',
+                        'active' => 'main-categories.*',
+                    ],
+                    [
+                        'name'   => 'Categories Detail',
+                        'route'  => 'category-details.index',
+                        'active' => 'category-details.*',
+                    ],
+                ],
             ],
             [
                 'name'   => 'Variants',

@@ -46,15 +46,16 @@
                             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
                         </svg>
                     </div>
-                    <span class="text-xl font-extrabold tracking-tight">Admin<span
-                            class="text-blue-200">Kit</span></span>
+                    <span class="text-xl font-extrabold tracking-tight">
+                        Citra <span class="text-blue-200">Ecommerce</span>
+                    </span>
                 </div>
                 <div>
                     <h1 class="text-3xl font-bold leading-tight">Welcome back</h1>
                     <p class="mt-3 text-blue-100">Sign in untuk mengakses dashboard, datatables, dan product management.
                     </p>
                 </div>
-                <p class="text-sm text-blue-200">Template Admin Panel</p>
+                <p class="text-sm text-blue-200"></p>
             </section>
 
             <section class="flex items-center justify-center p-6 sm:p-10">
@@ -104,7 +105,8 @@
                         </form>
                         <p class="text-sm text-slate-600 dark:text-slate-300 mt-4 text-center">
                             Belum punya akun?
-                            <a href="{{ route('register') }}" class="text-blue-600 hover:text-blue-700 font-semibold">Register</a>
+                            <a href="{{ route('register') }}"
+                                class="text-blue-600 hover:text-blue-700 font-semibold">Register</a>
                         </p>
                     </div>
                 </div>

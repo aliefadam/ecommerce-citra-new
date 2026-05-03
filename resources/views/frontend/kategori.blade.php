@@ -96,10 +96,10 @@
 
 @section('content')
     <!-- Toast -->
-    <div id="toast" class="fixed top-4 right-4 z-[9999] hidden">
-        <div class="toast bg-blue-500 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+    <div id="toast" class="fixed bottom-6 right-6 z-50 hidden">
+        <div class="flex items-center gap-3 bg-slate-800 text-white px-5 py-3 rounded-xl shadow-xl text-sm font-semibold">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12" />
             </svg>
             <span id="toast-msg">Berhasil!</span>
         </div>
@@ -116,7 +116,7 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                 </svg>
-                <span id="breadcrumb-cat" class="text-slate-800 font-medium">Semua Kategori</span>
+                <span id="breadcrumb-cat" class="text-slate-800 font-medium">{{ $selectedLabel ?? 'Semua Kategori' }}</span>
             </nav>
         </div>
     </div>
@@ -124,7 +124,7 @@
     <!-- HERO KATEGORI -->
     <div class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6">
-            <h1 class="text-2xl md:text-3xl font-bold mb-2" id="pageTitle">Semua Kategori</h1>
+            <h1 class="text-2xl md:text-3xl font-bold mb-2" id="pageTitle">{{ $selectedLabel ?? 'Semua Kategori' }}</h1>
             <p class="text-blue-100 text-sm">Temukan produk terbaik dari berbagai kategori pilihan</p>
             <!-- Search Mobile -->
             <form action="{{ route('frontend.search') }}" method="GET"
@@ -145,94 +145,20 @@
     <div id="allCategoriesSection" class="max-w-7xl mx-auto px-4 sm:px-6 pt-5 pb-4">
         {{-- <h2 class="text-xl font-bold text-slate-800 mb-6">Jelajahi Kategori</h2> --}}
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4 mb-6">
-            <button onclick="selectCategory('fashion-pria', 'Fashion Pria')"
-                class="cat-card bg-white rounded-2xl p-6 flex flex-col items-center gap-3 shadow-sm border border-slate-100 hover:border-blue-300 hover:shadow-md transition-all group card-hover">
-                <div
-                    class="w-16 h-16 rounded-2xl bg-white flex items-center justify-center group-hover:bg-slate-100 group-hover:scale-110 transition-all shadow-sm border border-slate-200">
-                    <i class="ri-t-shirt-line text-2xl text-blue-600"></i>
-                </div>
-                <div class="text-center">
-                    <p class="font-semibold text-blue-600 text-sm">Fashion Pria</p>
-                    <p class="text-xs text-slate-500 mt-0.5">124 produk</p>
-                </div>
-            </button>
-            <button onclick="selectCategory('fashion-wanita', 'Fashion Wanita')"
-                class="cat-card bg-white rounded-2xl p-6 flex flex-col items-center gap-3 shadow-sm border border-slate-100 hover:border-blue-300 hover:shadow-md transition-all group card-hover">
-                <div
-                    class="w-16 h-16 rounded-2xl bg-white flex items-center justify-center group-hover:bg-slate-100 group-hover:scale-110 transition-all shadow-sm border border-slate-200">
-                    <i class="ri-women-line text-2xl text-blue-600"></i>
-                </div>
-                <div class="text-center">
-                    <p class="font-semibold text-blue-600 text-sm">Fashion Wanita</p>
-                    <p class="text-xs text-slate-500 mt-0.5">198 produk</p>
-                </div>
-            </button>
-            <button onclick="selectCategory('elektronik', 'Elektronik')"
-                class="cat-card bg-white rounded-2xl p-6 flex flex-col items-center gap-3 shadow-sm border border-slate-100 hover:border-blue-300 hover:shadow-md transition-all group card-hover">
-                <div
-                    class="w-16 h-16 rounded-2xl bg-white flex items-center justify-center group-hover:bg-slate-100 group-hover:scale-110 transition-all shadow-sm border border-slate-200">
-                    <i class="ri-computer-line text-2xl text-blue-600"></i>
-                </div>
-                <div class="text-center">
-                    <p class="font-semibold text-blue-600 text-sm">Elektronik</p>
-                    <p class="text-xs text-slate-500 mt-0.5">89 produk</p>
-                </div>
-            </button>
-            <button onclick="selectCategory('rumah', 'Rumah & Dapur')"
-                class="cat-card bg-white rounded-2xl p-6 flex flex-col items-center gap-3 shadow-sm border border-slate-100 hover:border-blue-300 hover:shadow-md transition-all group card-hover">
-                <div
-                    class="w-16 h-16 rounded-2xl bg-white flex items-center justify-center group-hover:bg-slate-100 group-hover:scale-110 transition-all shadow-sm border border-slate-200">
-                    <i class="ri-home-smile-2-line text-2xl text-blue-600"></i>
-                </div>
-                <div class="text-center">
-                    <p class="font-semibold text-blue-600 text-sm">Rumah & Dapur</p>
-                    <p class="text-xs text-slate-500 mt-0.5">67 produk</p>
-                </div>
-            </button>
-            <button onclick="selectCategory('olahraga', 'Olahraga')"
-                class="cat-card bg-white rounded-2xl p-6 flex flex-col items-center gap-3 shadow-sm border border-slate-100 hover:border-blue-300 hover:shadow-md transition-all group card-hover">
-                <div
-                    class="w-16 h-16 rounded-2xl bg-white flex items-center justify-center group-hover:bg-slate-100 group-hover:scale-110 transition-all shadow-sm border border-slate-200">
-                    <i class="ri-riding-line text-2xl text-blue-600"></i>
-                </div>
-                <div class="text-center">
-                    <p class="font-semibold text-blue-600 text-sm">Olahraga</p>
-                    <p class="text-xs text-slate-500 mt-0.5">45 produk</p>
-                </div>
-            </button>
-            <button onclick="selectCategory('kecantikan', 'Kecantikan')"
-                class="cat-card bg-white rounded-2xl p-6 flex flex-col items-center gap-3 shadow-sm border border-slate-100 hover:border-blue-300 hover:shadow-md transition-all group card-hover">
-                <div
-                    class="w-16 h-16 rounded-2xl bg-white flex items-center justify-center group-hover:bg-slate-100 group-hover:scale-110 transition-all shadow-sm border border-slate-200">
-                    <i class="ri-magic-line text-2xl text-blue-600"></i>
-                </div>
-                <div class="text-center">
-                    <p class="font-semibold text-blue-600 text-sm">Kecantikan</p>
-                    <p class="text-xs text-slate-500 mt-0.5">56 produk</p>
-                </div>
-            </button>
-            <button onclick="selectCategory('mainan', 'Mainan & Anak')"
-                class="cat-card bg-white rounded-2xl p-6 flex flex-col items-center gap-3 shadow-sm border border-slate-100 hover:border-blue-300 hover:shadow-md transition-all group card-hover">
-                <div
-                    class="w-16 h-16 rounded-2xl bg-white flex items-center justify-center group-hover:bg-slate-100 group-hover:scale-110 transition-all shadow-sm border border-slate-200">
-                    <i class="ri-gamepad-line text-2xl text-blue-600"></i>
-                </div>
-                <div class="text-center">
-                    <p class="font-semibold text-blue-600 text-sm">Mainan & Anak</p>
-                    <p class="text-xs text-slate-500 mt-0.5">34 produk</p>
-                </div>
-            </button>
-            <button onclick="selectCategory('hp', 'HP & Tablet')"
-                class="cat-card bg-white rounded-2xl p-6 flex flex-col items-center gap-3 shadow-sm border border-slate-100 hover:border-blue-300 hover:shadow-md transition-all group card-hover">
-                <div
-                    class="w-16 h-16 rounded-2xl bg-white flex items-center justify-center group-hover:bg-slate-100 group-hover:scale-110 transition-all shadow-sm border border-slate-200">
-                    <i class="ri-smartphone-line text-2xl text-blue-600"></i>
-                </div>
-                <div class="text-center">
-                    <p class="font-semibold text-blue-600 text-sm">HP & Tablet</p>
-                    <p class="text-xs text-slate-500 mt-0.5">52 produk</p>
-                </div>
-            </button>
+            @foreach (($categoryTree ?? collect()) as $mainCategory)
+                <button onclick="selectCategory('{{ $mainCategory->slug }}', '{{ $mainCategory->name }}')"
+                    class="cat-card bg-white rounded-2xl p-6 flex flex-col items-center gap-3 shadow-sm border border-slate-100 hover:border-blue-300 hover:shadow-md transition-all group card-hover">
+                    <div
+                        class="w-16 h-16 rounded-2xl bg-white flex items-center justify-center group-hover:bg-slate-100 group-hover:scale-110 transition-all shadow-sm border border-slate-200">
+                        <i class="ri-folder-2-line text-2xl text-blue-600"></i>
+                    </div>
+                    <div class="text-center">
+                        <p class="font-semibold text-blue-600 text-sm">{{ $mainCategory->name }}</p>
+                        <p class="text-xs text-slate-500 mt-0.5">{{ $mainCategory->categoryDetails->count() }} kategori detail
+                        </p>
+                    </div>
+                </button>
+            @endforeach
         </div>
     </div>
 
@@ -446,6 +372,10 @@
 @section('script')
     <script>
         const allProducts = @json($productsJson);
+        const isAuthenticated = @json(auth()->check());
+        const loginUrl = @json(route('login'));
+        const cartStoreUrl = @json(route('frontend.cart.store'));
+        const csrfToken = @json(csrf_token());
 
         let currentCat = 'semua';
         let currentSubcat = 'semua';
@@ -456,10 +386,10 @@
 
         function getFiltered() {
             return allProducts.filter(p => {
-                const catMatch = currentCat === 'semua' || p.cat === currentCat;
+                const catMatch = currentCat === 'semua' || p.parentCategorySlug === currentCat || p.categorySlug === currentCat;
                 const subcatMatch = currentSubcat === 'semua' ||
                     (currentSubcat === 'new' && p.isNew) ||
-                    (currentSubcat === 'promo' && p.badge === 'promo') ||
+                    (currentSubcat === 'promo' && p.isFlashSale) ||
                     (currentSubcat === 'best' && p.badge === 'best');
                 const priceMatch = p.price >= priceMin && p.price <= priceMax;
                 const searchMatch = !searchQuery || p.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -487,8 +417,8 @@
             grid.className = gridCols;
 
             grid.innerHTML = prods.map(p => {
-                const disc = Math.round((1 - p.price / p.origPrice) * 100);
-                const badge = p.badge === 'promo' ?
+                const disc = p.origPrice > p.price ? Math.round((1 - p.price / p.origPrice) * 100) : 0;
+                const badge = p.isFlashSale ?
                     `<span class="badge-promo text-white text-[10px] font-bold px-2 py-0.5 rounded-full">-${disc}%</span>` :
                     p.badge === 'new' ?
                     `<span class="badge-new text-white text-[10px] font-bold px-2 py-0.5 rounded-full">BARU</span>` :
@@ -654,9 +584,28 @@
                 'border-0');
         }
 
-        function addCart(id) {
+        async function addCart(id) {
             const p = allProducts.find(x => x.id === id);
+            if (!p) return;
+            if (!isAuthenticated) {
+                window.location.href = loginUrl;
+                return;
+            }
+            const res = await fetch(cartStoreUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({
+                    product_variant_id: p.productVariantId,
+                    quantity: 1,
+                }),
+            });
+            if (!res.ok) return;
             showToast(`"${p.name}" ditambahkan ke keranjang!`);
+            window.dispatchEvent(new Event('cart:updated'));
         }
 
         function showToast(msg) {

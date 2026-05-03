@@ -134,7 +134,8 @@
                             </svg>
                             Alamat Pengiriman
                         </h2>
-                        <a href="{{ route('frontend.profil') }}" class="text-blue-600 text-sm font-medium hover:text-blue-700">
+                        <a href="{{ route('frontend.profil') }}"
+                            class="text-blue-600 text-sm font-medium hover:text-blue-700">
                             Kelola Alamat
                         </a>
                     </div>
@@ -142,17 +143,25 @@
                         @forelse(($addresses ?? collect()) as $address)
                             <label
                                 class="flex items-start gap-3 p-4 border-2 {{ $address->is_primary ? 'border-blue-400 bg-blue-50' : 'border-slate-200' }} rounded-xl cursor-pointer hover:border-slate-300 transition-colors">
-                                <input type="radio" name="address" class="mt-1 accent-blue-500" {{ $address->is_primary ? 'checked' : '' }} />
+                                <input type="radio" name="address" class="mt-1 accent-blue-500"
+                                    data-address-id="{{ $address->id }}"
+                                    data-destination-id="{{ $address->destination_id }}"
+                                    {{ $address->is_primary ? 'checked' : '' }} />
                                 <div class="flex-1">
                                     <div class="flex items-center gap-2 mb-1">
                                         <p class="font-semibold text-slate-800">{{ $address->recipient_name }}</p>
-                                        <span class="bg-slate-100 text-slate-700 text-xs px-2 py-0.5 rounded-full font-medium">{{ $address->label }}</span>
-                                        @if($address->is_primary)
-                                            <span class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full font-medium">Utama</span>
+                                        <span
+                                            class="bg-slate-100 text-slate-700 text-xs px-2 py-0.5 rounded-full font-medium">{{ $address->label }}</span>
+                                        @if ($address->is_primary)
+                                            <span
+                                                class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full font-medium">Utama</span>
                                         @endif
                                     </div>
-                                    <p class="text-sm text-slate-600">{{ $address->phone_country_code }} {{ $address->phone_number }}</p>
-                                    <p class="text-sm text-slate-600">{{ $address->address_line }}, {{ $address->city }}, {{ $address->province }}{{ $address->postal_code ? ', '.$address->postal_code : '' }}</p>
+                                    <p class="text-sm text-slate-600">{{ $address->phone_country_code }}
+                                        {{ $address->phone_number }}</p>
+                                    <p class="text-sm text-slate-600">{{ $address->address_line }}, {{ $address->city }},
+                                        {{ $address->province }}{{ $address->postal_code ? ', ' . $address->postal_code : '' }}
+                                    </p>
                                 </div>
                             </label>
                         @empty
@@ -176,60 +185,9 @@
                         </h2>
                     </div>
                     <div class="p-6 space-y-3">
-                        <label
-                            class="shipping-card active flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all"
-                            onclick="setShipping(this, 15000, 'Reguler')">
-                            <input type="radio" name="shipping" class="accent-blue-500" checked />
-                            <div class="flex-1">
-                                <div class="flex items-center gap-2 mb-0.5">
-                                    <p class="font-semibold text-slate-800">JNE Reguler</p>
-                                    <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded">2-3 Hari</span>
-                                </div>
-                                <p class="text-sm text-slate-500">Estimasi tiba 20-22 Jan 2025</p>
-                            </div>
-                            <span class="font-semibold text-slate-800 text-sm">Rp 15.000</span>
-                        </label>
-                        <label
-                            class="shipping-card flex items-center gap-4 p-4 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-slate-300 transition-all"
-                            onclick="setShipping(this, 25000, 'Ekspres')">
-                            <input type="radio" name="shipping" class="accent-blue-500" />
-                            <div class="flex-1">
-                                <div class="flex items-center gap-2 mb-0.5">
-                                    <p class="font-semibold text-slate-800">JNE Ekspres</p>
-                                    <span class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded">1 Hari</span>
-                                </div>
-                                <p class="text-sm text-slate-500">Estimasi tiba 19 Jan 2025</p>
-                            </div>
-                            <span class="font-semibold text-slate-800 text-sm">Rp 25.000</span>
-                        </label>
-                        <label
-                            class="shipping-card flex items-center gap-4 p-4 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-slate-300 transition-all"
-                            onclick="setShipping(this, 0, 'Gratis')">
-                            <input type="radio" name="shipping" class="accent-blue-500" />
-                            <div class="flex-1">
-                                <div class="flex items-center gap-2 mb-0.5">
-                                    <p class="font-semibold text-slate-800">Gratis Ongkir</p>
-                                    <span
-                                        class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded font-semibold">GRATIS</span>
-                                </div>
-                                <p class="text-sm text-slate-500">2-5 Hari • Syarat & Ketentuan berlaku</p>
-                            </div>
-                            <span class="font-semibold text-blue-600 text-sm">Rp 0</span>
-                        </label>
-                        <label
-                            class="shipping-card flex items-center gap-4 p-4 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-slate-300 transition-all"
-                            onclick="setShipping(this, 35000, 'Same Day')">
-                            <input type="radio" name="shipping" class="accent-blue-500" />
-                            <div class="flex-1">
-                                <div class="flex items-center gap-2 mb-0.5">
-                                    <p class="font-semibold text-slate-800">GoSend Same Day</p>
-                                    <span class="text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded font-semibold">⚡
-                                        Instan</span>
-                                </div>
-                                <p class="text-sm text-slate-500">Tiba hari ini, pesan sebelum 14.00 WIB</p>
-                            </div>
-                            <span class="font-semibold text-slate-800 text-sm">Rp 35.000</span>
-                        </label>
+                        <div id="shippingOptions" class="space-y-3">
+                            <div class="text-sm text-slate-500">Memuat opsi pengiriman...</div>
+                        </div>
                     </div>
                 </div>
 
@@ -247,182 +205,57 @@
                     <div class="p-6">
                         <!-- Tabs -->
                         <div class="flex gap-2 mb-5 overflow-x-auto">
-                            <button onclick="setPaymentTab('ewallet')" id="tab-ewallet"
-                                class="px-4 py-2 rounded-xl text-sm font-semibold bg-blue-500 text-white whitespace-nowrap transition-all">E-Wallet</button>
+                            <button onclick="setPaymentTab('qris')" id="tab-qris"
+                                class="px-4 py-2 rounded-xl text-sm font-semibold bg-blue-500 text-white whitespace-nowrap transition-all">QRIS</button>
                             <button onclick="setPaymentTab('bank')" id="tab-bank"
                                 class="px-4 py-2 rounded-xl text-sm font-semibold bg-slate-100 text-slate-600 whitespace-nowrap transition-all">Transfer
                                 Bank</button>
-                            <button onclick="setPaymentTab('card')" id="tab-card"
-                                class="px-4 py-2 rounded-xl text-sm font-semibold bg-slate-100 text-slate-600 whitespace-nowrap transition-all">Kartu
-                                Kredit/Debit</button>
-                            <button onclick="setPaymentTab('cod')" id="tab-cod"
-                                class="px-4 py-2 rounded-xl text-sm font-semibold bg-slate-100 text-slate-600 whitespace-nowrap transition-all">COD</button>
                         </div>
 
-                        <!-- E-Wallet -->
-                        <div id="panel-ewallet" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                            <label onclick="setPayment('GoPay')"
+                        <!-- QRIS -->
+                        <div id="panel-qris" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            <label onclick="setPayment('qris', 'QRIS')"
                                 class="payment-card active flex items-center gap-3 p-3 border-2 rounded-xl cursor-pointer hover:border-blue-300 transition-all">
-                                <input type="radio" name="payment" class="accent-blue-500" checked />
+                                <input type="radio" name="payment" value="qris" class="accent-blue-500" checked />
                                 <div
                                     class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-sm font-bold text-blue-700">
-                                    G</div>
-                                <span class="text-sm font-semibold text-slate-700">GoPay</span>
-                            </label>
-                            <label onclick="setPayment('OVO')"
-                                class="payment-card flex items-center gap-3 p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-blue-300 transition-all">
-                                <input type="radio" name="payment" class="accent-blue-500" />
-                                <div
-                                    class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center text-sm font-bold text-purple-700">
-                                    O</div>
-                                <span class="text-sm font-semibold text-slate-700">OVO</span>
-                            </label>
-                            <label onclick="setPayment('DANA')"
-                                class="payment-card flex items-center gap-3 p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-blue-300 transition-all">
-                                <input type="radio" name="payment" class="accent-blue-500" />
-                                <div
-                                    class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-sm font-bold text-blue-700">
-                                    D</div>
-                                <span class="text-sm font-semibold text-slate-700">DANA</span>
-                            </label>
-                            <label onclick="setPayment('ShopeePay')"
-                                class="payment-card flex items-center gap-3 p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-blue-300 transition-all">
-                                <input type="radio" name="payment" class="accent-blue-500" />
-                                <div
-                                    class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center text-sm font-bold text-orange-700">
-                                    S</div>
-                                <span class="text-sm font-semibold text-slate-700">ShopeePay</span>
-                            </label>
-                            <label onclick="setPayment('LinkAja')"
-                                class="payment-card flex items-center gap-3 p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-blue-300 transition-all">
-                                <input type="radio" name="payment" class="accent-blue-500" />
-                                <div
-                                    class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center text-sm font-bold text-red-700">
-                                    L</div>
-                                <span class="text-sm font-semibold text-slate-700">LinkAja</span>
+                                    Q</div>
+                                <span class="text-sm font-semibold text-slate-700">QRIS</span>
                             </label>
                         </div>
 
                         <!-- Bank Transfer -->
                         <div id="panel-bank" class="hidden grid grid-cols-2 sm:grid-cols-3 gap-3">
-                            <label onclick="setPayment('BCA')"
+                            <label onclick="setPayment('bca', 'BCA Virtual Account')"
                                 class="payment-card flex items-center gap-3 p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-blue-300 transition-all">
-                                <input type="radio" name="payment" class="accent-blue-500" />
+                                <input type="radio" name="payment" value="bca" class="accent-blue-500" />
                                 <span class="font-bold text-blue-700">BCA</span>
                             </label>
-                            <label onclick="setPayment('Mandiri')"
+                            <label onclick="setPayment('mandiri', 'Mandiri Virtual Account')"
                                 class="payment-card flex items-center gap-3 p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-blue-300 transition-all">
-                                <input type="radio" name="payment" class="accent-blue-500" />
+                                <input type="radio" name="payment" value="mandiri" class="accent-blue-500" />
                                 <span class="font-bold text-yellow-700">Mandiri</span>
                             </label>
-                            <label onclick="setPayment('BNI')"
+                            <label onclick="setPayment('bni', 'BNI Virtual Account')"
                                 class="payment-card flex items-center gap-3 p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-blue-300 transition-all">
-                                <input type="radio" name="payment" class="accent-blue-500" />
+                                <input type="radio" name="payment" value="bni" class="accent-blue-500" />
                                 <span class="font-bold text-orange-700">BNI</span>
                             </label>
-                            <label onclick="setPayment('BRI')"
+                            <label onclick="setPayment('bri', 'BRI Virtual Account')"
                                 class="payment-card flex items-center gap-3 p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-blue-300 transition-all">
-                                <input type="radio" name="payment" class="accent-blue-500" />
+                                <input type="radio" name="payment" value="bri" class="accent-blue-500" />
                                 <span class="font-bold text-blue-600">BRI</span>
                             </label>
-                            <label onclick="setPayment('CIMB')"
+                            <label onclick="setPayment('cimb', 'CIMB Virtual Account')"
                                 class="payment-card flex items-center gap-3 p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-blue-300 transition-all">
-                                <input type="radio" name="payment" class="accent-blue-500" />
+                                <input type="radio" name="payment" value="cimb" class="accent-blue-500" />
                                 <span class="font-bold text-red-700">CIMB</span>
                             </label>
                         </div>
-
-                        <!-- Kartu -->
-                        <div id="panel-card" class="hidden">
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="text-xs font-medium text-slate-600 mb-1 block">Nomor Kartu</label>
-                                    <input type="text" placeholder="1234 5678 9012 3456" maxlength="19"
-                                        class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-                                        oninput="formatCard(this)" />
-                                </div>
-                                <div>
-                                    <label class="text-xs font-medium text-slate-600 mb-1 block">Nama Pemegang
-                                        Kartu</label>
-                                    <input type="text" placeholder="Nama sesuai kartu"
-                                        class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100" />
-                                </div>
-                                <div>
-                                    <label class="text-xs font-medium text-slate-600 mb-1 block">Berlaku Hingga</label>
-                                    <input type="text" placeholder="MM/YY" maxlength="5"
-                                        class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100" />
-                                </div>
-                                <div>
-                                    <label class="text-xs font-medium text-slate-600 mb-1 block">CVV</label>
-                                    <input type="text" placeholder="123" maxlength="3"
-                                        class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- COD -->
-                        <div id="panel-cod" class="hidden">
-                            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3">
-                                <span class="text-2xl">💵</span>
-                                <div>
-                                    <p class="font-semibold text-amber-800 mb-1">Bayar di Tempat (COD)</p>
-                                    <p class="text-sm text-amber-700">Siapkan uang pas saat kurir tiba. Tersedia untuk area
-                                        Jabodetabek dan kota-kota besar.</p>
-                                    <p class="text-sm text-amber-600 mt-1 font-medium">Biaya COD: Rp 5.000</p>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
-                <!-- VOUCHER -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                    <div class="px-6 py-4 border-b border-slate-100">
-                        <h2 class="font-bold text-slate-800 flex items-center gap-2">
-                            <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                            </svg>
-                            Voucher & Promo
-                        </h2>
-                    </div>
-                    <div class="p-6">
-                        <div class="flex flex-col sm:flex-row gap-3 mb-4">
-                            <input type="text" id="voucherInput" placeholder="Masukkan kode voucher..."
-                                class="flex-1 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100" />
-                            <button onclick="applyVoucher()"
-                                class="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors">Pakai</button>
-                        </div>
-                        <div id="voucherMsg" class="hidden"></div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <button onclick="useVoucher('HEMAT50')"
-                                class="flex items-start gap-3 p-3 border border-dashed border-blue-300 bg-blue-50 rounded-xl text-left hover:border-blue-400 transition-colors">
-                                <div
-                                    class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-lg flex-shrink-0">
-                                    🎁</div>
-                                <div>
-                                    <p class="text-xs font-bold text-blue-700">HEMAT50</p>
-                                    <p class="text-xs text-slate-600">Diskon Rp 50.000 min. belanja Rp 200.000</p>
-                                    <p class="text-xs text-red-400 mt-0.5">Berakhir 31 Jan 2025</p>
-                                </div>
-                            </button>
-                            <button onclick="useVoucher('ONGKIR0')"
-                                class="flex items-start gap-3 p-3 border border-dashed border-blue-300 bg-blue-50 rounded-xl text-left hover:border-blue-400 transition-colors">
-                                <div
-                                    class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-lg flex-shrink-0">
-                                    🚚</div>
-                                <div>
-                                    <p class="text-xs font-bold text-blue-700">ONGKIR0</p>
-                                    <p class="text-xs text-slate-600">Gratis ongkir ke seluruh Indonesia</p>
-                                    <p class="text-xs text-red-400 mt-0.5">Berakhir 28 Feb 2025</p>
-                                </div>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- CATATAN -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+                {{-- <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
                     <h2 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
                         <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -432,11 +265,11 @@
                     </h2>
                     <textarea placeholder="Contoh: Tolong dibungkus rapi sebagai hadiah..."
                         class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 resize-none h-20"></textarea>
-                </div>
+                </div> --}}
             </div>
 
             <!-- RIGHT: Order Summary -->
-            <div class="lg:col-span-1">
+            <div class="lg:col-span-1 lg:self-start">
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 sticky top-24">
                     <div class="px-6 py-4 border-b border-slate-100">
                         <h2 class="font-bold text-slate-800">Ringkasan Pesanan</h2>
@@ -448,19 +281,7 @@
                         </div>
                         <div class="flex justify-between text-sm">
                             <span class="text-slate-600">Ongkos Kirim</span>
-                            <span class="font-medium text-slate-800" id="shippingAmt">Rp 15.000</span>
-                        </div>
-                        <div class="flex justify-between text-sm" id="discRow">
-                            <span class="text-slate-600">Diskon Produk</span>
-                            <span class="font-medium text-red-500">-Rp 74.000</span>
-                        </div>
-                        <div class="flex justify-between text-sm hidden" id="voucherRow">
-                            <span class="text-slate-600">Voucher</span>
-                            <span class="font-medium text-red-500" id="voucherAmt">-Rp 0</span>
-                        </div>
-                        <div class="flex justify-between text-sm">
-                            <span class="text-slate-600">Asuransi Pengiriman</span>
-                            <span class="font-medium text-blue-600">Gratis</span>
+                            <span class="font-medium text-slate-800" id="shippingAmt">Menghitung Ongkos Kirim...</span>
                         </div>
                         <div class="border-t border-slate-100 pt-3 mt-3">
                             <div class="flex justify-between">
@@ -652,18 +473,25 @@
 
 @section('script')
     <script>
-        let cartItems = [];
-        let checkoutSource = 'cart';
-        let shippingCost = 15000;
+        let cartItems = @json($checkoutItems ?? []);
+        const checkoutSource = @json($checkoutSource ?? 'cart_all');
+        let shippingCost = null;
         let shippingLabel = 'Reguler';
-        let voucherDiscount = 0;
-        let selectedPayment = 'GoPay';
+        let selectedPayment = 'qris';
+        let selectedPaymentLabel = 'QRIS';
+        const csrfToken = @json(csrf_token());
+        const completeCheckoutUrl = @json(route('frontend.checkout.complete'));
+        const shippingOptionsUrl = @json(route('frontend.rajaongkir.shipping-options'));
+        const midtransChargeUrl = @json(route('frontend.checkout.midtrans.charge'));
         const FALLBACK_IMAGE = 'https://via.placeholder.com/100x100?text=No+Image';
+
         function normalizeItem(item, index = 0) {
             const price = Number(item?.price || 0);
             return {
                 key: item?.key || `${item?.product_id || item?.id || 'item'}::${item?.variant || '-'}`,
+                cartId: item?.cartId || item?.cart_id || null,
                 id: item?.product_id || item?.id || index + 1,
+                productVariantId: item?.productVariantId || item?.product_variant_id || null,
                 slug: item?.slug || '',
                 name: item?.name || 'Produk',
                 variant: item?.variant || '-',
@@ -671,36 +499,15 @@
                 origPrice: Number(item?.origPrice || item?.orig_price || price),
                 qty: Math.max(1, Number(item?.qty || 1)),
                 image: item?.image || FALLBACK_IMAGE,
+                note: String(item?.note || ''),
             };
         }
-        function persistCartIfNeeded() {
-            if (checkoutSource === 'buy_now') return;
-            localStorage.setItem('ec_cart', JSON.stringify(cartItems));
-        }
-        function loadCheckoutItems() {
-            let buyNow = null;
-            let storedCart = [];
-            try {
-                buyNow = JSON.parse(localStorage.getItem('ec_buy_now') || 'null');
-            } catch (e) {
-                buyNow = null;
-            }
-            try {
-                storedCart = JSON.parse(localStorage.getItem('ec_cart') || '[]');
-                if (!Array.isArray(storedCart)) storedCart = [];
-            } catch (e) {
-                storedCart = [];
-            }
-            if (buyNow && typeof buyNow === 'object') {
-                checkoutSource = 'buy_now';
-                cartItems = [normalizeItem(buyNow)];
-            } else if (storedCart.length > 0) {
-                checkoutSource = 'cart';
-                cartItems = storedCart.map((item, idx) => normalizeItem(item, idx));
-            } else {
-                checkoutSource = 'cart';
-                cartItems = [];
-            }
+        cartItems = (Array.isArray(cartItems) ? cartItems : []).map((item, idx) => normalizeItem(item, idx));
+
+        function totalCheckoutWeight() {
+            const defaultWeightPerItem = Number(@json((int) env('CHECKOUT_DEFAULT_ITEM_WEIGHT', 1000)));
+            const totalQty = cartItems.reduce((s, i) => s + Number(i.qty || 0), 0);
+            return Math.max(1, totalQty * Math.max(1, defaultWeightPerItem));
         }
 
         function renderCart() {
@@ -726,13 +533,23 @@
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <div>
                 <span class="font-bold text-slate-900 text-sm">Rp ${item.price.toLocaleString('id-ID')}</span>
-                <span class="text-xs text-slate-400 line-through ml-1">Rp ${item.origPrice.toLocaleString('id-ID')}</span>
+                ${item.origPrice > item.price ? `<span class="text-xs text-slate-400 line-through ml-1">Rp ${item.origPrice.toLocaleString('id-ID')}</span>` : ''}
               </div>
               <div class="inline-flex items-center border border-slate-200 rounded-lg overflow-hidden self-start sm:self-auto">
                 <button class="qty-btn px-2.5 py-1 text-slate-500 hover:bg-slate-50 transition-colors text-sm" onclick="changeQty(${i}, -1)">−</button>
                 <span class="px-3 py-1 text-sm font-semibold border-x border-slate-200">${item.qty}</span>
                 <button class="qty-btn px-2.5 py-1 text-slate-500 hover:bg-slate-50 transition-colors text-sm" onclick="changeQty(${i}, 1)">+</button>
               </div>
+            </div>
+            <div class="mt-2">
+              <label class="text-xs text-slate-500 block mb-1">Catatan Item</label>
+              <input
+                type="text"
+                value="${String(item.note || '').replace(/"/g, '&quot;')}"
+                oninput="updateItemNote(${i}, this.value)"
+                placeholder="Tulis catatan untuk produk ini"
+                class="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-blue-400"
+              />
             </div>
           </div>
           <button onclick="removeItem(${i})" class="absolute top-4 right-0 sm:static text-slate-300 hover:text-red-400 transition-colors flex-shrink-0 self-start">
@@ -744,26 +561,33 @@
 
         function changeQty(idx, d) {
             cartItems[idx].qty = Math.max(1, cartItems[idx].qty + d);
-            persistCartIfNeeded();
             renderCart();
         }
 
         function removeItem(idx) {
             cartItems.splice(idx, 1);
-            persistCartIfNeeded();
             renderCart();
+        }
+
+        function updateItemNote(idx, value) {
+            if (!cartItems[idx]) return;
+            cartItems[idx].note = String(value || '');
         }
 
         function updateSummary() {
             const subtotal = cartItems.reduce((s, i) => s + i.price * i.qty, 0);
-            const productDiscount = cartItems.reduce((s, i) => s + (i.origPrice - i.price) * i.qty, 0);
-            const grandTotal = subtotal + shippingCost - voucherDiscount;
+            const shippingValue = typeof shippingCost === 'number' ? shippingCost : 0;
+            const grandTotal = subtotal + shippingValue;
             const totalItems = cartItems.reduce((s, i) => s + i.qty, 0);
             document.getElementById('itemCountText').textContent = totalItems + ' item';
             document.getElementById('sumItems').textContent = totalItems + ' item';
             document.getElementById('subtotalAmt').textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
-            document.getElementById('shippingAmt').textContent = shippingCost === 0 ? 'Gratis' : 'Rp ' + shippingCost
-                .toLocaleString('id-ID');
+            if (typeof shippingCost !== 'number') {
+                document.getElementById('shippingAmt').textContent = 'Menghitung Ongkos Kirim...';
+            } else {
+                document.getElementById('shippingAmt').textContent = shippingCost === 0 ? 'Gratis' : 'Rp ' +
+                    shippingCost.toLocaleString('id-ID');
+            }
             document.getElementById('grandTotal').textContent = 'Rp ' + grandTotal.toLocaleString('id-ID');
             document.getElementById('totalPaid').textContent = 'Rp ' + grandTotal.toLocaleString('id-ID');
             const payBtn = document.getElementById('payBtn');
@@ -786,8 +610,86 @@
             updateSummary();
         }
 
+        function renderShippingOptions(list) {
+            const container = document.getElementById('shippingOptions');
+            if (!container) return;
+            if (!Array.isArray(list) || !list.length) {
+                container.innerHTML =
+                    `<div class="text-sm text-slate-500">Opsi pengiriman belum tersedia untuk alamat ini.</div>`;
+                shippingCost = null;
+                shippingLabel = '-';
+                updateSummary();
+                return;
+            }
+
+            container.innerHTML = list.map((item, idx) => {
+                const label = `${(item.name || item.code || '').toUpperCase()} ${item.service || ''}`.trim();
+                const etd = String(item.etd || '-');
+                const cost = Number(item.cost || 0);
+                return `
+                    <label class="shipping-card ${idx === 0 ? 'active border-blue-400' : 'border-slate-200'} flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer hover:border-slate-300 transition-all"
+                        onclick="setShipping(this, ${cost}, '${label.replace(/'/g, "\\'")}')">
+                        <input type="radio" name="shipping" class="accent-blue-500" ${idx === 0 ? 'checked' : ''} />
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-0.5">
+                                <p class="font-semibold text-slate-800">${label}</p>
+                                <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded">${etd}</span>
+                            </div>
+                            <p class="text-sm text-slate-500">${item.description || 'Pengiriman via RajaOngkir'}</p>
+                        </div>
+                        <span class="font-semibold text-slate-800 text-sm">Rp ${cost.toLocaleString('id-ID')}</span>
+                    </label>
+                `;
+            }).join('');
+
+            const first = list[0];
+            shippingCost = Number(first.cost || 0);
+            shippingLabel = `${(first.name || first.code || '').toUpperCase()} ${first.service || ''}`.trim();
+            updateSummary();
+        }
+
+        async function loadShippingOptions() {
+            const checkedAddress = document.querySelector('input[name="address"]:checked');
+            const destinationId = Number(checkedAddress?.dataset?.destinationId || 0);
+            const container = document.getElementById('shippingOptions');
+            if (!container) return;
+            if (!destinationId) {
+                container.innerHTML =
+                    `<div class="text-sm text-slate-500">Anda belum mengatur alamat pengiriman, Silahkan atur dibagian profil</div>`;
+                shippingCost = null;
+                shippingLabel = '-';
+                updateSummary();
+                return;
+            }
+
+            shippingCost = null;
+            shippingLabel = '-';
+            updateSummary();
+            container.innerHTML = `<div class="text-sm text-slate-500">Memuat opsi pengiriman...</div>`;
+            const query = new URLSearchParams({
+                destination_id: String(destinationId),
+                weight: String(totalCheckoutWeight()),
+            });
+
+            try {
+                const res = await fetch(`${shippingOptionsUrl}?${query.toString()}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                if (!res.ok) throw new Error('gagal');
+                const json = await res.json();
+                renderShippingOptions(Array.isArray(json?.data) ? json.data : []);
+            } catch (e) {
+                container.innerHTML = `<div class="text-sm text-red-500">Gagal memuat ongkir RajaOngkir.</div>`;
+                shippingCost = null;
+                shippingLabel = '-';
+                updateSummary();
+            }
+        }
+
         function setPaymentTab(tab) {
-            ['ewallet', 'bank', 'card', 'cod'].forEach(t => {
+            ['qris', 'bank'].forEach(t => {
                 document.getElementById('panel-' + t).classList.add('hidden');
                 document.getElementById('tab-' + t).className =
                     'px-4 py-2 rounded-xl text-sm font-semibold bg-slate-100 text-slate-600 whitespace-nowrap transition-all';
@@ -797,44 +699,19 @@
                 'px-4 py-2 rounded-xl text-sm font-semibold bg-blue-500 text-white whitespace-nowrap transition-all';
         }
 
-        function setPayment(method) {
+        function setPayment(method, label) {
             selectedPayment = method;
-            document.getElementById('payMethod').textContent = method;
+            selectedPaymentLabel = label || method.toUpperCase();
+            document.getElementById('payMethod').textContent = selectedPaymentLabel;
             document.querySelectorAll('.payment-card').forEach(c => {
                 c.classList.remove('active');
                 c.style.borderColor = '';
             });
-        }
-
-        function applyVoucher() {
-            const code = document.getElementById('voucherInput').value.trim().toUpperCase();
-            applyVoucherCode(code);
-        }
-
-        function useVoucher(code) {
-            document.getElementById('voucherInput').value = code;
-            applyVoucherCode(code);
-        }
-
-        function applyVoucherCode(code) {
-            const msg = document.getElementById('voucherMsg');
-            msg.classList.remove('hidden');
-            if (code === 'HEMAT50') {
-                voucherDiscount = 50000;
-                msg.innerHTML =
-                    '<div class="bg-blue-50 border border-blue-200 rounded-xl p-3 text-sm text-blue-700 flex gap-2 mb-3"><span>✅</span> Voucher berhasil! Hemat Rp 50.000</div>';
-                document.getElementById('voucherRow').classList.remove('hidden');
-                document.getElementById('voucherAmt').textContent = '-Rp 50.000';
-            } else if (code === 'ONGKIR0') {
-                shippingCost = 0;
-                msg.innerHTML =
-                    '<div class="bg-blue-50 border border-blue-200 rounded-xl p-3 text-sm text-blue-700 flex gap-2 mb-3"><span>✅</span> Voucher berhasil! Gratis ongkir diterapkan.</div>';
-            } else {
-                voucherDiscount = 0;
-                msg.innerHTML =
-                    '<div class="bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-600 flex gap-2 mb-3"><span>❌</span> Kode voucher tidak valid atau sudah kadaluarsa.</div>';
+            const selectedRadio = document.querySelector(`input[name="payment"][value="${method}"]`);
+            if (selectedRadio) {
+                selectedRadio.checked = true;
+                selectedRadio.closest('.payment-card')?.classList.add('active');
             }
-            updateSummary();
         }
 
         function showAddressModal() {
@@ -861,33 +738,68 @@
             return '#TK-2025-' + result;
         }
 
-        function processPayment() {
+        async function processPayment() {
             if (!cartItems.length) {
                 alert('Keranjang masih kosong. Silakan pilih produk terlebih dahulu.');
                 return;
             }
+            if (typeof shippingCost !== 'number') {
+                alert('Ongkos kirim masih dihitung. Silakan tunggu sebentar.');
+                return;
+            }
+
             const btn = document.getElementById('payBtn');
             btn.disabled = true;
             btn.innerHTML = `
         <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
         Memproses Pembayaran...`;
 
-            setTimeout(() => {
+            try {
+                const payload = {
+                    items: cartItems.map((i) => ({
+                        id: i.id,
+                        productVariantId: i.productVariantId || null,
+                        name: i.name,
+                        variant: i.variant || '',
+                        image: i.image || '',
+                        note: i.note || '',
+                        price: i.price,
+                        qty: i.qty,
+                    })),
+                    shipping_cost: Number(shippingCost || 0),
+                    shipping_label: String(shippingLabel || 'Reguler'),
+                    payment_method: selectedPayment,
+                };
+
+                const tokenRes = await fetch(midtransChargeUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: JSON.stringify(payload),
+                });
+
+                if (!tokenRes.ok) {
+                    const err = await tokenRes.json().catch(() => ({}));
+                    throw new Error(err?.message || 'Gagal membuat transaksi Midtrans.');
+                }
+
+                const tokenJson = await tokenRes.json();
+                const redirectUrl = tokenJson?.redirect_url || '';
+                if (!redirectUrl) throw new Error('Gagal mendapatkan halaman menunggu pembayaran.');
+
                 btn.disabled = false;
                 btn.innerHTML =
                     `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>Bayar Sekarang`;
-                const orderNum = generateOrderNum();
-                document.getElementById('orderNum').textContent = orderNum;
-                document.getElementById('payMethod').textContent = selectedPayment;
-                if (checkoutSource === 'buy_now') {
-                    localStorage.removeItem('ec_buy_now');
-                } else {
-                    localStorage.setItem('ec_cart', '[]');
-                }
-                const modal = document.getElementById('successModal');
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-            }, 2500);
+                window.location.href = redirectUrl;
+            } catch (e) {
+                btn.disabled = false;
+                btn.innerHTML =
+                    `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>Bayar Sekarang`;
+                alert(e?.message || 'Terjadi kesalahan saat memproses pembayaran.');
+            }
         }
 
         function formatCard(input) {
@@ -895,8 +807,12 @@
             input.value = val.replace(/(.{4})/g, '$1 ').trim();
         }
 
-        loadCheckoutItems();
         renderCart();
+        setPaymentTab('qris');
+        setPayment('qris', 'QRIS');
+        document.querySelectorAll('input[name="address"]').forEach((el) => {
+            el.addEventListener('change', loadShippingOptions);
+        });
+        loadShippingOptions();
     </script>
 @endsection
-

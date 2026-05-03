@@ -4,6 +4,38 @@
         $displayName = $authUser?->name ?: 'Guest';
         $displayFirstName = trim(explode(' ', $displayName)[0] ?? $displayName);
         $initial = strtoupper(substr($displayFirstName, 0, 1));
+        $cartCount = $authUser ? (int) $authUser->carts()->sum('quantity') : 0;
+        $navbarCategoryTree = \App\Models\MainCategory::query()
+            ->with(['categoryDetails' => fn($q) => $q->orderBy('name')])
+            ->orderBy('name')
+            ->get();
+        $megaCategories = $navbarCategoryTree->map(function ($parent) {
+            $children = $parent->categoryDetails->values();
+            $chunkSize = max(1, (int) ceil(max(1, $children->count()) / 4));
+            $columns = $children->chunk($chunkSize)->take(4)->map(function ($chunk) {
+                return [
+                    'title' => 'Kategori',
+                    'items' => $chunk->map(fn($child) => [
+                        'name' => $child->name,
+                        'url' => route('frontend.kategori', ['category' => $child->slug]),
+                    ])->values()->all(),
+                ];
+            })->values()->all();
+
+            if (empty($columns)) {
+                $columns[] = [
+                    'title' => 'Kategori',
+                    'items' => [],
+                ];
+            }
+
+            return [
+                'key' => $parent->slug,
+                'name' => $parent->name,
+                'url' => route('frontend.kategori', ['parent' => $parent->slug]),
+                'columns' => $columns,
+            ];
+        })->values()->all();
     @endphp
     <div class="max-w-7xl mx-auto px-4 sm:px-6">
         <div class="flex items-center justify-between h-16">
@@ -17,8 +49,8 @@
                     </svg>
                 </div>
                 <span
-                    class="text-lg sm:text-xl font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Ecommerce
-                    Citra</span>
+                    class="text-lg sm:text-xl font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Citra
+                    Ecommerce</span>
             </a>
 
             <div class="hidden md:flex flex-1 max-w-xl mx-6 relative items-center gap-2">
@@ -81,13 +113,13 @@
                             d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                     </svg>
                 </button>
-                <a href="{{ route('frontend.checkout') }}" class="p-2 rounded-lg hover:bg-slate-100 relative">
+                <a href="{{ route('frontend.cart') }}" class="p-2 rounded-lg hover:bg-slate-100 relative">
                     <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                     <span id="cartCount"
-                        class="absolute -top-1 -right-1 bg-blue-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">3</span>
+                        class="absolute -top-1 -right-1 bg-blue-500 text-white text-[10px] min-w-4 h-4 px-1 rounded-full {{ $cartCount > 0 ? 'flex' : 'hidden' }} items-center justify-center leading-none font-bold">{{ $cartCount }}</span>
                 </a>
                 <a href="{{ route('frontend.profil') }}"
                     class="flex items-center gap-2 p-1 rounded-lg hover:bg-slate-100">
@@ -103,8 +135,9 @@
     <div id="ecMobileSearch" class="hidden md:hidden px-4 pb-3 border-t border-slate-100 pt-3">
         <form action="{{ route('frontend.search') }}" method="GET"
             class="flex border border-slate-200 rounded-xl overflow-hidden focus-within:border-blue-400">
-            <input type="text" id="ecNavSearchMobile" name="q" value="{{ trim(request('q', $query ?? '')) }}"
-                placeholder="Cari produk..." class="flex-1 px-4 py-2.5 text-sm outline-none" autocomplete="off" />
+            <input type="text" id="ecNavSearchMobile" name="q"
+                value="{{ trim(request('q', $query ?? '')) }}" placeholder="Cari produk..."
+                class="flex-1 px-4 py-2.5 text-sm outline-none" autocomplete="off" />
             <button type="submit" class="bg-blue-500 text-white px-4">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -165,91 +198,7 @@
             }
         ];
 
-        const megaCategories = [{
-                key: 'rumah-tangga',
-                name: 'Rumah Tangga',
-                columns: [{
-                        title: 'Dekorasi',
-                        items: ['Hiasan Dinding', 'Jam Dinding', 'Lilin Aroma', 'Karpet Ruang']
-                    },
-                    {
-                        title: 'Kamar Mandi',
-                        items: ['Cermin Kamar Mandi', 'Dispenser Sabun', 'Rak Toilet', 'Handuk Mandi']
-                    },
-                    {
-                        title: 'Kebutuhan Rumah',
-                        items: ['Baterai', 'Humidifier', 'Payung', 'Termometer']
-                    },
-                    {
-                        title: 'Tempat Penyimpanan',
-                        items: ['Box Plastik', 'Keranjang', 'Rak Serbaguna', 'Lemari Kecil']
-                    }
-                ]
-            },
-            {
-                key: 'fashion-pria',
-                name: 'Fashion Pria',
-                columns: [{
-                        title: 'Atasan',
-                        items: ['Kemeja', 'Kaos', 'Polo Shirt', 'Hoodie']
-                    },
-                    {
-                        title: 'Bawahan',
-                        items: ['Celana Chino', 'Jeans', 'Jogger', 'Celana Pendek']
-                    },
-                    {
-                        title: 'Aksesoris',
-                        items: ['Topi', 'Ikat Pinggang', 'Dompet', 'Jam Tangan']
-                    },
-                    {
-                        title: 'Sepatu',
-                        items: ['Sneakers', 'Pantofel', 'Boots', 'Sandal']
-                    }
-                ]
-            },
-            {
-                key: 'fashion-wanita',
-                name: 'Fashion Wanita',
-                columns: [{
-                        title: 'Atasan',
-                        items: ['Blouse', 'Kemeja Wanita', 'Tunik', 'Crop Top']
-                    },
-                    {
-                        title: 'Bawahan',
-                        items: ['Rok', 'Jeans Wanita', 'Kulot', 'Legging']
-                    },
-                    {
-                        title: 'Dress',
-                        items: ['Dress Kasual', 'Dress Formal', 'Maxi Dress', 'Midi Dress']
-                    },
-                    {
-                        title: 'Aksesoris',
-                        items: ['Tas Wanita', 'Perhiasan', 'Hijab', 'Sepatu Wanita']
-                    }
-                ]
-            },
-            {
-                key: 'elektronik',
-                name: 'Elektronik',
-                columns: [{
-                        title: 'Komputer',
-                        items: ['Laptop', 'PC Desktop', 'Monitor', 'Keyboard']
-                    },
-                    {
-                        title: 'Gadget',
-                        items: ['Smartphone', 'Tablet', 'Smartwatch', 'Earbuds']
-                    },
-                    {
-                        title: 'Gaming',
-                        items: ['Konsol', 'Gamepad', 'Mouse Gaming', 'Headset Gaming']
-                    },
-                    {
-                        title: 'Aksesoris',
-                        items: ['Power Bank', 'Charger', 'Kabel Data', 'Storage']
-                    }
-                ]
-            }
-        ];
+        const megaCategories = @json($megaCategories);
 
         const skeletonHtml = () => Array.from({
             length: 4
@@ -318,23 +267,38 @@
         bindLiveSearch('ecNavSearchDesktop', 'ecNavSearchDropdownDesktop');
         bindLiveSearch('ecNavSearchMobile', 'ecNavSearchDropdownMobile');
 
+        const isAuthenticated = @json(auth()->check());
+        const cartCountUrl = @json(auth()->check() ? route('frontend.cart.count') : null);
+
         function syncCartBadge() {
             const badge = document.getElementById('cartCount');
             if (!badge) return;
-            let totalQty = 0;
-            try {
-                const cart = JSON.parse(localStorage.getItem('ec_cart') || '[]');
-                if (Array.isArray(cart)) {
-                    totalQty = cart.reduce((sum, item) => sum + Number(item.qty || 0), 0);
-                }
-            } catch (e) {}
-            badge.textContent = String(totalQty);
-            badge.classList.toggle('hidden', totalQty <= 0);
+            if (!isAuthenticated || !cartCountUrl) {
+                badge.textContent = '0';
+                badge.classList.add('hidden');
+                return;
+            }
+
+            fetch(cartCountUrl, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then((res) => res.ok ? res.json() : {
+                    count: 0
+                })
+                .then((data) => {
+                    const totalQty = Number(data?.count || 0);
+                    badge.textContent = String(totalQty);
+                    badge.classList.toggle('hidden', totalQty <= 0);
+                })
+                .catch(() => {
+                    badge.textContent = '0';
+                    badge.classList.add('hidden');
+                });
         }
         syncCartBadge();
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'ec_cart') syncCartBadge();
-        });
+        window.addEventListener('cart:updated', syncCartBadge);
 
         const mobileSearch = document.getElementById('ecMobileSearch');
         const mobileSearchToggle = document.getElementById('ecMobileSearchToggle');
@@ -348,14 +312,14 @@
         const categoryDropdown = document.getElementById('ecCategoryDropdown');
         const categoryMenu = document.getElementById('ecMegaCategoryMenu');
         const categoryContent = document.getElementById('ecMegaCategoryContent');
-        if (categoryTrigger && categoryDropdown && categoryMenu && categoryContent) {
+        if (categoryTrigger && categoryDropdown && categoryMenu && categoryContent && megaCategories.length > 0) {
             let active = megaCategories[0].key;
 
             const renderMenu = () => {
                 categoryMenu.innerHTML = megaCategories.map((cat) => `
-                    <button type="button" data-key="${cat.key}" class="w-full text-left px-3 py-2 rounded-lg text-sm ${cat.key === active ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-700 hover:bg-slate-50'}">
+                    <a href="#" data-key="${cat.key}" class="block w-full text-left px-3 py-2 rounded-lg text-sm ${cat.key === active ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-700 hover:bg-slate-50'}">
                         ${cat.name}
-                    </button>
+                    </a>
                 `).join('');
             };
 
@@ -364,7 +328,7 @@
                 categoryContent.innerHTML = `<div class="grid grid-cols-4 gap-6">${found.columns.map((col) => `
                     <div>
                         <h5 class="text-sm font-semibold text-slate-800 mb-3">${col.title}</h5>
-                        <ul class="space-y-2">${col.items.map((item) => `<li><a href="#" class="text-sm text-slate-600 hover:text-blue-600">${item}</a></li>`).join('')}</ul>
+                        <ul class="space-y-2">${col.items.length ? col.items.map((item) => `<li><a href="${item.url}" class="text-sm text-slate-600 hover:text-blue-600">${item.name}</a></li>`).join('') : '<li><span class="text-sm text-slate-400">Belum ada kategori detail</span></li>'}</ul>
                     </div>
                 `).join('')}</div>`;
             };
@@ -376,6 +340,7 @@
                 e.stopPropagation();
                 const target = e.target.closest('[data-key]');
                 if (!target) return;
+                e.preventDefault();
                 active = target.getAttribute('data-key') || megaCategories[0].key;
                 renderMenu();
                 renderColumns();

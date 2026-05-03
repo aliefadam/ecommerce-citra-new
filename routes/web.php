@@ -4,11 +4,17 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BackendController;
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\MainCategoryController;
+use App\Http\Controllers\CategoryDetailController;
 use App\Http\Controllers\FlashSaleController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\VariantController;
 use App\Http\Controllers\AddressController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\RajaOngkirController;
+use App\Http\Controllers\MidtransController;
+use App\Http\Controllers\TransactionController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -28,12 +34,16 @@ Route::middleware('auth')->group(function () {
 
         Route::resource('products', ProductController::class)->except(['show']);
 
-        Route::post('categories/quick-add', [CategoryController::class, 'quickStore'])->name('categories.quick-add');
-        Route::resource('categories', CategoryController::class)->except(['show']);
+        Route::resource('main-categories', MainCategoryController::class)->except(['show']);
+        Route::post('categories/quick-add', [CategoryDetailController::class, 'quickStore'])->name('categories.quick-add');
+        Route::resource('category-details', CategoryDetailController::class)->except(['show']);
 
         Route::post('variants/quick-add', [VariantController::class, 'quickStore'])->name('variants.quick-add');
         Route::resource('variants', VariantController::class)->except(['show']);
         Route::resource('flash-sales', FlashSaleController::class)->except(['show']);
+        Route::resource('transactions', TransactionController::class)->only(['index']);
+        Route::patch('transactions/{transaction}/process', [TransactionController::class, 'process'])->name('transactions.process');
+        Route::patch('transactions/{transaction}/ship', [TransactionController::class, 'ship'])->name('transactions.ship');
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     });
 
@@ -51,8 +61,28 @@ Route::name('frontend.')->group(function () {
     Route::get('/pencarian', [FrontendController::class, 'search'])->name('search');
     Route::get('/kategori', [FrontendController::class, 'kategori'])->name('kategori');
     Route::get('/detail-produk/{slug?}', [FrontendController::class, 'detailProduk'])->name('detail-produk');
-    Route::get('/checkout', [FrontendController::class, 'checkout'])->name('checkout');
     Route::middleware('auth')->group(function () {
         Route::get('/profil', [FrontendController::class, 'profil'])->name('profil');
+        Route::get('/checkout', [FrontendController::class, 'checkout'])->name('checkout');
+        Route::get('/cart', [CartController::class, 'index'])->name('cart');
+        Route::get('/cart/count', [CartController::class, 'count'])->name('cart.count');
+        Route::get('/cart/items', [CartController::class, 'items'])->name('cart.items');
+        Route::post('/cart', [CartController::class, 'store'])->name('cart.store');
+        Route::post('/cart/checkout', [CartController::class, 'prepareCheckout'])->name('cart.prepare-checkout');
+        Route::patch('/cart/{cart}', [CartController::class, 'update'])->name('cart.update');
+        Route::delete('/cart/{cart}', [CartController::class, 'destroy'])->name('cart.destroy');
+        Route::delete('/cart', [CartController::class, 'clear'])->name('cart.clear');
+        Route::post('/checkout/buy-now', [CartController::class, 'buyNow'])->name('checkout.buy-now');
+        Route::post('/checkout/complete', [CartController::class, 'completeCheckout'])->name('checkout.complete');
+        Route::get('/rajaongkir/provinces', [RajaOngkirController::class, 'provinces'])->name('rajaongkir.provinces');
+        Route::get('/rajaongkir/cities', [RajaOngkirController::class, 'cities'])->name('rajaongkir.cities');
+        Route::get('/rajaongkir/districts', [RajaOngkirController::class, 'districts'])->name('rajaongkir.districts');
+        Route::get('/rajaongkir/subdistricts', [RajaOngkirController::class, 'subdistricts'])->name('rajaongkir.subdistricts');
+        Route::get('/rajaongkir/shipping-options', [RajaOngkirController::class, 'shippingOptions'])->name('rajaongkir.shipping-options');
+        Route::post('/checkout/midtrans/charge', [MidtransController::class, 'createCharge'])->name('checkout.midtrans.charge');
+        Route::get('/checkout/waiting/{orderId}', [MidtransController::class, 'waiting'])->name('checkout.waiting');
+        Route::get('/checkout/midtrans/status/{orderId}', [MidtransController::class, 'status'])->name('checkout.midtrans.status');
+        Route::post('/checkout/midtrans/cancel/{orderId}', [MidtransController::class, 'cancel'])->name('checkout.midtrans.cancel');
+        Route::post('/checkout/midtrans/simulate', [MidtransController::class, 'simulate'])->name('checkout.midtrans.simulate');
     });
 });

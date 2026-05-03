@@ -20,29 +20,19 @@ class AddressSeeder extends Seeder
             [
                 'recipient_name' => 'Alief Adam',
                 'phone_country_code' => '+62',
-                'phone_number' => '81234567890',
-                'province' => 'DKI Jakarta',
-                'city' => 'Jakarta Selatan',
-                'postal_code' => '12920',
-                'address_line' => 'Jl. Sudirman No. 123, Kel. Karet Semanggi, Kec. Setiabudi',
+                'phone_number' => '895364711840',
+                'province_id' => 18,
+                'city_id' => 577,
+                'district_id' => 5874,
+                'subdistrict_id' => 69217,
+                'province' => 'JAWA TIMUR',
+                'city' => 'SURABAYA',
+                'district' => 'BENOWO',
+                'subdistrict' => 'SEMEMI',
+                'postal_code' => '60198',
+                'destination_id' => '69217',
+                'address_line' => 'JL. Bandarejo Candi 3 No. 11 RT 11 RW 05, Sememi, Benowo',
                 'is_primary' => true,
-            ]
-        );
-
-        Address::updateOrCreate(
-            [
-                'user_id' => 2,
-                'label' => 'Kantor',
-            ],
-            [
-                'recipient_name' => 'Alief Adam',
-                'phone_country_code' => '+62',
-                'phone_number' => '81234567890',
-                'province' => 'DKI Jakarta',
-                'city' => 'Jakarta Selatan',
-                'postal_code' => '12950',
-                'address_line' => 'Gedung Menara BRI Lt. 5, Jl. Gatot Subroto, Kec. Setiabudi',
-                'is_primary' => false,
             ]
         );
     }

@@ -100,7 +100,7 @@
             return [
                 'id'             => $p->id,
                 'name'           => $p->name,
-                'category'       => $p->category?->name ?? '-',
+                'category'       => trim(($p->mainCategory?->name ?? '-') . ' > ' . ($p->categoryDetail?->name ?? '-')),
                 'variants_count' => $p->productVariants->count(),
                 'status'         => $p->status,
             ];
