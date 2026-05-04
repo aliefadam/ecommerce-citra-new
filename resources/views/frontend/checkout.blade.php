@@ -34,6 +34,7 @@
             border-color: #2563eb;
             background: #eff6ff;
         }
+
         .payment-logo-box {
             width: 72px;
             height: 24px;
@@ -42,6 +43,7 @@
             justify-content: center;
             flex-shrink: 0;
         }
+
         .payment-logo-img {
             max-width: 100%;
             max-height: 100%;
@@ -158,8 +160,7 @@
                     <div class="p-6 space-y-3" id="addressList">
                         @forelse(($addresses ?? collect()) as $address)
                             <label
-                                class="address-card flex items-start gap-3 p-4 border-2 {{ $address->is_primary ? 'border-blue-400 bg-blue-50' : 'border-slate-200' }} rounded-xl cursor-pointer hover:border-slate-300 transition-colors"
-                                >
+                                class="address-card flex items-start gap-3 p-4 border-2 {{ $address->is_primary ? 'border-blue-400 bg-blue-50' : 'border-slate-200' }} rounded-xl cursor-pointer hover:border-slate-300 transition-colors">
                                 <input type="radio" name="address" class="mt-1 accent-blue-500"
                                     data-address-id="{{ $address->id }}"
                                     data-destination-id="{{ $address->destination_id }}"
@@ -255,7 +256,8 @@
                                 class="payment-card flex items-center gap-3 p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-blue-300 transition-all">
                                 <input type="radio" name="payment" value="mandiri" class="accent-blue-500" />
                                 <span class="payment-logo-box">
-                                    <img class="payment-logo-img" alt="Mandiri" src="{{ asset('imgs/mandiri.png') }}" />
+                                    <img class="payment-logo-img" alt="Mandiri"
+                                        src="{{ asset('imgs/mandiri.png') }}" />
                                 </span>
                                 <span class="text-sm font-semibold text-slate-700">Mandiri</span>
                             </label>
@@ -400,28 +402,59 @@
                             <input id="checkoutProvinceInput" type="text" placeholder="Cari provinsi"
                                 autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false"
                                 class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 pr-9 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50" />
-                            <span id="checkoutProvinceChevron" class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+                            <span id="checkoutProvinceChevron"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20"
+                                    fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                                        clip-rule="evenodd" />
+                                </svg>
                             </span>
-                            <span id="checkoutProvinceSpinner" class="hidden absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                                <svg class="animate-spin w-4 h-4 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>
+                            <span id="checkoutProvinceSpinner"
+                                class="hidden absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                <svg class="animate-spin w-4 h-4 text-blue-500" xmlns="http://www.w3.org/2000/svg"
+                                    fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10"
+                                        stroke="currentColor" stroke-width="4" />
+                                    <path class="opacity-75" fill="currentColor"
+                                        d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                                </svg>
                             </span>
-                            <div id="checkoutProvinceDropdown" class="hidden absolute z-50 w-full bg-white border border-slate-200 rounded-xl shadow-lg mt-1 max-h-52 overflow-y-auto"></div>
+                            <div id="checkoutProvinceDropdown"
+                                class="hidden absolute z-50 w-full bg-white border border-slate-200 rounded-xl shadow-lg mt-1 max-h-52 overflow-y-auto">
+                            </div>
                         </div>
                     </div>
                     <div>
                         <label class="text-xs font-medium text-slate-600 mb-1 block">Kota/Kabupaten *</label>
                         <div class="relative">
-                            <input id="checkoutCityInput" type="text" disabled placeholder="Pilih provinsi dulu" data-placeholder-enabled="Cari kota/kabupaten"
-                                autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false"
+                            <input id="checkoutCityInput" type="text" disabled placeholder="Pilih provinsi dulu"
+                                data-placeholder-enabled="Cari kota/kabupaten" autocomplete="new-password"
+                                autocorrect="off" autocapitalize="off" spellcheck="false"
                                 class="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 pr-9 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50" />
-                            <span id="checkoutCityChevron" class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+                            <span id="checkoutCityChevron"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20"
+                                    fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                                        clip-rule="evenodd" />
+                                </svg>
                             </span>
-                            <span id="checkoutCitySpinner" class="hidden absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                                <svg class="animate-spin w-4 h-4 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>
+                            <span id="checkoutCitySpinner"
+                                class="hidden absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                <svg class="animate-spin w-4 h-4 text-blue-500" xmlns="http://www.w3.org/2000/svg"
+                                    fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10"
+                                        stroke="currentColor" stroke-width="4" />
+                                    <path class="opacity-75" fill="currentColor"
+                                        d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                                </svg>
                             </span>
-                            <div id="checkoutCityDropdown" class="hidden absolute z-50 w-full bg-white border border-slate-200 rounded-xl shadow-lg mt-1 max-h-52 overflow-y-auto"></div>
+                            <div id="checkoutCityDropdown"
+                                class="hidden absolute z-50 w-full bg-white border border-slate-200 rounded-xl shadow-lg mt-1 max-h-52 overflow-y-auto">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -430,31 +463,63 @@
                     <div>
                         <label class="text-xs font-medium text-slate-600 mb-1 block">Kecamatan *</label>
                         <div class="relative">
-                            <input id="checkoutDistrictInput" type="text" disabled placeholder="Pilih kota dulu" data-placeholder-enabled="Cari kecamatan"
-                                autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false"
+                            <input id="checkoutDistrictInput" type="text" disabled placeholder="Pilih kota dulu"
+                                data-placeholder-enabled="Cari kecamatan" autocomplete="new-password" autocorrect="off"
+                                autocapitalize="off" spellcheck="false"
                                 class="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 pr-9 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50" />
-                            <span id="checkoutDistrictChevron" class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+                            <span id="checkoutDistrictChevron"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20"
+                                    fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                                        clip-rule="evenodd" />
+                                </svg>
                             </span>
-                            <span id="checkoutDistrictSpinner" class="hidden absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                                <svg class="animate-spin w-4 h-4 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>
+                            <span id="checkoutDistrictSpinner"
+                                class="hidden absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                <svg class="animate-spin w-4 h-4 text-blue-500" xmlns="http://www.w3.org/2000/svg"
+                                    fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10"
+                                        stroke="currentColor" stroke-width="4" />
+                                    <path class="opacity-75" fill="currentColor"
+                                        d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                                </svg>
                             </span>
-                            <div id="checkoutDistrictDropdown" class="hidden absolute z-50 w-full bg-white border border-slate-200 rounded-xl shadow-lg mt-1 max-h-52 overflow-y-auto"></div>
+                            <div id="checkoutDistrictDropdown"
+                                class="hidden absolute z-50 w-full bg-white border border-slate-200 rounded-xl shadow-lg mt-1 max-h-52 overflow-y-auto">
+                            </div>
                         </div>
                     </div>
                     <div>
                         <label class="text-xs font-medium text-slate-600 mb-1 block">Kelurahan *</label>
                         <div class="relative">
-                            <input id="checkoutSubdistrictInput" type="text" disabled placeholder="Pilih kecamatan dulu" data-placeholder-enabled="Cari kelurahan"
+                            <input id="checkoutSubdistrictInput" type="text" disabled
+                                placeholder="Pilih kecamatan dulu" data-placeholder-enabled="Cari kelurahan"
                                 autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false"
                                 class="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 pr-9 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50" />
-                            <span id="checkoutSubdistrictChevron" class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+                            <span id="checkoutSubdistrictChevron"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20"
+                                    fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                                        clip-rule="evenodd" />
+                                </svg>
                             </span>
-                            <span id="checkoutSubdistrictSpinner" class="hidden absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                                <svg class="animate-spin w-4 h-4 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>
+                            <span id="checkoutSubdistrictSpinner"
+                                class="hidden absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                <svg class="animate-spin w-4 h-4 text-blue-500" xmlns="http://www.w3.org/2000/svg"
+                                    fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10"
+                                        stroke="currentColor" stroke-width="4" />
+                                    <path class="opacity-75" fill="currentColor"
+                                        d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                                </svg>
                             </span>
-                            <div id="checkoutSubdistrictDropdown" class="hidden absolute z-50 w-full bg-white border border-slate-200 rounded-xl shadow-lg mt-1 max-h-52 overflow-y-auto"></div>
+                            <div id="checkoutSubdistrictDropdown"
+                                class="hidden absolute z-50 w-full bg-white border border-slate-200 rounded-xl shadow-lg mt-1 max-h-52 overflow-y-auto">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -522,10 +587,6 @@
                     <div class="flex justify-between text-sm">
                         <span class="text-slate-500">Total Dibayar</span>
                         <span class="font-bold text-blue-600" id="totalPaid">Rp 888.000</span>
-                    </div>
-                    <div class="flex justify-between text-sm">
-                        <span class="text-slate-500">Estimasi Tiba</span>
-                        <span class="font-medium text-slate-700">20 - 22 Jan 2025</span>
                     </div>
                 </div>
             </div>
@@ -810,19 +871,31 @@
         }
 
         const _coMap = {
-            'checkoutProvinceList': { dropdownId: 'checkoutProvinceDropdown', inputId: 'checkoutProvinceInput' },
-            'checkoutCityList': { dropdownId: 'checkoutCityDropdown', inputId: 'checkoutCityInput' },
-            'checkoutDistrictList': { dropdownId: 'checkoutDistrictDropdown', inputId: 'checkoutDistrictInput' },
-            'checkoutSubdistrictList': { dropdownId: 'checkoutSubdistrictDropdown', inputId: 'checkoutSubdistrictInput' },
+            'checkoutProvinceList': {
+                dropdownId: 'checkoutProvinceDropdown',
+                inputId: 'checkoutProvinceInput'
+            },
+            'checkoutCityList': {
+                dropdownId: 'checkoutCityDropdown',
+                inputId: 'checkoutCityInput'
+            },
+            'checkoutDistrictList': {
+                dropdownId: 'checkoutDistrictDropdown',
+                inputId: 'checkoutDistrictInput'
+            },
+            'checkoutSubdistrictList': {
+                dropdownId: 'checkoutSubdistrictDropdown',
+                inputId: 'checkoutSubdistrictInput'
+            },
         };
 
         function _coShowDropdown(dropdownId, query) {
             const dropdown = document.getElementById(dropdownId);
             if (!dropdown || !dropdown._items) return;
             const q = (query || '').toLowerCase().trim();
-            const filtered = q
-                ? dropdown._items.filter(item => (dropdown._toLabel(item) || '').toLowerCase().includes(q))
-                : dropdown._items;
+            const filtered = q ?
+                dropdown._items.filter(item => (dropdown._toLabel(item) || '').toLowerCase().includes(q)) :
+                dropdown._items;
             if (!filtered.length) {
                 dropdown.innerHTML = '<div class="px-4 py-3 text-sm text-slate-400 text-center">Tidak ada data</div>';
             } else {
@@ -834,7 +907,10 @@
                     el.addEventListener('mousedown', (e) => {
                         e.preventDefault();
                         const input = document.getElementById(dropdown._inputId);
-                        if (input) { input.value = toLabel(filtered[i]); input.dispatchEvent(new Event('change')); }
+                        if (input) {
+                            input.value = toLabel(filtered[i]);
+                            input.dispatchEvent(new Event('change'));
+                        }
                         dropdown.classList.add('hidden');
                     });
                 });
@@ -846,10 +922,16 @@
             const input = document.getElementById(inputId);
             const dropdown = document.getElementById(dropdownId);
             if (!input || !dropdown) return;
-            input.addEventListener('focus', () => { if (!input.disabled) _coShowDropdown(dropdownId, input.value); });
-            input.addEventListener('input', () => { if (!input.disabled) _coShowDropdown(dropdownId, input.value); });
+            input.addEventListener('focus', () => {
+                if (!input.disabled) _coShowDropdown(dropdownId, input.value);
+            });
+            input.addEventListener('input', () => {
+                if (!input.disabled) _coShowDropdown(dropdownId, input.value);
+            });
             input.addEventListener('blur', () => setTimeout(() => dropdown.classList.add('hidden'), 200));
-            input.addEventListener('keydown', (e) => { if (e.key === 'Escape') dropdown.classList.add('hidden'); });
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') dropdown.classList.add('hidden');
+            });
         }
 
         function _coSetLoading(inputId, isLoading) {
@@ -896,51 +978,70 @@
             const postalCodeInput = byCheckoutField('checkoutPostalCode');
             if (level === 'province') {
                 ['checkoutCityInput', 'checkoutDistrictInput', 'checkoutSubdistrictInput'].forEach(id => {
-                    const el = byCheckoutField(id); if (el) el.value = '';
+                    const el = byCheckoutField(id);
+                    if (el) el.value = '';
                 });
                 byCheckoutField('checkoutCityId').value = '';
                 byCheckoutField('checkoutDistrictId').value = '';
                 byCheckoutField('checkoutSubdistrictId').value = '';
                 byCheckoutField('checkoutDestinationId').value = '';
-                roCities = []; roDistricts = []; roSubdistricts = [];
+                roCities = [];
+                roDistricts = [];
+                roSubdistricts = [];
                 fillCheckoutDatalist('checkoutCityList', [], 'city');
                 fillCheckoutDatalist('checkoutDistrictList', [], 'district');
                 fillCheckoutDatalist('checkoutSubdistrictList', [], 'subdistrict');
-                _coSetLoading('checkoutCityInput', false); _coSetEnabled('checkoutCityInput', false);
-                _coSetLoading('checkoutDistrictInput', false); _coSetEnabled('checkoutDistrictInput', false);
-                _coSetLoading('checkoutSubdistrictInput', false); _coSetEnabled('checkoutSubdistrictInput', false);
+                _coSetLoading('checkoutCityInput', false);
+                _coSetEnabled('checkoutCityInput', false);
+                _coSetLoading('checkoutDistrictInput', false);
+                _coSetEnabled('checkoutDistrictInput', false);
+                _coSetLoading('checkoutSubdistrictInput', false);
+                _coSetEnabled('checkoutSubdistrictInput', false);
                 if (postalCodeInput) postalCodeInput.value = '';
             }
             if (level === 'city') {
                 ['checkoutDistrictInput', 'checkoutSubdistrictInput'].forEach(id => {
-                    const el = byCheckoutField(id); if (el) el.value = '';
+                    const el = byCheckoutField(id);
+                    if (el) el.value = '';
                 });
                 byCheckoutField('checkoutDistrictId').value = '';
                 byCheckoutField('checkoutSubdistrictId').value = '';
                 byCheckoutField('checkoutDestinationId').value = '';
-                roDistricts = []; roSubdistricts = [];
+                roDistricts = [];
+                roSubdistricts = [];
                 fillCheckoutDatalist('checkoutDistrictList', [], 'district');
                 fillCheckoutDatalist('checkoutSubdistrictList', [], 'subdistrict');
-                _coSetLoading('checkoutDistrictInput', false); _coSetEnabled('checkoutDistrictInput', false);
-                _coSetLoading('checkoutSubdistrictInput', false); _coSetEnabled('checkoutSubdistrictInput', false);
+                _coSetLoading('checkoutDistrictInput', false);
+                _coSetEnabled('checkoutDistrictInput', false);
+                _coSetLoading('checkoutSubdistrictInput', false);
+                _coSetEnabled('checkoutSubdistrictInput', false);
                 if (postalCodeInput) postalCodeInput.value = '';
             }
             if (level === 'district') {
-                const el = byCheckoutField('checkoutSubdistrictInput'); if (el) el.value = '';
+                const el = byCheckoutField('checkoutSubdistrictInput');
+                if (el) el.value = '';
                 byCheckoutField('checkoutSubdistrictId').value = '';
                 byCheckoutField('checkoutDestinationId').value = '';
                 roSubdistricts = [];
                 fillCheckoutDatalist('checkoutSubdistrictList', [], 'subdistrict');
-                _coSetLoading('checkoutSubdistrictInput', false); _coSetEnabled('checkoutSubdistrictInput', false);
+                _coSetLoading('checkoutSubdistrictInput', false);
+                _coSetEnabled('checkoutSubdistrictInput', false);
                 if (postalCodeInput) postalCodeInput.value = '';
             }
         }
 
         async function loadCheckoutProvinces() {
-            if (roProvinces.length) { _coSetEnabled('checkoutProvinceInput', true); return; }
+            if (roProvinces.length) {
+                _coSetEnabled('checkoutProvinceInput', true);
+                return;
+            }
             _coSetLoading('checkoutProvinceInput', true);
             try {
-                const res = await fetch(roProvincesUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                const res = await fetch(roProvincesUrl, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
                 const json = await res.json();
                 roProvinces = Array.isArray(json?.data) ? json.data : [];
                 fillCheckoutDatalist('checkoutProvinceList', roProvinces, 'province');
@@ -951,14 +1052,17 @@
 
         async function onCheckoutProvinceChange() {
             const input = byCheckoutField('checkoutProvinceInput');
-            const selected = roProvinces.find((item) => String(item.label || item.name || '') === String(input?.value || '').trim());
+            const selected = roProvinces.find((item) => String(item.label || item.name || '') === String(input?.value ||
+                '').trim());
             byCheckoutField('checkoutProvinceId').value = selected?.id ? String(selected.id) : '';
             resetCheckoutLocationFields('province');
             if (!selected?.id) return;
             _coSetLoading('checkoutCityInput', true);
             try {
                 const res = await fetch(`${roCitiesUrl}?province_id=${encodeURIComponent(selected.id)}`, {
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
                 });
                 const json = await res.json();
                 roCities = Array.isArray(json?.data) ? json.data : [];
@@ -971,14 +1075,17 @@
 
         async function onCheckoutCityChange() {
             const input = byCheckoutField('checkoutCityInput');
-            const selected = roCities.find((item) => String(item.label || item.name || '') === String(input?.value || '').trim());
+            const selected = roCities.find((item) => String(item.label || item.name || '') === String(input?.value ||
+                '').trim());
             byCheckoutField('checkoutCityId').value = selected?.id ? String(selected.id) : '';
             resetCheckoutLocationFields('city');
             if (!selected?.id) return;
             _coSetLoading('checkoutDistrictInput', true);
             try {
                 const res = await fetch(`${roDistrictsUrl}?city_id=${encodeURIComponent(selected.id)}`, {
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
                 });
                 const json = await res.json();
                 roDistricts = Array.isArray(json?.data) ? json.data : [];
@@ -991,14 +1098,17 @@
 
         async function onCheckoutDistrictChange() {
             const input = byCheckoutField('checkoutDistrictInput');
-            const selected = roDistricts.find((item) => String(item.label || item.name || '') === String(input?.value || '').trim());
+            const selected = roDistricts.find((item) => String(item.label || item.name || '') === String(input?.value ||
+                '').trim());
             byCheckoutField('checkoutDistrictId').value = selected?.id ? String(selected.id) : '';
             resetCheckoutLocationFields('district');
             if (!selected?.id) return;
             _coSetLoading('checkoutSubdistrictInput', true);
             try {
                 const res = await fetch(`${roSubdistrictsUrl}?district_id=${encodeURIComponent(selected.id)}`, {
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
                 });
                 const json = await res.json();
                 roSubdistricts = Array.isArray(json?.data) ? json.data : [];

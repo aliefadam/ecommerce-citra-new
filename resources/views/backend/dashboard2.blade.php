@@ -4,11 +4,11 @@
 
 @section('content')
     <main class="flex-1 p-4 sm:p-6 mt-6">
-        {{-- Header --}}
         <div class="mb-6">
-            <h1 class="text-2xl font-bold text-slate-800 dark:text-white">Dashboard 2</h1>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Data real-time dari database —
+            <h1 class="text-2xl font-bold text-slate-800 dark:text-white">Dashboard</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Welcome back, Admin! Here's what's happening today. -
                 {{ now()->format('d M Y') }}</p>
+            </p>
         </div>
 
         {{-- ============ STAT CARDS ============ --}}
@@ -373,12 +373,41 @@
             const statusColors = {
                 pending: '#94a3b8',
                 paid: '#f59e0b',
+                settlement: '#22c55e',
+                capture: '#16a34a',
                 process: '#3b82f6',
                 kirim: '#8b5cf6',
+                shipped: '#7c3aed',
                 selesai: '#10b981',
+                completed: '#059669',
                 batal: '#ef4444',
+                cancel: '#ef4444',
+                cancelled: '#ef4444',
+                dibatalkan: '#ef4444',
+                deny: '#dc2626',
+                failed: '#dc2626',
+                expire: '#f97316',
             };
-            const doughnutColors = statusLabels.map(l => statusColors[l] ?? '#cbd5e1');
+            const statusLabelMap = {
+                pending: 'Pending',
+                paid: 'Paid',
+                settlement: 'Settlement',
+                capture: 'Capture',
+                process: 'Diproses',
+                kirim: 'Dikirim',
+                shipped: 'Dikirim',
+                selesai: 'Selesai',
+                completed: 'Selesai',
+                batal: 'Dibatalkan',
+                cancel: 'Dibatalkan',
+                cancelled: 'Dibatalkan',
+                dibatalkan: 'Dibatalkan',
+                deny: 'Ditolak',
+                failed: 'Gagal',
+                expire: 'Kedaluwarsa',
+            };
+            const normalizedStatusLabels = statusLabels.map((label) => String(label || '').toLowerCase().trim());
+            const doughnutColors = normalizedStatusLabels.map((label) => statusColors[label] ?? '#cbd5e1');
 
             const ctxStatus = document.getElementById('statusChart');
             if (ctxStatus && statusLabels.length) {
@@ -411,10 +440,12 @@
                     statusLabels.forEach((label, i) => {
                         const total = statusData.reduce((a, b) => a + b, 0);
                         const pct = total > 0 ? ((statusData[i] / total) * 100).toFixed(1) : 0;
+                        const normalized = String(label || '').toLowerCase().trim();
+                        const displayLabel = statusLabelMap[normalized] ?? label;
                         legend.innerHTML += `<div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
                         <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:${doughnutColors[i]}"></span>
-                        <span class="text-xs text-slate-600 dark:text-slate-400 capitalize">${label}</span>
+                        <span class="text-xs text-slate-600 dark:text-slate-400 capitalize">${displayLabel}</span>
                     </div>
                     <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">${statusData[i]} <span class="text-slate-400 font-normal">(${pct}%)</span></span>
                 </div>`;

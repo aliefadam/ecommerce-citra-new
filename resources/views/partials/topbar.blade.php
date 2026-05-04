@@ -169,23 +169,14 @@
                         <p class="text-sm font-semibold">{{ auth()->user()->name }}</p>
                         <p class="text-xs text-slate-400">{{ auth()->user()->email }}</p>
                     </div>
-                    <a href="#"
+                    <a href="{{ route('pages.change-password') }}"
                         class="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                            <circle cx="12" cy="7" r="4" />
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                         </svg>
-                        My Profile
-                    </a>
-                    <a href="{{ route('pages.settings') }}"
-                        class="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="3" />
-                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14" />
-                        </svg>
-                        Settings
+                        Change Password
                     </a>
                     <div class="border-t border-slate-200 dark:border-slate-700">
                         <a href="{{ route('logout') }}"

@@ -10,6 +10,12 @@ return [
                 'active' => 'pages.index',
                 'icon'   => 'layout-grid',
             ],
+            [
+                'name'   => 'Users',
+                'route'  => 'users.index',
+                'active' => 'users.*',
+                'icon'   => 'users',
+            ],
             // [
             //     'name'   => 'Dashboard 2',
             //     'route'  => 'pages.dashboard2',

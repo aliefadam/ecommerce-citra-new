@@ -7,6 +7,8 @@ use App\Models\TransactionDetail;
 use App\Models\User;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class BackendController extends Controller
 {
@@ -130,5 +132,30 @@ class BackendController extends Controller
     public function settings()
     {
         return view('backend.settings');
+    }
+
+    public function changePassword()
+    {
+        return view('backend.change-password');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'current_password' => ['required', 'string'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        if (!Hash::check($validated['current_password'], $user->password)) {
+            return back()->withErrors(['current_password' => 'Password saat ini tidak valid.'])->withInput();
+        }
+
+        $user->update([
+            'password' => Hash::make($validated['password']),
+        ]);
+
+        return back()->with('success', 'Password berhasil diperbarui.');
     }
 }

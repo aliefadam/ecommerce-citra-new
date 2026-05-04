@@ -225,14 +225,13 @@ class MidtransController extends Controller
     public function waiting(Request $request, string $orderId)
     {
         $data = session('checkout_waiting.' . $orderId);
+        $tx = Transaction::query()
+            ->with('details', 'user')
+            ->where('order_id', $orderId)
+            ->where('user_id', $request->user()?->id)
+            ->first();
 
         if (!$data) {
-            $tx = Transaction::query()
-                ->with('details', 'user')
-                ->where('order_id', $orderId)
-                ->where('user_id', $request->user()?->id)
-                ->first();
-
             abort_if(!$tx, 404);
 
             $data = [
@@ -269,7 +268,7 @@ class MidtransController extends Controller
             session()->put('checkout_waiting.' . $orderId, $data);
         }
 
-        if ($this->isExpired($data)) {
+        if ($this->isExpired($data) && !$this->shouldBypassExpiryForStatus((string) ($tx?->status ?? 'pending'))) {
             $this->cancelMidtransTransaction($orderId);
             $data['transaction_status'] = 'expire';
             session()->put('checkout_waiting.' . $orderId, $data);
@@ -284,27 +283,31 @@ class MidtransController extends Controller
     public function status(Request $request, string $orderId)
     {
         try {
-            $isProduction = filter_var(env('MIDTRANS_IS_PRODUCTION', false), FILTER_VALIDATE_BOOLEAN);
-            if (!$isProduction) {
-                $localTx = Transaction::query()
-                    ->where('order_id', $orderId)
-                    ->where('user_id', $request->user()?->id)
-                    ->first();
-                // Short-circuit untuk status yang tidak perlu dicek ke Midtrans:
-                // paid/settlement/capture = sudah lunas, process/kirim = sudah dikelola admin
-                $localFinalStatuses = ['settlement', 'capture', 'paid', 'process', 'kirim', 'dibatalkan'];
-                if ($localTx && in_array(strtolower((string) $localTx->status), $localFinalStatuses, true)) {
-                    $returnStatus = strtolower((string) $localTx->status) === 'dibatalkan' ? 'cancel' : (string) $localTx->status;
-                    return response()->json([
-                        'transaction_status' => $returnStatus,
-                        'payment_type' => (string) ($localTx->payment_type ?? ''),
-                        'order_id' => $orderId,
-                    ]);
-                }
+            $localTx = Transaction::query()
+                ->where('order_id', $orderId)
+                ->where('user_id', $request->user()?->id)
+                ->first();
+
+            if ($localTx && $this->shouldBypassExpiryForStatus((string) $localTx->status)) {
+                $returnStatus = strtolower((string) $localTx->status) === 'dibatalkan'
+                    ? 'cancel'
+                    : (string) $localTx->status;
+
+                return response()->json([
+                    'transaction_status' => $returnStatus,
+                    'payment_type' => (string) ($localTx->payment_type ?? ''),
+                    'order_id' => $orderId,
+                ]);
             }
 
+            $isProduction = filter_var(env('MIDTRANS_IS_PRODUCTION', false), FILTER_VALIDATE_BOOLEAN);
+
             $sessionData = session('checkout_waiting.' . $orderId);
-            if (is_array($sessionData) && $this->isExpired($sessionData)) {
+            if (
+                is_array($sessionData) &&
+                $this->isExpired($sessionData) &&
+                !$this->shouldBypassExpiryForStatus((string) ($localTx?->status ?? 'pending'))
+            ) {
                 $this->cancelMidtransTransaction($orderId);
                 $sessionData['transaction_status'] = 'expire';
                 session()->put('checkout_waiting.' . $orderId, $sessionData);
@@ -378,6 +381,12 @@ class MidtransController extends Controller
                 ->first();
 
             if ($tx && !in_array(strtolower((string) $tx->status), ['dibatalkan', 'cancel', 'expire'], true)) {
+                if ($this->shouldBypassExpiryForStatus((string) $tx->status)) {
+                    return response()->json([
+                        'message' => 'Transaksi tidak dapat dibatalkan karena sudah diproses.',
+                    ], 422);
+                }
+
                 $tx->status = 'dibatalkan';
                 $tx->cancel_reason = $validated['cancel_reason'] ?? null;
                 $tx->cancelled_at = now();
@@ -415,6 +424,8 @@ class MidtransController extends Controller
     {
         $validated = $request->validate([
             'order_id' => ['required', 'string'],
+            'payment_type' => ['nullable', 'string'],
+            'reference_value' => ['nullable', 'string'],
         ]);
 
         try {
@@ -448,27 +459,185 @@ class MidtransController extends Controller
             if (!$statusRes->successful()) {
                 throw new RuntimeException('Order ID tidak ditemukan di Midtrans sandbox.');
             }
+            $statusJson = $statusRes->json();
+            $currentStatus = strtolower((string) ($statusJson['transaction_status'] ?? 'pending'));
+            $currentPaymentType = (string) ($statusJson['payment_type'] ?? $tx->payment_type ?? '');
 
-            $tx->status = 'settlement';
-            $tx->paid_at = now();
-            $tx->save();
+            if (!in_array($currentStatus, ['settlement', 'capture', 'paid'], true)) {
+                $requestedPaymentType = strtolower(trim((string) ($validated['payment_type'] ?? '')));
+                $referenceValue = trim((string) ($validated['reference_value'] ?? ''));
+                $normalizedCurrentType = strtolower(trim((string) $currentPaymentType));
+                $vaBank = strtolower((string) ($tx->payment_va_bank ?? ''));
+                $midtransTransactionId = (string) ($statusJson['transaction_id'] ?? $tx->midtrans_transaction_id ?? '');
+                $sessionPayment = session('checkout_waiting.' . $orderId, []);
+                $sessionQr = is_array($sessionPayment) ? (string) ($sessionPayment['qr_url'] ?? '') : '';
+                $sessionVa = is_array($sessionPayment) ? (string) ($sessionPayment['va_number'] ?? '') : '';
+
+                $isQris = in_array($requestedPaymentType, ['qris', 'gopay'], true)
+                    || in_array($normalizedCurrentType, ['qris', 'gopay'], true)
+                    || str_contains(strtolower($referenceValue), 'qr');
+
+                if ($isQris) {
+                    $qrUrl = $referenceValue !== '' ? $referenceValue : (string) ($tx->payment_qr_url ?: $sessionQr);
+                    if ($qrUrl === '') {
+                        throw new RuntimeException('QR code URL tidak ditemukan untuk transaksi ini.');
+                    }
+                    $this->triggerQrisSimulatorPayment($qrUrl);
+                } else {
+                    $bank = $vaBank !== '' ? $vaBank : 'bca';
+                    $vaNumber = $referenceValue !== '' ? $referenceValue : (string) ($tx->payment_va_number ?: $sessionVa);
+                    if ($vaNumber === '') {
+                        throw new RuntimeException('VA number tidak ditemukan untuk transaksi ini.');
+                    }
+                    $this->triggerVaSimulatorPayment($bank, $vaNumber);
+                }
+
+                $statusTarget = $midtransTransactionId !== '' ? $midtransTransactionId : $orderId;
+                $maxTries = 8;
+                for ($i = 0; $i < $maxTries; $i++) {
+                    $statusRes = Http::timeout(30)
+                        ->withHeaders([
+                            'Accept' => 'application/json',
+                            'Authorization' => 'Basic ' . $auth,
+                        ])->get('https://api.sandbox.midtrans.com/v2/' . $statusTarget . '/status');
+
+                    if ($statusRes->successful()) {
+                        $statusJson = $statusRes->json();
+                        $currentStatus = strtolower((string) ($statusJson['transaction_status'] ?? 'pending'));
+                        if (in_array($currentStatus, ['settlement', 'capture', 'paid'], true)) {
+                            break;
+                        }
+                    }
+                    usleep(800000);
+                }
+
+                if (!in_array($currentStatus, ['settlement', 'capture', 'paid'], true)) {
+                    throw new RuntimeException('Simulator berhasil dipanggil, tetapi status Midtrans belum berubah. Coba klik lagi dalam 2-3 detik.');
+                }
+            }
+
+            $this->syncTransactionStatus($orderId, $currentStatus);
 
             $sessionPayment = session('checkout_waiting.' . $orderId, []);
             if (is_array($sessionPayment) && !empty($sessionPayment)) {
-                $sessionPayment['transaction_status'] = 'settlement';
+                $sessionPayment['transaction_status'] = $currentStatus;
                 session()->put('checkout_waiting.' . $orderId, $sessionPayment);
             }
 
             return response()->json([
                 'ok' => true,
                 'message' => 'Simulasi pembayaran berhasil.',
-                'transaction_status' => 'settlement',
+                'transaction_status' => $currentStatus,
             ]);
         } catch (Throwable $e) {
             return response()->json([
                 'message' => $e->getMessage(),
             ], 422);
         }
+    }
+
+    private function triggerQrisSimulatorPayment(string $qrUrl): void
+    {
+        $res = Http::asForm()
+            ->timeout(30)
+            ->withOptions(['allow_redirects' => true])
+            ->post('https://simulator.sandbox.midtrans.com/v2/qris/payment', [
+                'qrCodeUrl' => $qrUrl,
+            ]);
+
+        if (!$res->successful()) {
+            throw new RuntimeException('Gagal memanggil QRIS simulator. code=' . $res->status());
+        }
+    }
+
+    private function triggerVaSimulatorPayment(string $bank, string $vaNumber): void
+    {
+        $bankSlug = strtolower(trim($bank)) ?: 'bca';
+        $bankMap = [
+            'bca' => 'BCA',
+            'bni' => 'BNI',
+            'bri' => 'BRI',
+            'cimb' => 'CIMB',
+            'permata' => 'PERMATA',
+            'mandiri' => 'MANDIRI',
+            'danamon' => 'DANAMON',
+            'bsi' => 'BSI',
+            'seabank' => 'SEABANK',
+            'saqu' => 'SAQU',
+        ];
+        $bankUpper = $bankMap[$bankSlug] ?? strtoupper($bankSlug);
+
+        $inquiryUrl = 'https://simulator.sandbox.midtrans.com/openapi/va/inquiry?bank=' . $bankSlug;
+        $inquiryResponse = Http::asForm()
+            ->timeout(30)
+            ->withOptions(['allow_redirects' => true])
+            ->post($inquiryUrl, [
+                'bank' => $bankUpper,
+                'vaNumber' => $vaNumber,
+            ]);
+
+        if (!$inquiryResponse->successful()) {
+            throw new RuntimeException('Gagal inquiry VA simulator. code=' . $inquiryResponse->status());
+        }
+
+        $html = (string) $inquiryResponse->body();
+        if ($html === '') {
+            return;
+        }
+
+        $paymentPath = $this->extractSimulatorPaymentActionPath($html);
+        if ($paymentPath === null) {
+            return;
+        }
+
+        $paymentFormData = $this->extractSimulatorInputs($html);
+        if (!isset($paymentFormData['vaNumber']) && !isset($paymentFormData['va_number'])) {
+            $paymentFormData['vaNumber'] = $vaNumber;
+        }
+        if (!isset($paymentFormData['bank'])) {
+            $paymentFormData['bank'] = $bankUpper;
+        }
+
+        $paymentUrl = str_starts_with($paymentPath, 'http')
+            ? $paymentPath
+            : 'https://simulator.sandbox.midtrans.com' . (str_starts_with($paymentPath, '/') ? $paymentPath : '/' . $paymentPath);
+
+        $paymentResponse = Http::asForm()
+            ->timeout(30)
+            ->withOptions(['allow_redirects' => true])
+            ->post($paymentUrl, $paymentFormData);
+
+        if (!$paymentResponse->successful()) {
+            throw new RuntimeException('Gagal submit pembayaran VA simulator. code=' . $paymentResponse->status());
+        }
+    }
+
+    private function extractSimulatorPaymentActionPath(string $html): ?string
+    {
+        if (!preg_match('/<form[^>]+action=\"([^\"]*payment[^\"]*)\"/i', $html, $m)) {
+            return null;
+        }
+
+        return trim((string) ($m[1] ?? '')) ?: null;
+    }
+
+    private function extractSimulatorInputs(string $html): array
+    {
+        $result = [];
+        if (preg_match_all('/<input[^>]+name=\"([^\"]+)\"[^>]*>/i', $html, $matches)) {
+            foreach ($matches[1] as $index => $name) {
+                $fullTag = $matches[0][$index] ?? '';
+                $value = '';
+                if (preg_match('/value=\"([^\"]*)\"/i', $fullTag, $vm)) {
+                    $value = html_entity_decode((string) ($vm[1] ?? ''), ENT_QUOTES);
+                }
+                if ($name !== '') {
+                    $result[$name] = $value;
+                }
+            }
+        }
+
+        return $result;
     }
 
     private function cancelMidtransTransaction(string $orderId): void
@@ -633,6 +802,15 @@ class MidtransController extends Controller
                 'url'     => route('frontend.profil') . '?tab=pesanan',
             ]);
         }
+    }
+
+    private function shouldBypassExpiryForStatus(string $status): bool
+    {
+        return in_array(
+            strtolower(trim($status)),
+            ['settlement', 'capture', 'paid', 'process', 'kirim', 'selesai', 'completed', 'dibatalkan', 'cancel'],
+            true
+        );
     }
 
     private function generateDailyInvoiceNo(): string

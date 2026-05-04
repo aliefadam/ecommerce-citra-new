@@ -20,6 +20,7 @@ use App\Http\Controllers\UserNotificationController;
 use App\Http\Controllers\BannerController;
 use App\Http\Controllers\StoreLocationController;
 use App\Http\Controllers\WishlistController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -44,8 +45,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/components', [BackendController::class, 'components'])->name('pages.components');
         Route::get('/datatables', [BackendController::class, 'datatables'])->name('pages.datatables');
         Route::get('/settings', [BackendController::class, 'settings'])->name('pages.settings');
+        Route::get('/change-password', [BackendController::class, 'changePassword'])->name('pages.change-password');
+        Route::post('/change-password', [BackendController::class, 'updatePassword'])->name('pages.change-password.update');
 
         Route::resource('products', ProductController::class)->except(['show']);
+        Route::get('/users', [UserController::class, 'index'])->name('users.index');
 
         Route::resource('main-categories', MainCategoryController::class)->except(['show']);
         Route::post('categories/quick-add', [CategoryDetailController::class, 'quickStore'])->name('categories.quick-add');

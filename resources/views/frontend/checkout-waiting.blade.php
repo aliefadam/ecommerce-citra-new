@@ -54,6 +54,7 @@
                         Simulasi Pembayaran
                     </button>
                 </div>
+                <p id="simulateInlineMsg" class="text-xs mt-2 hidden"></p>
             </div>
             <div class="p-6 space-y-4">
                 <div class="border-b border-slate-100 pb-3">
@@ -170,12 +171,13 @@
     </div>
 
     <!-- Modal Batalkan Transaksi -->
-    <div id="cancelModal" class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div id="cancelModal"
+        class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-slate-100">
             <div class="flex items-center gap-3 mb-4">
                 <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
                     <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </div>
                 <div>
@@ -185,47 +187,33 @@
             </div>
             <div class="space-y-2 mb-4">
                 @php
-                $cancelReasons = [
-                    'Berubah pikiran / tidak jadi membeli',
-                    'Salah memilih produk atau varian',
-                    'Ingin menggunakan metode pembayaran lain',
-                    'Harga terlalu mahal',
-                    'Menemukan produk lebih murah di tempat lain',
-                    'Alasan lainnya',
-                ];
+                    $cancelReasons = [
+                        'Berubah pikiran / tidak jadi membeli',
+                        'Salah memilih produk atau varian',
+                        'Ingin menggunakan metode pembayaran lain',
+                        'Harga terlalu mahal',
+                        'Menemukan produk lebih murah di tempat lain',
+                        'Alasan lainnya',
+                    ];
                 @endphp
-                @foreach($cancelReasons as $reason)
-                <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer has-[:checked]:border-red-400 has-[:checked]:bg-red-50 transition-colors">
-                    <input type="radio" name="cancelReason" value="{{ $reason }}" class="text-red-500 focus:ring-red-400">
-                    <span class="text-sm text-slate-700">{{ $reason }}</span>
-                </label>
+                @foreach ($cancelReasons as $reason)
+                    <label
+                        class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer has-[:checked]:border-red-400 has-[:checked]:bg-red-50 transition-colors">
+                        <input type="radio" name="cancelReason" value="{{ $reason }}"
+                            class="text-red-500 focus:ring-red-400">
+                        <span class="text-sm text-slate-700">{{ $reason }}</span>
+                    </label>
                 @endforeach
                 <input type="text" id="cancelReasonOther" placeholder="Tulis alasan lainnya..."
                     class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm hidden focus:outline-none focus:border-red-400">
             </div>
             <p id="cancelModalError" class="text-xs text-red-500 mb-2 hidden">Pilih alasan pembatalan terlebih dahulu.</p>
             <div class="flex gap-3">
-                <button type="button" onclick="closeCancelModal()" class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">Kembali</button>
-                <button type="button" id="confirmCancelBtn" class="flex-1 px-4 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition-colors">Ya, Batalkan</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="simulateModal" class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/50 p-4">
-        <div class="bg-white rounded-2xl w-full max-w-md p-6">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="font-bold text-slate-800">Simulasi Pembayaran</h3>
-                <button type="button" id="closeSimulateModalBtn" class="text-slate-400 hover:text-slate-600">✕</button>
-            </div>
-            <div class="space-y-3">
-                <label class="text-xs font-medium text-slate-600 block">Order ID</label>
-                <input id="simulateOrderIdInput" type="text" value="{{ $payment['order_id'] }}"
-                    class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400" />
-                <p id="simulateMsg" class="text-xs hidden"></p>
-                <button id="simulatePayBtn" type="button"
-                    class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-xl transition-colors">
-                    Bayar Simulasi
-                </button>
+                <button type="button" onclick="closeCancelModal()"
+                    class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">Kembali</button>
+                <button type="button" id="confirmCancelBtn"
+                    class="flex-1 px-4 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition-colors">Ya,
+                    Batalkan</button>
             </div>
         </div>
     </div>
@@ -234,7 +222,8 @@
     <div id="successModal" class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/60 p-4">
         <div class="bg-white rounded-3xl max-w-md w-full p-8 text-center modal-enter relative overflow-hidden">
             <div class="absolute top-0 left-0 right-0 flex justify-around">
-                <div class="w-2 h-6 bg-yellow-400 rounded opacity-70" style="animation: fall 1.2s 0.1s ease-out forwards;">
+                <div class="w-2 h-6 bg-yellow-400 rounded opacity-70"
+                    style="animation: fall 1.2s 0.1s ease-out forwards;">
                 </div>
                 <div class="w-2 h-6 bg-blue-400 rounded opacity-70" style="animation: fall 1.2s 0.3s ease-out forwards;">
                 </div>
@@ -242,7 +231,8 @@
                 </div>
                 <div class="w-2 h-6 bg-pink-400 rounded opacity-70" style="animation: fall 1.2s 0.4s ease-out forwards;">
                 </div>
-                <div class="w-2 h-6 bg-orange-400 rounded opacity-70" style="animation: fall 1.2s 0.15s ease-out forwards;">
+                <div class="w-2 h-6 bg-orange-400 rounded opacity-70"
+                    style="animation: fall 1.2s 0.15s ease-out forwards;">
                 </div>
             </div>
 
@@ -271,10 +261,6 @@
                         <span class="text-slate-500">Total Dibayar</span>
                         <span class="font-bold text-blue-600" id="totalPaid">Rp
                             {{ number_format((int) ($payment['gross_amount'] ?? 0), 0, ',', '.') }}</span>
-                    </div>
-                    <div class="flex justify-between text-sm">
-                        <span class="text-slate-500">Estimasi Tiba</span>
-                        <span class="font-medium text-slate-700">2 - 5 Hari</span>
                     </div>
                 </div>
             </div>
@@ -308,6 +294,12 @@
         let cancelledByTimeout = false;
         let checkoutCompleted = false;
         let successModalShown = false;
+        let countdownInterval = null;
+        let currentTxStatus = @json(strtolower((string) ($payment['transaction_status'] ?? 'pending')));
+        const paymentType = @json((string) ($payment['payment_type'] ?? ''));
+        const vaNumber = @json((string) ($payment['va_number'] ?? ''));
+        const vaBank = @json(strtolower((string) ($payment['va_bank'] ?? '')));
+        const qrUrl = @json((string) ($payment['qr_url'] ?? ''));
 
         function showSuccessModal() {
             if (successModalShown) return;
@@ -329,7 +321,9 @@
 
         async function refreshStatus() {
             const res = await fetch(statusUrl, {
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
             });
             if (!res.ok) return;
             const json = await res.json();
@@ -342,13 +336,18 @@
             if (['cancel', 'expire', 'deny', 'failure', 'dibatalkan'].includes(status)) {
                 if (el) el.textContent = 'DIBATALKAN';
                 paintStatus('cancel');
+                currentTxStatus = 'cancel';
                 return;
             }
 
             if (el) el.textContent = status.toUpperCase();
             paintStatus(status);
+            currentTxStatus = status;
 
             if (['settlement', 'capture', 'paid'].includes(status)) {
+                stopPolling();
+                stopCountdown();
+                cancelledByTimeout = true;
                 switchToMyTransactionButton();
                 showSuccessModal();
                 if (!checkoutCompleted) {
@@ -360,7 +359,9 @@
                             'X-CSRF-TOKEN': csrfToken,
                             'X-Requested-With': 'XMLHttpRequest',
                         },
-                        body: JSON.stringify({ order_id: orderId }),
+                        body: JSON.stringify({
+                            order_id: orderId
+                        }),
                     });
                 }
             }
@@ -368,8 +369,13 @@
 
         async function cancelPaymentByTimeout() {
             if (cancelledByTimeout) return;
+            if (['settlement', 'capture', 'paid', 'process', 'kirim', 'selesai', 'completed'].includes(String(
+                    currentTxStatus || '').toLowerCase())) {
+                return;
+            }
             cancelledByTimeout = true;
             stopPolling();
+            stopCountdown();
             await fetch(cancelUrl, {
                 method: 'POST',
                 headers: {
@@ -377,7 +383,9 @@
                     'X-CSRF-TOKEN': csrfToken,
                     'X-Requested-With': 'XMLHttpRequest',
                 },
-                body: JSON.stringify({ cancel_reason: 'Transaksi kadaluarsa (tidak dibayar tepat waktu)' }),
+                body: JSON.stringify({
+                    cancel_reason: 'Transaksi kadaluarsa (tidak dibayar tepat waktu)'
+                }),
             });
             const el = document.getElementById('txStatus');
             if (el) el.textContent = 'DIBATALKAN';
@@ -416,12 +424,19 @@
 
                 if (totalSec <= 0) {
                     await cancelPaymentByTimeout();
-                    clearInterval(interval);
+                    stopCountdown();
                 }
             };
 
             tick();
-            const interval = setInterval(tick, 1000);
+            countdownInterval = setInterval(tick, 1000);
+        }
+
+        function stopCountdown() {
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
         }
 
         function bindCopyVa() {
@@ -444,76 +459,39 @@
             });
         }
 
-        function openSimulateModal() {
-            const modal = document.getElementById('simulateModal');
-            if (!modal) return;
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            const msg = document.getElementById('simulateMsg');
-            if (msg) msg.classList.add('hidden');
-        }
-
-        function closeSimulateModal() {
-            const modal = document.getElementById('simulateModal');
-            if (!modal) return;
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }
-
         async function runSimulatePayment() {
-            const orderInput = document.getElementById('simulateOrderIdInput');
-            const msg = document.getElementById('simulateMsg');
-            const btn = document.getElementById('simulatePayBtn');
-            const value = String(orderInput?.value || '').trim();
-            if (!value) {
-                if (msg) {
-                    msg.className = 'text-xs text-red-600';
-                    msg.textContent = 'Order ID wajib diisi.';
-                }
-                return;
+            const msg = document.getElementById('simulateInlineMsg');
+            const btn = document.getElementById('openSimulateModalBtn');
+            if (!btn) return;
+
+            const bankSimulatorMap = {
+                bca: 'https://simulator.sandbox.midtrans.com/bca/va/index',
+                bri: 'https://simulator.sandbox.midtrans.com/openapi/va/index?bank=bri',
+                bni: 'https://simulator.sandbox.midtrans.com/bni/va/index',
+                cimb: 'https://simulator.sandbox.midtrans.com/openapi/va/index?bank=cimb',
+                mandiri: 'https://simulator.sandbox.midtrans.com/openapi/va/index?bank=mandiri',
+            };
+            const normalizedType = String(paymentType || '').toLowerCase();
+            let targetUrl = 'https://simulator.sandbox.midtrans.com/v2/qris/index';
+
+            if (normalizedType === 'bank_transfer') {
+                targetUrl = bankSimulatorMap[String(vaBank || '').toLowerCase()] || bankSimulatorMap.bca;
             }
 
-            btn.disabled = true;
-            btn.textContent = 'Memproses...';
-            try {
-                const res = await fetch(simulateUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken,
-                        'X-Requested-With': 'XMLHttpRequest',
-                    },
-                    body: JSON.stringify({
-                        order_id: value,
-                    }),
-                });
-                const json = await res.json().catch(() => ({}));
-                if (!res.ok) {
-                    throw new Error(json?.message || 'Order ID tidak valid.');
-                }
-                if (msg) {
-                    msg.className = 'text-xs text-green-600';
-                    msg.textContent = 'Simulasi berhasil. Status akan diperbarui.';
-                }
-                await refreshStatus();
-                setTimeout(() => {
-                    closeSimulateModal();
-                }, 600);
-            } catch (e) {
-                if (msg) {
-                    msg.className = 'text-xs text-red-600';
-                    msg.textContent = e?.message || 'Gagal simulasi pembayaran.';
-                }
-            } finally {
-                btn.disabled = false;
-                btn.textContent = 'Bayar Simulasi';
+            window.open(targetUrl, '_blank', 'noopener,noreferrer');
+
+            if (msg) {
+                const extra = normalizedType === 'bank_transfer' && vaNumber ?
+                    ` Gunakan nomor VA: ${vaNumber}` :
+                    (normalizedType === 'qris' && qrUrl ? ' Salin QR Code Image Url dari halaman ini bila diminta.' :
+                        '');
+                msg.className = 'text-xs mt-2 text-blue-600';
+                msg.textContent = 'Membuka halaman simulator Midtrans di tab baru.' + extra;
             }
         }
 
         document.getElementById('refreshStatusBtn')?.addEventListener('click', refreshStatus);
-        document.getElementById('openSimulateModalBtn')?.addEventListener('click', openSimulateModal);
-        document.getElementById('closeSimulateModalBtn')?.addEventListener('click', closeSimulateModal);
-        document.getElementById('simulatePayBtn')?.addEventListener('click', runSimulatePayment);
+        document.getElementById('openSimulateModalBtn')?.addEventListener('click', runSimulatePayment);
         bindCopyVa();
         startCountdown();
         paintStatus(@json(strtolower((string) ($payment['transaction_status'] ?? 'pending'))));
@@ -538,6 +516,7 @@
             document.getElementById('cancelModal').classList.remove('hidden');
             document.getElementById('cancelModal').classList.add('flex');
         }
+
         function closeCancelModal() {
             document.getElementById('cancelModal').classList.add('hidden');
             document.getElementById('cancelModal').classList.remove('flex');
@@ -559,7 +538,10 @@
         document.getElementById('confirmCancelBtn')?.addEventListener('click', async function() {
             const selected = document.querySelector('input[name="cancelReason"]:checked');
             const errEl = document.getElementById('cancelModalError');
-            if (!selected) { errEl.classList.remove('hidden'); return; }
+            if (!selected) {
+                errEl.classList.remove('hidden');
+                return;
+            }
             errEl.classList.add('hidden');
 
             let reason = selected.value;
@@ -573,8 +555,13 @@
             try {
                 const res = await fetch(cancelUrl, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
-                    body: JSON.stringify({ cancel_reason: reason }),
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                    body: JSON.stringify({
+                        cancel_reason: reason
+                    }),
                 });
                 const json = await res.json();
                 if (json.ok || json.transaction_status === 'cancel') {
@@ -587,7 +574,7 @@
                     const cancelBtn = document.querySelector('button[onclick="openCancelModal()"]');
                     if (cancelBtn) cancelBtn.style.display = 'none';
                 }
-            } catch(e) {}
+            } catch (e) {}
             this.disabled = false;
             this.textContent = 'Ya, Batalkan';
         });

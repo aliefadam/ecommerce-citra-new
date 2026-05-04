@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Welcome to Midtrans's Payment Simulator page.">
+    <meta name="author" content="PT Midtrans">
+    <link id="favicon" rel="shortcut icon" href="../../../assets/images/midtrans/initial_positive.png" type="image/svg+xml">
+    <link href="../../../assets/styles/common.css" rel="stylesheet">
+    <title>Midtrans Payment Simulator</title>
+    
+    <script>
+    const queryString = window.location.search;
+    let bank;
+
+    queryString.slice(1).split('&').forEach(function (param) {
+        const parts = param.split('=');
+        if (parts.length === 2) {
+            const value = decodeURIComponent(parts[1]);
+            bank = value;
+        }
+    });
+
+    const currentPage = bank !== 'mandiri' ? bank + '_va' : bank + '_bill';
+</script>
+
+
+
+
+
+
+
+</head>
+<body>
+<div class="app">
+    <header class="header-container">
+    <div class="container header-top">
+        <div class="header-left">
+            <a href="/" class="header-logo">
+                <img alt="Midtrans Documentation" class="header-logo-img" src="../../../assets/images/midtrans/white.png">
+            </a>
+        </div>
+        <div class="header-right">
+            <a href="https://docs.midtrans.com" class="header-top-link">
+                Technical Documentation
+            </a>
+            <a href="https://docs.midtrans.com/page/report-issues" class="header-top-link">
+                Submit Feedback
+            </a>
+        </div>
+    </div>
+    
+    <div class="navigation">
+        <select class="page-option">
+            <option data-url="" disabled="" value="Introduction">Introduction</option>
+            <option data-url="/" value="intro_midtrans">Midtrans Payment Simulator</option>
+            <option data-url="" disabled="" value="Payment">Payment Simulator</option>
+            
+            <option data-url="/v2/qris/index" value="qris">QRIS (openAPI & non openAPI)</option>
+            
+            
+            <option data-url="/v2/deeplink/index" value="deeplink">Deeplink (openAPI & non openAPI)</option>
+            
+            <optgroup label="Virtual Account">
+                <option data-url="/bca/va/index" value="bca_va">BCA VA</option>
+                <option data-url="/openapi/va/index?bank=bri" value="bri_va">BRI VA</option>
+                <option data-url="/bni/va/index" value="bni_va">BNI VA</option>
+                <option data-url="/openapi/va/index?bank=permata" value="permata_va">Permata VA</option>
+                <option data-url="/openapi/va/index?bank=cimb" value="cimb_va">CIMB VA</option>
+                <option data-url="/openapi/va/index?bank=mandiri" value="mandiri_bill">Mandiri Bill</option>
+                <option data-url="/openapi/va/index?bank=danamon" value="danamon_va">Danamon VA</option>
+                <option data-url="/openapi/va/index?bank=bsi" value="bsi_va">BSI VA</option>
+                <option data-url="/openapi/va/index?bank=seabank" value="seabank_va">SeaBank VA</option>
+                <option data-url="/openapi/va/index?bank=saqu" value="saqu_va">Saqu VA</option>
+            </optgroup>
+            <optgroup label="Over The Counter">
+                <option data-url="/alfamart/index" value="alfamart">Alfamart</option>
+                <option data-url="/indomaret/phoenix/index" value="indomaret">Indomaret</option>
+            </optgroup>
+            <optgroup label="Cardless Credit">
+                <option data-url="/akulaku/ui/pending" value="akulaku">Akulaku</option>
+            </optgroup>
+            <option data-url="" disabled="" value="Resources">Resources</option>
+            <option data-url="https://docs.midtrans.com/docs/testing-payment-on-sandbox" value="qris">Testing Credential</option>
+        </select>
+    </div>
+    
+</header>
+<script>
+    const pageOption = document.querySelector('.page-option');
+
+    for (let i = 0; i < pageOption.options.length; i++) {
+        if (pageOption.options[i].value === currentPage) {
+            pageOption.selectedIndex = i;
+            break;
+        }
+    }
+
+    pageOption.addEventListener('change', function () {
+        const selectedOption = pageOption.options[pageOption.selectedIndex];
+        if (selectedOption.value !== '' && selectedOption.value !== currentPage) {
+            window.location.href = selectedOption.getAttribute('data-url');
+        }
+    });
+</script>
+
+    <main>
+        <div class="container main-content">
+            
+                <nav aria-label="Page Navigation" class="sidebar">
+    <section class="sidebar-content">
+        <div class="sidebar-section">
+            <h3 class="sidebar-heading">
+                Introduction
+            </h3>
+            <ul class="sidebar-list">
+                <li class="sidebar-item">
+                    <a href="/" class="sidebar-link" id="intro_midtrans">
+                        <span class="sidebar-link-text">
+                            <span>Midtrans Payment Simulator</span>
+                        </span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <div class="sidebar-section">
+            <h3 class="sidebar-heading">
+                Payment Simulator
+            </h3>
+            
+            <ul class="sidebar-list">
+                <li class="sidebar-item">
+                    <a href="/v2/qris/index" class="sidebar-link" id="openapi-qris">
+                        <span class="sidebar-link-text">
+                            <span>QRIS (openAPI & non openAPI)</span>
+                        </span>
+                    </a>
+                </li>
+            </ul>
+            
+            
+            <ul class="sidebar-list">
+                <li class="sidebar-item">
+                    <a href="/v2/deeplink/index" class="sidebar-link" id="deeplink">
+                        <span class="sidebar-link-text">
+                            <span>Deeplink (openAPI & non openAPI)</span>
+                        </span>
+                    </a>
+                </li>
+            </ul>
+            
+            <ul class="sidebar-list">
+                <li class="sidebar-item">
+                    <a class="sidebar-link parent-link" id="virtual_account">
+                        <span class="sidebar-link-text">
+                            <button class="sidebar-link-button">
+                                <img src="../../../assets/images/icons/chevron_right.svg" alt="chevron_right" class="sidebar-link-icon">
+                            </button>
+                            <span>Virtual Account</span>
+                        </span>
+                    </a>
+                    <ul class="sidebar-list sub-list">
+                        <li class="sidebar-item">
+                            <a href="/bca/va/index" class="sidebar-link sub-link" id="bca_va" active>
+                                <span class="sidebar-link-text">
+                                    <span>BCA VA</span>
+                                </span>
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="/openapi/va/index?bank=bri" class="sidebar-link sub-link" id="bri_va">
+                                <span class="sidebar-link-text">
+                                    <span>BRI VA</span>
+                                </span>
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="/bni/va/index" class="sidebar-link sub-link" id="bni_va">
+                                <span class="sidebar-link-text">
+                                    <span>BNI VA</span>
+                                </span>
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="/openapi/va/index?bank=permata" class="sidebar-link sub-link" id="permata_va">
+                                <span class="sidebar-link-text">
+                                    <span>Permata VA</span>
+                                </span>
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="/openapi/va/index?bank=cimb" class="sidebar-link sub-link" id="cimb_va">
+                                <span class="sidebar-link-text">
+                                    <span>CIMB VA</span>
+                                </span>
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="/openapi/va/index?bank=mandiri" class="sidebar-link sub-link" id="mandiri_bill">
+                                <span class="sidebar-link-text">
+                                    <span>Mandiri Bill</span>
+                                </span>
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="/openapi/va/index?bank=danamon" class="sidebar-link sub-link" id="danamon_va">
+                                <span class="sidebar-link-text">
+                                    <span>Danamon VA</span>
+                                </span>
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="/openapi/va/index?bank=bsi" class="sidebar-link sub-link" id="bsi_va">
+                                <span class="sidebar-link-text">
+                                    <span>BSI VA</span>
+                                </span>
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="/openapi/va/index?bank=seabank" class="sidebar-link sub-link" id="seabank_va">
+                                <span class="sidebar-link-text">
+                                    <span>SeaBank VA</span>
+                                </span>
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="/openapi/va/index?bank=saqu" class="sidebar-link sub-link" id="saqu_va">
+                                <span class="sidebar-link-text">
+                                    <span>Saqu VA</span>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            <ul class="sidebar-list">
+                <li class="sidebar-item">
+                    <a class="sidebar-link parent-link" id="over_the_counter">
+                        <span class="sidebar-link-text">
+                            <button class="sidebar-link-button">
+                                <img src="../../../assets/images/icons/chevron_right.svg" alt="chevron_right" class="sidebar-link-icon">
+                            </button>
+                            <span>Over The Counter</span>
+                        </span>
+                    </a>
+                    <ul class="sidebar-list sub-list">
+                        <li class="sidebar-item">
+                            <a href="/alfamart/index" class="sidebar-link sub-link" id="alfamart" active>
+                                <span class="sidebar-link-text">
+                                    <span>Alfamart</span>
+                                </span>
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="/indomaret/phoenix/index" class="sidebar-link sub-link" id="indomaret" active>
+                                <span class="sidebar-link-text">
+                                    <span>Indomaret</span>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            <ul class="sidebar-list">
+                <li class="sidebar-item">
+                    <a class="sidebar-link parent-link" id="cardless_credit">
+                        <span class="sidebar-link-text">
+                            <button class="sidebar-link-button">
+                                <img src="../../../assets/images/icons/chevron_right.svg" alt="chevron_right" class="sidebar-link-icon">
+                            </button>
+                            <span>Cardless Credit</span>
+                        </span>
+                    </a>
+                    <ul class="sidebar-list sub-list">
+                        <li class="sidebar-item">
+                            <a href="/akulaku/ui/pending" class="sidebar-link sub-link" id="akulaku" active>
+                                <span class="sidebar-link-text">
+                                    <span>Akulaku</span>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <div class="sidebar-section">
+            <h3 class="sidebar-heading">
+                Resources
+            </h3>
+            <ul class="sidebar-list">
+                <li class="sidebar-item">
+                    <a href="https://docs.midtrans.com/docs/testing-payment-on-sandbox" class="sidebar-link">
+                        <span class="sidebar-link-text">
+                            <span>Testing Credential</span>
+                        </span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </section>
+</nav>
+<script>
+    const srcChevronRight = '../../../assets/images/icons/chevron_right.svg';
+    const srcChevronDown = '../../../assets/images/icons/chevron_down.svg';
+    const subListsParent = document.getElementsByClassName("parent-link");
+    const paymentMethods = {
+        virtual_account: [
+            'bca_va',
+            'bri_va',
+            'bni_va',
+            'permata_va',
+            'cimb_va',
+            'mandiri_bill',
+            'danamon_va',
+            'bsi_va',
+            'seabank_va',
+            'saqu_va',
+        ],
+        internet_banking:['klik_bca', 'octo_clicks', 'bri_mo', 'bca_klikpay', 'danamon_online_banking', 'uob_ezpay'],
+        over_the_counter: ['alfamart', 'indomaret'],
+        cardless_credit: ['akulaku', 'kredivo'],
+    }
+
+    let i;
+
+    function hideAllSubLists(e) {
+        e.preventDefault();
+        const subLists = document.getElementsByClassName("sub-list");
+
+        let j;
+        for (j = 0; j < subLists.length; j++) {
+            subLists[j].style.display = "none";
+        }
+
+        for (i = 0; i < subListsParent.length; i++) {
+            subListsParent[i].classList.remove("active");
+            subListsParent[i].querySelector('.sidebar-link-icon').src = srcChevronRight;
+        }
+    }
+
+    function activatePage(index) {
+        if (paymentMethods[subListsParent[index]?.id].includes(currentPage)) {
+            document.getElementById(currentPage).classList.add("sidebar-active");
+            document.getElementById(subListsParent[index]?.id).querySelector('.sidebar-link-icon').src = srcChevronDown;
+            document.getElementById(subListsParent[index]?.id).nextElementSibling.style.display = "block";
+        } else {
+            document.getElementById(currentPage)?.classList?.add("sidebar-active");
+        }
+    }
+
+    function attachClickHandler(index) {
+        subListsParent[index]?.addEventListener("click", function(e) {
+            this.classList.toggle("active");
+            const content = this.nextElementSibling;
+            if (content.style.display === "block") {
+                content.style.display = "none";
+                this.querySelector('.sidebar-link-icon').src = srcChevronRight;
+            } else {
+                hideAllSubLists(e);
+                content.classList.add('slide-bottom')
+                content.style.display = "block";
+                this.querySelector('.sidebar-link-icon').src = srcChevronDown;
+            }
+        });
+    }
+
+    for (i = 0; i < subListsParent.length; i++) {
+        activatePage(i);
+        attachClickHandler(i);
+    }
+</script>
+
+
+            
+            <article class="content">
+                <header class="content-head">
+                    <div class="content-head-left">
+                        <h1 class="content-title">
+                            
+
+    <span class="payment-logo">OpenAPI</span> Virtual Account
+
+
+
+
+
+                        </h1>
+                    </div>
+                </header>
+                <section class="content-body">
+                    
+
+
+    <div class="markdown-body">
+        <form role="form" action="inquiry" method="post">
+            
+                
+                    <input name="bank" value="BRI" id="bank-selection" type="hidden"/>
+                
+            
+            
+            
+                <div class="input-wrapper">
+                    <label for="inputMerchantId" class="markdown-p">
+                        Virtual Account Number
+                    </label>
+                    <input  name="vaNumber" type="text" id="inputMerchantId"/>
+                </div>
+            
+            
+            <input type="submit" value="Inquire">
+        </form>
+    </div>
+
+
+
+
+                </section>
+                <footer aria-label="Copyright" class="content-footer">
+    <div class="footer-container">
+        <p class="copyright-text">© <script>document.write(new Date().getFullYear())</script> <span>
+            <img class="copyright-logo" src="../../../assets/images/midtrans/initial_positive.png" alt="PT Midtrans">
+        </span> PT Midtrans</p>
+    </div>
+</footer>
+
+            </article>
+        </div>
+    </main>
+</div>
+
+
+
+
+    
+    <script>
+    const contentTitle = document.querySelector('.content-title');
+    const banksWithSvgAssets = ['permata', 'danamon', 'bsi', 'seabank', 'saqu']
+
+    if (contentTitle && bank) {
+        if (bank === 'mandiri') {
+            contentTitle.innerHTML = `
+            <span class="payment-logo">
+                <img src="../../../../../assets/images/payment_partners/bank_transfer/${bank.toLowerCase()}_bill.png" alt="payment_logo">
+            </span> Bill Payment
+        `;
+        }
+        else if (banksWithSvgAssets.includes(bank)){
+            contentTitle.innerHTML = `
+            <span class="payment-logo">
+                <img src="../../../../../assets/images/payment_partners/bank_transfer/${bank.toLowerCase()}_va.svg" alt="payment_logo">
+            </span> Virtual Account
+        `;
+        }
+        else {
+            contentTitle.innerHTML = `
+            <span class="payment-logo">
+                <img src="../../../../../assets/images/payment_partners/bank_transfer/${bank.toLowerCase()}_va.png" alt="payment_logo">
+            </span> Virtual Account
+        `;
+        }
+    }
+</script>
+
+    <script>
+    const inquiryForm = document.querySelector("form");
+    const initialFormAction = inquiryForm.action;
+
+    function setBankName () {
+        const selectedBank = document.getElementById("bank-selection");
+        bank = selectedBank.value;
+        getFormAction();
+    }
+
+    function getFormAction() {
+        if(bank) {
+            inquiryForm.action = initialFormAction + "?bank=" + bank.toLowerCase();
+        } else {
+            inquiryForm.action = initialFormAction + "?bank=bca";
+        }
+    }
+
+    getFormAction();
+</script>
+
+
+
+
+</body>
+</html>
+
