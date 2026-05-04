@@ -514,11 +514,12 @@
         const isAuthenticated = @json(auth()->check());
         const loginUrl = @json(route('login'));
         const cartStoreUrl = @json(route('frontend.cart.store'));
+        const wishlistToggleUrl = @json(route('frontend.wishlist.toggle'));
         const csrfToken = @json(csrf_token());
         const images = (productData.images && productData.images.length ? productData.images : [productData.image]);
         let currentImg = 0;
         let qty = 1;
-        let isWishlisted = false;
+        let isWishlisted = Boolean(productData.isWishlisted);
 
         function setImg(i) {
             currentImg = i;
@@ -615,13 +616,39 @@
             applySelectedVariantData();
         }
 
-        function toggleWishlist() {
-            isWishlisted = !isWishlisted;
+        async function toggleWishlist() {
+            if (!isAuthenticated) {
+                window.location.href = loginUrl;
+                return;
+            }
+            const res = await fetch(wishlistToggleUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({
+                    product_id: Number(productData.id),
+                }),
+            });
+            const json = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                showToast('Gagal memproses wishlist');
+                return;
+            }
+            isWishlisted = Boolean(json.wished);
+            syncWishIcon();
+            showToast(isWishlisted ? 'Ditambahkan ke wishlist!' : 'Dihapus dari wishlist!');
+            window.dispatchEvent(new Event('wishlist:updated'));
+        }
+
+        function syncWishIcon() {
             const icon = document.getElementById('wishIcon');
+            if (!icon) return;
             if (isWishlisted) {
                 icon.setAttribute('fill', '#ec4899');
                 icon.setAttribute('stroke', '#ec4899');
-                showToast('Ditambahkan ke wishlist! ❤️');
             } else {
                 icon.setAttribute('fill', 'none');
                 icon.setAttribute('stroke', 'currentColor');
@@ -700,6 +727,7 @@
         }
 
         applySelectedVariantData();
+        syncWishIcon();
 
         function switchTab(tab) {
             ['desc', 'review', 'size'].forEach(t => {

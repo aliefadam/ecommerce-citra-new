@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\RajaOngkirService;
+use App\Models\StoreLocation;
 use Illuminate\Http\Request;
 use Throwable;
 use RuntimeException;
@@ -75,10 +76,14 @@ class RajaOngkirController extends Controller
         ]);
 
         try {
-            $originId = (int) env('RAJAONGKIR_ORIGIN_ID', 0);
+            $storeLocation = StoreLocation::query()
+                ->where('is_active', true)
+                ->latest('id')
+                ->first();
+            $originId = (int) ($storeLocation?->city_id ?? 0);
             $couriers = (string) env('RAJAONGKIR_COURIERS', 'jne:sicepat:jnt');
             if ($originId <= 0) {
-                throw new RuntimeException('RAJAONGKIR_ORIGIN_ID belum dikonfigurasi.');
+                throw new RuntimeException('Store location belum dikonfigurasi di admin.');
             }
 
             $data = $this->rajaOngkir->calculateDomesticCost(

@@ -52,17 +52,13 @@
             border-radius: 9999px;
         }
 
+        #categoryTrack {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
         #categoryTrack::-webkit-scrollbar {
-            height: 3px;
-        }
-
-        #categoryTrack::-webkit-scrollbar-track {
-            background: #e2e8f0;
-        }
-
-        #categoryTrack::-webkit-scrollbar-thumb {
-            background: #94a3b8;
-            border-radius: 9999px;
+            display: none;
         }
 
         .badge-new {
@@ -160,152 +156,56 @@
     {{-- HERO SECTION (dinonaktifkan, diganti carousel)
     <section class="hero-gradient text-white overflow-hidden relative">...</section>
     --}}
-
     <!-- HERO CAROUSEL BANNER -->
+    @php
+        $heroBanners = collect($bannersJson ?? [])
+            ->filter(fn($b) => filled($b['image'] ?? null))
+            ->values();
+        if ($heroBanners->isEmpty()) {
+            $heroBanners = collect([
+                [
+                    'image' => 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1600&h=700&fit=crop&crop=center',
+                    'target_url' => '',
+                ],
+            ]);
+        }
+    @endphp
     <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-3 pb-0">
         <div class="relative rounded-2xl overflow-hidden shadow-sm" id="heroCarousel">
-
-            <!-- Track -->
             <div id="carouselTrack" class="flex transition-transform duration-600 ease-in-out">
-
-                {{-- Placeholder banner 1: Gajian Sale – Fashion --}}
-                <div class="min-w-full h-[180px] sm:h-[260px] md:h-[340px] relative overflow-hidden flex-shrink-0">
-                    <div class="absolute inset-0 flex"
-                        style="background: linear-gradient(120deg, #1a1a2e 0%, #16213e 35%, #c2185b 75%, #e91e63 100%);">
-                        <!-- Dekorasi lingkaran -->
-                        <div
-                            class="absolute right-1/3 -top-10 w-64 h-64 bg-pink-400/20 rounded-full blur-3xl pointer-events-none">
-                        </div>
-                        <div
-                            class="absolute right-0 bottom-0 w-80 h-80 bg-pink-500/10 rounded-full blur-2xl pointer-events-none">
-                        </div>
-                        <!-- Konten kiri -->
-                        <div class="flex flex-col justify-center px-8 sm:px-14 md:px-20 relative z-10 gap-2 sm:gap-3">
-                            <span
-                                class="bg-yellow-400 text-yellow-900 text-[10px] sm:text-xs font-extrabold px-3 py-1 rounded-full self-start tracking-wide">GAJIAN
-                                SALE</span>
-                            <h2 class="text-white font-extrabold text-xl sm:text-3xl md:text-5xl leading-tight">
-                                Fashion <span class="text-pink-300">Diskon</span><br>
-                                <span class="text-yellow-300">Hingga 70%</span>
-                            </h2>
-                            <p class="text-pink-200 text-xs sm:text-sm hidden sm:block">Koleksi pria & wanita terlengkap
-                            </p>
-                            <a href="{{ route('frontend.kategori') }}"
-                                class="self-start mt-1 bg-white text-pink-700 font-bold px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm hover:bg-pink-50 transition-colors">
-                                Belanja Sekarang
+                @foreach ($heroBanners as $banner)
+                    <div class="min-w-full h-[180px] sm:h-[260px] md:h-[340px] relative overflow-hidden flex-shrink-0">
+                        @if (!empty($banner['target_url']))
+                            <a href="{{ $banner['target_url'] }}" class="block w-full h-full">
+                                <img src="{{ $banner['image'] }}" alt="Banner {{ $loop->iteration }}" class="w-full h-full object-cover" />
                             </a>
-                        </div>
-                        <!-- Gambar kanan -->
-                        <div class="absolute right-0 top-0 h-full w-1/2 md:w-2/5">
-                            <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=700&h=400&fit=crop&crop=center"
-                                class="w-full h-full object-cover" alt="Fashion Sale" />
-                            <div class="absolute inset-0"
-                                style="background: linear-gradient(to right, #1a1a2e 0%, transparent 40%)"></div>
-                        </div>
+                        @else
+                            <img src="{{ $banner['image'] }}" alt="Banner {{ $loop->iteration }}" class="w-full h-full object-cover" />
+                        @endif
                     </div>
-                </div>
-
-                {{-- Placeholder banner 2: New Arrival – Elektronik & Gadget --}}
-                <div class="min-w-full h-[180px] sm:h-[260px] md:h-[340px] relative overflow-hidden flex-shrink-0">
-                    <div class="absolute inset-0 flex"
-                        style="background: linear-gradient(120deg, #0a0a23 0%, #0d2137 35%, #00838f 80%, #00bcd4 100%);">
-                        <div
-                            class="absolute right-1/3 -top-10 w-64 h-64 bg-cyan-400/20 rounded-full blur-3xl pointer-events-none">
-                        </div>
-                        <div
-                            class="absolute right-0 bottom-0 w-80 h-80 bg-teal-500/10 rounded-full blur-2xl pointer-events-none">
-                        </div>
-                        <div class="flex flex-col justify-center px-8 sm:px-14 md:px-20 relative z-10 gap-2 sm:gap-3">
-                            <span
-                                class="bg-cyan-400 text-cyan-900 text-[10px] sm:text-xs font-extrabold px-3 py-1 rounded-full self-start tracking-wide">NEW
-                                ARRIVAL</span>
-                            <h2 class="text-white font-extrabold text-xl sm:text-3xl md:text-5xl leading-tight">
-                                Gadget &amp; <span class="text-cyan-300">Elektronik</span><br>
-                                <span class="text-teal-300">Garansi Resmi</span>
-                            </h2>
-                            <p class="text-cyan-200 text-xs sm:text-sm hidden sm:block">Smartphone, laptop, earbuds &
-                                smartwatch</p>
-                            <a href="{{ route('frontend.kategori') }}"
-                                class="self-start mt-1 bg-white text-cyan-700 font-bold px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm hover:bg-cyan-50 transition-colors">
-                                Lihat Produk
-                            </a>
-                        </div>
-                        <div class="absolute right-0 top-0 h-full w-1/2 md:w-2/5">
-                            <img src="https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=700&h=400&fit=crop&crop=center"
-                                class="w-full h-full object-cover" alt="Elektronik" />
-                            <div class="absolute inset-0"
-                                style="background: linear-gradient(to right, #0a0a23 0%, transparent 40%)"></div>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Placeholder banner 3: Promo Kecantikan --}}
-                <div class="min-w-full h-[180px] sm:h-[260px] md:h-[340px] relative overflow-hidden flex-shrink-0">
-                    <div class="absolute inset-0 flex"
-                        style="background: linear-gradient(120deg, #1a0533 0%, #3b0764 35%, #7e22ce 75%, #a855f7 100%);">
-                        <div
-                            class="absolute right-1/3 -top-10 w-64 h-64 bg-purple-400/20 rounded-full blur-3xl pointer-events-none">
-                        </div>
-                        <div
-                            class="absolute right-0 bottom-0 w-80 h-80 bg-violet-500/10 rounded-full blur-2xl pointer-events-none">
-                        </div>
-                        <div class="flex flex-col justify-center px-8 sm:px-14 md:px-20 relative z-10 gap-2 sm:gap-3">
-                            <span
-                                class="bg-purple-300 text-purple-900 text-[10px] sm:text-xs font-extrabold px-3 py-1 rounded-full self-start tracking-wide">PROMO
-                                KECANTIKAN</span>
-                            <h2 class="text-white font-extrabold text-xl sm:text-3xl md:text-5xl leading-tight">
-                                Skincare &amp; <span class="text-purple-300">Beauty</span><br>
-                                <span class="text-pink-300">Beli 2 Gratis 1!</span>
-                            </h2>
-                            <p class="text-purple-200 text-xs sm:text-sm hidden sm:block">Produk kecantikan terpercaya,
-                                harga hemat</p>
-                            <a href="{{ route('frontend.kategori') }}"
-                                class="self-start mt-1 bg-white text-purple-700 font-bold px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm hover:bg-purple-50 transition-colors">
-                                Klaim Promo
-                            </a>
-                        </div>
-                        <div class="absolute right-0 top-0 h-full w-1/2 md:w-2/5">
-                            <img src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=700&h=400&fit=crop&crop=center"
-                                class="w-full h-full object-cover" alt="Kecantikan" />
-                            <div class="absolute inset-0"
-                                style="background: linear-gradient(to right, #1a0533 0%, transparent 40%)"></div>
-                        </div>
-                    </div>
-                </div>
-
+                @endforeach
             </div>
 
-            <!-- Tombol Prev/Next -->
-            <button onclick="carouselPrev()"
-                class="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/30 hover:bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-all z-10">
-                <i class="ri-arrow-left-s-line text-xl"></i>
-            </button>
-            <button onclick="carouselNext()"
-                class="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/30 hover:bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-all z-10">
-                <i class="ri-arrow-right-s-line text-xl"></i>
-            </button>
+            @if ($heroBanners->count() > 1)
+                <button onclick="carouselPrev()"
+                    class="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/30 hover:bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-all z-10">
+                    <i class="ri-arrow-left-s-line text-xl"></i>
+                </button>
+                <button onclick="carouselNext()"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/30 hover:bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-all z-10">
+                    <i class="ri-arrow-right-s-line text-xl"></i>
+                </button>
 
-            <!-- Dot Indicators (bawah kiri, gaya Tokopedia) -->
-            <div class="absolute bottom-3 left-4 flex gap-1.5 z-10" id="carouselDots">
-                <button onclick="carouselGoTo(0)" class="carousel-dot h-2 rounded-full bg-white transition-all duration-300"
-                    style="width:20px" data-index="0"></button>
-                <button onclick="carouselGoTo(1)"
-                    class="carousel-dot h-2 w-2 rounded-full bg-white/50 transition-all duration-300"
-                    data-index="1"></button>
-                <button onclick="carouselGoTo(2)"
-                    class="carousel-dot h-2 w-2 rounded-full bg-white/50 transition-all duration-300"
-                    data-index="2"></button>
-            </div>
-
-            <!-- Lihat Promo Lainnya (bawah kanan) -->
-            <a href="{{ route('frontend.kategori') }}"
-                class="absolute bottom-3 right-3 z-10 bg-black/30 hover:bg-black/50 backdrop-blur-sm text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
-                Lihat Promo Lainnya <i class="ri-arrow-right-s-line"></i>
-            </a>
-
+                <div class="absolute bottom-3 left-4 flex gap-1.5 z-10" id="carouselDots">
+                    @foreach ($heroBanners as $banner)
+                        <button onclick="carouselGoTo({{ $loop->index }})"
+                            class="carousel-dot h-2 rounded-full bg-white transition-all duration-300 {{ $loop->first ? '' : 'w-2' }}"
+                            style="{{ $loop->first ? 'width:20px' : '' }}" data-index="{{ $loop->index }}"></button>
+                    @endforeach
+                </div>
+            @endif
         </div>
     </div>
-
     <!-- KATEGORI SECTION -->
     <section class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
         <div class="flex items-center justify-between mb-4">
@@ -313,23 +213,40 @@
                 <h2 class="text-xl sm:text-2xl font-bold text-slate-800">Kategori Produk</h2>
                 <p class="text-slate-500 text-xs sm:text-sm mt-1">Temukan apa yang kamu cari</p>
             </div>
-            <a href="{{ route('frontend.kategori') }}"
-                class="text-blue-600 hover:text-blue-700 font-medium text-sm flex items-center gap-1">
-                Lihat Semua <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                </svg>
-            </a>
+            <div class="flex flex-col items-end gap-2">
+                <a href="{{ route('frontend.kategori') }}"
+                    class="text-blue-600 hover:text-blue-700 font-medium text-sm flex items-center gap-1">
+                    Lihat Semua <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </a>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="categoryPrev()"
+                        class="w-8 h-8 bg-black/30 hover:bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-all">
+                        <i class="ri-arrow-left-s-line text-lg"></i>
+                    </button>
+                    <button type="button" onclick="categoryNext()"
+                        class="w-8 h-8 bg-black/30 hover:bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-all">
+                        <i class="ri-arrow-right-s-line text-lg"></i>
+                    </button>
+                </div>
+            </div>
         </div>
-        <div id="categoryTrack"
-            class="flex flex-nowrap sm:flex-wrap items-start gap-3 sm:gap-5 overflow-x-auto sm:overflow-visible pb-1">
-            @foreach (collect($homeMainCategories ?? [])->take(8) as $cat)
+        <div id="categoryTrack" class="flex flex-nowrap items-start gap-3 overflow-x-auto pb-1 px-1">
+            @foreach (collect($homeMainCategories ?? []) as $cat)
                 <a href="{{ route('frontend.kategori', ['parent' => $cat['slug']]) }}"
-                    class="w-[88px] sm:w-[96px] flex flex-col items-center gap-2 group">
-                    <div
-                        class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white flex items-center justify-center group-hover:bg-slate-100 group-hover:scale-110 transition-all shadow-sm border border-slate-200">
-                        <i class="{{ $cat['icon'] }} text-2xl text-blue-600"></i>
+                    class="min-w-[280px] sm:min-w-[320px] flex items-center gap-3 bg-white rounded-xl px-4 py-3 border border-slate-100 shadow-sm hover:border-blue-300 hover:bg-blue-50/40 hover:shadow-md transition-all group text-left">
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-colors overflow-hidden">
+                        @if (!empty($cat['image']))
+                            <img src="{{ $cat['image'] }}" alt="{{ $cat['name'] }}"
+                                class="w-9 h-9 object-cover rounded-lg" />
+                        @else
+                            <i class="{{ $cat['icon'] }} text-base text-blue-600"></i>
+                        @endif
                     </div>
-                    <span class="text-xs text-blue-600 font-medium text-center">{{ $cat['name'] }}</span>
+                    <div class="min-w-0">
+                        <p class="text-sm font-semibold text-slate-800 truncate">{{ $cat['name'] }}</p>
+                    </div>
                 </a>
             @endforeach
         </div>
@@ -634,7 +551,11 @@
         const isAuthenticated = @json(auth()->check());
         const loginUrl = @json(route('login'));
         const cartStoreUrl = @json(route('frontend.cart.store'));
+        const wishlistToggleUrl = @json(route('frontend.wishlist.toggle'));
+        const wishlistStatusUrl = @json(route('frontend.wishlist.status'));
         const csrfToken = @json(csrf_token());
+        const wishedProductIds = new Set();
+        const carouselTotal = document.querySelectorAll('#carouselTrack > div').length || 1;
 
         let filteredProducts = [...products];
         let selectedColors = [];
@@ -660,8 +581,8 @@
                 <img src="${p.image}" alt="${p.name}" class="w-full h-44 sm:h-52 object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
               </a>
               <div class="absolute top-2 left-2 flex gap-1 flex-wrap">${badgeHtml}</div>
-              <button onclick="addToWishlist(${p.id})" class="absolute top-2 right-2 w-8 h-8 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-pink-50">
-                <svg class="w-4 h-4 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+              <button onclick="addToWishlist(${p.id})" data-wishlist-btn data-product-id="${p.id}" class="absolute top-2 right-2 w-8 h-8 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-pink-50">
+                <svg class="w-4 h-4 text-pink-500" fill="${p.isWishlisted ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
               </button>
             </div>
             <div class="p-3 flex-1 flex flex-col">
@@ -713,8 +634,68 @@
         }
 
         function addToWishlist(id) {
+            if (!isAuthenticated) {
+                window.location.href = loginUrl;
+                return;
+            }
             const p = products.find(x => x.id === id);
-            showToast(`"${p.name}" ditambahkan ke wishlist! ❤️`);
+            if (!p) return;
+            toggleWishlistByProductId(id, p.name);
+        }
+
+        async function toggleWishlistByProductId(productId, productName = 'Produk') {
+            const res = await fetch(wishlistToggleUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({
+                    product_id: Number(productId),
+                }),
+            });
+            const json = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                showToast('Gagal memproses wishlist');
+                return;
+            }
+            if (json.wished) wishedProductIds.add(Number(productId));
+            else wishedProductIds.delete(Number(productId));
+            syncWishlistButtons();
+            showToast(json.wished ? `"${productName}" ditambahkan ke wishlist!` :
+                `"${productName}" dihapus dari wishlist!`);
+            window.dispatchEvent(new Event('wishlist:updated'));
+        }
+
+        function syncWishlistButtons() {
+            document.querySelectorAll('[data-wishlist-btn]').forEach((btn) => {
+                const productId = Number(btn.getAttribute('data-product-id') || 0);
+                const icon = btn.querySelector('svg');
+                if (!icon) return;
+                icon.setAttribute('fill', wishedProductIds.has(productId) ? 'currentColor' : 'none');
+            });
+        }
+
+        async function initWishlistStatus() {
+            if (!isAuthenticated) return;
+            const ids = products.map((p) => Number(p.id)).filter(Boolean);
+            if (!ids.length) return;
+            const res = await fetch(wishlistStatusUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({
+                    product_ids: ids,
+                }),
+            });
+            const json = await res.json().catch(() => ({}));
+            const wishedIds = Array.isArray(json.wished_product_ids) ? json.wished_product_ids : [];
+            wishedIds.forEach((id) => wishedProductIds.add(Number(id)));
+            syncWishlistButtons();
         }
 
         function showToast(msg) {
@@ -1060,12 +1041,14 @@
 
         // Hero Carousel
         let carouselIndex = 0;
-        const carouselTotal = 3;
         let carouselTimer;
 
         function carouselGoTo(idx) {
+            if (carouselTotal <= 0) return;
             carouselIndex = idx;
-            document.getElementById('carouselTrack').style.transform = `translateX(-${idx * 100}%)`;
+            const track = document.getElementById('carouselTrack');
+            if (!track) return;
+            track.style.transform = `translateX(-${idx * 100}%)`;
             document.querySelectorAll('.carousel-dot').forEach((dot, i) => {
                 if (i === idx) {
                     dot.style.width = '20px';
@@ -1081,16 +1064,20 @@
         }
 
         function carouselNext() {
+            if (carouselTotal <= 1) return;
             carouselGoTo((carouselIndex + 1) % carouselTotal);
         }
 
         function carouselPrev() {
+            if (carouselTotal <= 1) return;
             carouselGoTo((carouselIndex - 1 + carouselTotal) % carouselTotal);
         }
 
         function resetCarouselTimer() {
             clearInterval(carouselTimer);
-            carouselTimer = setInterval(carouselNext, 5000);
+            if (carouselTotal > 1) {
+                carouselTimer = setInterval(carouselNext, 5000);
+            }
         }
 
         function flashSalePrev() {
@@ -1111,10 +1098,32 @@
             });
         }
 
-        carouselGoTo(0);
+        function categoryPrev() {
+            const track = document.getElementById('categoryTrack');
+            if (!track) return;
+            track.scrollBy({
+                left: -(track.clientWidth * 0.8),
+                behavior: 'smooth'
+            });
+        }
+
+        function categoryNext() {
+            const track = document.getElementById('categoryTrack');
+            if (!track) return;
+            track.scrollBy({
+                left: track.clientWidth * 0.8,
+                behavior: 'smooth'
+            });
+        }
+
+        if (carouselTotal > 0) {
+            carouselGoTo(0);
+        }
 
         // Init
         setMegaCategory('rumah-tangga');
         renderProducts(products);
+        initWishlistStatus();
     </script>
 @endsection
+

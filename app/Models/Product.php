@@ -32,4 +32,9 @@ class Product extends Model
     {
         return $this->hasManyThrough(FlashSaleItem::class, ProductVariant::class);
     }
+
+    public function wishlists()
+    {
+        return $this->hasMany(Wishlist::class);
+    }
 }

@@ -39,6 +39,7 @@
                     <thead class="bg-slate-50 dark:bg-slate-700/50">
                         <tr>
                             <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400 w-12">#</th>
+                            <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400 w-20">Icon</th>
                             <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400 cursor-pointer select-none"
                                 onclick="sortMainCatTable(1)">Name <span class="text-slate-300 dark:text-slate-600">↕</span></th>
                             <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Actions</th>
@@ -100,6 +101,11 @@
         $mainCatItems = $mainCategories->map(fn($c) => [
             'id'   => $c->id,
             'name' => $c->name,
+            'image' => $c->image
+                ? (str_starts_with((string) $c->image, 'http://') || str_starts_with((string) $c->image, 'https://') || str_starts_with((string) $c->image, '//') || str_starts_with((string) $c->image, 'data:')
+                    ? (string) $c->image
+                    : asset('storage/' . ltrim((string) $c->image, '/')))
+                : '',
         ])->values()->all();
     @endphp
     <script>
@@ -119,6 +125,12 @@
             return `
                 <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                     <td class="px-4 py-3.5 text-slate-500 dark:text-slate-400">${visibleIndex + 1}</td>
+                    <td class="px-4 py-3.5">
+                        ${item.image
+                            ? `<img src="${item.image}" alt="${item.name}" class="w-10 h-10 rounded-lg object-cover border border-slate-200 dark:border-slate-600">`
+                            : `<div class="w-10 h-10 rounded-lg border border-dashed border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/40"></div>`
+                        }
+                    </td>
                     <td class="px-4 py-3.5 font-medium text-slate-800 dark:text-slate-200">${item.name}</td>
                     <td class="px-4 py-3.5">
                         <div class="flex gap-1">
@@ -185,7 +197,7 @@
             filters: [],
             sortMap: { 1: (c) => c.name },
             renderRow: (item, index) => buildMainCatRow(item, index),
-            emptyRowHtml: '<tr><td colspan="3" class="text-center py-12 text-slate-400 dark:text-slate-500">No main categories found</td></tr>',
+            emptyRowHtml: '<tr><td colspan="4" class="text-center py-12 text-slate-400 dark:text-slate-500">No main categories found</td></tr>',
         });
 
         const toast = document.getElementById('toast');

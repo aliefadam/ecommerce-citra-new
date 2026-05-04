@@ -94,7 +94,6 @@ return [
             ],
         ],
     ],
-
     [
         'group' => 'Master Data',
         'items' => [
@@ -131,6 +130,23 @@ return [
                 'route'  => 'flash-sales.index',
                 'active' => 'flash-sales.*',
                 'icon'   => 'zap',
+            ],
+        ],
+    ],
+    [
+        'group' => 'Settings',
+        'items' => [
+            [
+                'name'   => 'Store Location',
+                'route'  => 'store-locations.edit',
+                'active' => 'store-locations.*',
+                'icon'   => 'map-pin',
+            ],
+            [
+                'name'   => 'Banner',
+                'route'  => 'banners.index',
+                'active' => 'banners.*',
+                'icon'   => 'image',
             ],
         ],
     ],

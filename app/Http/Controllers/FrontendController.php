@@ -11,6 +11,8 @@ use App\Models\TransactionDetail;
 use App\Models\TransactionProductReview;
 use App\Models\Transaction;
 use App\Models\UserNotification;
+use App\Models\Wishlist;
+use App\Models\Banner;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -27,6 +29,7 @@ class FrontendController extends Controller
                 'slug' => (string) $c->slug,
                 'name' => (string) $c->name,
                 'icon' => $this->homeCategoryIcon((string) $c->name),
+                'image' => $this->resolveMainCategoryImage($c->image),
             ])
             ->values()
             ->all();
@@ -41,12 +44,39 @@ class FrontendController extends Controller
             })
             ->values()
             ->all();
+        $banners = Banner::query()
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderByDesc('id')
+            ->get()
+            ->map(function ($banner) {
+                $image = (string) $banner->image;
+                if (
+                    str_starts_with($image, 'http://') ||
+                    str_starts_with($image, 'https://') ||
+                    str_starts_with($image, '//') ||
+                    str_starts_with($image, 'data:')
+                ) {
+                    $imageUrl = $image;
+                } else {
+                    $imageUrl = asset('storage/' . ltrim($image, '/'));
+                }
+
+                return [
+                    'image' => $imageUrl,
+                    'target_url' => (string) ($banner->target_url ?? ''),
+                    'sort_order' => (int) $banner->sort_order,
+                ];
+            })
+            ->values()
+            ->all();
 
         return view('frontend.index', [
             'productsJson' => $products['home'],
             'flashSale' => $flashSaleData['featured'],
             'homeFilterCategories' => $homeCategories,
             'homeMainCategories' => $mainCategories,
+            'bannersJson' => $banners,
         ]);
     }
 
@@ -293,6 +323,12 @@ class FrontendController extends Controller
                 'variantValue' => $variant->variant?->value ?? '-',
                 'variantGroups' => $variantGroups,
                 'productVariantId' => (int) $variant->id,
+                'isWishlisted' => auth()->check()
+                    ? Wishlist::query()
+                        ->where('user_id', auth()->id())
+                        ->where('product_id', $product->id)
+                        ->exists()
+                    : false,
                 'variantOptions' => $product->productVariants
                     ->filter(fn ($pv) => $pv->variant && filled($pv->variant->value))
                     ->map(function ($pv) use ($isFlashSale, $flashSalePrice) {
@@ -368,7 +404,13 @@ class FrontendController extends Controller
             ->latest()
             ->get();
 
-        return view('frontend.profil', compact('user', 'addresses', 'transactions', 'notifications'));
+        $wishlists = Wishlist::query()
+            ->with(['product.productVariants.variant', 'product.flashSaleItems.flashSale'])
+            ->where('user_id', $user->id)
+            ->latest()
+            ->get();
+
+        return view('frontend.profil', compact('user', 'addresses', 'transactions', 'notifications', 'wishlists'));
     }
 
     private function buildFrontendProducts(): array
@@ -414,6 +456,15 @@ class FrontendController extends Controller
             ->groupBy('transaction_details.product_id')
             ->get()
             ->keyBy('product_id');
+        $wishedProductIds = auth()->check()
+            ? Wishlist::query()
+                ->where('user_id', auth()->id())
+                ->whereIn('product_id', $productIds)
+                ->pluck('product_id')
+                ->map(fn ($id) => (int) $id)
+                ->all()
+            : [];
+        $wishedLookup = array_flip($wishedProductIds);
 
         $home = [];
         $category = [];
@@ -477,6 +528,7 @@ class FrontendController extends Controller
                 'sold' => $sold,
                 'isNew' => $badge === 'new',
                 'isFlashSale' => $isFlashSale,
+                'isWishlisted' => isset($wishedLookup[(int) $product->id]),
             ];
 
             $category[] = [
@@ -497,6 +549,7 @@ class FrontendController extends Controller
                 'sold' => $sold,
                 'isNew' => $badge === 'new',
                 'isFlashSale' => $isFlashSale,
+                'isWishlisted' => isset($wishedLookup[(int) $product->id]),
             ];
         }
 
@@ -546,6 +599,25 @@ class FrontendController extends Controller
             str_contains($n, 'hp') || str_contains($n, 'tablet') => 'ri-smartphone-line',
             default => 'ri-price-tag-3-line',
         };
+    }
+
+    private function resolveMainCategoryImage(?string $image): string
+    {
+        $value = trim((string) $image);
+        if ($value === '') {
+            return '';
+        }
+
+        if (
+            str_starts_with($value, 'http://') ||
+            str_starts_with($value, 'https://') ||
+            str_starts_with($value, '//') ||
+            str_starts_with($value, 'data:')
+        ) {
+            return $value;
+        }
+
+        return asset('storage/' . ltrim($value, '/'));
     }
 
     private function mapCategoryPageCategory(?string $categoryName): string

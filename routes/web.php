@@ -17,6 +17,9 @@ use App\Http\Controllers\MidtransController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TransactionReviewController;
 use App\Http\Controllers\UserNotificationController;
+use App\Http\Controllers\BannerController;
+use App\Http\Controllers\StoreLocationController;
+use App\Http\Controllers\WishlistController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -50,6 +53,11 @@ Route::middleware('auth')->group(function () {
         Route::post('variants/quick-add', [VariantController::class, 'quickStore'])->name('variants.quick-add');
         Route::resource('variants', VariantController::class)->except(['show']);
         Route::resource('flash-sales', FlashSaleController::class)->except(['show']);
+        Route::resource('banners', BannerController::class)->except(['show']);
+        Route::get('store-location', [StoreLocationController::class, 'edit'])->name('store-locations.edit');
+        Route::put('store-location', [StoreLocationController::class, 'update'])->name('store-locations.update');
+        Route::get('store-location/provinces', [StoreLocationController::class, 'provinces'])->name('store-locations.provinces');
+        Route::get('store-location/cities', [StoreLocationController::class, 'cities'])->name('store-locations.cities');
         Route::resource('transactions', TransactionController::class)->only(['index']);
         Route::patch('transactions/{transaction}/process', [TransactionController::class, 'process'])->name('transactions.process');
         Route::patch('transactions/{transaction}/ship', [TransactionController::class, 'ship'])->name('transactions.ship');
@@ -95,6 +103,10 @@ Route::name('frontend.')->group(function () {
         Route::get('/checkout/midtrans/status/{orderId}', [MidtransController::class, 'status'])->name('checkout.midtrans.status');
         Route::post('/checkout/midtrans/cancel/{orderId}', [MidtransController::class, 'cancel'])->name('checkout.midtrans.cancel');
         Route::post('/checkout/midtrans/simulate', [MidtransController::class, 'simulate'])->name('checkout.midtrans.simulate');
+        Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
+        Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
+        Route::post('/wishlist/status', [WishlistController::class, 'status'])->name('wishlist.status');
+        Route::get('/wishlist/count', [WishlistController::class, 'count'])->name('wishlist.count');
 
         // Notifikasi user
         Route::get('/notifications', [UserNotificationController::class, 'index'])->name('notifications.index');

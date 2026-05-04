@@ -24,10 +24,16 @@ class MainCategoryController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255', Rule::unique('main_categories', 'name')],
+            'image_url' => ['nullable', 'string', 'max:2048'],
+            'image_file' => ['nullable', 'image', 'max:4096'],
         ]);
+
+        $image = $this->resolveImageValue($request, (string) ($validated['image_url'] ?? ''));
+
         MainCategory::create([
             'name' => $validated['name'],
             'slug' => $this->uniqueSlug($validated['name']),
+            'image' => $image,
         ]);
         return redirect()->route('main-categories.index')->with('success', 'Kategori utama berhasil ditambahkan.');
     }
@@ -46,10 +52,16 @@ class MainCategoryController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255', Rule::unique('main_categories', 'name')->ignore($mainCategory->id)],
+            'image_url' => ['nullable', 'string', 'max:2048'],
+            'image_file' => ['nullable', 'image', 'max:4096'],
         ]);
+
+        $image = $this->resolveImageValue($request, (string) ($validated['image_url'] ?? ''), $mainCategory->image);
+
         $mainCategory->update([
             'name' => $validated['name'],
             'slug' => $this->uniqueSlug($validated['name'], $mainCategory->id),
+            'image' => $image,
         ]);
         return redirect()->route('main-categories.index')->with('success', 'Kategori utama berhasil diperbarui.');
     }
@@ -69,5 +81,19 @@ class MainCategoryController extends Controller
             $slug = $base . '-' . $counter++;
         }
         return $slug;
+    }
+
+    private function resolveImageValue(Request $request, string $imageUrl, ?string $fallback = null): ?string
+    {
+        if ($request->hasFile('image_file')) {
+            return $request->file('image_file')->store('main-categories', 'public');
+        }
+
+        $trimmed = trim($imageUrl);
+        if ($trimmed !== '') {
+            return $trimmed;
+        }
+
+        return $fallback;
     }
 }

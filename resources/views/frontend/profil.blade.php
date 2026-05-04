@@ -281,7 +281,7 @@
                             </div>
                             <div class="w-px bg-slate-100"></div>
                             <div class="flex-1 text-center">
-                                <p class="font-bold text-slate-800 text-xl">45</p>
+                                <p id="profileWishlistStat" class="font-bold text-slate-800 text-xl">0</p>
                                 <p class="text-xs text-slate-500">Wishlist</p>
                             </div>
                         </div>
@@ -827,7 +827,7 @@
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                         <div
                             class="px-6 py-5 border-b border-slate-100 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
-                            <h2 class="font-bold text-slate-800 text-lg">Wishlist Saya (45)</h2>
+                            <h2 id="wishlistTitle" class="font-bold text-slate-800 text-lg">Wishlist Saya (0)</h2>
                             <button class="text-sm text-blue-600 font-medium hover:text-blue-700">Bagikan Wishlist</button>
                         </div>
                         <div class="p-6">
@@ -1162,6 +1162,41 @@
                 })
                 ->values()
             : collect();
+        $profileWishlistsPayload = isset($wishlists)
+            ? $wishlists
+                ->map(function ($w) {
+                    $product = $w->product;
+                    if (!$product) {
+                        return null;
+                    }
+
+                    $variant = $product->productVariants->first();
+                    if (!$variant) {
+                        return null;
+                    }
+
+                    $image = (string) ($variant->image ?? '');
+                    $imageUrl = $image === ''
+                        ? 'https://via.placeholder.com/300x300?text=No+Image'
+                        : (str_starts_with($image, 'http://') ||
+                            str_starts_with($image, 'https://') ||
+                            str_starts_with($image, '//') ||
+                            str_starts_with($image, 'data:')
+                            ? $image
+                            : asset(ltrim($image, '/')));
+
+                    return [
+                        'id' => (int) $w->id,
+                        'product_id' => (int) $product->id,
+                        'slug' => (string) $product->slug,
+                        'name' => (string) $product->name,
+                        'price' => (int) $variant->price,
+                        'image' => $imageUrl,
+                    ];
+                })
+                ->filter()
+                ->values()
+            : collect();
     @endphp
     <script>
         const profileUser = @json($profileUserPayload);
@@ -1174,6 +1209,8 @@
         const roDistrictsUrl = @json(route('frontend.rajaongkir.districts'));
         const roSubdistrictsUrl = @json(route('frontend.rajaongkir.subdistricts'));
         const initialProfileTab = @json(request()->query('tab', 'biodata'));
+        const wishlistToggleUrl = @json(route('frontend.wishlist.toggle'));
+        const wishlistItemsData = @json($profileWishlistsPayload);
 
         let roProvinces = [];
         let roCities = [];
@@ -1571,56 +1608,67 @@
             renderOrders(status);
         }
 
-        const wishlistItems = [{
-                name: "Nike Air Max 270",
-                price: 1299000,
-                image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300&h=300&fit=crop",
-                rating: 4.8
-            },
-            {
-                name: "Samsung Galaxy Tab",
-                price: 4599000,
-                image: "https://images.unsplash.com/photo-1553830591-d8b75e2b5e3c?w=300&h=300&fit=crop",
-                rating: 4.7
-            },
-            {
-                name: "Parfum Maison",
-                price: 899000,
-                image: "https://images.unsplash.com/photo-1541643600914-78b084683702?w=300&h=300&fit=crop",
-                rating: 4.9
-            },
-            {
-                name: "Running Shorts Pro",
-                price: 199000,
-                image: "https://images.unsplash.com/photo-1506629082955-511b1aa562c8?w=300&h=300&fit=crop",
-                rating: 4.6
-            },
-            {
-                name: "Kamera DSLR Canon",
-                price: 8999000,
-                image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=300&h=300&fit=crop",
-                rating: 4.9
-            },
-            {
-                name: "Tas Kulit Premium",
-                price: 1450000,
-                image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=300&h=300&fit=crop",
-                rating: 4.7
-            },
-        ];
+        let wishlistItems = Array.isArray(wishlistItemsData) ? [...wishlistItemsData] : [];
 
-        document.getElementById('wishlistGrid').innerHTML = wishlistItems.map(w => `
+        function syncWishlistCount() {
+            const count = wishlistItems.length;
+            const title = document.getElementById('wishlistTitle');
+            const stat = document.getElementById('profileWishlistStat');
+            if (title) title.textContent = `Wishlist Saya (${count})`;
+            if (stat) stat.textContent = String(count);
+        }
+
+        function renderWishlist() {
+            const grid = document.getElementById('wishlistGrid');
+            if (!grid) return;
+            syncWishlistCount();
+            if (!wishlistItems.length) {
+                grid.innerHTML =
+                    '<div class="col-span-2 sm:col-span-3 text-center py-12"><div class="text-5xl mb-3">♡</div><p class="text-slate-500">Wishlist kamu masih kosong</p></div>';
+                return;
+            }
+
+            grid.innerHTML = wishlistItems.map((w) => `
       <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden group hover:border-blue-300 transition-colors">
         <div class="relative overflow-hidden">
-          <img src="${w.image}" class="w-full h-36 object-cover group-hover:scale-105 transition-transform duration-300" />
-          <button onclick="showToast('Dihapus dari wishlist')" class="absolute top-2 right-2 w-7 h-7 bg-white/90 rounded-full flex items-center justify-center text-red-400 hover:text-red-500 text-xs opacity-0 group-hover:opacity-100 transition-all">?</button>
+          <a href="{{ url('/detail-produk') }}/${w.slug}">
+            <img src="${w.image}" class="w-full h-36 object-cover group-hover:scale-105 transition-transform duration-300" />
+          </a>
+          <button onclick="removeWishlist(${w.product_id})" class="absolute top-2 right-2 w-7 h-7 bg-white/90 rounded-full flex items-center justify-center text-red-400 hover:text-red-500 text-xs opacity-0 group-hover:opacity-100 transition-all">✕</button>
         </div>
         <div class="p-3">
-          <p class="text-xs font-semibold text-slate-800 line-clamp-2 mb-1">${w.name}</p>
-          <p class="font-bold text-slate-900 text-sm mb-2">Rp ${w.price.toLocaleString('id-ID')}</p>
-          <button onclick="showToast('Ditambahkan ke keranjang! ?')" class="w-full text-xs bg-blue-50 hover:bg-blue-500 text-blue-600 hover:text-white font-semibold py-1.5 rounded-lg border border-blue-200 hover:border-blue-500 transition-all">+ Keranjang</button>
+          <a href="{{ url('/detail-produk') }}/${w.slug}" class="text-xs font-semibold text-slate-800 line-clamp-2 mb-1 block hover:text-blue-600">${w.name}</a>
+          <p class="font-bold text-slate-900 text-sm mb-2">Rp ${Number(w.price || 0).toLocaleString('id-ID')}</p>
+          <button onclick="removeWishlist(${w.product_id})" class="w-full text-xs bg-blue-50 hover:bg-blue-500 text-blue-600 hover:text-white font-semibold py-1.5 rounded-lg border border-blue-200 hover:border-blue-500 transition-all">Hapus</button>
         </div>
       </div>`).join('');
+        }
+
+        async function removeWishlist(productId) {
+            const target = wishlistItems.find((w) => Number(w.product_id) === Number(productId));
+            const res = await fetch(wishlistToggleUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({
+                    product_id: Number(productId),
+                }),
+            });
+            const json = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                showToast('Gagal memproses wishlist');
+                return;
+            }
+            if (!json.wished) {
+                wishlistItems = wishlistItems.filter((w) => Number(w.product_id) !== Number(productId));
+                renderWishlist();
+                showToast(`"${target?.name || 'Produk'}" dihapus dari wishlist!`);
+                window.dispatchEvent(new Event('wishlist:updated'));
+            }
+        }
 
         function openTrackingModal(orderId) {
             const o = profileOrders.find(x => x.id === orderId);
@@ -1983,6 +2031,7 @@
         document.getElementById('subdistrictInput')?.addEventListener('change', onSubdistrictChange);
         setReviewRating(5);
         renderOrders();
+        renderWishlist();
         if (initialProfileTab && ['biodata', 'keamanan', 'alamat', 'pesanan', 'wishlist', 'notif'].includes(
                 initialProfileTab)) {
             showTab(initialProfileTab);
@@ -2233,10 +2282,6 @@
         });
     </script>
 @endsection
-
-
-
-
 
 
 

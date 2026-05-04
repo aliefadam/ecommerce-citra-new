@@ -34,6 +34,22 @@
             border-color: #2563eb;
             background: #eff6ff;
         }
+        .payment-logo-box {
+            width: 72px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .payment-logo-img {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            object-position: center;
+        }
 
         .shipping-card.active {
             border-color: #2563eb;
@@ -142,7 +158,8 @@
                     <div class="p-6 space-y-3" id="addressList">
                         @forelse(($addresses ?? collect()) as $address)
                             <label
-                                class="flex items-start gap-3 p-4 border-2 {{ $address->is_primary ? 'border-blue-400 bg-blue-50' : 'border-slate-200' }} rounded-xl cursor-pointer hover:border-slate-300 transition-colors">
+                                class="address-card flex items-start gap-3 p-4 border-2 {{ $address->is_primary ? 'border-blue-400 bg-blue-50' : 'border-slate-200' }} rounded-xl cursor-pointer hover:border-slate-300 transition-colors"
+                                >
                                 <input type="radio" name="address" class="mt-1 accent-blue-500"
                                     data-address-id="{{ $address->id }}"
                                     data-destination-id="{{ $address->destination_id }}"
@@ -217,9 +234,9 @@
                             <label onclick="setPayment('qris', 'QRIS')"
                                 class="payment-card active flex items-center gap-3 p-3 border-2 rounded-xl cursor-pointer hover:border-blue-300 transition-all">
                                 <input type="radio" name="payment" value="qris" class="accent-blue-500" checked />
-                                <div
-                                    class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-sm font-bold text-blue-700">
-                                    Q</div>
+                                <span class="payment-logo-box">
+                                    <img class="payment-logo-img" alt="QRIS" src="{{ asset('imgs/qris.png') }}" />
+                                </span>
                                 <span class="text-sm font-semibold text-slate-700">QRIS</span>
                             </label>
                         </div>
@@ -229,27 +246,42 @@
                             <label onclick="setPayment('bca', 'BCA Virtual Account')"
                                 class="payment-card flex items-center gap-3 p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-blue-300 transition-all">
                                 <input type="radio" name="payment" value="bca" class="accent-blue-500" />
-                                <span class="font-bold text-blue-700">BCA</span>
+                                <span class="payment-logo-box">
+                                    <img class="payment-logo-img" alt="BCA" src="{{ asset('imgs/bca.png') }}" />
+                                </span>
+                                <span class="text-sm font-semibold text-slate-700">BCA</span>
                             </label>
                             <label onclick="setPayment('mandiri', 'Mandiri Virtual Account')"
                                 class="payment-card flex items-center gap-3 p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-blue-300 transition-all">
                                 <input type="radio" name="payment" value="mandiri" class="accent-blue-500" />
-                                <span class="font-bold text-yellow-700">Mandiri</span>
+                                <span class="payment-logo-box">
+                                    <img class="payment-logo-img" alt="Mandiri" src="{{ asset('imgs/mandiri.png') }}" />
+                                </span>
+                                <span class="text-sm font-semibold text-slate-700">Mandiri</span>
                             </label>
                             <label onclick="setPayment('bni', 'BNI Virtual Account')"
                                 class="payment-card flex items-center gap-3 p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-blue-300 transition-all">
                                 <input type="radio" name="payment" value="bni" class="accent-blue-500" />
-                                <span class="font-bold text-orange-700">BNI</span>
+                                <span class="payment-logo-box">
+                                    <img class="payment-logo-img" alt="BNI" src="{{ asset('imgs/bni.png') }}" />
+                                </span>
+                                <span class="text-sm font-semibold text-slate-700">BNI</span>
                             </label>
                             <label onclick="setPayment('bri', 'BRI Virtual Account')"
                                 class="payment-card flex items-center gap-3 p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-blue-300 transition-all">
                                 <input type="radio" name="payment" value="bri" class="accent-blue-500" />
-                                <span class="font-bold text-blue-600">BRI</span>
+                                <span class="payment-logo-box">
+                                    <img class="payment-logo-img" alt="BRI" src="{{ asset('imgs/bri.png') }}" />
+                                </span>
+                                <span class="text-sm font-semibold text-slate-700">BRI</span>
                             </label>
                             <label onclick="setPayment('cimb', 'CIMB Virtual Account')"
                                 class="payment-card flex items-center gap-3 p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-blue-300 transition-all">
                                 <input type="radio" name="payment" value="cimb" class="accent-blue-500" />
-                                <span class="font-bold text-red-700">CIMB</span>
+                                <span class="payment-logo-box">
+                                    <img class="payment-logo-img" alt="CIMB Niaga" src="{{ asset('imgs/cimb.png') }}" />
+                                </span>
+                                <span class="text-sm font-semibold text-slate-700">CIMB</span>
                             </label>
                         </div>
                     </div>
@@ -1032,6 +1064,21 @@
             input.value = val.replace(/(.{4})/g, '$1 ').trim();
         }
 
+        function syncSelectedAddressCard() {
+            const addressRadios = document.querySelectorAll('input[name="address"]');
+            addressRadios.forEach((radio) => {
+                const card = radio.closest('.address-card');
+                if (!card) return;
+                if (radio.checked) {
+                    card.classList.add('border-blue-400', 'bg-blue-50');
+                    card.classList.remove('border-slate-200');
+                } else {
+                    card.classList.remove('border-blue-400', 'bg-blue-50');
+                    card.classList.add('border-slate-200');
+                }
+            });
+        }
+
         renderCart();
         setPaymentTab('qris');
         setPayment('qris', 'QRIS');
@@ -1040,8 +1087,12 @@
         document.getElementById('checkoutDistrictInput')?.addEventListener('change', onCheckoutDistrictChange);
         document.getElementById('checkoutSubdistrictInput')?.addEventListener('change', onCheckoutSubdistrictChange);
         document.querySelectorAll('input[name="address"]').forEach((el) => {
-            el.addEventListener('change', loadShippingOptions);
+            el.addEventListener('change', () => {
+                syncSelectedAddressCard();
+                loadShippingOptions();
+            });
         });
+        syncSelectedAddressCard();
         loadShippingOptions();
     </script>
 @endsection

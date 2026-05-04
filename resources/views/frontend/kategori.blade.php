@@ -145,10 +145,26 @@
     <div id="allCategoriesSection" class="max-w-7xl mx-auto px-4 sm:px-6 pt-5 pb-4">
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-6">
             @foreach (($categoryTree ?? collect()) as $mainCategory)
+                @php
+                    $mainCategoryImage = trim((string) ($mainCategory->image ?? ''));
+                    $mainCategoryImageUrl =
+                        $mainCategoryImage !== '' &&
+                        (str_starts_with($mainCategoryImage, 'http://') ||
+                            str_starts_with($mainCategoryImage, 'https://') ||
+                            str_starts_with($mainCategoryImage, '//') ||
+                            str_starts_with($mainCategoryImage, 'data:'))
+                            ? $mainCategoryImage
+                            : ($mainCategoryImage !== '' ? asset('storage/' . ltrim($mainCategoryImage, '/')) : '');
+                @endphp
                 <button onclick="selectCategory('{{ $mainCategory->slug }}', '{{ $mainCategory->name }}')"
                     class="cat-card flex items-center gap-3 bg-white rounded-xl px-4 py-3 border border-slate-100 shadow-sm hover:border-blue-300 hover:bg-blue-50/40 hover:shadow-md transition-all group text-left">
-                    <div class="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center shrink-0 group-hover:bg-blue-100 transition-colors">
-                        <i class="ri-folder-2-line text-base text-blue-600"></i>
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-colors overflow-hidden">
+                        @if ($mainCategoryImageUrl !== '')
+                            <img src="{{ $mainCategoryImageUrl }}" alt="{{ $mainCategory->name }}"
+                                class="w-9 h-9 object-cover rounded-lg" />
+                        @else
+                            <i class="ri-folder-2-line text-base text-blue-600"></i>
+                        @endif
                     </div>
                     <div class="min-w-0">
                         <p class="text-sm font-semibold text-slate-800 truncate">{{ $mainCategory->name }}</p>
@@ -364,10 +380,14 @@
         const allProducts = @json($productsJson);
         const filterMainCategories = @json($filterMainCategories);
         const initialParentSlug = @json($selectedParentSlug ?? '');
+        const kategoriBaseUrl = @json(route('frontend.kategori'));
         const isAuthenticated = @json(auth()->check());
         const loginUrl = @json(route('login'));
         const cartStoreUrl = @json(route('frontend.cart.store'));
+        const wishlistToggleUrl = @json(route('frontend.wishlist.toggle'));
+        const wishlistStatusUrl = @json(route('frontend.wishlist.status'));
         const csrfToken = @json(csrf_token());
+        const wishedProductIds = new Set();
 
         let selectedColors = [];
         let filteredProducts = [...allProducts];
@@ -437,7 +457,12 @@
                   <span class="font-bold text-slate-900 text-lg">Rp ${p.price.toLocaleString('id-ID')}</span>
                   ${p.origPrice > p.price ? `<span class="text-slate-400 text-sm line-through ml-2">Rp ${p.origPrice.toLocaleString('id-ID')}</span>` : ''}
                 </div>
-                <button onclick="addCart(${p.id})" class="bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors">+ Keranjang</button>
+                <div class="flex items-center gap-2">
+                  <button onclick="toggleWishlist(${p.id})" data-wishlist-btn data-product-id="${p.id}" class="w-9 h-9 rounded-full border border-slate-200 text-pink-500 flex items-center justify-center hover:bg-pink-50">
+                    <svg class="w-4 h-4" fill="${p.isWishlisted ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                  </button>
+                  <button onclick="addCart(${p.id})" class="bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors">+ Keranjang</button>
+                </div>
               </div>
             </div>
           </div>`;
@@ -450,6 +475,9 @@
             <div class="absolute top-2 left-2 flex gap-1">${badge}</div>
             <button onclick="addCart(${p.id})" class="absolute bottom-2 right-2 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-blue-500 hover:text-white text-slate-600">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+            </button>
+            <button onclick="toggleWishlist(${p.id})" data-wishlist-btn data-product-id="${p.id}" class="absolute top-2 right-2 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-pink-50 text-pink-500">
+              <svg class="w-4 h-4" fill="${p.isWishlisted ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
             </button>
           </div>
           <div class="p-3">
@@ -483,17 +511,8 @@
         }
 
         function selectCategory(cat, label) {
-            document.getElementById('breadcrumb-cat').textContent = label;
-            document.getElementById('pageTitle').textContent = label;
-            const checks = Array.from(document.querySelectorAll('.filter-cat'));
-            checks.forEach((el) => {
-                el.checked = (cat === 'semua') ? true : (el.value === cat);
-            });
-            applyFilter();
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
+            const target = cat === 'semua' ? kategoriBaseUrl : `${kategoriBaseUrl}?parent=${encodeURIComponent(cat)}`;
+            window.location.href = target;
         }
 
         function setPriceRange(min, max) {
@@ -633,6 +652,66 @@
             window.dispatchEvent(new Event('cart:updated'));
         }
 
+        async function toggleWishlist(id) {
+            if (!isAuthenticated) {
+                window.location.href = loginUrl;
+                return;
+            }
+            const p = allProducts.find((x) => x.id === id);
+            if (!p) return;
+            const res = await fetch(wishlistToggleUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({
+                    product_id: Number(id),
+                }),
+            });
+            const json = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                showToast('Gagal memproses wishlist');
+                return;
+            }
+            if (json.wished) wishedProductIds.add(Number(id));
+            else wishedProductIds.delete(Number(id));
+            syncWishlistButtons();
+            showToast(json.wished ? `"${p.name}" ditambahkan ke wishlist!` : `"${p.name}" dihapus dari wishlist!`);
+            window.dispatchEvent(new Event('wishlist:updated'));
+        }
+
+        function syncWishlistButtons() {
+            document.querySelectorAll('[data-wishlist-btn]').forEach((btn) => {
+                const id = Number(btn.getAttribute('data-product-id') || 0);
+                const icon = btn.querySelector('svg');
+                if (!icon) return;
+                icon.setAttribute('fill', wishedProductIds.has(id) ? 'currentColor' : 'none');
+            });
+        }
+
+        async function initWishlistStatus() {
+            if (!isAuthenticated) return;
+            const ids = allProducts.map((p) => Number(p.id)).filter(Boolean);
+            if (!ids.length) return;
+            const res = await fetch(wishlistStatusUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({
+                    product_ids: ids,
+                }),
+            });
+            const json = await res.json().catch(() => ({}));
+            const wishedIds = Array.isArray(json.wished_product_ids) ? json.wished_product_ids : [];
+            wishedIds.forEach((w) => wishedProductIds.add(Number(w)));
+            syncWishlistButtons();
+        }
+
         function showToast(msg) {
             const toast = document.getElementById('toast');
             document.getElementById('toast-msg').textContent = msg;
@@ -642,6 +721,7 @@
 
         renderFilterCategories();
         applyFilter();
+        initWishlistStatus();
 
         // Navbar mega dropdown
         function toggleCategoryMenu(event) {
