@@ -11,6 +11,12 @@ return [
                 'icon'   => 'layout-grid',
             ],
             // [
+            //     'name'   => 'Dashboard 2',
+            //     'route'  => 'pages.dashboard2',
+            //     'active' => 'pages.dashboard2',
+            //     'icon'   => 'bar-chart-2',
+            // ],
+            // [
             //     'name'   => 'Data Tables',
             //     'route'  => 'pages.datatables',
             //     'active' => 'pages.datatables',

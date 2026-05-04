@@ -738,34 +738,66 @@
                                     </div>
                                     <div>
                                         <label class="text-xs font-medium text-slate-600 mb-1 block">Provinsi *</label>
-                                        <input id="provinceInput" data-address-field="province" type="text"
-                                            list="provinceList" placeholder="Cari provinsi"
-                                            class="w-full border border-slate-200 bg-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-400" />
-                                        <datalist id="provinceList"></datalist>
+                                        <div class="relative">
+                                            <input id="provinceInput" data-address-field="province" type="text"
+                                                placeholder="Cari provinsi" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false"
+                                                class="w-full border border-slate-200 bg-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-400 pr-9 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50" />
+                                            <span id="provinceChevron" class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+                                            </span>
+                                            <span id="provinceSpinner" class="hidden absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                                <svg class="animate-spin w-4 h-4 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>
+                                            </span>
+                                            <div id="provinceDropdown" class="hidden absolute z-50 w-full bg-white border border-slate-200 rounded-xl shadow-lg mt-1 max-h-52 overflow-y-auto"></div>
+                                        </div>
                                     </div>
                                     <div>
-                                        <label class="text-xs font-medium text-slate-600 mb-1 block">Kota/Kabupaten
-                                            *</label>
-                                        <input id="cityInput" data-address-field="city" type="text" list="cityList"
-                                            placeholder="Cari kota/kabupaten"
-                                            class="w-full border border-slate-200 bg-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-400" />
-                                        <datalist id="cityList"></datalist>
+                                        <label class="text-xs font-medium text-slate-600 mb-1 block">Kota/Kabupaten *</label>
+                                        <div class="relative">
+                                            <input id="cityInput" data-address-field="city" type="text" disabled
+                                                placeholder="Pilih provinsi dulu" data-placeholder-enabled="Cari kota/kabupaten"
+                                                autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false"
+                                                class="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-400 pr-9 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50" />
+                                            <span id="cityChevron" class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+                                            </span>
+                                            <span id="citySpinner" class="hidden absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                                <svg class="animate-spin w-4 h-4 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>
+                                            </span>
+                                            <div id="cityDropdown" class="hidden absolute z-50 w-full bg-white border border-slate-200 rounded-xl shadow-lg mt-1 max-h-52 overflow-y-auto"></div>
+                                        </div>
                                     </div>
                                     <div>
-                                        <label class="text-xs font-medium text-slate-600 mb-1 block">Kecamatan
-                                            *</label>
-                                        <input id="districtInput" data-address-field="district" type="text"
-                                            list="districtList" placeholder="Cari kecamatan"
-                                            class="w-full border border-slate-200 bg-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-400" />
-                                        <datalist id="districtList"></datalist>
+                                        <label class="text-xs font-medium text-slate-600 mb-1 block">Kecamatan *</label>
+                                        <div class="relative">
+                                            <input id="districtInput" data-address-field="district" type="text" disabled
+                                                placeholder="Pilih kota dulu" data-placeholder-enabled="Cari kecamatan"
+                                                autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false"
+                                                class="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-400 pr-9 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50" />
+                                            <span id="districtChevron" class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+                                            </span>
+                                            <span id="districtSpinner" class="hidden absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                                <svg class="animate-spin w-4 h-4 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>
+                                            </span>
+                                            <div id="districtDropdown" class="hidden absolute z-50 w-full bg-white border border-slate-200 rounded-xl shadow-lg mt-1 max-h-52 overflow-y-auto"></div>
+                                        </div>
                                     </div>
                                     <div>
-                                        <label class="text-xs font-medium text-slate-600 mb-1 block">Kelurahan
-                                            *</label>
-                                        <input id="subdistrictInput" data-address-field="subdistrict" type="text"
-                                            list="subdistrictList" placeholder="Cari kelurahan"
-                                            class="w-full border border-slate-200 bg-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-400" />
-                                        <datalist id="subdistrictList"></datalist>
+                                        <label class="text-xs font-medium text-slate-600 mb-1 block">Kelurahan *</label>
+                                        <div class="relative">
+                                            <input id="subdistrictInput" data-address-field="subdistrict" type="text" disabled
+                                                placeholder="Pilih kecamatan dulu" data-placeholder-enabled="Cari kelurahan"
+                                                autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false"
+                                                class="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-400 pr-9 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50" />
+                                            <span id="subdistrictChevron" class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+                                            </span>
+                                            <span id="subdistrictSpinner" class="hidden absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                                <svg class="animate-spin w-4 h-4 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>
+                                            </span>
+                                            <div id="subdistrictDropdown" class="hidden absolute z-50 w-full bg-white border border-slate-200 rounded-xl shadow-lg mt-1 max-h-52 overflow-y-auto"></div>
+                                        </div>
                                     </div>
                                     <div>
                                         <label class="text-xs font-medium text-slate-600 mb-1 block">Kode Pos</label>
@@ -1238,10 +1270,92 @@
             submitBtn.disabled = false;
         }
 
+        const _comboboxMap = {
+            'provinceList': { dropdownId: 'provinceDropdown', inputId: 'provinceInput' },
+            'cityList': { dropdownId: 'cityDropdown', inputId: 'cityInput' },
+            'districtList': { dropdownId: 'districtDropdown', inputId: 'districtInput' },
+            'subdistrictList': { dropdownId: 'subdistrictDropdown', inputId: 'subdistrictInput' },
+        };
+
         function fillDatalist(id, items, toLabel) {
-            const list = document.getElementById(id);
-            if (!list) return;
-            list.innerHTML = items.map((item) => `<option value="${toLabel(item)}"></option>`).join('');
+            const info = _comboboxMap[id];
+            if (!info) return;
+            const dropdown = document.getElementById(info.dropdownId);
+            if (!dropdown) return;
+            dropdown._items = items;
+            dropdown._inputId = info.inputId;
+            dropdown._toLabel = toLabel;
+            dropdown.classList.add('hidden');
+            dropdown.innerHTML = '';
+        }
+
+        function _showCombobox(dropdownId, query) {
+            const dropdown = document.getElementById(dropdownId);
+            if (!dropdown || !dropdown._items) return;
+            const q = (query || '').toLowerCase().trim();
+            const filtered = q
+                ? dropdown._items.filter(item => (dropdown._toLabel(item) || '').toLowerCase().includes(q))
+                : dropdown._items;
+            if (!filtered.length) {
+                dropdown.innerHTML = '<div class="px-4 py-3 text-sm text-slate-400 text-center">Tidak ada data</div>';
+            } else {
+                const toLabel = dropdown._toLabel;
+                dropdown.innerHTML = filtered.map((item, i) =>
+                    `<div class="combo-opt px-4 py-2.5 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-700 cursor-pointer transition-colors" data-idx="${i}">${toLabel(item)}</div>`
+                ).join('');
+                dropdown.querySelectorAll('.combo-opt').forEach((el, i) => {
+                    el.addEventListener('mousedown', (e) => {
+                        e.preventDefault();
+                        const input = document.getElementById(dropdown._inputId);
+                        if (input) {
+                            input.value = toLabel(filtered[i]);
+                            input.dispatchEvent(new Event('change'));
+                        }
+                        dropdown.classList.add('hidden');
+                    });
+                });
+            }
+            dropdown.classList.remove('hidden');
+        }
+
+        function _setupCombobox(inputId, dropdownId) {
+            const input = document.getElementById(inputId);
+            const dropdown = document.getElementById(dropdownId);
+            if (!input || !dropdown) return;
+            input.addEventListener('focus', () => { if (!input.disabled) _showCombobox(dropdownId, input.value); });
+            input.addEventListener('input', () => { if (!input.disabled) _showCombobox(dropdownId, input.value); });
+            input.addEventListener('blur', () => setTimeout(() => dropdown.classList.add('hidden'), 200));
+            input.addEventListener('keydown', (e) => { if (e.key === 'Escape') dropdown.classList.add('hidden'); });
+        }
+
+        function _setComboboxLoading(inputId, isLoading) {
+            const input = document.getElementById(inputId);
+            const chevronId = inputId.replace('Input', 'Chevron');
+            const spinnerId = inputId.replace('Input', 'Spinner');
+            const chevron = document.getElementById(chevronId);
+            const spinner = document.getElementById(spinnerId);
+            if (input) input.disabled = isLoading;
+            if (chevron) chevron.classList.toggle('hidden', isLoading);
+            if (spinner) spinner.classList.toggle('hidden', !isLoading);
+            if (isLoading) {
+                const dropdownId = inputId.replace('Input', 'Dropdown');
+                const dropdown = document.getElementById(dropdownId);
+                if (dropdown) dropdown.classList.add('hidden');
+            }
+        }
+
+        function _setComboboxEnabled(inputId, enabled) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            input.disabled = !enabled;
+            if (enabled && input.dataset.placeholderEnabled) {
+                input.placeholder = input.dataset.placeholderEnabled;
+            }
+            if (!enabled) {
+                const dropdownId = inputId.replace('Input', 'Dropdown');
+                const dropdown = document.getElementById(dropdownId);
+                if (dropdown) dropdown.classList.add('hidden');
+            }
         }
 
         function resetLocationFields(level) {
@@ -1250,12 +1364,16 @@
                 byField('city_id').value = '';
                 byField('city').value = '';
                 fillDatalist('cityList', [], () => '');
+                _setComboboxLoading('cityInput', false);
+                _setComboboxEnabled('cityInput', false);
             }
             if (level <= 3) {
                 roDistricts = [];
                 byField('district_id').value = '';
                 byField('district').value = '';
                 fillDatalist('districtList', [], () => '');
+                _setComboboxLoading('districtInput', false);
+                _setComboboxEnabled('districtInput', false);
             }
             if (level <= 4) {
                 roSubdistricts = [];
@@ -1264,35 +1382,43 @@
                 byField('destination_id').value = '';
                 byField('postal_code').value = '';
                 fillDatalist('subdistrictList', [], () => '');
+                _setComboboxLoading('subdistrictInput', false);
+                _setComboboxEnabled('subdistrictInput', false);
             }
         }
 
         async function loadProvinces() {
-            const res = await fetch(roProvincesUrl, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            });
-            const json = await res.json();
-            roProvinces = Array.isArray(json?.data) ? json.data : [];
-            fillDatalist('provinceList', roProvinces, (p) => p.name || p.province_name || '');
+            _setComboboxLoading('provinceInput', true);
+            try {
+                const res = await fetch(roProvincesUrl, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const json = await res.json();
+                roProvinces = Array.isArray(json?.data) ? json.data : [];
+                fillDatalist('provinceList', roProvinces, (p) => p.name || p.province_name || '');
+            } finally {
+                _setComboboxLoading('provinceInput', false);
+            }
         }
 
         async function onProvinceChange() {
             const name = (byField('province').value || '').trim().toLowerCase();
-            const found = roProvinces.find((p) => String(p.name || p.province_name || '').trim().toLowerCase() ===
-            name);
+            const found = roProvinces.find((p) => String(p.name || p.province_name || '').trim().toLowerCase() === name);
             byField('province_id').value = found ? String(found.id || found.province_id || '') : '';
             resetLocationFields(2);
             if (!found) return;
-            const res = await fetch(`${roCitiesUrl}?province_id=${encodeURIComponent(byField('province_id').value)}`, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            });
-            const json = await res.json();
-            roCities = Array.isArray(json?.data) ? json.data : [];
-            fillDatalist('cityList', roCities, (c) => c.name || c.city_name || '');
+            _setComboboxLoading('cityInput', true);
+            try {
+                const res = await fetch(`${roCitiesUrl}?province_id=${encodeURIComponent(byField('province_id').value)}`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const json = await res.json();
+                roCities = Array.isArray(json?.data) ? json.data : [];
+                fillDatalist('cityList', roCities, (c) => c.name || c.city_name || '');
+            } finally {
+                _setComboboxLoading('cityInput', false);
+                _setComboboxEnabled('cityInput', true);
+            }
         }
 
         async function onCityChange() {
@@ -1301,32 +1427,38 @@
             byField('city_id').value = found ? String(found.id || found.city_id || '') : '';
             resetLocationFields(3);
             if (!found) return;
-            const res = await fetch(`${roDistrictsUrl}?city_id=${encodeURIComponent(byField('city_id').value)}`, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            });
-            const json = await res.json();
-            roDistricts = Array.isArray(json?.data) ? json.data : [];
-            fillDatalist('districtList', roDistricts, (d) => d.name || d.district_name || '');
+            _setComboboxLoading('districtInput', true);
+            try {
+                const res = await fetch(`${roDistrictsUrl}?city_id=${encodeURIComponent(byField('city_id').value)}`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const json = await res.json();
+                roDistricts = Array.isArray(json?.data) ? json.data : [];
+                fillDatalist('districtList', roDistricts, (d) => d.name || d.district_name || '');
+            } finally {
+                _setComboboxLoading('districtInput', false);
+                _setComboboxEnabled('districtInput', true);
+            }
         }
 
         async function onDistrictChange() {
             const name = (byField('district').value || '').trim().toLowerCase();
-            const found = roDistricts.find((d) => String(d.name || d.district_name || '').trim().toLowerCase() ===
-            name);
+            const found = roDistricts.find((d) => String(d.name || d.district_name || '').trim().toLowerCase() === name);
             byField('district_id').value = found ? String(found.id || found.district_id || '') : '';
             resetLocationFields(4);
             if (!found) return;
-            const res = await fetch(
-                `${roSubdistrictsUrl}?district_id=${encodeURIComponent(byField('district_id').value)}`, {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
+            _setComboboxLoading('subdistrictInput', true);
+            try {
+                const res = await fetch(`${roSubdistrictsUrl}?district_id=${encodeURIComponent(byField('district_id').value)}`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
                 });
-            const json = await res.json();
-            roSubdistricts = Array.isArray(json?.data) ? json.data : [];
-            fillDatalist('subdistrictList', roSubdistricts, (s) => s.name || s.subdistrict_name || '');
+                const json = await res.json();
+                roSubdistricts = Array.isArray(json?.data) ? json.data : [];
+                fillDatalist('subdistrictList', roSubdistricts, (s) => s.name || s.subdistrict_name || '');
+            } finally {
+                _setComboboxLoading('subdistrictInput', false);
+                _setComboboxEnabled('subdistrictInput', true);
+            }
         }
 
         function onSubdistrictChange() {
@@ -1867,7 +1999,11 @@
             fillDatalist('cityList', [], () => '');
             fillDatalist('districtList', [], () => '');
             fillDatalist('subdistrictList', [], () => '');
+            _setComboboxLoading('cityInput', false); _setComboboxEnabled('cityInput', false);
+            _setComboboxLoading('districtInput', false); _setComboboxEnabled('districtInput', false);
+            _setComboboxLoading('subdistrictInput', false); _setComboboxEnabled('subdistrictInput', false);
             if (!roProvinces.length) loadProvinces();
+            else _setComboboxEnabled('provinceInput', true);
         }
 
         function hideNewAddressForm() {
@@ -2025,6 +2161,10 @@
         }
 
         hydrateProfileFromBackend();
+        _setupCombobox('provinceInput', 'provinceDropdown');
+        _setupCombobox('cityInput', 'cityDropdown');
+        _setupCombobox('districtInput', 'districtDropdown');
+        _setupCombobox('subdistrictInput', 'subdistrictDropdown');
         document.getElementById('provinceInput')?.addEventListener('change', onProvinceChange);
         document.getElementById('cityInput')?.addEventListener('change', onCityChange);
         document.getElementById('districtInput')?.addEventListener('change', onDistrictChange);

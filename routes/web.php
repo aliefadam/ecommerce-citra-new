@@ -39,6 +39,7 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::prefix('admin')->group(function () {
         Route::get('/', [BackendController::class, 'index'])->name('pages.index');
+        Route::get('/dashboard2', [BackendController::class, 'dashboard2'])->name('pages.dashboard2');
         Route::get('/charts', [BackendController::class, 'charts'])->name('pages.charts');
         Route::get('/components', [BackendController::class, 'components'])->name('pages.components');
         Route::get('/datatables', [BackendController::class, 'datatables'])->name('pages.datatables');
