@@ -13,7 +13,7 @@
                 else html.classList.remove('dark');
             })();
         </script>
-        <title>AdminKit - @yield('title', 'Dashboard')</title>
+        <title>Ecommerce Citra Admin - @yield('title', 'Dashboard')</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
             rel="stylesheet" />
@@ -207,7 +207,7 @@
                     if (!notif || !profile) return;
 
                     if (!e.target.closest('#notif-dropdown') && !e.target.closest(
-                        'button[onclick="toggleNotif()"]')) {
+                            'button[onclick="toggleNotif()"]')) {
                         notif.classList.add('hidden');
                     }
                     if (!e.target.closest('#profile-dropdown') && !e.target.closest(
@@ -258,7 +258,7 @@
                                 const filterVal = el ? el.value : '';
                                 if (!filterVal) return true;
                                 const raw = filter.accessor ? filter.accessor(item) : item[filter
-                                .field];
+                                    .field];
                                 const value = String(raw ?? '').toLowerCase();
                                 const expected = String(filterVal).toLowerCase();
                                 return (filter.mode || 'exact') === 'includes' ? value.includes(
@@ -300,7 +300,7 @@
                                 '<tr><td class="text-center py-10 text-slate-400">No records found</td></tr>';
                         } else {
                             tbody.innerHTML = pageData.map((item, idx) => options.renderRow(item, start + idx)).join(
-                            '');
+                                '');
                         }
 
                         const from = total ? start + 1 : 0;

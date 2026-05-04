@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard 2')
+@section('title', 'Dashboard')
 
 @section('content')
     <main class="flex-1 p-4 sm:p-6 mt-6">
