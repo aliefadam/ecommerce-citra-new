@@ -138,6 +138,12 @@ return [
                 'icon'   => 'shopping-cart',
             ],
             [
+                'name'   => 'Stock',
+                'route'  => 'stocks.index',
+                'active' => 'stocks.*',
+                'icon'   => 'archive',
+            ],
+            [
                 'name'   => 'Flash Sale',
                 'route'  => 'flash-sales.index',
                 'active' => 'flash-sales.*',

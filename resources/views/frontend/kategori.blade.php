@@ -394,6 +394,10 @@
         let viewMode = 'grid';
         let searchQuery = '';
 
+        function getLoginRedirectUrl() {
+            return `${loginUrl}?redirect=${encodeURIComponent(window.location.href)}`;
+        }
+
         function getFiltered() {
             const cats = Array.from(document.querySelectorAll('.filter-cat:checked')).map(c => c.value);
             const min = parseInt(document.getElementById('priceMin')?.value || '0', 10) || 0;
@@ -632,7 +636,7 @@
             const p = allProducts.find(x => x.id === id);
             if (!p) return;
             if (!isAuthenticated) {
-                window.location.href = loginUrl;
+                window.location.href = getLoginRedirectUrl();
                 return;
             }
             const res = await fetch(cartStoreUrl, {
@@ -654,7 +658,7 @@
 
         async function toggleWishlist(id) {
             if (!isAuthenticated) {
-                window.location.href = loginUrl;
+                window.location.href = getLoginRedirectUrl();
                 return;
             }
             const p = allProducts.find((x) => x.id === id);

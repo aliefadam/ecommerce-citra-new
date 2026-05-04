@@ -516,6 +516,7 @@
         const cartStoreUrl = @json(route('frontend.cart.store'));
         const wishlistToggleUrl = @json(route('frontend.wishlist.toggle'));
         const csrfToken = @json(csrf_token());
+        const pendingAuthActionKey = 'ec_pending_auth_action';
         const images = (productData.images && productData.images.length ? productData.images : [productData.image]);
         let currentImg = 0;
         let qty = 1;
@@ -552,6 +553,70 @@
 
         function formatRupiah(value) {
             return 'Rp ' + Number(value || 0).toLocaleString('id-ID');
+        }
+
+        function getLoginRedirectUrl() {
+            return `${loginUrl}?redirect=${encodeURIComponent(window.location.href)}`;
+        }
+
+        function savePendingAuthAction(action) {
+            try {
+                localStorage.setItem(pendingAuthActionKey, JSON.stringify({
+                    ...action,
+                    sourcePath: window.location.pathname,
+                    createdAt: Date.now(),
+                }));
+            } catch (e) {}
+        }
+
+        async function resumePendingAuthActionIfAny() {
+            if (!isAuthenticated) return;
+            let pending = null;
+            try {
+                pending = JSON.parse(localStorage.getItem(pendingAuthActionKey) || 'null');
+            } catch (e) {
+                pending = null;
+            }
+            if (!pending || pending.sourcePath !== window.location.pathname) return;
+            if ((Date.now() - Number(pending.createdAt || 0)) > 30 * 60 * 1000) {
+                localStorage.removeItem(pendingAuthActionKey);
+                return;
+            }
+
+            localStorage.removeItem(pendingAuthActionKey);
+
+            if (pending.type === 'add_to_cart') {
+                const variantId = Number(pending.product_variant_id || 0);
+                const quantity = Math.max(1, Number(pending.quantity || 1));
+                if (!variantId) return;
+                const res = await fetch(cartStoreUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: JSON.stringify({
+                        product_variant_id: variantId,
+                        quantity,
+                    }),
+                });
+                if (res.ok) {
+                    showToast(`${productData.name} (${quantity} item) ditambahkan ke keranjang!`);
+                    window.dispatchEvent(new Event('cart:updated'));
+                }
+                return;
+            }
+
+            if (pending.type === 'buy_now') {
+                const form = document.getElementById('buyNowForm');
+                const variantInput = document.getElementById('buyNowVariantId');
+                const qtyInput = document.getElementById('buyNowQty');
+                if (!form || !variantInput || !qtyInput) return;
+                variantInput.value = String(Number(pending.product_variant_id || 0));
+                qtyInput.value = String(Math.max(1, Number(pending.quantity || 1)));
+                form.submit();
+            }
         }
 
         function applySelectedVariantData() {
@@ -618,7 +683,7 @@
 
         async function toggleWishlist() {
             if (!isAuthenticated) {
-                window.location.href = loginUrl;
+                window.location.href = getLoginRedirectUrl();
                 return;
             }
             const res = await fetch(wishlistToggleUrl, {
@@ -670,8 +735,14 @@
         }
 
         async function addToCart() {
+            const variantId = resolveSelectedVariantId();
             if (!isAuthenticated) {
-                window.location.href = loginUrl;
+                savePendingAuthAction({
+                    type: 'add_to_cart',
+                    product_variant_id: variantId,
+                    quantity: qty,
+                });
+                window.location.href = getLoginRedirectUrl();
                 return;
             }
             const color = document.getElementById('selectedColor')?.textContent || '';
@@ -682,7 +753,6 @@
             const variantText = [color, variantSelections].filter(Boolean).join(' | ');
             const price = productData.isFlashSale && productData.flashSalePrice ? productData.flashSalePrice : productData
                 .price;
-            const variantId = resolveSelectedVariantId();
             const res = await fetch(cartStoreUrl, {
                 method: 'POST',
                 headers: {
@@ -704,11 +774,16 @@
         }
 
         function buyNow() {
+            const variantId = resolveSelectedVariantId();
             if (!isAuthenticated) {
-                window.location.href = loginUrl;
+                savePendingAuthAction({
+                    type: 'buy_now',
+                    product_variant_id: variantId,
+                    quantity: qty,
+                });
+                window.location.href = getLoginRedirectUrl();
                 return false;
             }
-            const variantId = resolveSelectedVariantId();
             const form = document.getElementById('buyNowForm');
             const variantInput = document.getElementById('buyNowVariantId');
             const qtyInput = document.getElementById('buyNowQty');
@@ -728,6 +803,7 @@
 
         applySelectedVariantData();
         syncWishIcon();
+        resumePendingAuthActionIfAny();
 
         function switchTab(tab) {
             ['desc', 'review', 'size'].forEach(t => {

@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ProductVariant;
+use App\Models\StockMovement;
 use App\Models\Transaction;
 use App\Models\UserNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TransactionController extends Controller
 {
@@ -31,15 +34,57 @@ class TransactionController extends Controller
         return view('backend.transactions.index', compact('transactions'));
     }
 
-    public function process(Transaction $transaction)
+    public function process(Request $request, Transaction $transaction)
     {
         if (!in_array(strtolower((string) $transaction->status), ['paid', 'settlement', 'capture'], true)) {
             return response()->json(['message' => 'Transaksi belum bisa diproses.'], 422);
         }
 
-        $transaction->status = 'process';
-        $transaction->processed_at = now();
-        $transaction->save();
+        try {
+            DB::transaction(function () use ($transaction, $request) {
+                $transaction->loadMissing('details');
+
+                foreach ($transaction->details as $detail) {
+                    $variantId = (int) ($detail->product_variant_id ?? 0);
+                    $qty = (int) ($detail->quantity ?? 0);
+                    if ($variantId <= 0 || $qty <= 0) {
+                        continue;
+                    }
+
+                    $variant = ProductVariant::query()->lockForUpdate()->find($variantId);
+                    if (!$variant) {
+                        continue;
+                    }
+
+                    $before = (int) $variant->stock;
+                    if ($before < $qty) {
+                        throw new \RuntimeException('Stok varian "' . ($detail->variant_name ?: $detail->product_name) . '" tidak mencukupi.');
+                    }
+
+                    $after = $before - $qty;
+                    $variant->stock = $after;
+                    $variant->save();
+
+                    StockMovement::create([
+                        'product_variant_id' => $variant->id,
+                        'transaction_detail_id' => $detail->id,
+                        'admin_user_id' => $request->user()?->id,
+                        'type' => 'out',
+                        'quantity' => $qty,
+                        'stock_before' => $before,
+                        'stock_after' => $after,
+                        'source' => 'sales',
+                        'description' => 'Penjualan produk',
+                    ]);
+                }
+
+                $transaction->status = 'process';
+                $transaction->processed_at = now();
+                $transaction->save();
+            });
+        } catch (\RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
 
         if ($transaction->user_id) {
             UserNotification::create([

@@ -21,6 +21,7 @@ use App\Http\Controllers\BannerController;
 use App\Http\Controllers\StoreLocationController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\StockController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -37,7 +38,7 @@ Route::middleware('guest')->group(function () {
     Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'admin'])->group(function () {
     Route::prefix('admin')->group(function () {
         Route::get('/', [BackendController::class, 'index'])->name('pages.index');
         Route::get('/dashboard2', [BackendController::class, 'dashboard2'])->name('pages.dashboard2');
@@ -57,6 +58,8 @@ Route::middleware('auth')->group(function () {
 
         Route::post('variants/quick-add', [VariantController::class, 'quickStore'])->name('variants.quick-add');
         Route::resource('variants', VariantController::class)->except(['show']);
+        Route::get('stocks', [StockController::class, 'index'])->name('stocks.index');
+        Route::post('stocks', [StockController::class, 'store'])->name('stocks.store');
         Route::resource('flash-sales', FlashSaleController::class)->except(['show']);
         Route::resource('banners', BannerController::class)->except(['show']);
         Route::get('store-location', [StoreLocationController::class, 'edit'])->name('store-locations.edit');
@@ -66,7 +69,6 @@ Route::middleware('auth')->group(function () {
         Route::resource('transactions', TransactionController::class)->only(['index']);
         Route::patch('transactions/{transaction}/process', [TransactionController::class, 'process'])->name('transactions.process');
         Route::patch('transactions/{transaction}/ship', [TransactionController::class, 'ship'])->name('transactions.ship');
-        Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     });
 
     Route::prefix('profil')->name('frontend.profil.')->group(function () {
@@ -85,6 +87,7 @@ Route::name('frontend.')->group(function () {
     Route::get('/pencarian', [FrontendController::class, 'search'])->name('search');
     Route::get('/kategori', [FrontendController::class, 'kategori'])->name('kategori');
     Route::get('/detail-produk/{slug?}', [FrontendController::class, 'detailProduk'])->name('detail-produk');
+
     Route::middleware('auth')->group(function () {
         Route::get('/profil', [FrontendController::class, 'profil'])->name('profil');
         Route::get('/checkout', [FrontendController::class, 'checkout'])->name('checkout');
@@ -119,3 +122,5 @@ Route::name('frontend.')->group(function () {
         Route::post('/notifications/{notification}/read', [UserNotificationController::class, 'markRead'])->name('notifications.read');
     });
 });
+
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');

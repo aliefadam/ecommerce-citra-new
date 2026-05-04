@@ -561,6 +561,10 @@
         let selectedColors = [];
         let currentView = 'grid';
 
+        function getLoginRedirectUrl() {
+            return `${loginUrl}?redirect=${encodeURIComponent(window.location.href)}`;
+        }
+
         function renderProducts(prods) {
             const grid = document.getElementById('productGrid');
             document.getElementById('productCount').textContent = `Menampilkan ${prods.length} produk`;
@@ -613,7 +617,7 @@
             const p = products.find(x => x.id === id);
             if (!p) return;
             if (!isAuthenticated) {
-                window.location.href = loginUrl;
+                window.location.href = getLoginRedirectUrl();
                 return;
             }
             const res = await fetch(cartStoreUrl, {
@@ -635,7 +639,7 @@
 
         function addToWishlist(id) {
             if (!isAuthenticated) {
-                window.location.href = loginUrl;
+                window.location.href = getLoginRedirectUrl();
                 return;
             }
             const p = products.find(x => x.id === id);

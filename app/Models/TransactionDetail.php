@@ -26,6 +26,11 @@ class TransactionDetail extends Model
         return $this->belongsTo(Transaction::class);
     }
 
+    public function productVariant(): BelongsTo
+    {
+        return $this->belongsTo(ProductVariant::class, 'product_variant_id');
+    }
+
     public function productReviews(): HasMany
     {
         return $this->hasMany(TransactionProductReview::class);

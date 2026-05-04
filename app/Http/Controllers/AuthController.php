@@ -19,6 +19,7 @@ class AuthController extends Controller
 
     public function showLogin()
     {
+        $this->storeIntendedFromRedirectQuery(request());
         return view('auth.login');
     }
 
@@ -143,6 +144,7 @@ class AuthController extends Controller
 
     public function redirectToGoogle()
     {
+        $this->storeIntendedFromRedirectQuery(request());
         return Socialite::driver('google')->redirect();
     }
 
@@ -198,5 +200,37 @@ class AuthController extends Controller
         }
 
         return redirect()->intended(route('pages.index'));
+    }
+
+    private function storeIntendedFromRedirectQuery(Request $request): void
+    {
+        $redirect = trim((string) $request->query('redirect', ''));
+        if ($redirect === '') {
+            return;
+        }
+
+        $parsed = parse_url($redirect);
+        if ($parsed === false) {
+            return;
+        }
+
+        $target = null;
+        if (!isset($parsed['scheme']) && !isset($parsed['host'])) {
+            $target = $redirect;
+        } else {
+            $currentHost = parse_url(url('/'), PHP_URL_HOST);
+            if (($parsed['host'] ?? null) === $currentHost) {
+                $target = ($parsed['path'] ?? '/');
+                if (!empty($parsed['query'])) {
+                    $target .= '?' . $parsed['query'];
+                }
+            }
+        }
+
+        if (!$target || !str_starts_with($target, '/')) {
+            return;
+        }
+
+        $request->session()->put('url.intended', $target);
     }
 }
