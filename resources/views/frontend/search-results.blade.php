@@ -42,21 +42,10 @@
 @section('script')
     <script>
         const query = @json($query);
-        const allProducts = [
-            { name: 'Kemeja Oxford Slim Fit', price: 189000, originalPrice: 270000, sold: 1245, image: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop' },
-            { name: 'Sneakers Urban Street', price: 459000, originalPrice: 650000, sold: 875, image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop' },
-            { name: 'Smart Watch Series 5', price: 1299000, originalPrice: 1800000, sold: 892, image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop' },
-            { name: 'Skincare Serum Vitamin C', price: 189000, originalPrice: 250000, sold: 5678, image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400&h=400&fit=crop' },
-            { name: 'Wireless Earbuds Pro', price: 599000, originalPrice: 850000, sold: 3210, image: 'https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?w=400&h=400&fit=crop' },
-            { name: 'Hoodie Oversized Fleece', price: 299000, originalPrice: 399000, sold: 4321, image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop' },
-            { name: 'Kamera Mirrorless Entry', price: 5499000, originalPrice: 6800000, sold: 234, image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400&h=400&fit=crop' },
-            { name: 'Yoga Mat Premium', price: 349000, originalPrice: 450000, sold: 1105, image: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400&h=400&fit=crop' },
-            { name: 'Lip Gloss Set Korea', price: 89000, originalPrice: 120000, sold: 540, image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=400&fit=crop' },
-            { name: 'Blender Portable Mini', price: 149000, originalPrice: 199000, sold: 789, image: 'https://images.unsplash.com/photo-1570222094114-d054a817e56b?w=400&h=400&fit=crop' },
-        ];
+        const allProducts = @json($results ?? []);
 
         const cleanQuery = String(query || '').trim().toLowerCase();
-        const result = cleanQuery ? allProducts.filter((p) => p.name.toLowerCase().includes(cleanQuery)) : allProducts;
+        const result = allProducts;
         document.getElementById('searchMeta').textContent = cleanQuery
             ? `Menampilkan ${result.length} hasil untuk "${query}"`
             : `Menampilkan ${result.length} produk`;
@@ -67,17 +56,22 @@
             empty.classList.remove('hidden');
         } else {
             grid.innerHTML = result.map((p) => `
-                <a href="{{ route('frontend.detail-produk') }}" class="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 card-hover group">
+                <a href="{{ url('/detail-produk') }}/${p.slug}" class="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 card-hover group">
                     <div class="relative">
                         <img src="${p.image}" class="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300" alt="${p.name}" />
                     </div>
                     <div class="p-3">
                         <p class="text-sm font-semibold text-slate-800 line-clamp-2 min-h-[40px]">${p.name}</p>
+                        <p class="text-[11px] text-slate-500 mt-1 line-clamp-1">${p.category}${p.category_detail ? ' • ' + p.category_detail : ''}</p>
+                        ${p.variant ? `<p class="text-[11px] text-slate-500 mt-0.5 line-clamp-1">${p.variant}</p>` : ''}
                         <div class="mt-2">
                             <p class="text-base font-bold text-slate-900">Rp ${p.price.toLocaleString('id-ID')}</p>
-                            <p class="text-xs text-slate-400 line-through">Rp ${p.originalPrice.toLocaleString('id-ID')}</p>
+                            ${p.originalPrice > p.price ? `<p class="text-xs text-slate-400 line-through">Rp ${p.originalPrice.toLocaleString('id-ID')}</p>` : ''}
                         </div>
-                        <p class="text-[11px] text-slate-500 mt-2">${p.sold.toLocaleString('id-ID')} terjual</p>
+                        <div class="flex items-center gap-2 mt-2">
+                            <p class="text-[11px] text-slate-500">${p.sold.toLocaleString('id-ID')} terjual</p>
+                            <p class="text-[11px] text-slate-500">${Number(p.rating || 0).toFixed(1)} (${Number(p.reviews || 0).toLocaleString('id-ID')})</p>
+                        </div>
                     </div>
                 </a>
             `).join('');

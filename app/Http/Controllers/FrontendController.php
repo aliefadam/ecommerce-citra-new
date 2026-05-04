@@ -133,8 +133,89 @@ class FrontendController extends Controller
 
     public function search(Request $request)
     {
+        $query = trim((string) $request->query('q', ''));
+
+        $productsQuery = Product::query()
+            ->with([
+                'mainCategory',
+                'categoryDetail',
+                'productVariants.variant',
+                'flashSaleItems.flashSale',
+            ])
+            ->where('status', 'active');
+
+        if ($query !== '') {
+            $q = strtolower($query);
+            $productsQuery->where(function ($builder) use ($q) {
+                $builder
+                    ->whereRaw('LOWER(name) like ?', ['%' . $q . '%'])
+                    ->orWhereRaw('LOWER(description) like ?', ['%' . $q . '%'])
+                    ->orWhereHas('mainCategory', fn ($mq) => $mq->whereRaw('LOWER(name) like ?', ['%' . $q . '%']))
+                    ->orWhereHas('categoryDetail', fn ($cq) => $cq->whereRaw('LOWER(name) like ?', ['%' . $q . '%']))
+                    ->orWhereHas('productVariants.variant', function ($vq) use ($q) {
+                        $vq->whereRaw('LOWER(name) like ?', ['%' . $q . '%'])
+                            ->orWhereRaw('LOWER(value) like ?', ['%' . $q . '%']);
+                    });
+            });
+        }
+
+        $products = $productsQuery->orderByDesc('id')->get();
+
+        $soldByProduct = TransactionDetail::query()
+            ->selectRaw('product_id, SUM(quantity) as total_qty')
+            ->whereIn('product_id', $products->pluck('id'))
+            ->groupBy('product_id')
+            ->pluck('total_qty', 'product_id');
+
+        $reviewsByProduct = TransactionProductReview::query()
+            ->selectRaw('transaction_details.product_id as product_id, AVG(transaction_product_reviews.rating) as avg_rating, COUNT(*) as total_reviews')
+            ->join('transaction_details', 'transaction_details.id', '=', 'transaction_product_reviews.transaction_detail_id')
+            ->whereIn('transaction_details.product_id', $products->pluck('id'))
+            ->groupBy('transaction_details.product_id')
+            ->get()
+            ->keyBy('product_id');
+
+        $items = $products->map(function ($product) use ($soldByProduct, $reviewsByProduct) {
+            $variant = $product->productVariants->first();
+            if (!$variant) {
+                return null;
+            }
+
+            $basePrice = (int) $variant->price;
+            $flashItem = $product->flashSaleItems->first(function ($item) {
+                $sale = $item->flashSale;
+                if (!$sale || !$item->is_active || $sale->status !== 'active') {
+                    return false;
+                }
+                $now = now();
+                return $sale->start_at && $sale->end_at && $now->between($sale->start_at, $sale->end_at);
+            });
+
+            $price = $flashItem ? (int) $flashItem->discount_price : $basePrice;
+            $reviewAgg = $reviewsByProduct->get($product->id);
+            $rating = $reviewAgg ? (float) $reviewAgg->avg_rating : 0;
+            $reviews = $reviewAgg ? (int) $reviewAgg->total_reviews : 0;
+            $sold = (int) ($soldByProduct[$product->id] ?? 0);
+
+            return [
+                'id' => (int) $product->id,
+                'slug' => (string) $product->slug,
+                'name' => (string) $product->name,
+                'category' => (string) ($product->mainCategory?->name ?? '-'),
+                'category_detail' => (string) ($product->categoryDetail?->name ?? ''),
+                'variant' => trim(((string) ($variant->variant?->name ?? '')) . ': ' . ((string) ($variant->variant?->value ?? '')), ': '),
+                'price' => $price,
+                'originalPrice' => $basePrice,
+                'sold' => $sold,
+                'rating' => round($rating, 1),
+                'reviews' => $reviews,
+                'image' => $this->normalizeImageUrl((string) ($variant->image ?? ''), '400x400'),
+            ];
+        })->filter()->values()->all();
+
         return view('frontend.search-results', [
-            'query' => (string) $request->query('q', ''),
+            'query' => $query,
+            'results' => $items,
         ]);
     }
 
