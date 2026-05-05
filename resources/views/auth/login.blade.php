@@ -38,8 +38,15 @@
     <body class="h-screen overflow-hidden bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100">
         <div class="min-h-screen grid lg:grid-cols-2">
             <section
-                class="hidden lg:flex flex-col justify-between p-10 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 text-white">
-                <div class="flex items-center gap-3">
+                class="hidden lg:flex flex-col justify-between p-10 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white relative overflow-hidden">
+
+                <!-- Background decorative circles -->
+                <div class="absolute -top-16 -right-16 w-72 h-72 bg-white/5 rounded-full"></div>
+                <div class="absolute top-1/3 -left-20 w-56 h-56 bg-indigo-500/20 rounded-full"></div>
+                <div class="absolute bottom-20 -right-10 w-44 h-44 bg-blue-400/15 rounded-full"></div>
+
+                <!-- Logo -->
+                <div class="relative flex items-center gap-3 z-10">
                     <div class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white"
                             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -50,12 +57,71 @@
                         Citra <span class="text-blue-200">Ecommerce</span>
                     </span>
                 </div>
-                <div>
-                    <h1 class="text-3xl font-bold leading-tight">Welcome back</h1>
-                    <p class="mt-3 text-blue-100">Sign in untuk mengakses dashboard, datatables, dan product management.
-                    </p>
+
+                <!-- Center illustration -->
+                <div class="relative z-10 flex flex-col items-center gap-6">
+                    <!-- Shopping illustration SVG -->
+                    <div class="w-full max-w-xs">
+                        <svg viewBox="0 0 320 240" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full drop-shadow-xl">
+                            <!-- Background card -->
+                            <rect x="30" y="20" width="260" height="200" rx="20" fill="white" fill-opacity="0.1"/>
+                            <!-- Product cards -->
+                            <rect x="50" y="45" width="90" height="100" rx="12" fill="white" fill-opacity="0.15"/>
+                            <rect x="58" y="55" width="74" height="54" rx="8" fill="white" fill-opacity="0.2"/>
+                            <!-- Shirt icon on card 1 -->
+                            <path d="M82 62 L72 72 L78 72 L78 95 L102 95 L102 72 L108 72 L98 62 L92 68 L86 68 Z" fill="white" fill-opacity="0.7"/>
+                            <text x="95" y="128" text-anchor="middle" fill="white" font-size="9" font-weight="600" font-family="Plus Jakarta Sans, sans-serif" fill-opacity="0.9">Kaos Polo</text>
+                            <text x="95" y="142" text-anchor="middle" fill="#93C5FD" font-size="8" font-family="Plus Jakarta Sans, sans-serif">Rp 149.000</text>
+
+                            <rect x="178" y="45" width="90" height="100" rx="12" fill="white" fill-opacity="0.15"/>
+                            <rect x="186" y="55" width="74" height="54" rx="8" fill="white" fill-opacity="0.2"/>
+                            <!-- Bag icon on card 2 -->
+                            <path d="M213 67 Q213 62 223 62 Q233 62 233 67 L236 85 L210 85 Z" fill="white" fill-opacity="0.7"/>
+                            <rect x="215" y="57" width="16" height="6" rx="3" fill="white" fill-opacity="0.5"/>
+                            <text x="223" y="128" text-anchor="middle" fill="white" font-size="9" font-weight="600" font-family="Plus Jakarta Sans, sans-serif" fill-opacity="0.9">Tas Selempang</text>
+                            <text x="223" y="142" text-anchor="middle" fill="#93C5FD" font-size="8" font-family="Plus Jakarta Sans, sans-serif">Rp 229.000</text>
+
+                            <!-- Cart bar at bottom -->
+                            <rect x="50" y="162" width="220" height="42" rx="12" fill="white" fill-opacity="0.15"/>
+                            <!-- Cart icon -->
+                            <circle cx="75" cy="183" r="10" fill="white" fill-opacity="0.2"/>
+                            <path d="M69 178 L71 178 L74 188 L84 188 L86 180 L73 180" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none" fill-opacity="0.8"/>
+                            <circle cx="76" cy="190" r="1.5" fill="white"/>
+                            <circle cx="83" cy="190" r="1.5" fill="white"/>
+                            <text x="98" y="181" fill="white" font-size="8" font-weight="600" font-family="Plus Jakarta Sans, sans-serif" fill-opacity="0.9">2 item di keranjang</text>
+                            <text x="98" y="193" fill="#93C5FD" font-size="8" font-family="Plus Jakarta Sans, sans-serif">Rp 378.000</text>
+                            <!-- Checkout button -->
+                            <rect x="218" y="168" width="42" height="24" rx="8" fill="white" fill-opacity="0.25"/>
+                            <text x="239" y="184" text-anchor="middle" fill="white" font-size="8" font-weight="700" font-family="Plus Jakarta Sans, sans-serif">Beli</text>
+
+                            <!-- Stars rating -->
+                            <text x="67" y="157" fill="#FCD34D" font-size="10">★★★★★</text>
+                            <text x="195" y="157" fill="#FCD34D" font-size="10">★★★★☆</text>
+                        </svg>
+                    </div>
+
+                    <!-- Stats row -->
+                    <div class="flex gap-4 w-full justify-center">
+                        <div class="bg-white/10 backdrop-blur-sm rounded-2xl px-5 py-3 flex flex-col items-center gap-0.5">
+                            <span class="text-lg font-extrabold">1.2K+</span>
+                            <span class="text-xs text-blue-200 font-medium">Produk</span>
+                        </div>
+                        <div class="bg-white/10 backdrop-blur-sm rounded-2xl px-5 py-3 flex flex-col items-center gap-0.5">
+                            <span class="text-lg font-extrabold">8.5K+</span>
+                            <span class="text-xs text-blue-200 font-medium">Pelanggan</span>
+                        </div>
+                        <div class="bg-white/10 backdrop-blur-sm rounded-2xl px-5 py-3 flex flex-col items-center gap-0.5">
+                            <span class="text-lg font-extrabold">99%</span>
+                            <span class="text-xs text-blue-200 font-medium">Puas</span>
+                        </div>
+                    </div>
                 </div>
-                <p class="text-sm text-blue-200"></p>
+
+                <!-- Bottom text -->
+                <div class="relative z-10">
+                    <h1 class="text-2xl font-bold leading-tight">Kelola toko Anda <br>dengan mudah & cepat.</h1>
+                    <p class="mt-2 text-sm text-blue-200">Dashboard lengkap untuk manajemen produk, pesanan, dan laporan penjualan.</p>
+                </div>
             </section>
 
             <section class="flex items-center justify-center p-6 sm:p-10">
