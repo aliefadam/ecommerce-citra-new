@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
@@ -23,16 +24,50 @@ class ProfileController extends Controller
             'birth_date' => ['nullable', 'date'],
             'social_url' => ['nullable', 'url', 'max:255'],
             'bio' => ['nullable', 'string', 'max:1000'],
+            'avatar_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
+            'avatar_remove' => ['nullable', 'boolean'],
         ]);
 
         $fullName = trim(($validated['first_name'] ?? '') . ' ' . ($validated['last_name'] ?? ''));
 
-        $user->update([
+        $payload = [
             'name' => $fullName !== '' ? $fullName : $user->name,
-            ...$validated,
-        ]);
+            ...collect($validated)->except(['avatar_file', 'avatar_remove'])->all(),
+        ];
+
+        $removeAvatar = (bool) ($validated['avatar_remove'] ?? false);
+
+        if ($removeAvatar) {
+            $this->deleteLocalAvatarIfExists((string) ($user->avatar ?? ''));
+            $payload['avatar'] = null;
+        }
+
+        if ($request->hasFile('avatar_file')) {
+            $this->deleteLocalAvatarIfExists((string) ($user->avatar ?? ''));
+            $path = $request->file('avatar_file')->store('avatars', 'public');
+            $payload['avatar'] = 'storage/' . ltrim($path, '/');
+        }
+
+        $user->update($payload);
 
         return back()->with('success', 'Biodata berhasil diperbarui.');
+    }
+
+    private function deleteLocalAvatarIfExists(string $avatar): void
+    {
+        $avatar = trim($avatar);
+        if ($avatar === '' || str_starts_with($avatar, 'http://') || str_starts_with($avatar, 'https://')) {
+            return;
+        }
+
+        $path = ltrim($avatar, '/');
+        if (str_starts_with($path, 'storage/')) {
+            $path = substr($path, 8);
+        }
+
+        if ($path !== '' && Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->delete($path);
+        }
     }
 
     public function updatePassword(Request $request)

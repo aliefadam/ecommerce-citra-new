@@ -178,9 +178,7 @@ class AuthController extends Controller
             ]);
         } else {
             $user->google_id = (string) $googleUser->getId();
-            if (empty($user->avatar)) {
-                $user->avatar = (string) ($googleUser->getAvatar() ?? '');
-            }
+            $user->avatar = (string) ($googleUser->getAvatar() ?? '');
             if (!$user->email_verified_at) {
                 $user->email_verified_at = now();
             }

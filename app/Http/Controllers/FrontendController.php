@@ -491,7 +491,15 @@ class FrontendController extends Controller
             ->latest()
             ->get();
 
-        return view('frontend.profil', compact('user', 'addresses', 'transactions', 'notifications', 'wishlists'));
+        $profileStats = [
+            'orders' => (int) $transactions->count(),
+            'reviews' => (int) TransactionProductReview::query()
+                ->where('user_id', $user->id)
+                ->count(),
+            'wishlists' => (int) $wishlists->count(),
+        ];
+
+        return view('frontend.profil', compact('user', 'addresses', 'transactions', 'notifications', 'wishlists', 'profileStats'));
     }
 
     private function buildFrontendProducts(): array

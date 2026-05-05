@@ -4,6 +4,8 @@
         $displayName = $authUser?->name ?: 'Guest';
         $displayFirstName = trim(explode(' ', $displayName)[0] ?? $displayName);
         $initial = strtoupper(substr($displayFirstName, 0, 1));
+        $avatarUrl = trim((string) ($authUser?->avatar ?? ''));
+        $hasAvatarImage = $avatarUrl !== '';
         $cartCount = $authUser ? (int) $authUser->carts()->sum('quantity') : 0;
         $navbarCategoryTree = \App\Models\MainCategory::query()
             ->with(['categoryDetails' => fn($q) => $q->orderBy('name')])
@@ -190,9 +192,14 @@
                     <div class="relative">
                         <button id="ecAccountTrigger" type="button"
                             class="flex items-center gap-2 p-1 rounded-lg hover:bg-slate-100">
-                            <div
-                                class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white text-sm font-bold">
-                                {{ $initial }}</div>
+                            @if ($hasAvatarImage)
+                                <img src="{{ $avatarUrl }}" alt="{{ $displayFirstName }}"
+                                    class="w-8 h-8 rounded-full object-cover" />
+                            @else
+                                <div
+                                    class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white text-sm font-bold">
+                                    {{ $initial }}</div>
+                            @endif
                             <span class="hidden sm:block text-sm font-medium text-slate-700">{{ $displayFirstName }}</span>
                         </button>
                         <div id="ecAccountDropdown"

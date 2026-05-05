@@ -186,6 +186,8 @@
         $fullName = trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? ''));
         $displayName = $fullName !== '' ? $fullName : $user->name ?? 'User';
         $avatarLetter = strtoupper(substr($displayName, 0, 1));
+        $avatarUrl = trim((string) ($user->avatar ?? ''));
+        $hasAvatarImage = $avatarUrl !== '';
     @endphp
     <!-- Modal Lacak Pesanan -->
     <div id="trackingModal" class="fixed inset-0 z-[9999] hidden items-center justify-center p-4">
@@ -259,9 +261,14 @@
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mb-4">
                     <div class="flex flex-col items-center text-center">
                         <div class="avatar-ring mb-3">
-                            <div
-                                class="w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white text-3xl font-extrabold ring-4 ring-white">
-                                {{ $avatarLetter }}</div>
+                            @if ($hasAvatarImage)
+                                <img src="{{ $avatarUrl }}" alt="{{ $displayName }}"
+                                    class="w-20 h-20 rounded-full object-cover ring-4 ring-white" />
+                            @else
+                                <div
+                                    class="w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white text-3xl font-extrabold ring-4 ring-white">
+                                    {{ $avatarLetter }}</div>
+                            @endif
                         </div>
                         <h3 class="font-bold text-slate-800 text-lg">{{ $displayName }}</h3>
                         <p class="text-slate-500 text-sm">{{ $user->email }}</p>
@@ -271,17 +278,17 @@
                         </div>
                         <div class="flex gap-4 mt-4 w-full border-t border-slate-100 pt-4">
                             <div class="flex-1 text-center">
-                                <p class="font-bold text-slate-800 text-xl">28</p>
+                                <p class="font-bold text-slate-800 text-xl">{{ (int) ($profileStats['orders'] ?? 0) }}</p>
                                 <p class="text-xs text-slate-500">Pesanan</p>
                             </div>
                             <div class="w-px bg-slate-100"></div>
                             <div class="flex-1 text-center">
-                                <p class="font-bold text-slate-800 text-xl">12</p>
+                                <p class="font-bold text-slate-800 text-xl">{{ (int) ($profileStats['reviews'] ?? 0) }}</p>
                                 <p class="text-xs text-slate-500">Ulasan</p>
                             </div>
                             <div class="w-px bg-slate-100"></div>
                             <div class="flex-1 text-center">
-                                <p id="profileWishlistStat" class="font-bold text-slate-800 text-xl">0</p>
+                                <p id="profileWishlistStat" class="font-bold text-slate-800 text-xl">{{ (int) ($profileStats['wishlists'] ?? 0) }}</p>
                                 <p class="text-xs text-slate-500">Wishlist</p>
                             </div>
                         </div>
@@ -392,14 +399,23 @@
                             </div>
                             <span class="bg-blue-100 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full">?</span>
                         </div>
-                        <div class="p-6">
+                        <form id="profileForm" action="{{ route('frontend.profil.biodata.update') }}" method="POST"
+                            enctype="multipart/form-data" class="p-6">
+                            @csrf
                             <!-- Avatar Section -->
                             <div class="flex items-center gap-5 mb-8 pb-6 border-b border-slate-100">
                                 <div class="relative">
-                                    <div
-                                        class="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white text-3xl font-bold">
-                                        A</div>
-                                    <button
+                                    @if ($hasAvatarImage)
+                                        <img id="profileAvatarPreview" src="{{ $avatarUrl }}" alt="{{ $displayName }}"
+                                            class="w-20 h-20 rounded-2xl object-cover" />
+                                    @else
+                                        <div id="profileAvatarInitial"
+                                            class="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white text-3xl font-bold">
+                                            {{ $avatarLetter }}</div>
+                                        <img id="profileAvatarPreview" src="" alt="{{ $displayName }}"
+                                            class="hidden w-20 h-20 rounded-2xl object-cover" />
+                                    @endif
+                                    <button type="button" onclick="chooseProfilePhoto()"
                                         class="absolute -bottom-2 -right-2 w-7 h-7 bg-blue-500 rounded-full flex items-center justify-center text-white shadow-md hover:bg-blue-600 transition-colors">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
@@ -409,15 +425,18 @@
                                                 d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                                         </svg>
                                     </button>
+                                    <input id="profileAvatarFile" name="avatar_file" type="file" accept="image/png,image/jpeg"
+                                        class="hidden" />
+                                    <input id="profileAvatarRemove" name="avatar_remove" type="hidden" value="0" />
                                 </div>
                                 <div>
                                     <p class="font-semibold text-slate-800 mb-1">Foto Profil</p>
                                     <p class="text-sm text-slate-500 mb-2">Format: JPG, PNG. Ukuran maks 2MB</p>
                                     <div class="flex gap-2">
-                                        <button
+                                        <button type="button" onclick="chooseProfilePhoto()"
                                             class="bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium px-4 py-1.5 rounded-lg border border-blue-200 transition-colors">Ganti
                                             Foto</button>
-                                        <button
+                                        <button type="button" onclick="removeProfilePhoto()"
                                             class="text-red-400 hover:text-red-500 text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors">Hapus</button>
                                     </div>
                                 </div>
@@ -427,12 +446,12 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div>
                                     <label class="text-sm font-semibold text-slate-700 mb-1.5 block">Nama Depan</label>
-                                    <input id="firstName" type="text" value="Andi"
+                                    <input id="firstName" name="first_name" type="text" value="Andi"
                                         class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all" />
                                 </div>
                                 <div>
                                     <label class="text-sm font-semibold text-slate-700 mb-1.5 block">Nama Belakang</label>
-                                    <input id="lastName" type="text" value="Pratama"
+                                    <input id="lastName" name="last_name" type="text" value="Pratama"
                                         class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all" />
                                 </div>
                                 <div>
@@ -440,7 +459,7 @@
                                     <div class="relative">
                                         <span
                                             class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">@</span>
-                                        <input id="username" type="text" value="andi.pratama"
+                                        <input id="username" name="username" type="text" value="andi.pratama"
                                             class="w-full border border-slate-200 rounded-xl pl-8 pr-4 py-3 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all" />
                                     </div>
                                 </div>
@@ -463,7 +482,7 @@
                                 <div>
                                     <label class="text-sm font-semibold text-slate-700 mb-1.5 block">Email</label>
                                     <div class="relative">
-                                        <input id="email" type="email" value="{{ $user->email }}"
+                                        <input id="email" name="email" type="email" value="{{ $user->email }}"
                                             class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all pr-12" />
                                         <span class="absolute right-3 top-1/2 -translate-y-1/2 text-blue-500"
                                             title="Terverifikasi">
@@ -478,28 +497,28 @@
                                 <div>
                                     <label class="text-sm font-semibold text-slate-700 mb-1.5 block">Nomor Telepon</label>
                                     <div class="flex">
-                                        <select id="phoneCode"
+                                        <select id="phoneCode" name="phone_country_code"
                                             class="border border-r-0 border-slate-200 rounded-l-xl px-3 py-3 text-sm bg-slate-50 outline-none">
                                             <option>+62</option>
                                         </select>
-                                        <input id="phoneNumber" type="tel" value="812-3456-7890"
+                                        <input id="phoneNumber" name="phone_number" type="tel" value="812-3456-7890"
                                             class="flex-1 border border-slate-200 rounded-r-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all" />
                                     </div>
                                 </div>
                                 <div>
                                     <label class="text-sm font-semibold text-slate-700 mb-1.5 block">Tanggal Lahir</label>
-                                    <input id="birthDate" type="date" value="1995-07-15"
+                                    <input id="birthDate" name="birth_date" type="date" value="1995-07-15"
                                         class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all" />
                                 </div>
                                 <div>
                                     <label class="text-sm font-semibold text-slate-700 mb-1.5 block">Website / Media
                                         Sosial</label>
-                                    <input id="socialUrl" type="url" placeholder="https://instagram.com/..."
+                                    <input id="socialUrl" name="social_url" type="url" placeholder="https://instagram.com/..."
                                         class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all" />
                                 </div>
                                 <div class="md:col-span-2">
                                     <label class="text-sm font-semibold text-slate-700 mb-1.5 block">Bio</label>
-                                    <textarea id="bio" placeholder="Ceritakan sedikit tentang diri kamu..."
+                                    <textarea id="bio" name="bio" placeholder="Ceritakan sedikit tentang diri kamu..."
                                         class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all resize-none h-20">Suka belanja online, terutama fashion dan elektronik ?</textarea>
                                 </div>
                             </div>
@@ -507,7 +526,7 @@
                             <div class="flex justify-end gap-3 mt-6 pt-6 border-t border-slate-100">
                                 <button
                                     class="border border-slate-200 text-slate-600 font-semibold px-6 py-2.5 rounded-xl hover:bg-slate-50 transition-colors text-sm">Batal</button>
-                                <button onclick="saveProfile()"
+                                <button type="button" onclick="saveProfile()"
                                     class="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-6 py-2.5 rounded-xl transition-colors text-sm flex items-center gap-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -516,7 +535,7 @@
                                     Simpan Perubahan
                                 </button>
                             </div>
-                        </div>
+                        </form>
                     </div>
                 </div>
 
@@ -1868,19 +1887,28 @@
             navEl.classList.remove('text-slate-600');
         }
 
+        function chooseProfilePhoto() {
+            document.getElementById('profileAvatarFile')?.click();
+        }
+
+        function removeProfilePhoto() {
+            const fileInput = document.getElementById('profileAvatarFile');
+            const removeInput = document.getElementById('profileAvatarRemove');
+            const preview = document.getElementById('profileAvatarPreview');
+            const initial = document.getElementById('profileAvatarInitial');
+            if (fileInput) fileInput.value = '';
+            if (removeInput) removeInput.value = '1';
+            if (preview) {
+                preview.src = '';
+                preview.classList.add('hidden');
+            }
+            if (initial) initial.classList.remove('hidden');
+        }
+
         function saveProfile() {
-            postForm("{{ route('frontend.profil.biodata.update') }}", {
-                first_name: document.getElementById('firstName')?.value ?? '',
-                last_name: document.getElementById('lastName')?.value ?? '',
-                username: document.getElementById('username')?.value ?? '',
-                gender: document.querySelector('input[name="gender"]:checked')?.value ?? '',
-                email: document.getElementById('email')?.value ?? '',
-                phone_country_code: document.getElementById('phoneCode')?.value ?? '',
-                phone_number: document.getElementById('phoneNumber')?.value ?? '',
-                birth_date: document.getElementById('birthDate')?.value ?? '',
-                social_url: document.getElementById('socialUrl')?.value ?? '',
-                bio: document.getElementById('bio')?.value ?? '',
-            });
+            const form = document.getElementById('profileForm');
+            if (!form) return;
+            form.submit();
         }
 
         function changePassword() {
@@ -2160,6 +2188,18 @@
             if (selectedGender) selectedGender.checked = true;
         }
 
+        document.getElementById('profileAvatarFile')?.addEventListener('change', function () {
+            const removeInput = document.getElementById('profileAvatarRemove');
+            const preview = document.getElementById('profileAvatarPreview');
+            const initial = document.getElementById('profileAvatarInitial');
+            const file = this.files && this.files[0] ? this.files[0] : null;
+            if (!file || !preview) return;
+            if (removeInput) removeInput.value = '0';
+            preview.src = URL.createObjectURL(file);
+            preview.classList.remove('hidden');
+            if (initial) initial.classList.add('hidden');
+        });
+
         hydrateProfileFromBackend();
         _setupCombobox('provinceInput', 'provinceDropdown');
         _setupCombobox('cityInput', 'cityDropdown');
@@ -2422,10 +2462,6 @@
         });
     </script>
 @endsection
-
-
-
-
 
 
 
