@@ -71,14 +71,15 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::patch('transactions/{transaction}/ship', [TransactionController::class, 'ship'])->name('transactions.ship');
     });
 
-    Route::prefix('profil')->name('frontend.profil.')->group(function () {
-        Route::post('/biodata', [ProfileController::class, 'updateBiodata'])->name('biodata.update');
-        Route::post('/password', [ProfileController::class, 'updatePassword'])->name('password.update');
-        Route::post('/addresses', [AddressController::class, 'store'])->name('addresses.store');
-        Route::put('/addresses/{address}', [AddressController::class, 'update'])->name('addresses.update');
-        Route::delete('/addresses/{address}', [AddressController::class, 'destroy'])->name('addresses.destroy');
-        Route::post('/reviews', [TransactionReviewController::class, 'store'])->name('reviews.store');
-    });
+});
+
+Route::middleware('auth')->prefix('profil')->name('frontend.profil.')->group(function () {
+    Route::post('/biodata', [ProfileController::class, 'updateBiodata'])->name('biodata.update');
+    Route::post('/password', [ProfileController::class, 'updatePassword'])->name('password.update');
+    Route::post('/addresses', [AddressController::class, 'store'])->name('addresses.store');
+    Route::put('/addresses/{address}', [AddressController::class, 'update'])->name('addresses.update');
+    Route::delete('/addresses/{address}', [AddressController::class, 'destroy'])->name('addresses.destroy');
+    Route::post('/reviews', [TransactionReviewController::class, 'store'])->name('reviews.store');
 });
 
 Route::name('frontend.')->group(function () {
