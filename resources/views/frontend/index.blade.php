@@ -243,33 +243,38 @@
         </div>
     </div>
     <!-- KATEGORI SECTION -->
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl sm:text-2xl font-bold text-slate-800">Explore Popular Categories</h2>
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <p class="text-xs font-medium text-blue-500 tracking-widest uppercase mb-1">Browse</p>
+                <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight">Popular Categories</h2>
+            </div>
             <div class="flex items-center gap-2">
                 <button type="button" onclick="categoryPrev()"
-                    class="w-9 h-9 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center text-slate-600 transition-all shadow-sm">
-                    <i class="ri-arrow-left-s-line text-xl"></i>
+                    class="w-8 h-8 border border-slate-200 hover:border-slate-400 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 transition-all duration-200">
+                    <i class="ri-arrow-left-s-line text-lg"></i>
                 </button>
                 <button type="button" onclick="categoryNext()"
-                    class="w-9 h-9 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center text-slate-600 transition-all shadow-sm">
-                    <i class="ri-arrow-right-s-line text-xl"></i>
+                    class="w-8 h-8 border border-slate-200 hover:border-slate-400 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 transition-all duration-200">
+                    <i class="ri-arrow-right-s-line text-lg"></i>
                 </button>
             </div>
         </div>
-        <div id="categoryTrack" class="flex flex-nowrap items-start gap-6 overflow-x-auto pb-2 px-1">
+        <div id="categoryTrack" class="flex flex-nowrap items-start gap-5 overflow-x-auto py-3 px-2 scrollbar-hide">
             @foreach (collect($homeMainCategories ?? []) as $cat)
                 <a href="{{ route('frontend.kategori', ['parent' => $cat['slug']]) }}"
-                    class="flex flex-col items-center gap-3 group shrink-0">
-                    <div class="w-[110px] h-[110px] rounded-full bg-slate-100 flex items-center justify-center overflow-hidden transition-all group-hover:shadow-lg group-hover:scale-105">
+                    class="flex flex-col items-center gap-3 group shrink-0 w-[100px]">
+                    <div class="relative w-[88px] h-[88px] rounded-full overflow-hidden bg-slate-50 ring-1 ring-slate-100 transition-all duration-300 group-hover:ring-2 group-hover:ring-blue-400 group-hover:shadow-md group-hover:-translate-y-1">
                         @if (!empty($cat['image']))
                             <img src="{{ $cat['image'] }}" alt="{{ $cat['name'] }}"
-                                class="w-full h-full object-cover" />
+                                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                         @else
-                            <i class="{{ $cat['icon'] }} text-4xl text-blue-600"></i>
+                            <div class="w-full h-full flex items-center justify-center">
+                                <i class="{{ $cat['icon'] }} text-3xl text-blue-500"></i>
+                            </div>
                         @endif
                     </div>
-                    <p class="text-xs font-semibold text-slate-700 tracking-widest uppercase text-center">{{ $cat['name'] }}</p>
+                    <p class="text-[11px] font-medium text-slate-500 group-hover:text-slate-800 tracking-wide uppercase text-center leading-tight transition-colors duration-200">{{ $cat['name'] }}</p>
                 </a>
             @endforeach
         </div>

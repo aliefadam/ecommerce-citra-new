@@ -51,12 +51,12 @@
         right: 50%;
         height: 2px;
         border-radius: 9999px;
-        background: linear-gradient(to right, #0ea5e9, #7c3aed);
+        background: #2563eb;
         transition: left 0.25s ease, right 0.25s ease;
     }
 
     .nav-link:hover {
-        color: #0284c7;
+        color: #2563eb;
     }
 
     .nav-link:hover::after {
@@ -65,14 +65,14 @@
     }
 
     .nav-link.active {
-        color: #0284c7;
+        color: #2563eb;
         font-weight: 600;
     }
 
     .nav-link.active::after {
         left: 0.75rem;
         right: 0.75rem;
-        background: linear-gradient(to right, #0ea5e9, #7c3aed);
+        background: #2563eb;
     }
 </style>
 
@@ -397,13 +397,13 @@
                 {{-- Browse Categories button --}}
                 <div class="relative flex-shrink-0">
                     <button id="ecCategoryTrigger" type="button"
-                        class="flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-sky-500 to-violet-600 hover:from-sky-600 hover:to-violet-700 text-white text-sm font-semibold transition-all shadow-sm hover:shadow-md whitespace-nowrap group">
+                        class="flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-800 hover:bg-slate-700 text-white text-sm font-semibold transition-all whitespace-nowrap group">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                 d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                         Jelajahi Kategori
-                        <svg class="w-3 h-3 text-sky-200 group-hover:rotate-180 transition-transform duration-200"
+                        <svg class="w-3 h-3 text-slate-400 group-hover:rotate-180 transition-transform duration-200"
                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                 d="M19 9l-7 7-7-7" />
@@ -454,8 +454,8 @@
                     Produk Terbaru
                 </a>
                 <a href="{{ route('frontend.search') }}?sort=popular"
-                    class="nav-link flex items-center gap-1.5 !text-sky-600 !font-semibold">
-                    <svg class="w-3.5 h-3.5 text-sky-500" fill="currentColor" viewBox="0 0 20 20">
+                    class="nav-link flex items-center gap-1.5 !text-amber-500 !font-semibold">
+                    <svg class="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
                         <path
                             d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                     </svg>
@@ -752,9 +752,11 @@
             const positionCategoryDropdown = () => {
                 const rect = categoryTrigger.getBoundingClientRect();
                 const gap = 6;
-                const left = Math.max(12, rect.left);
-                const rightGap = 24;
-                const width = Math.max(320, window.innerWidth - left - rightGap);
+                const pageGap = window.innerWidth >= 640 ? 24 : 16;
+                const containerWidth = Math.min(1280, window.innerWidth - (pageGap * 2));
+                const containerLeft = Math.max(pageGap, (window.innerWidth - containerWidth) / 2);
+                const left = containerLeft;
+                const width = containerWidth;
 
                 categoryDropdown.style.width = `${width}px`;
                 categoryDropdown.style.left = `${left}px`;

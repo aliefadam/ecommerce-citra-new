@@ -174,7 +174,7 @@
     </div>
 
     <!-- MAIN PRODUCT SECTION -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 pb-28 md:pb-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8 pb-28 md:pb-8">
         <div class="grid md:grid-cols-2 gap-10 lg:gap-16">
 
             <!-- LEFT: Gallery -->
@@ -222,9 +222,9 @@
                 <!-- Brand & Status -->
                 <div class="flex items-center justify-between mb-2">
                     <span
-                        class="text-blue-600 font-semibold text-xs sm:text-sm bg-blue-50 px-2.5 py-1 rounded-full">{{ $productData['categoryName'] }}</span>
+                        class="text-blue-600 font-semibold text-xs bg-blue-50 px-2.5 py-1 rounded-full">{{ $productData['categoryName'] }}</span>
                     <div class="flex items-center gap-2">
-                        <span class="text-blue-600 text-xs sm:text-sm font-medium flex items-center gap-1">
+                        <span class="text-blue-600 text-xs font-medium flex items-center gap-1">
                             <span class="w-2 h-2 bg-blue-500 rounded-full"></span> Stok Tersedia
                         </span>
                         <button onclick="shareProduct()" title="Bagikan produk"
@@ -237,7 +237,7 @@
                     </div>
                 </div>
 
-                <h1 class="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 mb-3 leading-tight">
+                <h1 class="text-lg sm:text-2xl md:text-3xl font-extrabold text-slate-900 mb-3 leading-tight">
                     {{ $productData['name'] }}</h1>
 
                 <!-- Rating & Sales -->
@@ -251,28 +251,28 @@
                         <div class="flex items-center gap-0.5">
                             @for ($s = 1; $s <= 5; $s++)
                                 @if ($s <= $fullStars)
-                                    <span class="text-yellow-400 text-sm">★</span>
+                                    <span class="text-yellow-400 text-xs sm:text-sm">★</span>
                                 @elseif ($s == $fullStars + 1 && $halfStar)
-                                    <span class="text-yellow-400 text-sm">★</span>
+                                    <span class="text-yellow-400 text-xs sm:text-sm">★</span>
                                 @else
-                                    <span class="text-slate-300 text-sm">★</span>
+                                    <span class="text-slate-300 text-xs sm:text-sm">★</span>
                                 @endif
                             @endfor
                         </div>
-                        <span class="font-bold text-slate-800 text-sm">{{ number_format($productData['rating'], 1) }}</span>
-                        <span class="text-slate-500 text-xs sm:text-sm">({{ number_format($productData['reviews']) }} ulasan)</span>
+                        <span class="font-bold text-slate-800 text-xs sm:text-sm">{{ number_format($productData['rating'], 1) }}</span>
+                        <span class="text-slate-500 text-xs">({{ number_format($productData['reviews']) }} ulasan)</span>
                     </div>
                     <span class="text-slate-300 hidden sm:inline">|</span>
-                    <span class="text-slate-600 text-xs sm:text-sm"><span class="font-semibold text-slate-700">{{ number_format($productData['sold']) }}</span> terjual</span>
+                    <span class="text-slate-600 text-xs"><span class="font-semibold text-slate-700">{{ number_format($productData['sold']) }}</span> terjual</span>
                 </div>
 
                 <!-- Price -->
-                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-3 sm:p-4 mb-5">
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-3 sm:p-4 mb-5 border border-blue-100/60">
                     <div class="flex items-center gap-2 flex-wrap mb-1">
-                        <span id="productPrice" class="text-2xl sm:text-3xl font-extrabold text-blue-600">Rp
+                        <span id="productPrice" class="text-xl sm:text-2xl md:text-3xl font-extrabold text-blue-600">Rp
                             {{ number_format($displayPrice, 0, ',', '.') }}</span>
                         @if ($productData['isFlashSale'])
-                            <span id="productOrigPrice" class="text-sm sm:text-base text-slate-400 line-through">Rp
+                            <span id="productOrigPrice" class="text-xs sm:text-sm text-slate-400 line-through">Rp
                                 {{ number_format($productData['origPrice'], 0, ',', '.') }}</span>
                             <span class="bg-red-100 text-red-600 text-xs font-bold px-2 py-0.5 rounded-md">Hemat
                                 {{ max(0, $savingPercent) }}%</span>
@@ -323,7 +323,7 @@
                 @foreach ($otherGroups as $group)
                     <div class="mb-5">
                         <div class="flex items-center justify-between mb-2">
-                            <span class="text-sm font-semibold text-slate-700">{{ $group['label'] }}:
+                            <span class="text-xs sm:text-sm font-semibold text-slate-700">{{ $group['label'] }}:
                                 <span id="selected-{{ $group['key'] }}"
                                     class="text-blue-600 font-bold">{{ $defaultOther[$group['key']] ?? '-' }}</span>
                             </span>
@@ -331,24 +331,24 @@
                         <div class="flex gap-2 flex-wrap">
                             @foreach ($group['values'] as $idx => $value)
                                 <button onclick="selectVariantValue(this, '{{ $group['key'] }}', '{{ $value }}')"
-                                    class="variant-btn {{ $idx === 0 ? 'active border-blue-400' : 'border-slate-200 text-slate-600' }} border-2 rounded-xl px-4 py-2 text-sm font-medium hover:border-blue-300 transition-all">{{ $value }}</button>
+                                    class="variant-btn {{ $idx === 0 ? 'active border-blue-400' : 'border-slate-200 text-slate-600' }} border-2 rounded-xl px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium hover:border-blue-300 transition-all">{{ $value }}</button>
                             @endforeach
                         </div>
                     </div>
                 @endforeach
                 <!-- Quantity -->
-                <div class="mb-6">
-                    <span class="text-sm font-semibold text-slate-700 block mb-2">Jumlah</span>
-                    <div class="flex flex-wrap items-center gap-4">
+                <div class="mb-5">
+                    <span class="text-xs sm:text-sm font-semibold text-slate-700 block mb-2">Jumlah</span>
+                    <div class="flex flex-wrap items-center gap-3">
                         <div class="flex items-center border-2 border-slate-200 rounded-xl overflow-hidden">
                             <button onclick="changeQty(-1)"
                                 class="px-2.5 py-1.5 text-slate-600 hover:bg-slate-50 font-bold text-sm transition-colors">−</button>
                             <span id="qtyDisplay"
-                                class="px-4 py-1.5 font-bold text-slate-800 min-w-[44px] text-center border-x-2 border-slate-200 text-sm">1</span>
+                                class="px-3 py-1.5 font-bold text-slate-800 min-w-[36px] sm:min-w-[44px] text-center border-x-2 border-slate-200 text-sm">1</span>
                             <button onclick="changeQty(1)"
                                 class="px-2.5 py-1.5 text-slate-600 hover:bg-slate-50 font-bold text-sm transition-colors">+</button>
                         </div>
-                        <span class="text-sm text-slate-500">Stok: <span
+                        <span class="text-xs sm:text-sm text-slate-500">Stok: <span
                                 id="productStock" class="text-slate-700 font-semibold">{{ $productData['stock'] }}
                                 item</span></span>
                     </div>
@@ -397,11 +397,11 @@
             </div>
             <!-- Review -->
             <div id="content-review" class="hidden bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                <div class="grid md:grid-cols-3 gap-8 mb-8">
+                <div class="grid md:grid-cols-3 gap-6 mb-8">
                     <div class="text-center">
-                        <div class="text-6xl font-extrabold text-slate-800 mb-1">{{ number_format($productData['rating'], 1) }}</div>
-                        <div class="text-yellow-400 text-2xl mb-2">★★★★★</div>
-                        <p class="text-slate-500 text-sm">dari {{ number_format($productData['reviews']) }} ulasan</p>
+                        <div class="text-4xl sm:text-5xl md:text-6xl font-extrabold text-slate-800 mb-1">{{ number_format($productData['rating'], 1) }}</div>
+                        <div class="text-yellow-400 text-lg sm:text-2xl mb-2">★★★★★</div>
+                        <p class="text-slate-500 text-xs sm:text-sm">dari {{ number_format($productData['reviews']) }} ulasan</p>
                     </div>
                     <div class="md:col-span-2 space-y-2">
                         @foreach ($reviewDistribution as $dist)
@@ -456,11 +456,11 @@
         </div>
 
         <!-- PRODUK REKOMENDASI -->
-        <div class="mt-12">
-            <div class="flex items-center justify-between mb-5">
+        <div class="mt-10 sm:mt-12">
+            <div class="flex items-center justify-between mb-4 sm:mb-5">
                 <div class="flex items-center gap-3">
-                    <div class="w-1 h-7 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></div>
-                    <h2 class="text-xl font-bold text-slate-800">Produk Rekomendasi</h2>
+                    <div class="w-1 h-6 sm:h-7 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></div>
+                    <h2 class="text-base sm:text-xl font-bold text-slate-800">Produk Rekomendasi</h2>
                 </div>
                 <a href="{{ route('frontend.kategori') }}"
                     class="text-blue-600 hover:text-blue-700 font-semibold text-sm flex items-center gap-1 transition-colors">
