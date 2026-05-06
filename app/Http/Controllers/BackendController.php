@@ -8,10 +8,61 @@ use App\Models\User;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class BackendController extends Controller
 {
+    private function orderStatusCards()
+    {
+        $cards = [
+            [
+                'key' => 'waiting_process',
+                'label' => 'Belum Diproses',
+                'description' => 'Sudah checkout dan dibayar',
+                'statuses' => ['paid', 'settlement', 'capture'],
+                'icon' => 'clock',
+                'color' => 'amber',
+            ],
+            [
+                'key' => 'processing',
+                'label' => 'Diproses',
+                'description' => 'Sedang disiapkan admin',
+                'statuses' => ['process', 'processing'],
+                'icon' => 'package-check',
+                'color' => 'blue',
+            ],
+            [
+                'key' => 'shipping',
+                'label' => 'Sedang Dikirim',
+                'description' => 'Sudah memiliki status kirim',
+                'statuses' => ['kirim', 'shipping', 'shipped'],
+                'icon' => 'truck',
+                'color' => 'violet',
+            ],
+            [
+                'key' => 'completed',
+                'label' => 'Selesai',
+                'description' => 'Transaksi sudah selesai',
+                'statuses' => ['selesai', 'completed', 'delivered'],
+                'icon' => 'check-circle-2',
+                'color' => 'emerald',
+            ],
+        ];
+
+        return collect($cards)->map(function ($card) {
+            $summary = Transaction::query()
+                ->whereIn(DB::raw('LOWER(status)'), $card['statuses'])
+                ->selectRaw('COUNT(*) as total_count, COALESCE(SUM(grand_total), 0) as total_amount')
+                ->first();
+
+            $card['count'] = (int) ($summary->total_count ?? 0);
+            $card['amount'] = (float) ($summary->total_amount ?? 0);
+
+            return $card;
+        });
+    }
+
     public function index()
     {
         $paidStatuses = ['paid', 'process', 'kirim', 'selesai'];
@@ -47,6 +98,8 @@ class BackendController extends Controller
         $lowStockProducts = ProductVariant::with(['product', 'variant'])
             ->where('stock', '<', 10)->orderBy('stock')->take(7)->get();
 
+        $orderStatusCards = $this->orderStatusCards();
+
         return view('backend.dashboard2', compact(
             'totalRevenue',
             'totalOrders',
@@ -59,7 +112,8 @@ class BackendController extends Controller
             'ordersByStatus',
             'topProducts',
             'recentTransactions',
-            'lowStockProducts'
+            'lowStockProducts',
+            'orderStatusCards'
         ));
     }
 
@@ -98,6 +152,8 @@ class BackendController extends Controller
         $lowStockProducts = ProductVariant::with(['product', 'variant'])
             ->where('stock', '<', 10)->orderBy('stock')->take(7)->get();
 
+        $orderStatusCards = $this->orderStatusCards();
+
         return view('backend.dashboard2', compact(
             'totalRevenue',
             'totalOrders',
@@ -110,7 +166,8 @@ class BackendController extends Controller
             'ordersByStatus',
             'topProducts',
             'recentTransactions',
-            'lowStockProducts'
+            'lowStockProducts',
+            'orderStatusCards'
         ));
     }
 
