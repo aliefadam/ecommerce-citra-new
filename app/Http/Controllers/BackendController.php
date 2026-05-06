@@ -13,7 +13,53 @@ use Illuminate\Support\Facades\Hash;
 
 class BackendController extends Controller
 {
-    private function orderStatusCards()
+    private function dashboardPeriod(Request $request): array
+    {
+        $period = $request->query('period', 'month');
+        $allowedPeriods = ['today', '7days', 'month', 'all'];
+
+        if (!in_array($period, $allowedPeriods, true)) {
+            $period = 'month';
+        }
+
+        return match ($period) {
+            'today' => [
+                'key' => $period,
+                'label' => 'Hari Ini',
+                'start' => now()->startOfDay(),
+                'end' => now()->endOfDay(),
+            ],
+            '7days' => [
+                'key' => $period,
+                'label' => '7 Hari Terakhir',
+                'start' => now()->subDays(6)->startOfDay(),
+                'end' => now()->endOfDay(),
+            ],
+            'all' => [
+                'key' => $period,
+                'label' => 'Semua Waktu',
+                'start' => null,
+                'end' => null,
+            ],
+            default => [
+                'key' => 'month',
+                'label' => 'Bulan Ini',
+                'start' => now()->startOfMonth(),
+                'end' => now()->endOfDay(),
+            ],
+        };
+    }
+
+    private function applyPeriod($query, array $period)
+    {
+        if ($period['start'] && $period['end']) {
+            $query->whereBetween('created_at', [$period['start'], $period['end']]);
+        }
+
+        return $query;
+    }
+
+    private function orderStatusCards(array $period)
     {
         $cards = [
             [
@@ -50,8 +96,8 @@ class BackendController extends Controller
             ],
         ];
 
-        return collect($cards)->map(function ($card) {
-            $summary = Transaction::query()
+        return collect($cards)->map(function ($card) use ($period) {
+            $summary = $this->applyPeriod(Transaction::query(), $period)
                 ->whereIn(DB::raw('LOWER(status)'), $card['statuses'])
                 ->selectRaw('COUNT(*) as total_count, COALESCE(SUM(grand_total), 0) as total_amount')
                 ->first();
@@ -63,98 +109,102 @@ class BackendController extends Controller
         });
     }
 
-    public function index()
+    private function actionCards(array $period)
     {
-        $paidStatuses = ['paid', 'process', 'kirim', 'selesai'];
+        $waitingProcess = $this->applyPeriod(Transaction::query(), $period)
+            ->whereIn(DB::raw('LOWER(status)'), ['paid', 'settlement', 'capture']);
+        $pendingPayment = $this->applyPeriod(Transaction::query(), $period)
+            ->whereIn(DB::raw('LOWER(status)'), ['pending', 'menunggu']);
+        $lowStockCount = ProductVariant::where('stock', '<', 10)->count();
 
-        $totalRevenue  = Transaction::whereIn('status', $paidStatuses)->sum('grand_total');
-        $totalOrders   = Transaction::count();
-        $totalUsers    = User::where('role', 'user')->count();
-        $totalProducts = Product::count();
-
-        $thisMonth        = now()->startOfMonth();
-        $lastMonthStart   = now()->subMonth()->startOfMonth();
-        $thisMonthRevenue = Transaction::whereIn('status', $paidStatuses)
-            ->whereBetween('created_at', [$thisMonth, now()])->sum('grand_total');
-        $lastMonthRevenue = Transaction::whereIn('status', $paidStatuses)
-            ->whereBetween('created_at', [$lastMonthStart, $thisMonth])->sum('grand_total');
-
-        $pendingOrders = Transaction::where('status', 'paid')->count();
-
-        $revenueByMonth = Transaction::whereIn('status', $paidStatuses)
-            ->where('created_at', '>=', now()->subMonths(11)->startOfMonth())
-            ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, SUM(grand_total) as total")
-            ->groupBy('month')->orderBy('month')
-            ->pluck('total', 'month');
-
-        $ordersByStatus = Transaction::selectRaw('status, COUNT(*) as count')
-            ->groupBy('status')->pluck('count', 'status');
-
-        $topProducts = TransactionDetail::selectRaw('product_name, SUM(quantity) as total_qty, SUM(subtotal) as total_revenue')
-            ->groupBy('product_name')->orderByDesc('total_qty')->take(5)->get();
-
-        $recentTransactions = Transaction::with('user')->latest()->take(7)->get();
-
-        $lowStockProducts = ProductVariant::with(['product', 'variant'])
-            ->where('stock', '<', 10)->orderBy('stock')->take(7)->get();
-
-        $orderStatusCards = $this->orderStatusCards();
-
-        return view('backend.dashboard2', compact(
-            'totalRevenue',
-            'totalOrders',
-            'totalUsers',
-            'totalProducts',
-            'thisMonthRevenue',
-            'lastMonthRevenue',
-            'pendingOrders',
-            'revenueByMonth',
-            'ordersByStatus',
-            'topProducts',
-            'recentTransactions',
-            'lowStockProducts',
-            'orderStatusCards'
-        ));
+        return [
+            [
+                'label' => 'Perlu Diproses',
+                'description' => 'Pesanan sudah dibayar',
+                'count' => (clone $waitingProcess)->count(),
+                'amount' => (clone $waitingProcess)->sum('grand_total'),
+                'icon' => 'package-check',
+                'color' => 'amber',
+                'url' => route('transactions.index'),
+            ],
+            [
+                'label' => 'Menunggu Pembayaran',
+                'description' => 'Checkout belum lunas',
+                'count' => (clone $pendingPayment)->count(),
+                'amount' => (clone $pendingPayment)->sum('grand_total'),
+                'icon' => 'credit-card',
+                'color' => 'slate',
+                'url' => route('transactions.index'),
+            ],
+            [
+                'label' => 'Stok Rendah',
+                'description' => 'Varian stok di bawah 10',
+                'count' => $lowStockCount,
+                'amount' => null,
+                'icon' => 'triangle-alert',
+                'color' => 'red',
+                'url' => route('stocks.index'),
+            ],
+        ];
     }
 
-    public function dashboard2()
+    private function dashboardData(Request $request): array
     {
-        $paidStatuses = ['paid', 'process', 'kirim', 'selesai'];
+        $period = $this->dashboardPeriod($request);
+        $paidStatuses = ['paid', 'settlement', 'capture', 'process', 'processing', 'kirim', 'shipping', 'shipped', 'selesai', 'completed', 'delivered'];
 
-        $totalRevenue  = Transaction::whereIn('status', $paidStatuses)->sum('grand_total');
-        $totalOrders   = Transaction::count();
+        $totalRevenue = $this->applyPeriod(Transaction::query(), $period)
+            ->whereIn(DB::raw('LOWER(status)'), $paidStatuses)
+            ->sum('grand_total');
+        $totalOrders = $this->applyPeriod(Transaction::query(), $period)->count();
         $totalUsers    = User::where('role', 'user')->count();
         $totalProducts = Product::count();
 
         $thisMonth        = now()->startOfMonth();
         $lastMonthStart   = now()->subMonth()->startOfMonth();
-        $thisMonthRevenue = Transaction::whereIn('status', $paidStatuses)
+        $thisMonthRevenue = Transaction::whereIn(DB::raw('LOWER(status)'), $paidStatuses)
             ->whereBetween('created_at', [$thisMonth, now()])->sum('grand_total');
-        $lastMonthRevenue = Transaction::whereIn('status', $paidStatuses)
+        $lastMonthRevenue = Transaction::whereIn(DB::raw('LOWER(status)'), $paidStatuses)
             ->whereBetween('created_at', [$lastMonthStart, $thisMonth])->sum('grand_total');
 
-        $pendingOrders = Transaction::where('status', 'paid')->count();
+        $pendingOrders = $this->applyPeriod(Transaction::query(), $period)
+            ->whereIn(DB::raw('LOWER(status)'), ['paid', 'settlement', 'capture'])
+            ->count();
 
-        $revenueByMonth = Transaction::whereIn('status', $paidStatuses)
+        $revenueByMonth = Transaction::whereIn(DB::raw('LOWER(status)'), $paidStatuses)
             ->where('created_at', '>=', now()->subMonths(11)->startOfMonth())
             ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, SUM(grand_total) as total")
             ->groupBy('month')->orderBy('month')
             ->pluck('total', 'month');
 
-        $ordersByStatus = Transaction::selectRaw('status, COUNT(*) as count')
+        $ordersByStatus = $this->applyPeriod(Transaction::query(), $period)
+            ->selectRaw('status, COUNT(*) as count')
             ->groupBy('status')->pluck('count', 'status');
 
         $topProducts = TransactionDetail::selectRaw('product_name, SUM(quantity) as total_qty, SUM(subtotal) as total_revenue')
+            ->whereHas('transaction', function ($query) use ($period, $paidStatuses) {
+                $this->applyPeriod($query, $period)
+                    ->whereIn(DB::raw('LOWER(status)'), $paidStatuses);
+            })
             ->groupBy('product_name')->orderByDesc('total_qty')->take(5)->get();
 
-        $recentTransactions = Transaction::with('user')->latest()->take(7)->get();
+        $recentTransactions = $this->applyPeriod(Transaction::with('user'), $period)
+            ->latest()->take(7)->get();
 
         $lowStockProducts = ProductVariant::with(['product', 'variant'])
             ->where('stock', '<', 10)->orderBy('stock')->take(7)->get();
 
-        $orderStatusCards = $this->orderStatusCards();
+        $orderStatusCards = $this->orderStatusCards($period);
+        $actionCards = $this->actionCards($period);
+        $dashboardPeriod = $period;
+        $dashboardPeriodOptions = [
+            'today' => 'Hari Ini',
+            '7days' => '7 Hari',
+            'month' => 'Bulan Ini',
+            'all' => 'Semua',
+        ];
 
-        return view('backend.dashboard2', compact(
+        return compact(
             'totalRevenue',
             'totalOrders',
             'totalUsers',
@@ -167,8 +217,21 @@ class BackendController extends Controller
             'topProducts',
             'recentTransactions',
             'lowStockProducts',
-            'orderStatusCards'
-        ));
+            'orderStatusCards',
+            'actionCards',
+            'dashboardPeriod',
+            'dashboardPeriodOptions'
+        );
+    }
+
+    public function index(Request $request)
+    {
+        return view('backend.dashboard2', $this->dashboardData($request));
+    }
+
+    public function dashboard2(Request $request)
+    {
+        return view('backend.dashboard2', $this->dashboardData($request));
     }
 
     public function charts()

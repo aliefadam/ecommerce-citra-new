@@ -4,11 +4,87 @@
 
 @section('content')
     <main class="flex-1 p-4 sm:p-6 mt-6">
-        <div class="mb-6">
-            <h1 class="text-2xl font-bold text-slate-800 dark:text-white">Dashboard</h1>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Welcome back, Admin! Here's what's happening today. -
-                {{ now()->format('d M Y') }}</p>
-            </p>
+        <div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800 dark:text-white">Dashboard</h1>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                    Welcome back, Admin! Here's what's happening today. - {{ now()->format('d M Y') }}
+                </p>
+                <p class="text-xs text-slate-400 mt-1">Periode transaksi: {{ $dashboardPeriod['label'] }}</p>
+            </div>
+
+            <div
+                class="inline-flex self-start rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-1 shadow-sm overflow-x-auto">
+                @foreach ($dashboardPeriodOptions as $periodKey => $periodLabel)
+                    <a href="{{ url()->current() }}?period={{ $periodKey }}"
+                        class="px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors {{ $dashboardPeriod['key'] === $periodKey ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700' }}">
+                        {{ $periodLabel }}
+                    </a>
+                @endforeach
+            </div>
+        </div>
+
+        {{-- ============ ACTION CARDS ============ --}}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            @foreach ($actionCards as $actionCard)
+                @php
+                    $actionColor = $actionCard['color'] ?? 'slate';
+                    $actionStyle = match ($actionColor) {
+                        'amber'
+                            => [
+                                'iconBg' => 'bg-amber-100 dark:bg-amber-900/40',
+                                'iconText' => 'text-amber-600 dark:text-amber-400',
+                                'link' => 'text-amber-700 dark:text-amber-400',
+                            ],
+                        'red'
+                            => [
+                                'iconBg' => 'bg-red-100 dark:bg-red-900/40',
+                                'iconText' => 'text-red-600 dark:text-red-400',
+                                'link' => 'text-red-700 dark:text-red-400',
+                            ],
+                        default
+                            => [
+                                'iconBg' => 'bg-slate-100 dark:bg-slate-700',
+                                'iconText' => 'text-slate-600 dark:text-slate-300',
+                                'link' => 'text-slate-700 dark:text-slate-300',
+                            ],
+                    };
+                @endphp
+
+                <a href="{{ $actionCard['url'] }}"
+                    class="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-slate-700 hover:-translate-y-0.5 hover:shadow-md transition-all">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                                {{ $actionCard['label'] }}</p>
+                            <p class="text-xs text-slate-400 mt-1">{{ $actionCard['description'] }}</p>
+                        </div>
+                        <span class="w-9 h-9 rounded-xl {{ $actionStyle['iconBg'] }} flex items-center justify-center">
+                            <i data-lucide="{{ $actionCard['icon'] }}" class="w-4 h-4 {{ $actionStyle['iconText'] }}"></i>
+                        </span>
+                    </div>
+                    <div class="mt-4 flex items-end justify-between gap-3">
+                        <div>
+                            <div class="text-2xl font-bold text-slate-800 dark:text-white">
+                                {{ number_format($actionCard['count'], 0, ',', '.') }}
+                            </div>
+                            <div class="text-xs text-slate-400 mt-1">
+                                {{ $actionCard['amount'] === null ? 'item' : 'transaksi' }}
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            @if ($actionCard['amount'] !== null)
+                                <div class="text-xs text-slate-400 mb-1">Nominal</div>
+                                <div class="text-sm font-bold text-slate-800 dark:text-white">
+                                    Rp {{ number_format($actionCard['amount'], 0, ',', '.') }}
+                                </div>
+                            @else
+                                <div class="text-xs font-semibold {{ $actionStyle['link'] }}">Cek stok</div>
+                            @endif
+                        </div>
+                    </div>
+                </a>
+            @endforeach
         </div>
 
         {{-- ============ STAT CARDS ============ --}}
@@ -189,6 +265,30 @@
                         </div>
                     </div>
                 @endforeach
+            </div>
+
+            <div
+                class="mt-4 bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-slate-700">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="font-semibold text-slate-800 dark:text-white text-sm">Nominal Transaksi per Status</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Perbandingan total nilai pesanan dari tiap progres admin</p>
+                    </div>
+                    <span class="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center">
+                        <i data-lucide="pie-chart" class="w-4 h-4 text-amber-500"></i>
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-5 items-center">
+                    <div class="lg:col-span-2 h-64 relative">
+                        <canvas id="statusAmountChart"></canvas>
+                        <div id="statusAmountEmpty"
+                            class="hidden absolute inset-0 items-center justify-center text-center text-xs text-slate-400 px-6">
+                            Belum ada nominal transaksi pada status ini.
+                        </div>
+                    </div>
+                    <div class="lg:col-span-3 space-y-2" id="statusAmountLegend"></div>
+                </div>
             </div>
         </div>
 
@@ -384,6 +484,7 @@
             const isDark = () => document.documentElement.classList.contains('dark');
             const gridColor = () => isDark() ? 'rgba(148,163,184,0.12)' : 'rgba(0,0,0,0.06)';
             const textColor = () => isDark() ? '#94a3b8' : '#64748b';
+            const rupiah = (value) => 'Rp ' + Number(value || 0).toLocaleString('id-ID');
 
             // --- Build 12-month labels & revenue data ---
             const revenueRaw = @json($revenueByMonth);
@@ -462,7 +563,77 @@
                 });
             }
 
-            // --- Chart 2: Status Doughnut ---
+            // --- Chart 2: Transaction amount by operational status ---
+            const statusCardRaw = @json($orderStatusCards);
+            const statusAmountLabels = statusCardRaw.map(item => item.label);
+            const statusAmountData = statusCardRaw.map(item => Number(item.amount || 0));
+            const statusAmountCounts = statusCardRaw.map(item => Number(item.count || 0));
+            const statusAmountColors = ['#f59e0b', '#3b82f6', '#8b5cf6', '#10b981'];
+            const statusAmountTotal = statusAmountData.reduce((total, amount) => total + amount, 0);
+            const ctxStatusAmount = document.getElementById('statusAmountChart');
+            const statusAmountEmpty = document.getElementById('statusAmountEmpty');
+
+            if (ctxStatusAmount && statusAmountTotal > 0) {
+                new Chart(ctxStatusAmount, {
+                    type: 'pie',
+                    data: {
+                        labels: statusAmountLabels,
+                        datasets: [{
+                            data: statusAmountData,
+                            backgroundColor: statusAmountColors,
+                            borderColor: isDark() ? '#1e293b' : '#ffffff',
+                            borderWidth: 2,
+                            hoverOffset: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: ctx => {
+                                        const amount = Number(ctx.parsed || 0);
+                                        const pct = statusAmountTotal > 0 ? ((amount / statusAmountTotal) * 100)
+                                            .toFixed(1) : 0;
+                                        return `${ctx.label}: ${rupiah(amount)} (${pct}%)`;
+                                    },
+                                    afterLabel: ctx => `${statusAmountCounts[ctx.dataIndex]} transaksi`,
+                                }
+                            }
+                        }
+                    }
+                });
+            } else if (statusAmountEmpty) {
+                statusAmountEmpty.classList.remove('hidden');
+                statusAmountEmpty.classList.add('flex');
+            }
+
+            const statusAmountLegend = document.getElementById('statusAmountLegend');
+            if (statusAmountLegend) {
+                statusCardRaw.forEach((item, i) => {
+                    const amount = Number(item.amount || 0);
+                    const pct = statusAmountTotal > 0 ? ((amount / statusAmountTotal) * 100).toFixed(1) : '0.0';
+                    statusAmountLegend.innerHTML += `<div class="flex items-center justify-between gap-3 rounded-xl border border-slate-100 dark:border-slate-700 px-3 py-2.5">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:${statusAmountColors[i]}"></span>
+                            <div class="min-w-0">
+                                <div class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">${item.label}</div>
+                                <div class="text-xs text-slate-400">${Number(item.count || 0).toLocaleString('id-ID')} transaksi</div>
+                            </div>
+                        </div>
+                        <div class="text-right flex-shrink-0">
+                            <div class="text-xs font-bold text-slate-800 dark:text-white">${rupiah(amount)}</div>
+                            <div class="text-xs text-slate-400">${pct}%</div>
+                        </div>
+                    </div>`;
+                });
+            }
+
+            // --- Chart 3: Status Doughnut ---
             const statusRaw = @json($ordersByStatus);
             const statusLabels = Object.keys(statusRaw);
             const statusData = Object.values(statusRaw).map(Number);
@@ -549,7 +720,7 @@
                 }
             }
 
-            // --- Chart 3: Top Products Horizontal Bar ---
+            // --- Chart 4: Top Products Horizontal Bar ---
             const topRaw = @json($topProducts);
             const ctxTop = document.getElementById('topProductsChart');
             if (ctxTop && topRaw.length) {
