@@ -7,7 +7,7 @@
         <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
                 <h1 class="text-2xl font-bold text-slate-800 dark:text-white">Banner Management</h1>
-                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Kelola banner homepage frontend.</p>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Kelola banner homepage. Tipe <span class="font-semibold text-blue-600">Carousel</span> = slider utama, <span class="font-semibold text-purple-600">Side</span> = 2 banner kanan (maks 2).</p>
             </div>
             <a href="{{ route('banners.create') }}"
                 class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-lg shadow-blue-200 dark:shadow-blue-900/40">
@@ -31,6 +31,7 @@
                         <tr>
                             <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">#</th>
                             <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Preview</th>
+                            <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Tipe</th>
                             <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Title</th>
                             <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Target URL</th>
                             <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Urutan</th>
@@ -55,6 +56,13 @@
                                     @endphp
                                     <img src="{{ $imageUrl }}" alt="{{ $banner->title ?? 'Banner' }}"
                                         class="w-24 h-12 object-cover rounded-lg border border-slate-200" />
+                                </td>
+                                <td class="px-4 py-3.5">
+                                    @if ($banner->type === 'side')
+                                        <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">Side</span>
+                                    @else
+                                        <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">Carousel</span>
+                                    @endif
                                 </td>
                                 <td class="px-4 py-3.5 font-medium text-slate-800 dark:text-slate-200">{{ $banner->title ?: '-' }}</td>
                                 <td class="px-4 py-3.5 text-slate-600 dark:text-slate-300">{{ $banner->target_url ?: '-' }}</td>
@@ -83,7 +91,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center py-12 text-slate-400">Belum ada data banner</td>
+                                <td colspan="8" class="text-center py-12 text-slate-400">Belum ada data banner</td>
                             </tr>
                         @endforelse
                     </tbody>

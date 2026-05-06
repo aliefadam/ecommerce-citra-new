@@ -25,6 +25,17 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 space-y-4">
                     <div>
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Tipe Banner <span class="text-red-500">*</span></label>
+                        <select name="type" class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200">
+                            <option value="carousel" @selected(old('type', $banner->type) === 'carousel')>Carousel — Slider utama (kiri)</option>
+                            <option value="side" @selected(old('type', $banner->type) === 'side')>Side — Banner kanan (maks 2)</option>
+                        </select>
+                        @error('type')
+                            <p class="text-xs text-red-500 mt-1.5">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
                         <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Title (opsional)</label>
                         <input type="text" name="title" value="{{ old('title', $banner->title) }}"
                             class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200" />
@@ -33,7 +44,7 @@
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Ganti Upload Gambar</label>
                         <div class="flex items-center gap-3">
-                            <div id="bannerImagePreviewWrap" class="flex-shrink-0">
+                            <div id="bannerImagePreviewWrap" class="shrink-0">
                                 <img id="bannerImagePreview" src="{{ $imageUrl }}" alt="Preview Banner"
                                     class="w-14 h-14 object-cover rounded-lg border border-slate-200 dark:border-slate-600" />
                             </div>
@@ -41,7 +52,7 @@
                                 class="flex-1 flex items-center gap-2 px-3 py-2.5 rounded-xl border border-dashed border-slate-300 dark:border-slate-500 cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 transition-colors bg-white dark:bg-slate-700/50">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round" class="text-slate-400 flex-shrink-0">
+                                    stroke-linejoin="round" class="text-slate-400 shrink-0">
                                     <rect x="3" y="3" width="18" height="18" rx="2" />
                                     <circle cx="8.5" cy="8.5" r="1.5" />
                                     <polyline points="21 15 16 10 5 21" />

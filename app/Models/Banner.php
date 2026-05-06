@@ -8,6 +8,7 @@ class Banner extends Model
 {
     protected $fillable = [
         'title',
+        'type',
         'image',
         'target_url',
         'sort_order',

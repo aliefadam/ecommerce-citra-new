@@ -44,32 +44,30 @@ class FrontendController extends Controller
             })
             ->values()
             ->all();
-        $banners = Banner::query()
+        $allBanners = Banner::query()
             ->where('is_active', true)
             ->orderBy('sort_order')
             ->orderByDesc('id')
-            ->get()
-            ->map(function ($banner) {
-                $image = (string) $banner->image;
-                if (
-                    str_starts_with($image, 'http://') ||
-                    str_starts_with($image, 'https://') ||
-                    str_starts_with($image, '//') ||
-                    str_starts_with($image, 'data:')
-                ) {
-                    $imageUrl = $image;
-                } else {
-                    $imageUrl = asset('storage/' . ltrim($image, '/'));
-                }
+            ->get();
 
-                return [
-                    'image' => $imageUrl,
-                    'target_url' => (string) ($banner->target_url ?? ''),
-                    'sort_order' => (int) $banner->sort_order,
-                ];
-            })
-            ->values()
-            ->all();
+        $normalizeBanner = function ($banner) {
+            $image = (string) $banner->image;
+            $imageUrl = (
+                str_starts_with($image, 'http://') ||
+                str_starts_with($image, 'https://') ||
+                str_starts_with($image, '//') ||
+                str_starts_with($image, 'data:')
+            ) ? $image : asset('storage/' . ltrim($image, '/'));
+
+            return [
+                'image' => $imageUrl,
+                'target_url' => (string) ($banner->target_url ?? ''),
+                'sort_order' => (int) $banner->sort_order,
+            ];
+        };
+
+        $banners = $allBanners->where('type', 'carousel')->map($normalizeBanner)->values()->all();
+        $sideBanners = $allBanners->where('type', 'side')->map($normalizeBanner)->values()->all();
 
         return view('frontend.index', [
             'productsJson' => $products['home'],
@@ -77,6 +75,7 @@ class FrontendController extends Controller
             'homeFilterCategories' => $homeCategories,
             'homeMainCategories' => $mainCategories,
             'bannersJson' => $banners,
+            'sideBannersJson' => $sideBanners,
         ]);
     }
 

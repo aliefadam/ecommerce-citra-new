@@ -9,7 +9,7 @@ class BannerController extends Controller
 {
     public function index()
     {
-        $banners = Banner::query()->orderBy('sort_order')->orderByDesc('id')->get();
+        $banners = Banner::query()->orderBy('type')->orderBy('sort_order')->orderByDesc('id')->get();
 
         return view('backend.banners.index', compact('banners'));
     }
@@ -23,6 +23,7 @@ class BannerController extends Controller
     {
         $validated = $request->validate([
             'title' => ['nullable', 'string', 'max:255'],
+            'type' => ['required', 'in:carousel,side'],
             'image_url' => ['nullable', 'string', 'max:2048'],
             'image_file' => ['nullable', 'image', 'max:4096'],
             'target_url' => ['nullable', 'url', 'max:2048'],
@@ -37,14 +38,16 @@ class BannerController extends Controller
                 ->withInput();
         }
         $isActiveTarget = (bool) ($validated['is_active'] ?? false);
-        if (!$isActiveTarget && Banner::query()->where('is_active', true)->count() === 0) {
+        $type = $validated['type'];
+        if (!$isActiveTarget && $type === 'carousel' && Banner::query()->where('type', 'carousel')->where('is_active', true)->count() === 0) {
             return back()
-                ->withErrors(['is_active' => 'Minimal harus ada 1 banner aktif.'])
+                ->withErrors(['is_active' => 'Minimal harus ada 1 banner carousel aktif.'])
                 ->withInput();
         }
 
         Banner::query()->create([
             'title' => $validated['title'] ?? null,
+            'type' => $type,
             'image' => $image,
             'target_url' => $validated['target_url'] ?? null,
             'sort_order' => (int) $validated['sort_order'],
@@ -63,6 +66,7 @@ class BannerController extends Controller
     {
         $validated = $request->validate([
             'title' => ['nullable', 'string', 'max:255'],
+            'type' => ['required', 'in:carousel,side'],
             'image_url' => ['nullable', 'string', 'max:2048'],
             'image_file' => ['nullable', 'image', 'max:4096'],
             'target_url' => ['nullable', 'url', 'max:2048'],
@@ -71,9 +75,10 @@ class BannerController extends Controller
         ]);
 
         $isActiveTarget = (bool) ($validated['is_active'] ?? false);
-        if (!$isActiveTarget && $banner->is_active && !$this->canDeactivate($banner)) {
+        $type = $validated['type'];
+        if (!$isActiveTarget && $banner->is_active && $banner->type === 'carousel' && !$this->canDeactivate($banner)) {
             return back()
-                ->withErrors(['is_active' => 'Minimal harus ada 1 banner aktif.'])
+                ->withErrors(['is_active' => 'Minimal harus ada 1 banner carousel aktif.'])
                 ->withInput();
         }
 
@@ -86,6 +91,7 @@ class BannerController extends Controller
 
         $banner->update([
             'title' => $validated['title'] ?? null,
+            'type' => $type,
             'image' => $image,
             'target_url' => $validated['target_url'] ?? null,
             'sort_order' => (int) $validated['sort_order'],
@@ -97,8 +103,8 @@ class BannerController extends Controller
 
     public function destroy(Banner $banner)
     {
-        if ($banner->is_active && !$this->canDeactivate($banner)) {
-            return back()->withErrors(['banner' => 'Minimal harus ada 1 banner aktif.']);
+        if ($banner->is_active && $banner->type === 'carousel' && !$this->canDeactivate($banner)) {
+            return back()->withErrors(['banner' => 'Minimal harus ada 1 banner carousel aktif.']);
         }
 
         $banner->delete();
@@ -108,12 +114,11 @@ class BannerController extends Controller
 
     private function canDeactivate(Banner $banner): bool
     {
-        $otherActiveCount = Banner::query()
+        return Banner::query()
             ->where('id', '!=', $banner->id)
+            ->where('type', $banner->type)
             ->where('is_active', true)
-            ->count();
-
-        return $otherActiveCount > 0;
+            ->exists();
     }
 
     private function resolveImageValue(Request $request, string $imageUrl, ?string $fallback = null): ?string
