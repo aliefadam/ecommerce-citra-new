@@ -1,10 +1,53 @@
 {{-- Announcement bar --}}
-<div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white text-center text-xs py-2 px-4">
-    ✨ Belanja lebih hemat dengan promo spesial hari ini &mdash;
-    <a href="{{ route('frontend.kategori') }}" class="font-semibold underline underline-offset-2 hover:text-sky-300 transition-colors ml-1">Lihat Promo &nearr;</a>
+<div class="relative overflow-hidden bg-gradient-to-r from-violet-700 via-indigo-600 to-sky-600 text-white text-center text-xs py-2 px-4">
+    <div class="relative z-10 flex items-center justify-center gap-2">
+        <span class="text-yellow-300 text-sm">★</span>
+        <span class="font-medium tracking-wide">Belanja lebih hemat dengan promo spesial hari ini</span>
+        <span class="hidden sm:inline text-indigo-200">—</span>
+        <a href="{{ route('frontend.kategori') }}" class="hidden sm:inline-flex items-center gap-1 font-bold text-yellow-300 hover:text-yellow-100 transition-colors ml-1 border-b border-yellow-400/50 pb-px">
+            Lihat Promo
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+        </a>
+    </div>
+    {{-- Shine effect --}}
+    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 animate-[shimmer_3s_infinite]" style="animation: shimmer 4s ease-in-out infinite; transform: translateX(-100%) skewX(-12deg);"></div>
 </div>
 
-<nav class="bg-white sticky top-0 z-50 shadow-sm">
+<style>
+    @keyframes shimmer {
+        0% { transform: translateX(-100%) skewX(-12deg); }
+        60%, 100% { transform: translateX(200%) skewX(-12deg); }
+    }
+    .nav-link {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #475569;
+        white-space: nowrap;
+        flex-shrink: 0;
+        transition: color 0.2s;
+    }
+    .nav-link::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        right: 50%;
+        height: 2px;
+        border-radius: 9999px;
+        background: linear-gradient(to right, #0ea5e9, #7c3aed);
+        transition: left 0.25s ease, right 0.25s ease;
+    }
+    .nav-link:hover { color: #0284c7; }
+    .nav-link:hover::after { left: 0.75rem; right: 0.75rem; }
+    .nav-link.active { color: #0284c7; font-weight: 600; }
+    .nav-link.active::after { left: 0.75rem; right: 0.75rem; background: linear-gradient(to right, #0ea5e9, #7c3aed); }
+</style>
+
+<nav class="bg-white/95 backdrop-blur-sm sticky top-0 z-50 border-b border-slate-200/80" style="box-shadow: 0 1px 20px 0 rgba(0,0,0,0.06);">
     @php
         $authUser = auth()->user();
         $displayName = $authUser?->name ?: 'Guest';
@@ -86,193 +129,220 @@
     @endphp
 
     {{-- Main navbar row --}}
-    <div class="border-b border-slate-100">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6">
-            <div class="flex items-center gap-4 h-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+        <div class="flex items-center gap-4 h-[68px]">
 
-                {{-- Logo --}}
-                <a href="{{ route('frontend.index') }}" class="flex items-center gap-2.5 flex-shrink-0">
-                    <div class="w-10 h-10 bg-gradient-to-br from-sky-400 to-violet-600 rounded-xl flex items-center justify-center shadow-md">
-                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3z" />
-                            <path d="M16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+            {{-- Logo --}}
+            <a href="{{ route('frontend.index') }}" class="flex items-center gap-2.5 flex-shrink-0 group">
+                <div class="w-10 h-10 bg-gradient-to-br from-sky-400 via-blue-500 to-violet-600 rounded-xl flex items-center justify-center shadow-md group-hover:shadow-sky-200 group-hover:scale-105 transition-all duration-200">
+                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3z" />
+                        <path d="M16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+                    </svg>
+                </div>
+                <div class="hidden sm:flex flex-col leading-none">
+                    <span class="text-[10px] font-medium text-slate-400 tracking-widest uppercase">Official Store</span>
+                    <span class="text-lg font-extrabold bg-gradient-to-r from-sky-500 to-violet-600 bg-clip-text text-transparent leading-tight">Citra Ecommerce</span>
+                </div>
+            </a>
+
+            {{-- Search bar (desktop) --}}
+            <div class="hidden md:flex flex-1 max-w-xl mx-auto relative items-center">
+                <div class="relative flex-1">
+                    <form action="{{ route('frontend.search') }}" method="GET"
+                        class="flex rounded-full overflow-hidden border-2 border-slate-200 focus-within:border-sky-400 focus-within:ring-4 focus-within:ring-sky-100 transition-all bg-slate-50 focus-within:bg-white">
+                        <div class="flex items-center pl-4 text-slate-400 flex-shrink-0">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
+                        <input type="text" id="ecNavSearchDesktop" name="q"
+                            value="{{ trim(request('q', $query ?? '')) }}"
+                            placeholder="Cari produk, merek, kategori..."
+                            class="flex-1 px-3 py-2.5 text-sm outline-none bg-transparent text-slate-700 placeholder-slate-400"
+                            autocomplete="off" />
+                        <button type="submit"
+                            class="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white px-5 font-semibold text-sm flex items-center gap-1.5 transition-all flex-shrink-0 rounded-full my-1 mr-1">
+                            Cari
+                        </button>
+                    </form>
+                    <div id="ecNavSearchDropdownDesktop"
+                        class="hidden absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 z-50 overflow-hidden">
+                    </div>
+                </div>
+            </div>
+
+            {{-- Right actions --}}
+            <div class="flex items-center gap-0.5 ml-auto">
+                {{-- Mobile search toggle --}}
+                <button id="ecMobileSearchToggle" class="md:hidden p-2.5 rounded-xl hover:bg-slate-100 transition-colors text-slate-500">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </button>
+
+                {{-- Wishlist --}}
+                <a href="{{ route('frontend.profil') }}?tab=wishlist"
+                    class="hidden sm:flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl hover:bg-slate-50 transition-all group" title="Wishlist">
+                    <div class="relative">
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-rose-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                         </svg>
                     </div>
-                    <span class="text-xl font-extrabold bg-gradient-to-r from-sky-500 to-violet-600 bg-clip-text text-transparent hidden sm:block">Citra Ecommerce</span>
+                    <span class="text-[10px] text-slate-400 group-hover:text-rose-400 leading-none font-medium">Wishlist</span>
                 </a>
 
-                {{-- Search bar (desktop) --}}
-                <div class="hidden md:flex flex-1 max-w-2xl mx-auto relative items-center">
-                    <div class="relative flex-1">
-                        <form action="{{ route('frontend.search') }}" method="GET"
-                            class="flex rounded-xl overflow-hidden border border-slate-200 focus-within:border-sky-400 focus-within:ring-2 focus-within:ring-sky-100 transition-all">
-                            <input type="text" id="ecNavSearchDesktop" name="q"
-                                value="{{ trim(request('q', $query ?? '')) }}"
-                                placeholder="Cari produk, merek, kategori..."
-                                class="flex-1 px-5 py-3 text-sm outline-none bg-white text-slate-700 placeholder-slate-400"
-                                autocomplete="off" />
-                            <button type="submit"
-                                class="bg-sky-500 hover:bg-sky-600 text-white px-6 font-semibold text-sm flex items-center gap-2 transition-colors flex-shrink-0">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg>
-                                Cari
-                            </button>
-                        </form>
-                        <div id="ecNavSearchDropdownDesktop"
-                            class="hidden absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-xl border border-slate-100 z-50 overflow-hidden">
+                {{-- Notification (auth only) --}}
+                @auth
+                <div class="relative">
+                    <button id="ecNotifTrigger" type="button"
+                        class="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl hover:bg-slate-50 transition-all group relative" title="Notifikasi">
+                        <div class="relative">
+                            <svg class="w-5 h-5 text-slate-400 group-hover:text-sky-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            </svg>
+                            <span id="ecNotifBadge"
+                                class="absolute -top-1 -right-1.5 bg-rose-500 text-white text-[9px] min-w-4 h-4 px-1 rounded-full hidden items-center justify-center leading-none font-bold ring-2 ring-white"></span>
+                        </div>
+                        <span class="text-[10px] text-slate-400 group-hover:text-sky-500 leading-none font-medium hidden lg:block">Notifikasi</span>
+                    </button>
+                    <div id="ecNotifDropdown"
+                        class="hidden absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-slate-100 z-50 overflow-hidden">
+                        <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50/80">
+                            <span class="font-semibold text-sm text-slate-800 flex items-center gap-2">
+                                <svg class="w-4 h-4 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                                Notifikasi
+                            </span>
+                            <button id="ecNotifReadAll" class="text-xs text-sky-600 hover:text-sky-700 font-semibold px-2 py-1 rounded-lg hover:bg-sky-50 transition-colors">Tandai dibaca</button>
+                        </div>
+                        <div id="ecNotifList" class="divide-y divide-slate-50 max-h-80 overflow-y-auto">
+                            <div class="px-4 py-6 text-center text-sm text-slate-400">Memuat...</div>
+                        </div>
+                        <div class="px-4 py-3 border-t border-slate-100 text-center bg-slate-50/60">
+                            <a href="{{ route('frontend.profil') }}?tab=notif"
+                                class="text-sm text-sky-600 hover:text-sky-700 font-semibold">Lihat Semua Notifikasi →</a>
                         </div>
                     </div>
                 </div>
+                @endauth
 
-                {{-- Right actions --}}
-                <div class="flex items-center gap-1 ml-auto">
-                    {{-- Mobile search toggle --}}
-                    <button id="ecMobileSearchToggle" class="md:hidden p-2.5 rounded-xl hover:bg-slate-100 transition-colors">
-                        <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </button>
-
-                    {{-- Wishlist --}}
-                    <a href="{{ route('frontend.profil') }}?tab=wishlist" class="hidden sm:flex p-2.5 rounded-xl hover:bg-slate-100 transition-colors flex-col items-center gap-0.5 group" title="Wishlist">
-                        <svg class="w-6 h-6 text-slate-500 group-hover:text-red-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                        </svg>
-                        <span class="text-[10px] text-slate-400 group-hover:text-red-400 leading-none hidden lg:block">Wishlist</span>
-                    </a>
-
-                    {{-- Notification (auth only) --}}
-                    @auth
+                {{-- Cart --}}
+                <a href="{{ route('frontend.cart') }}"
+                    class="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl hover:bg-slate-50 transition-all group relative" title="Keranjang">
                     <div class="relative">
-                        <button id="ecNotifTrigger" type="button"
-                            class="p-2.5 rounded-xl hover:bg-slate-100 transition-colors flex flex-col items-center gap-0.5 group relative" title="Notifikasi">
-                            <svg class="w-6 h-6 text-slate-500 group-hover:text-sky-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                            </svg>
-                            <span class="text-[10px] text-slate-400 group-hover:text-sky-500 leading-none hidden lg:block">Notifikasi</span>
-                            <span id="ecNotifBadge"
-                                class="absolute top-1.5 right-1.5 bg-red-500 text-white text-[10px] min-w-4 h-4 px-1 rounded-full hidden items-center justify-center leading-none font-bold"></span>
-                        </button>
-                        <div id="ecNotifDropdown"
-                            class="hidden absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-slate-100 z-50 overflow-hidden">
-                            <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
-                                <span class="font-semibold text-sm text-slate-800">Notifikasi</span>
-                                <button id="ecNotifReadAll" class="text-xs text-sky-600 hover:text-sky-700 font-medium">Tandai dibaca</button>
-                            </div>
-                            <div id="ecNotifList" class="divide-y divide-slate-50 max-h-80 overflow-y-auto">
-                                <div class="px-4 py-6 text-center text-sm text-slate-400">Memuat...</div>
-                            </div>
-                            <div class="px-4 py-3 border-t border-slate-100 text-center">
-                                <a href="{{ route('frontend.profil') }}?tab=notif"
-                                    class="text-sm text-sky-600 hover:text-sky-700 font-semibold">Lihat Semua Notifikasi</a>
-                            </div>
-                        </div>
-                    </div>
-                    @endauth
-
-                    {{-- Cart --}}
-                    <a href="{{ route('frontend.cart') }}"
-                        class="p-2.5 rounded-xl hover:bg-slate-100 transition-colors flex flex-col items-center gap-0.5 group relative" title="Keranjang">
-                        <svg class="w-6 h-6 text-slate-500 group-hover:text-sky-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-sky-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
                                 d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
-                        <span class="text-[10px] text-slate-400 group-hover:text-sky-500 leading-none hidden lg:block">Keranjang</span>
                         <span id="cartCount"
-                            class="absolute top-1.5 right-1.5 bg-sky-500 text-white text-[10px] min-w-4 h-4 px-1 rounded-full {{ $cartCount > 0 ? 'flex' : 'hidden' }} items-center justify-center leading-none font-bold">{{ $cartCount }}</span>
-                    </a>
+                            class="absolute -top-1 -right-1.5 bg-sky-500 text-white text-[9px] min-w-4 h-4 px-1 rounded-full {{ $cartCount > 0 ? 'flex' : 'hidden' }} items-center justify-center leading-none font-bold ring-2 ring-white">{{ $cartCount }}</span>
+                    </div>
+                    <span class="text-[10px] text-slate-400 group-hover:text-sky-500 leading-none font-medium">Keranjang</span>
+                </a>
 
-                    {{-- User / Login --}}
-                    @auth
-                        <div class="relative">
-                            <button id="ecAccountTrigger" type="button"
-                                class="flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-slate-100 transition-colors">
-                                @if ($hasAvatarImage)
-                                    <img src="{{ $avatarUrl }}" alt="{{ $displayFirstName }}"
-                                        class="w-9 h-9 rounded-full object-cover border-2 border-sky-100" />
-                                @else
-                                    <div class="w-9 h-9 rounded-full bg-gradient-to-br from-sky-400 to-violet-500 flex items-center justify-center text-white text-sm font-bold shadow-sm">
-                                        {{ $initial }}
-                                    </div>
-                                @endif
-                                <div class="hidden sm:flex flex-col items-start leading-tight">
-                                    <span class="text-[10px] text-slate-400 font-normal">Halo,</span>
-                                    <span class="text-sm font-semibold text-slate-700">{{ $displayFirstName }}</span>
+                {{-- Divider --}}
+                <div class="w-px h-8 bg-slate-200 mx-1 hidden sm:block"></div>
+
+                {{-- User / Login --}}
+                @auth
+                    <div class="relative">
+                        <button id="ecAccountTrigger" type="button"
+                            class="flex items-center gap-2 px-2.5 py-2 rounded-xl hover:bg-slate-50 transition-all border border-transparent hover:border-slate-200">
+                            @if ($hasAvatarImage)
+                                <img src="{{ $avatarUrl }}" alt="{{ $displayFirstName }}"
+                                    class="w-8 h-8 rounded-full object-cover border-2 border-sky-200 ring-2 ring-offset-1 ring-sky-100" />
+                            @else
+                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-sky-400 to-violet-500 flex items-center justify-center text-white text-sm font-bold shadow-sm ring-2 ring-offset-1 ring-sky-100">
+                                    {{ $initial }}
                                 </div>
-                                <svg class="hidden sm:block w-3.5 h-3.5 text-slate-400 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
-                            <div id="ecAccountDropdown"
-                                class="hidden absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-lg border border-slate-100 py-1 z-50">
-                                <a href="{{ route('frontend.profil') }}"
-                                    class="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
-                                    <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            @endif
+                            <div class="hidden sm:flex flex-col items-start leading-tight">
+                                <span class="text-[10px] text-slate-400 font-normal">Halo,</span>
+                                <span class="text-sm font-bold text-slate-700">{{ $displayFirstName }}</span>
+                            </div>
+                            <svg class="hidden sm:block w-3.5 h-3.5 text-slate-400 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div id="ecAccountDropdown"
+                            class="hidden absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 py-1.5 z-50 overflow-hidden">
+                            <div class="px-4 py-3 border-b border-slate-100 bg-gradient-to-br from-sky-50 to-violet-50">
+                                <p class="text-sm font-bold text-slate-800">{{ $displayName }}</p>
+                                <p class="text-xs text-slate-400 mt-0.5">{{ auth()->user()->email }}</p>
+                            </div>
+                            <a href="{{ route('frontend.profil') }}"
+                                class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                                <div class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center">
+                                    <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                     </svg>
-                                    Profil Saya
-                                </a>
-                                <a href="{{ route('frontend.profil') }}?tab=pesanan"
-                                    class="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
-                                    <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                </div>
+                                Profil Saya
+                            </a>
+                            <a href="{{ route('frontend.profil') }}?tab=pesanan"
+                                class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                                <div class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center">
+                                    <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                                     </svg>
-                                    Riwayat Pesanan
-                                </a>
+                                </div>
+                                Riwayat Pesanan
+                            </a>
+                            <div class="border-t border-slate-100 mt-1 pt-1">
                                 <form action="{{ route('logout') }}" method="POST">
                                     @csrf
                                     <button type="submit"
-                                        class="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                                        </svg>
+                                        class="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-rose-500 hover:bg-rose-50 transition-colors">
+                                        <div class="w-7 h-7 rounded-lg bg-rose-50 flex items-center justify-center">
+                                            <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                            </svg>
+                                        </div>
                                         Logout
                                     </button>
                                 </form>
                             </div>
                         </div>
-                    @else
-                        <a href="{{ route('login') }}"
-                            class="flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-slate-100 transition-colors">
-                            <div class="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center">
-                                <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
-                            </div>
-                            <div class="hidden sm:flex flex-col items-start leading-tight">
-                                <span class="text-[10px] text-slate-400">Halo,</span>
-                                <span class="text-sm font-semibold text-slate-700">Login / Daftar</span>
-                            </div>
-                        </a>
-                    @endauth
-                </div>
+                    </div>
+                @else
+                    <a href="{{ route('login') }}"
+                        class="flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-slate-50 transition-all border border-transparent hover:border-slate-200">
+                        <div class="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                        </div>
+                        <div class="hidden sm:flex flex-col items-start leading-tight">
+                            <span class="text-[10px] text-slate-400 font-normal">Halo,</span>
+                            <span class="text-sm font-bold text-slate-700">Login / Daftar</span>
+                        </div>
+                    </a>
+                @endauth
             </div>
         </div>
     </div>
-</nav>
 
-{{-- Secondary nav row --}}
-    <div class="border-b border-slate-100 bg-white">
+    {{-- Secondary nav row --}}
+    <div class="border-t border-slate-100 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6">
-            <div class="flex items-center gap-1 h-11 overflow-x-auto scrollbar-hide">
+            <div class="flex items-center h-11 overflow-x-auto scrollbar-hide" style="scrollbar-width:none;">
 
                 {{-- Browse Categories button --}}
                 <div class="relative flex-shrink-0">
                     <button id="ecCategoryTrigger" type="button"
-                        class="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-sky-500 to-violet-600 hover:from-sky-600 hover:to-violet-700 text-white text-sm font-semibold transition-all shadow-sm hover:shadow-md whitespace-nowrap">
+                        class="flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-sky-500 to-violet-600 hover:from-sky-600 hover:to-violet-700 text-white text-sm font-semibold transition-all shadow-sm hover:shadow-md whitespace-nowrap group">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                         Jelajahi Kategori
-                        <svg class="w-3.5 h-3.5 text-sky-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-3 h-3 text-sky-200 group-hover:rotate-180 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
                         </svg>
                     </button>
@@ -280,13 +350,11 @@
                     {{-- Category mega dropdown --}}
                     <div id="ecCategoryDropdown"
                         class="hidden fixed bg-white rounded-2xl shadow-2xl border border-slate-100 z-[70] overflow-hidden">
-                        {{-- Top accent bar --}}
                         <div class="h-1 bg-gradient-to-r from-sky-400 via-violet-500 to-fuchsia-400"></div>
                         <div class="grid grid-cols-5" style="min-height:380px">
-                            {{-- Left sidebar --}}
                             <div class="col-span-1 bg-slate-50/60 border-r border-slate-100 flex flex-col">
                                 <div class="px-4 pt-4 pb-2">
-                                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Kategori</p>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Kategori</p>
                                 </div>
                                 <div id="ecMegaCategoryMenu" class="flex-1 overflow-y-auto px-2 pb-2 space-y-0.5"></div>
                                 <div class="border-t border-slate-100 p-3">
@@ -299,63 +367,70 @@
                                     </a>
                                 </div>
                             </div>
-                            {{-- Right content --}}
                             <div id="ecMegaCategoryContent" class="col-span-4 p-6 overflow-y-auto"></div>
                         </div>
                     </div>
                 </div>
 
-                <div class="w-px h-5 bg-slate-200 mx-1 flex-shrink-0"></div>
+                <div class="w-px h-5 bg-slate-200 mx-3 flex-shrink-0"></div>
 
                 {{-- Nav links --}}
                 <a href="{{ route('frontend.index') }}"
-                    class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-sky-600 whitespace-nowrap transition-colors flex-shrink-0 {{ request()->routeIs('frontend.index') ? 'text-sky-600 font-semibold' : '' }}">
+                    class="nav-link {{ request()->routeIs('frontend.index') ? 'active' : '' }}">
                     Beranda
                 </a>
                 <a href="{{ route('frontend.kategori') }}"
-                    class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-sky-600 whitespace-nowrap transition-colors flex-shrink-0">
+                    class="nav-link {{ request()->routeIs('frontend.kategori') ? 'active' : '' }}">
                     Semua Produk
                 </a>
                 <a href="{{ route('frontend.search') }}?sort=newest"
-                    class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-sky-600 whitespace-nowrap transition-colors flex-shrink-0">
+                    class="nav-link">
                     Produk Terbaru
                 </a>
                 <a href="{{ route('frontend.search') }}?sort=popular"
-                    class="px-3 py-2 rounded-full bg-sky-50 text-sky-700 text-sm font-semibold hover:bg-sky-100 whitespace-nowrap transition-colors flex-shrink-0">
+                    class="nav-link flex items-center gap-1.5 !text-sky-600 !font-semibold">
+                    <svg class="w-3.5 h-3.5 text-sky-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                    </svg>
                     Terlaris
                 </a>
-                <a href="{{ route('frontend.search') }}?promo=1"
-                    class="px-3 py-2 text-sm font-semibold text-orange-500 hover:text-orange-600 whitespace-nowrap transition-colors flex-shrink-0 flex items-center gap-1">
-                    🔥 Promo Spesial
+                <a href="{{ route('frontend.flash-sale') }}"
+                    class="nav-link flex items-center gap-1.5 !text-orange-500 !font-semibold">
+                    <svg class="w-3.5 h-3.5 text-orange-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"/>
+                    </svg>
+                    Promo Spesial
                 </a>
                 @auth
                 <a href="{{ route('frontend.profil') }}?tab=pesanan"
-                    class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-sky-600 whitespace-nowrap transition-colors flex-shrink-0">
+                    class="nav-link">
                     Pesanan Saya
                 </a>
                 @endauth
             </div>
         </div>
     </div>
+</nav>
 
-    {{-- Mobile search row --}}
-    <div id="ecMobileSearch" class="hidden md:hidden px-4 pb-3 border-b border-slate-100 pt-3 bg-white">
-        <form action="{{ route('frontend.search') }}" method="GET"
-            class="flex border border-slate-200 rounded-xl overflow-hidden focus-within:border-sky-400 focus-within:ring-2 focus-within:ring-sky-100 transition-all">
-            <input type="text" id="ecNavSearchMobile" name="q"
-                value="{{ trim(request('q', $query ?? '')) }}" placeholder="Cari produk..."
-                class="flex-1 px-4 py-2.5 text-sm outline-none bg-white" autocomplete="off" />
-            <button type="submit" class="bg-sky-500 hover:bg-sky-600 text-white px-4 flex items-center gap-1.5 font-medium text-sm transition-colors">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                Cari
-            </button>
-        </form>
-        <div id="ecNavSearchDropdownMobile"
-            class="hidden mt-1 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden"></div>
-    </div>
+{{-- Mobile search row --}}
+<div id="ecMobileSearch" class="hidden md:hidden px-4 pb-3 border-b border-slate-100 pt-3 bg-white">
+    <form action="{{ route('frontend.search') }}" method="GET"
+        class="flex border-2 border-slate-200 rounded-full overflow-hidden focus-within:border-sky-400 focus-within:ring-2 focus-within:ring-sky-100 transition-all bg-slate-50">
+        <div class="flex items-center pl-3 text-slate-400">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+        </div>
+        <input type="text" id="ecNavSearchMobile" name="q"
+            value="{{ trim(request('q', $query ?? '')) }}" placeholder="Cari produk..."
+            class="flex-1 px-3 py-2.5 text-sm outline-none bg-transparent" autocomplete="off" />
+        <button type="submit" class="bg-sky-500 hover:bg-sky-600 text-white px-4 flex items-center gap-1.5 font-medium text-sm transition-colors rounded-full my-1 mr-1">
+            Cari
+        </button>
+    </form>
+    <div id="ecNavSearchDropdownMobile"
+        class="hidden mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden"></div>
+</div>
 
 <script>
     (() => {
@@ -410,7 +485,7 @@
                             <p class="text-sm font-medium text-slate-800 truncate">${p.name}</p>
                             <p class="text-xs text-slate-500 truncate">${p.meta}</p>
                         </div>
-                        <i class="ri-arrow-right-up-line text-slate-400 text-base"></i>
+                        <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
                     </a>
                 `).join('');
             }, 320);
