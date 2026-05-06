@@ -35,25 +35,35 @@
         </style>
     </head>
 
-    <body class="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100">
+    <body class="h-screen overflow-hidden bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100">
         <div class="min-h-screen grid lg:grid-cols-2">
-            <section
-                class="hidden lg:flex flex-col justify-between p-10 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 text-white">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center">
+            <section class="hidden lg:flex flex-col justify-between text-white relative overflow-hidden"
+                style="background: url('https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=900&q=80') center center / cover no-repeat;">
+
+                <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-black/30"></div>
+
+                <div class="relative flex items-center gap-3 z-10 p-10">
+                    <div class="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white"
                             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
                         </svg>
                     </div>
-                    <span class="text-xl font-extrabold tracking-tight">Admin<span
-                            class="text-blue-200">Kit</span></span>
+                    <span class="text-xl font-extrabold tracking-tight">
+                        Citra <span class="text-white">Ecommerce</span>
+                    </span>
                 </div>
-                <div>
-                    <h1 class="text-3xl font-bold leading-tight">Create your account</h1>
-                    <p class="mt-3 text-blue-100">Daftar akun baru untuk mengakses dashboard admin.</p>
+
+                <div class="relative z-10 p-10">
+                    <h1 class="text-3xl font-bold leading-tight">Temukan produk <br>terbaik untuk Anda</h1>
+                    <p class="mt-2 text-sm text-white/70">Belanja mudah, cepat, dan terpercaya â€” <br>ribuan produk siap
+                        dikirim ke seluruh Indonesia.</p>
+                    <div class="flex items-center gap-2 mt-6">
+                        <div class="w-7 h-2 rounded-full bg-white"></div>
+                        <div class="w-2 h-2 rounded-full bg-white/40"></div>
+                        <div class="w-2 h-2 rounded-full bg-white/40"></div>
+                    </div>
                 </div>
-                <p class="text-sm text-blue-200">Template Admin Panel</p>
             </section>
 
             <section class="flex items-center justify-center p-6 sm:p-10">

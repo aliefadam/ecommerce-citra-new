@@ -1,4 +1,4 @@
-<?php
+e<?php
 
 namespace App\Http\Controllers;
 
@@ -381,6 +381,123 @@ class FrontendController extends Controller
         $isFlashSale = (bool) $activeFlashSaleItem;
         $flashSalePrice = $isFlashSale ? (int) $activeFlashSaleItem->discount_price : null;
         $origPrice = $price;
+        $deliveredStatuses = [
+            'paid',
+            'settlement',
+            'capture',
+            'process',
+            'processing',
+            'kirim',
+            'shipping',
+            'shipped',
+            'selesai',
+            'completed',
+            'delivered',
+        ];
+
+        $recommendedCandidatesQuery = Product::query()
+            ->with([
+                'mainCategory',
+                'categoryDetail',
+                'productVariants.variant',
+                'flashSaleItems.flashSale',
+            ])
+            ->where('status', 'active')
+            ->where('id', '!=', $product->id);
+
+        if ($product->category_detail_id || $product->main_category_id) {
+            $recommendedCandidatesQuery->where(function ($q) use ($product) {
+                if ($product->category_detail_id) {
+                    $q->orWhere('category_detail_id', $product->category_detail_id);
+                }
+                if ($product->main_category_id) {
+                    $q->orWhere('main_category_id', $product->main_category_id);
+                }
+            });
+        }
+
+        $recommendedCandidates = $recommendedCandidatesQuery
+            ->limit(30)
+            ->get();
+
+        if ($recommendedCandidates->count() < 5) {
+            $fallback = Product::query()
+                ->with([
+                    'mainCategory',
+                    'categoryDetail',
+                    'productVariants.variant',
+                    'flashSaleItems.flashSale',
+                ])
+                ->where('status', 'active')
+                ->where('id', '!=', $product->id)
+                ->whereNotIn('id', $recommendedCandidates->pluck('id'))
+                ->latest('id')
+                ->limit(20)
+                ->get();
+            $recommendedCandidates = $recommendedCandidates->concat($fallback);
+        }
+
+        $candidateIds = $recommendedCandidates->pluck('id')->values();
+        $soldCounts = TransactionDetail::query()
+            ->selectRaw('product_id, SUM(quantity) as sold_total')
+            ->whereIn('product_id', $candidateIds)
+            ->whereHas('transaction', function ($q) use ($deliveredStatuses) {
+                $q->whereIn(DB::raw('LOWER(status)'), $deliveredStatuses);
+            })
+            ->groupBy('product_id')
+            ->pluck('sold_total', 'product_id');
+
+        $reviewStatsByProduct = TransactionProductReview::query()
+            ->join('transaction_details', 'transaction_details.id', '=', 'transaction_product_reviews.transaction_detail_id')
+            ->selectRaw('transaction_details.product_id as product_id, AVG(transaction_product_reviews.rating) as avg_rating, COUNT(transaction_product_reviews.id) as total_reviews')
+            ->whereIn('transaction_details.product_id', $candidateIds)
+            ->groupBy('transaction_details.product_id')
+            ->get()
+            ->keyBy('product_id');
+
+        $recommendedProducts = $recommendedCandidates
+            ->map(function ($recProduct) use ($soldCounts, $reviewStatsByProduct) {
+                $recVariant = $recProduct->productVariants->first();
+                if (!$recVariant) {
+                    return null;
+                }
+
+                $recPrice = (int) $recVariant->price;
+                $recActiveFlashSaleItem = $recProduct->flashSaleItems
+                    ->first(function ($item) {
+                        $sale = $item->flashSale;
+                        if (!$sale || !$item->is_active || $sale->status !== 'active') {
+                            return false;
+                        }
+                        $now = now();
+                        return $sale->start_at && $sale->end_at && $now->between($sale->start_at, $sale->end_at);
+                    });
+
+                $recDisplayPrice = $recActiveFlashSaleItem ? (int) $recActiveFlashSaleItem->discount_price : $recPrice;
+                $stats = $reviewStatsByProduct->get($recProduct->id);
+                $rating = $stats ? round((float) $stats->avg_rating, 1) : 0.0;
+                $reviewsCount = $stats ? (int) $stats->total_reviews : 0;
+                $soldCount = (int) ($soldCounts[$recProduct->id] ?? 0);
+                $score = ($soldCount * 0.5) + ($rating * 20) + ($reviewsCount * 1.5);
+
+                return [
+                    'name' => (string) $recProduct->name,
+                    'price' => $recDisplayPrice,
+                    'image' => $this->normalizeImageUrl((string) ($recVariant->image ?? ''), '300x300'),
+                    'rating' => round($rating, 1),
+                    'url' => route('frontend.detail-produk', ['slug' => $recProduct->slug]),
+                    '_score' => $score,
+                ];
+            })
+            ->filter()
+            ->sortByDesc('_score')
+            ->take(5)
+            ->values()
+            ->map(function ($item) {
+                unset($item['_score']);
+                return $item;
+            })
+            ->all();
 
         $relatedProducts = $this->buildRelatedProducts($product->id, $product->main_category_id);
 

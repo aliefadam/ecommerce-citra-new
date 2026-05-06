@@ -219,13 +219,15 @@
             return `
                 <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                     <td class="px-4 py-3.5 text-slate-500 dark:text-slate-400">${visibleIndex + 1}</td>
-                    <td class="px-4 py-3.5 font-medium text-slate-800 dark:text-slate-200">${tx.invoice_no}</td>
+                    <td class="px-4 py-3.5 font-medium text-slate-800 dark:text-slate-200">
+                        <div>${tx.invoice_no}</div>
+                        ${tx.tracking_number ? `<div class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Resi: ${tx.tracking_number}</div>` : ''}
+                    </td>
                     <td class="px-4 py-3.5 text-slate-500 dark:text-slate-400">
                         <div>${tx.customer}</div>
                     </td>
                     <td class="px-4 py-3.5 text-slate-500 dark:text-slate-400">
                         <div>${tx.customer_email || '-'}</div>
-                        ${tx.tracking_number ? `<div class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Resi: ${tx.tracking_number}</div>` : ''}
                     </td>
                     <td class="px-4 py-3.5">${txStatusBadge(tx.status)}</td>
                     <td class="px-4 py-3.5 font-semibold text-slate-800 dark:text-slate-200">Rp ${Number(tx.grand_total || 0).toLocaleString('id-ID')}</td>
