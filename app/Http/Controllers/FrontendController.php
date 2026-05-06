@@ -760,6 +760,13 @@ class FrontendController extends Controller
 
             $image = $this->normalizeImageUrl((string) ($variant->image ?? ''), '400x400');
 
+            $variantPrices = $product->productVariants
+                ->pluck('price')
+                ->map(fn($v) => (int) $v)
+                ->filter(fn($v) => $v > 0)
+                ->values();
+            $priceMin = $variantPrices->isNotEmpty() ? (int) $variantPrices->min() : (int) $variant->price;
+            $priceMax = $variantPrices->isNotEmpty() ? (int) $variantPrices->max() : (int) $variant->price;
             $price = (int) $variant->price;
             $sold = (int) ($soldMap[$product->id] ?? 0);
             $stat = $reviewStats->get($product->id);
@@ -781,8 +788,10 @@ class FrontendController extends Controller
                 });
             $isFlashSale = (bool) $activeFlashSaleItem;
             $flashSalePrice = $isFlashSale ? (int) $activeFlashSaleItem->discount_price : null;
-            $displayPrice = $isFlashSale ? $flashSalePrice : $price;
-            $originalPrice = $price;
+            $displayPrice = $isFlashSale ? $flashSalePrice : $priceMin;
+            $displayPriceMax = $isFlashSale ? $flashSalePrice : $priceMax;
+            $originalPrice = $isFlashSale ? $priceMin : $priceMin;
+            $originalPriceMax = $isFlashSale ? $priceMax : $priceMax;
 
             $badge = null;
             if ($isFlashSale) {
@@ -799,7 +808,9 @@ class FrontendController extends Controller
                 'slug' => $product->slug,
                 'name' => $product->name,
                 'price' => $displayPrice,
+                'priceMax' => $displayPriceMax,
                 'originalPrice' => $originalPrice,
+                'originalPriceMax' => $originalPriceMax,
                 'category' => $this->mapHomeCategory($product->mainCategory?->name),
                 'categorySlug' => (string) ($product->categoryDetail?->slug ?? ''),
                 'parentCategorySlug' => (string) ($product->mainCategory?->slug ?? ''),
@@ -820,7 +831,9 @@ class FrontendController extends Controller
                 'slug' => $product->slug,
                 'name' => $product->name,
                 'price' => $displayPrice,
+                'priceMax' => $displayPriceMax,
                 'origPrice' => $originalPrice,
+                'origPriceMax' => $originalPriceMax,
                 'cat' => $this->mapCategoryPageCategory($product->mainCategory?->name),
                 'categorySlug' => (string) ($product->categoryDetail?->slug ?? ''),
                 'parentCategorySlug' => (string) ($product->mainCategory?->slug ?? ''),

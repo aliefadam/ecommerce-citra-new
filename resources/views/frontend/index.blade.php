@@ -484,8 +484,18 @@
                             @endif
                         </div>
                         <div class="flex items-center gap-1.5 flex-wrap mt-auto pt-1">
-                            <span class="font-bold text-slate-900 text-sm">Rp {{ number_format($rp['price'], 0, ',', '.') }}</span>
-                            @if (($rp['originalPrice'] ?? 0) > ($rp['price'] ?? 0))
+                            @php
+                                $rpPrice = (int) ($rp['price'] ?? 0);
+                                $rpPriceMax = (int) ($rp['priceMax'] ?? $rpPrice);
+                            @endphp
+                            <span class="font-bold text-slate-900 text-sm">
+                                @if ($rpPriceMax > $rpPrice)
+                                    Rp {{ number_format($rpPrice, 0, ',', '.') }} - Rp {{ number_format($rpPriceMax, 0, ',', '.') }}
+                                @else
+                                    Rp {{ number_format($rpPrice, 0, ',', '.') }}
+                                @endif
+                            </span>
+                            @if ($rpPriceMax <= $rpPrice && ($rp['originalPrice'] ?? 0) > ($rp['price'] ?? 0))
                                 <span class="text-slate-400 text-xs line-through">Rp {{ number_format($rp['originalPrice'], 0, ',', '.') }}</span>
                             @endif
                         </div>
@@ -624,6 +634,11 @@
             document.getElementById('productCount').textContent = `Menampilkan ${prods.length} produk`;
             grid.innerHTML = prods.map(p => {
                 const discount = p.originalPrice > p.price ? Math.round((1 - p.price / p.originalPrice) * 100) : 0;
+                const priceMax = Number(p.priceMax ?? p.price);
+                const isPriceRange = priceMax > Number(p.price);
+                const priceLabel = isPriceRange ?
+                    `Rp ${Number(p.price).toLocaleString('id-ID')} - Rp ${priceMax.toLocaleString('id-ID')}` :
+                    `Rp ${Number(p.price).toLocaleString('id-ID')}`;
                 const badgeHtml = p.isFlashSale ?
                     `<span class="badge-promo text-white text-[10px] font-bold px-2 py-0.5 rounded-full">-${discount}%</span>` :
                     p.badge === 'new' ?
@@ -655,8 +670,8 @@
                 <span class="text-xs text-slate-400">${p.sold.toLocaleString()} terjual</span>
               </div>
               <div class="flex items-center gap-2 flex-wrap min-h-[28px] mb-3">
-                <span class="font-bold text-slate-900 text-base">Rp ${p.price.toLocaleString('id-ID')}</span>
-                ${p.originalPrice > p.price ? `<span class="text-slate-400 text-xs line-through">Rp ${p.originalPrice.toLocaleString('id-ID')}</span>` : ''}
+                <span class="font-bold text-slate-900 text-base">${priceLabel}</span>
+                ${!isPriceRange && p.originalPrice > p.price ? `<span class="text-slate-400 text-xs line-through">Rp ${p.originalPrice.toLocaleString('id-ID')}</span>` : ''}
               </div>
               <button onclick="addToCart(${p.id})" class="mt-auto w-full bg-blue-50 hover:bg-blue-500 text-blue-600 hover:text-white text-xs font-semibold py-2 rounded-xl transition-all border border-blue-200 hover:border-blue-500 flex items-center justify-center gap-1.5">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
@@ -1184,4 +1199,3 @@
         initWishlistStatus();
     </script>
 @endsection
-

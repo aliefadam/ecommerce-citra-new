@@ -457,6 +457,11 @@
 
             grid.innerHTML = prods.map(p => {
                 const disc = p.origPrice > p.price ? Math.round((1 - p.price / p.origPrice) * 100) : 0;
+                const priceMax = Number(p.priceMax ?? p.price);
+                const isPriceRange = priceMax > Number(p.price);
+                const priceLabel = isPriceRange ?
+                    `Rp ${Number(p.price).toLocaleString('id-ID')} - Rp ${priceMax.toLocaleString('id-ID')}` :
+                    `Rp ${Number(p.price).toLocaleString('id-ID')}`;
                 const badge = p.isFlashSale ?
                     `<span class="badge-promo text-white text-[10px] font-bold px-2 py-0.5 rounded-full">-${disc}%</span>` :
                     p.badge === 'new' ?
@@ -482,8 +487,8 @@
               </div>
               <div class="flex items-center justify-between">
                 <div>
-                  <span class="font-bold text-slate-900 text-lg">Rp ${p.price.toLocaleString('id-ID')}</span>
-                  ${p.origPrice > p.price ? `<span class="text-slate-400 text-sm line-through ml-2">Rp ${p.origPrice.toLocaleString('id-ID')}</span>` : ''}
+                  <span class="font-bold text-slate-900 text-lg">${priceLabel}</span>
+                  ${!isPriceRange && p.origPrice > p.price ? `<span class="text-slate-400 text-sm line-through ml-2">Rp ${p.origPrice.toLocaleString('id-ID')}</span>` : ''}
                 </div>
                 <div class="flex items-center gap-2">
                   <button onclick="toggleWishlist(${p.id})" data-wishlist-btn data-product-id="${p.id}" class="w-9 h-9 rounded-full border border-slate-200 text-pink-500 flex items-center justify-center hover:bg-pink-50">
@@ -516,8 +521,8 @@
               <span class="text-xs text-slate-400">(${p.reviews})</span>
             </div>
             <div class="flex items-center gap-2 flex-wrap">
-              <span class="font-bold text-slate-900">Rp ${p.price.toLocaleString('id-ID')}</span>
-              ${p.origPrice > p.price ? `<span class="text-slate-400 text-xs line-through">Rp ${p.origPrice.toLocaleString('id-ID')}</span>` : ''}
+              <span class="font-bold text-slate-900">${priceLabel}</span>
+              ${!isPriceRange && p.origPrice > p.price ? `<span class="text-slate-400 text-xs line-through">Rp ${p.origPrice.toLocaleString('id-ID')}</span>` : ''}
             </div>
           </div>
         </div>`;
@@ -936,7 +941,6 @@
         setMegaCategory('rumah-tangga');
     </script>
 @endsection
-
 
 
 
