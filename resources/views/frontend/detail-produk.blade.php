@@ -861,39 +861,9 @@
         });
 
         // Rekomendasi
-        const recs = [{
-                name: "Polo Shirt Premium",
-                price: 159000,
-                image: "https://images.unsplash.com/photo-1586790170083-2f9ceadc732d?w=300&h=300&fit=crop",
-                rating: 4.7
-            },
-            {
-                name: "Celana Chino Modern",
-                price: 229000,
-                image: "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=300&h=300&fit=crop",
-                rating: 4.6
-            },
-            {
-                name: "Hoodie Oversized",
-                price: 299000,
-                image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=300&h=300&fit=crop",
-                rating: 4.8
-            },
-            {
-                name: "T-Shirt Graphic Art",
-                price: 129000,
-                image: "https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=300&h=300&fit=crop",
-                rating: 4.5
-            },
-            {
-                name: "Jaket Bomber Casual",
-                price: 459000,
-                image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=300&h=300&fit=crop",
-                rating: 4.9
-            },
-        ];
-        document.getElementById('recGrid').innerHTML = recs.map(r => `
-      <a href="{{ route('frontend.detail-produk') }}" class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden card-hover group block">
+        const recs = @json($recommendedProducts ?? []);
+        document.getElementById('recGrid').innerHTML = recs.length ? recs.map(r => `
+      <a href="${r.url || '#'}" class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden card-hover group block">
         <div class="overflow-hidden">
           <img src="${r.image}" alt="${r.name}" class="w-full h-36 object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
         </div>
@@ -905,7 +875,7 @@
           </div>
           <p class="font-bold text-slate-900 text-sm">Rp ${r.price.toLocaleString('id-ID')}</p>
         </div>
-      </a>`).join('');
+      </a>`).join('') : '<p class="text-sm text-slate-500 col-span-full">Belum ada produk rekomendasi.</p>';
 
         // Sale Timer
         function updateSaleTimer() {
