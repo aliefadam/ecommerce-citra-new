@@ -208,45 +208,32 @@
     </div>
     <!-- KATEGORI SECTION -->
     <section class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        <div class="flex items-center justify-between mb-4">
-            <div>
-                <h2 class="text-xl sm:text-2xl font-bold text-slate-800">Kategori Produk</h2>
-                <p class="text-slate-500 text-xs sm:text-sm mt-1">Temukan apa yang kamu cari</p>
-            </div>
-            <div class="flex flex-col items-end gap-2">
-                <a href="{{ route('frontend.kategori') }}"
-                    class="text-blue-600 hover:text-blue-700 font-medium text-sm flex items-center gap-1">
-                    Lihat Semua <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                    </svg>
-                </a>
-                <div class="flex items-center gap-2">
-                    <button type="button" onclick="categoryPrev()"
-                        class="w-8 h-8 bg-black/30 hover:bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-all">
-                        <i class="ri-arrow-left-s-line text-lg"></i>
-                    </button>
-                    <button type="button" onclick="categoryNext()"
-                        class="w-8 h-8 bg-black/30 hover:bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-all">
-                        <i class="ri-arrow-right-s-line text-lg"></i>
-                    </button>
-                </div>
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl sm:text-2xl font-bold text-slate-800">Explore Popular Categories</h2>
+            <div class="flex items-center gap-2">
+                <button type="button" onclick="categoryPrev()"
+                    class="w-9 h-9 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center text-slate-600 transition-all shadow-sm">
+                    <i class="ri-arrow-left-s-line text-xl"></i>
+                </button>
+                <button type="button" onclick="categoryNext()"
+                    class="w-9 h-9 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center text-slate-600 transition-all shadow-sm">
+                    <i class="ri-arrow-right-s-line text-xl"></i>
+                </button>
             </div>
         </div>
-        <div id="categoryTrack" class="flex flex-nowrap items-start gap-3 overflow-x-auto pb-1 px-1">
+        <div id="categoryTrack" class="flex flex-nowrap items-start gap-6 overflow-x-auto pb-2 px-1">
             @foreach (collect($homeMainCategories ?? []) as $cat)
                 <a href="{{ route('frontend.kategori', ['parent' => $cat['slug']]) }}"
-                    class="min-w-[280px] sm:min-w-[320px] flex items-center gap-3 bg-white rounded-xl px-4 py-3 border border-slate-100 shadow-sm hover:border-blue-300 hover:bg-blue-50/40 hover:shadow-md transition-all group text-left">
-                    <div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-colors overflow-hidden">
+                    class="flex flex-col items-center gap-3 group shrink-0">
+                    <div class="w-[110px] h-[110px] rounded-full bg-slate-100 flex items-center justify-center overflow-hidden transition-all group-hover:shadow-lg group-hover:scale-105">
                         @if (!empty($cat['image']))
                             <img src="{{ $cat['image'] }}" alt="{{ $cat['name'] }}"
-                                class="w-9 h-9 object-cover rounded-lg" />
+                                class="w-full h-full object-cover" />
                         @else
-                            <i class="{{ $cat['icon'] }} text-base text-blue-600"></i>
+                            <i class="{{ $cat['icon'] }} text-4xl text-blue-600"></i>
                         @endif
                     </div>
-                    <div class="min-w-0">
-                        <p class="text-sm font-semibold text-slate-800 truncate">{{ $cat['name'] }}</p>
-                    </div>
+                    <p class="text-xs font-semibold text-slate-700 tracking-widest uppercase text-center">{{ $cat['name'] }}</p>
                 </a>
             @endforeach
         </div>
@@ -440,6 +427,73 @@
                     </button>
                 </div>
             </main>
+        </div>
+    </section>
+
+    <!-- PRODUK REKOMENDASI SECTION -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        <div class="flex items-center justify-between mb-5">
+            <div class="flex items-center gap-3">
+                <div class="w-1 h-7 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></div>
+                <h2 class="text-xl sm:text-2xl font-bold text-slate-800">Produk Rekomendasi</h2>
+            </div>
+            <a href="{{ route('frontend.kategori') }}"
+                class="text-blue-600 hover:text-blue-700 font-semibold text-sm flex items-center gap-1 transition-colors">
+                Lihat Semua <i class="ri-arrow-right-s-line text-base"></i>
+            </a>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4" id="rekomendasiGrid">
+            @php
+                $rekProducts = collect($productsJson ?? [])
+                    ->sortByDesc('rating')
+                    ->take(10)
+                    ->values();
+            @endphp
+            @forelse ($rekProducts as $rp)
+                <a href="{{ url('/detail-produk/' . $rp['slug']) }}"
+                    class="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col">
+                    <div class="relative overflow-hidden aspect-[4/3]">
+                        <img src="{{ $rp['image'] }}" alt="{{ $rp['name'] }}"
+                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                        @if (($rp['originalPrice'] ?? 0) > ($rp['price'] ?? 0))
+                            @php $disc = round((1 - $rp['price'] / $rp['originalPrice']) * 100); @endphp
+                            <span class="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">-{{ $disc }}%</span>
+                        @elseif (($rp['badge'] ?? '') === 'new')
+                            <span class="absolute top-2 left-2 bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">BARU</span>
+                        @elseif (($rp['badge'] ?? '') === 'best')
+                            <span class="absolute top-2 left-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">TERLARIS</span>
+                        @endif
+                        <!-- Quick add overlay -->
+                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
+                        <button onclick="event.preventDefault(); addToCart({{ $rp['id'] }})"
+                            class="absolute bottom-2 right-2 w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center text-blue-600 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 transition-all duration-200 hover:bg-blue-500 hover:text-white">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="p-3 flex-1 flex flex-col gap-1">
+                        <p class="text-sm font-semibold text-slate-800 group-hover:text-blue-600 line-clamp-2 leading-snug transition-colors">{{ $rp['name'] }}</p>
+                        <div class="flex items-center gap-1">
+                            <span class="text-yellow-400 text-xs">★</span>
+                            <span class="text-xs font-medium text-slate-700">{{ number_format($rp['rating'], 1) }}</span>
+                            @if (!empty($rp['reviews']))
+                                <span class="text-xs text-slate-400">({{ number_format($rp['reviews']) }})</span>
+                            @endif
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-wrap mt-auto pt-1">
+                            <span class="font-bold text-slate-900 text-sm">Rp {{ number_format($rp['price'], 0, ',', '.') }}</span>
+                            @if (($rp['originalPrice'] ?? 0) > ($rp['price'] ?? 0))
+                                <span class="text-slate-400 text-xs line-through">Rp {{ number_format($rp['originalPrice'], 0, ',', '.') }}</span>
+                            @endif
+                        </div>
+                    </div>
+                </a>
+            @empty
+                <div class="col-span-full text-center py-10 text-slate-400 text-sm">Belum ada produk rekomendasi.</div>
+            @endforelse
         </div>
     </section>
 

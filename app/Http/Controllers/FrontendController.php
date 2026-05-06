@@ -382,6 +382,8 @@ class FrontendController extends Controller
         $flashSalePrice = $isFlashSale ? (int) $activeFlashSaleItem->discount_price : null;
         $origPrice = $price;
 
+        $relatedProducts = $this->buildRelatedProducts($product->id, $product->main_category_id);
+
         return view('frontend.detail-produk', [
             'productData' => [
                 'id' => $product->id,
@@ -431,7 +433,82 @@ class FrontendController extends Controller
                 'reviewItems' => $reviewItems,
                 'reviewDistribution' => $ratingDistribution,
             ],
+            'relatedProductsJson' => $relatedProducts,
         ]);
+    }
+
+    private function buildRelatedProducts(int $excludeProductId, ?int $mainCategoryId): array
+    {
+        $deliveredStatuses = ['paid', 'settlement', 'capture', 'process', 'processing', 'kirim', 'shipping', 'shipped', 'selesai', 'completed', 'delivered'];
+
+        $query = Product::with(['mainCategory', 'categoryDetail', 'productVariants.variant', 'flashSaleItems.flashSale'])
+            ->where('status', 'active')
+            ->where('id', '!=', $excludeProductId);
+
+        if ($mainCategoryId) {
+            $query->where('main_category_id', $mainCategoryId);
+        }
+
+        $products = $query->latest()->limit(20)->get();
+
+        if ($products->isEmpty()) {
+            $products = Product::with(['mainCategory', 'categoryDetail', 'productVariants.variant', 'flashSaleItems.flashSale'])
+                ->where('status', 'active')
+                ->where('id', '!=', $excludeProductId)
+                ->latest()
+                ->limit(10)
+                ->get();
+        }
+
+        $productIds = $products->pluck('id')->filter()->all();
+
+        $soldMap = TransactionDetail::query()
+            ->selectRaw('product_id, SUM(quantity) as sold_qty')
+            ->whereIn('product_id', $productIds)
+            ->whereHas('transaction', fn ($q) => $q->whereIn(DB::raw('LOWER(status)'), $deliveredStatuses))
+            ->groupBy('product_id')
+            ->pluck('sold_qty', 'product_id');
+
+        $reviewStats = TransactionProductReview::query()
+            ->join('transaction_details', 'transaction_details.id', '=', 'transaction_product_reviews.transaction_detail_id')
+            ->selectRaw('transaction_details.product_id as product_id, AVG(transaction_product_reviews.rating) as avg_rating, COUNT(transaction_product_reviews.id) as total_reviews')
+            ->whereIn('transaction_details.product_id', $productIds)
+            ->groupBy('transaction_details.product_id')
+            ->get()
+            ->keyBy('product_id');
+
+        return $products->take(10)->map(function ($product) use ($soldMap, $reviewStats) {
+            $variant = $product->productVariants->first();
+            if (!$variant) return null;
+
+            $price = (int) $variant->price;
+            $stat = $reviewStats->get($product->id);
+            $rating = $stat ? round((float) $stat->avg_rating, 1) : 0.0;
+            $reviews = $stat ? (int) $stat->total_reviews : 0;
+
+            $activeFlashSaleItem = $product->flashSaleItems->first(function ($item) {
+                $sale = $item->flashSale;
+                if (!$sale || !$item->is_active || $sale->status !== 'active') return false;
+                $now = now();
+                return $sale->start_at && $sale->end_at && $now->between($sale->start_at, $sale->end_at);
+            });
+            $isFlashSale = (bool) $activeFlashSaleItem;
+            $flashSalePrice = $isFlashSale ? (int) $activeFlashSaleItem->discount_price : null;
+            $displayPrice = $isFlashSale ? $flashSalePrice : $price;
+
+            return [
+                'id' => (int) $product->id,
+                'slug' => (string) $product->slug,
+                'name' => (string) $product->name,
+                'image' => $this->normalizeImageUrl((string) ($variant->image ?? ''), '400x400'),
+                'price' => $displayPrice,
+                'originalPrice' => $price,
+                'rating' => $rating,
+                'reviews' => $reviews,
+                'sold' => (int) ($soldMap[$product->id] ?? 0),
+                'isFlashSale' => $isFlashSale,
+            ];
+        })->filter()->values()->all();
     }
 
     public function checkout()

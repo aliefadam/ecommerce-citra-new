@@ -1,4 +1,10 @@
-<nav class="bg-white sticky top-0 z-50 shadow-sm border-b border-slate-100">
+{{-- Announcement bar --}}
+<div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white text-center text-xs py-2 px-4">
+    ✨ Belanja lebih hemat dengan promo spesial hari ini &mdash;
+    <a href="{{ route('frontend.kategori') }}" class="font-semibold underline underline-offset-2 hover:text-sky-300 transition-colors ml-1">Lihat Promo &nearr;</a>
+</div>
+
+<nav class="bg-white sticky top-0 z-50 shadow-sm">
     @php
         $authUser = auth()->user();
         $displayName = $authUser?->name ?: 'Guest';
@@ -78,192 +84,278 @@
             ->values()
             ->all();
     @endphp
-    <div class="max-w-7xl mx-auto px-4 sm:px-6">
-        <div class="flex items-center justify-between h-16">
-            <a href="{{ route('frontend.index') }}" class="flex items-center gap-2 flex-shrink-0">
-                <div
-                    class="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
-                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                            d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3z" />
-                        <path d="M16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
-                    </svg>
-                </div>
-                <span
-                    class="text-lg sm:text-xl font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Citra
-                    Ecommerce</span>
-            </a>
 
-            <div class="hidden md:flex flex-1 max-w-xl mx-6 relative items-center gap-2">
-                <button id="ecCategoryTrigger" type="button"
-                    class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium transition-colors flex items-center gap-2 whitespace-nowrap">
-                    Kategori
-                    <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                </button>
+    {{-- Main navbar row --}}
+    <div class="border-b border-slate-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6">
+            <div class="flex items-center gap-4 h-20">
 
-                <div class="relative flex-1">
-                    <form action="{{ route('frontend.search') }}" method="GET"
-                        class="flex border border-slate-200 rounded-xl overflow-hidden focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
-                        <input type="text" id="ecNavSearchDesktop" name="q"
-                            value="{{ trim(request('q', $query ?? '')) }}" placeholder="Cari produk, merek, kategori..."
-                            class="flex-1 px-4 py-2.5 text-sm outline-none bg-white" autocomplete="off" />
-                        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 transition-colors">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                        </button>
-                    </form>
-                    <div id="ecNavSearchDropdownDesktop"
-                        class="hidden absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-xl border border-slate-100 z-50 overflow-hidden">
+                {{-- Logo --}}
+                <a href="{{ route('frontend.index') }}" class="flex items-center gap-2.5 flex-shrink-0">
+                    <div class="w-10 h-10 bg-gradient-to-br from-sky-400 to-violet-600 rounded-xl flex items-center justify-center shadow-md">
+                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3z" />
+                            <path d="M16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+                        </svg>
                     </div>
-                </div>
+                    <span class="text-xl font-extrabold bg-gradient-to-r from-sky-500 to-violet-600 bg-clip-text text-transparent hidden sm:block">Citra Ecommerce</span>
+                </a>
 
-                <div id="ecCategoryDropdown"
-                    class="hidden absolute top-full left-0 mt-2 w-[820px] max-w-[88vw] bg-white rounded-2xl shadow-xl border border-slate-100 z-50">
-                    <div class="grid grid-cols-5 min-h-[360px]">
-                        <div class="col-span-1 border-r border-slate-100 p-4 overflow-y-auto">
-                            <h4 class="text-sm font-semibold text-slate-800 mb-3">Semua Kategori</h4>
-                            <div id="ecMegaCategoryMenu" class="space-y-1"></div>
-                            <a href="{{ route('frontend.kategori') }}"
-                                class="mt-4 inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium px-3 py-2">
-                                Lihat Semua
+                {{-- Search bar (desktop) --}}
+                <div class="hidden md:flex flex-1 max-w-2xl mx-auto relative items-center">
+                    <div class="relative flex-1">
+                        <form action="{{ route('frontend.search') }}" method="GET"
+                            class="flex rounded-xl overflow-hidden border border-slate-200 focus-within:border-sky-400 focus-within:ring-2 focus-within:ring-sky-100 transition-all">
+                            <input type="text" id="ecNavSearchDesktop" name="q"
+                                value="{{ trim(request('q', $query ?? '')) }}"
+                                placeholder="Cari produk, merek, kategori..."
+                                class="flex-1 px-5 py-3 text-sm outline-none bg-white text-slate-700 placeholder-slate-400"
+                                autocomplete="off" />
+                            <button type="submit"
+                                class="bg-sky-500 hover:bg-sky-600 text-white px-6 font-semibold text-sm flex items-center gap-2 transition-colors flex-shrink-0">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 5l7 7-7 7" />
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                 </svg>
-                            </a>
+                                Cari
+                            </button>
+                        </form>
+                        <div id="ecNavSearchDropdownDesktop"
+                            class="hidden absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-xl border border-slate-100 z-50 overflow-hidden">
                         </div>
-                        <div id="ecMegaCategoryContent" class="col-span-4 p-6 overflow-y-auto"></div>
                     </div>
                 </div>
-            </div>
 
-            <div class="flex items-center gap-1 sm:gap-2">
-                <button id="ecMobileSearchToggle" class="md:hidden p-2 rounded-lg hover:bg-slate-100">
-                    <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                </button>
-                {{-- <button class="hidden sm:flex p-2 rounded-lg hover:bg-slate-100">
-                    <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                    </svg>
-                </button> --}}
-                @auth
-                <div class="relative">
-                    <button id="ecNotifTrigger" type="button" class="p-2 rounded-lg hover:bg-slate-100 relative">
+                {{-- Right actions --}}
+                <div class="flex items-center gap-1 ml-auto">
+                    {{-- Mobile search toggle --}}
+                    <button id="ecMobileSearchToggle" class="md:hidden p-2.5 rounded-xl hover:bg-slate-100 transition-colors">
                         <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
-                        <span id="ecNotifBadge"
-                            class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] min-w-4 h-4 px-1 rounded-full hidden items-center justify-center leading-none font-bold"></span>
                     </button>
-                    <div id="ecNotifDropdown"
-                        class="hidden absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-slate-100 z-50 overflow-hidden">
-                        <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
-                            <span class="font-semibold text-sm text-slate-800">Notifikasi</span>
-                            <button id="ecNotifReadAll" class="text-xs text-blue-600 hover:text-blue-700 font-medium">Tandai dibaca</button>
-                        </div>
-                        <div id="ecNotifList" class="divide-y divide-slate-50 max-h-80 overflow-y-auto">
-                            <div class="px-4 py-6 text-center text-sm text-slate-400">Memuat...</div>
-                        </div>
-                        <div class="px-4 py-3 border-t border-slate-100 text-center">
-                            <a href="{{ route('frontend.profil') }}?tab=notif"
-                                class="text-sm text-blue-600 hover:text-blue-700 font-semibold">Lihat Semua Notifikasi</a>
+
+                    {{-- Wishlist --}}
+                    <a href="{{ route('frontend.profil') }}?tab=wishlist" class="hidden sm:flex p-2.5 rounded-xl hover:bg-slate-100 transition-colors flex-col items-center gap-0.5 group" title="Wishlist">
+                        <svg class="w-6 h-6 text-slate-500 group-hover:text-red-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                        <span class="text-[10px] text-slate-400 group-hover:text-red-400 leading-none hidden lg:block">Wishlist</span>
+                    </a>
+
+                    {{-- Notification (auth only) --}}
+                    @auth
+                    <div class="relative">
+                        <button id="ecNotifTrigger" type="button"
+                            class="p-2.5 rounded-xl hover:bg-slate-100 transition-colors flex flex-col items-center gap-0.5 group relative" title="Notifikasi">
+                            <svg class="w-6 h-6 text-slate-500 group-hover:text-sky-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            </svg>
+                            <span class="text-[10px] text-slate-400 group-hover:text-sky-500 leading-none hidden lg:block">Notifikasi</span>
+                            <span id="ecNotifBadge"
+                                class="absolute top-1.5 right-1.5 bg-red-500 text-white text-[10px] min-w-4 h-4 px-1 rounded-full hidden items-center justify-center leading-none font-bold"></span>
+                        </button>
+                        <div id="ecNotifDropdown"
+                            class="hidden absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-slate-100 z-50 overflow-hidden">
+                            <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+                                <span class="font-semibold text-sm text-slate-800">Notifikasi</span>
+                                <button id="ecNotifReadAll" class="text-xs text-sky-600 hover:text-sky-700 font-medium">Tandai dibaca</button>
+                            </div>
+                            <div id="ecNotifList" class="divide-y divide-slate-50 max-h-80 overflow-y-auto">
+                                <div class="px-4 py-6 text-center text-sm text-slate-400">Memuat...</div>
+                            </div>
+                            <div class="px-4 py-3 border-t border-slate-100 text-center">
+                                <a href="{{ route('frontend.profil') }}?tab=notif"
+                                    class="text-sm text-sky-600 hover:text-sky-700 font-semibold">Lihat Semua Notifikasi</a>
+                            </div>
                         </div>
                     </div>
-                </div>
-                @endauth
-                <a href="{{ route('frontend.cart') }}" class="p-2 rounded-lg hover:bg-slate-100 relative">
-                    <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                    <span id="cartCount"
-                        class="absolute -top-1 -right-1 bg-blue-500 text-white text-[10px] min-w-4 h-4 px-1 rounded-full {{ $cartCount > 0 ? 'flex' : 'hidden' }} items-center justify-center leading-none font-bold">{{ $cartCount }}</span>
-                </a>
-                @auth
-                    <div class="relative">
-                        <button id="ecAccountTrigger" type="button"
-                            class="flex items-center gap-2 p-1 rounded-lg hover:bg-slate-100">
-                            @if ($hasAvatarImage)
-                                <img src="{{ $avatarUrl }}" alt="{{ $displayFirstName }}"
-                                    class="w-8 h-8 rounded-full object-cover" />
-                            @else
-                                <div
-                                    class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white text-sm font-bold">
-                                    {{ $initial }}</div>
-                            @endif
-                            <span class="hidden sm:block text-sm font-medium text-slate-700">{{ $displayFirstName }}</span>
-                        </button>
-                        <div id="ecAccountDropdown"
-                            class="hidden absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-lg border border-slate-100 py-1 z-50">
-                            <a href="{{ route('frontend.profil') }}"
-                                class="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
-                                <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
+                    @endauth
+
+                    {{-- Cart --}}
+                    <a href="{{ route('frontend.cart') }}"
+                        class="p-2.5 rounded-xl hover:bg-slate-100 transition-colors flex flex-col items-center gap-0.5 group relative" title="Keranjang">
+                        <svg class="w-6 h-6 text-slate-500 group-hover:text-sky-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        <span class="text-[10px] text-slate-400 group-hover:text-sky-500 leading-none hidden lg:block">Keranjang</span>
+                        <span id="cartCount"
+                            class="absolute top-1.5 right-1.5 bg-sky-500 text-white text-[10px] min-w-4 h-4 px-1 rounded-full {{ $cartCount > 0 ? 'flex' : 'hidden' }} items-center justify-center leading-none font-bold">{{ $cartCount }}</span>
+                    </a>
+
+                    {{-- User / Login --}}
+                    @auth
+                        <div class="relative">
+                            <button id="ecAccountTrigger" type="button"
+                                class="flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-slate-100 transition-colors">
+                                @if ($hasAvatarImage)
+                                    <img src="{{ $avatarUrl }}" alt="{{ $displayFirstName }}"
+                                        class="w-9 h-9 rounded-full object-cover border-2 border-sky-100" />
+                                @else
+                                    <div class="w-9 h-9 rounded-full bg-gradient-to-br from-sky-400 to-violet-500 flex items-center justify-center text-white text-sm font-bold shadow-sm">
+                                        {{ $initial }}
+                                    </div>
+                                @endif
+                                <div class="hidden sm:flex flex-col items-start leading-tight">
+                                    <span class="text-[10px] text-slate-400 font-normal">Halo,</span>
+                                    <span class="text-sm font-semibold text-slate-700">{{ $displayFirstName }}</span>
+                                </div>
+                                <svg class="hidden sm:block w-3.5 h-3.5 text-slate-400 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <div id="ecAccountDropdown"
+                                class="hidden absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-lg border border-slate-100 py-1 z-50">
+                                <a href="{{ route('frontend.profil') }}"
+                                    class="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                                    <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                    Profil Saya
+                                </a>
+                                <a href="{{ route('frontend.profil') }}?tab=pesanan"
+                                    class="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                                    <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                    </svg>
+                                    Riwayat Pesanan
+                                </a>
+                                <form action="{{ route('logout') }}" method="POST">
+                                    @csrf
+                                    <button type="submit"
+                                        class="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                        </svg>
+                                        Logout
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    @else
+                        <a href="{{ route('login') }}"
+                            class="flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-slate-100 transition-colors">
+                            <div class="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center">
+                                <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                 </svg>
-                                Profil Saya
-                            </a>
-                            <a href="{{ route('frontend.profil') }}?tab=pesanan"
-                                class="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
-                                <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                                </svg>
-                                Riwayat Pesanan
-                            </a>
-                            <form action="{{ route('logout') }}" method="POST">
-                                @csrf
-                                <button type="submit"
-                                    class="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                                    </svg>
-                                    Logout
-                                </button>
-                            </form>
+                            </div>
+                            <div class="hidden sm:flex flex-col items-start leading-tight">
+                                <span class="text-[10px] text-slate-400">Halo,</span>
+                                <span class="text-sm font-semibold text-slate-700">Login / Daftar</span>
+                            </div>
+                        </a>
+                    @endauth
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+{{-- Secondary nav row --}}
+    <div class="border-b border-slate-100 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6">
+            <div class="flex items-center gap-1 h-11 overflow-x-auto scrollbar-hide">
+
+                {{-- Browse Categories button --}}
+                <div class="relative flex-shrink-0">
+                    <button id="ecCategoryTrigger" type="button"
+                        class="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-sky-500 to-violet-600 hover:from-sky-600 hover:to-violet-700 text-white text-sm font-semibold transition-all shadow-sm hover:shadow-md whitespace-nowrap">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                        Jelajahi Kategori
+                        <svg class="w-3.5 h-3.5 text-sky-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+
+                    {{-- Category mega dropdown --}}
+                    <div id="ecCategoryDropdown"
+                        class="hidden fixed bg-white rounded-2xl shadow-2xl border border-slate-100 z-[70] overflow-hidden">
+                        {{-- Top accent bar --}}
+                        <div class="h-1 bg-gradient-to-r from-sky-400 via-violet-500 to-fuchsia-400"></div>
+                        <div class="grid grid-cols-5" style="min-height:380px">
+                            {{-- Left sidebar --}}
+                            <div class="col-span-1 bg-slate-50/60 border-r border-slate-100 flex flex-col">
+                                <div class="px-4 pt-4 pb-2">
+                                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Kategori</p>
+                                </div>
+                                <div id="ecMegaCategoryMenu" class="flex-1 overflow-y-auto px-2 pb-2 space-y-0.5"></div>
+                                <div class="border-t border-slate-100 p-3">
+                                    <a href="{{ route('frontend.kategori') }}"
+                                        class="flex items-center justify-center gap-1.5 text-xs text-sky-600 hover:text-sky-700 font-semibold py-1.5 px-3 rounded-lg hover:bg-sky-50 transition-colors">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                                        </svg>
+                                        Semua Kategori
+                                    </a>
+                                </div>
+                            </div>
+                            {{-- Right content --}}
+                            <div id="ecMegaCategoryContent" class="col-span-4 p-6 overflow-y-auto"></div>
                         </div>
                     </div>
-                @else
-                    <a href="{{ route('login') }}" class="flex items-center gap-2 p-1 rounded-lg hover:bg-slate-100">
-                        <div
-                            class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white text-sm font-bold">
-                            {{ $initial }}</div>
-                        <span class="hidden sm:block text-sm font-medium text-slate-700">Login</span>
-                    </a>
+                </div>
+
+                <div class="w-px h-5 bg-slate-200 mx-1 flex-shrink-0"></div>
+
+                {{-- Nav links --}}
+                <a href="{{ route('frontend.index') }}"
+                    class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-sky-600 whitespace-nowrap transition-colors flex-shrink-0 {{ request()->routeIs('frontend.index') ? 'text-sky-600 font-semibold' : '' }}">
+                    Beranda
+                </a>
+                <a href="{{ route('frontend.kategori') }}"
+                    class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-sky-600 whitespace-nowrap transition-colors flex-shrink-0">
+                    Semua Produk
+                </a>
+                <a href="{{ route('frontend.search') }}?sort=newest"
+                    class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-sky-600 whitespace-nowrap transition-colors flex-shrink-0">
+                    Produk Terbaru
+                </a>
+                <a href="{{ route('frontend.search') }}?sort=popular"
+                    class="px-3 py-2 rounded-full bg-sky-50 text-sky-700 text-sm font-semibold hover:bg-sky-100 whitespace-nowrap transition-colors flex-shrink-0">
+                    Terlaris
+                </a>
+                <a href="{{ route('frontend.search') }}?promo=1"
+                    class="px-3 py-2 text-sm font-semibold text-orange-500 hover:text-orange-600 whitespace-nowrap transition-colors flex-shrink-0 flex items-center gap-1">
+                    🔥 Promo Spesial
+                </a>
+                @auth
+                <a href="{{ route('frontend.profil') }}?tab=pesanan"
+                    class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-sky-600 whitespace-nowrap transition-colors flex-shrink-0">
+                    Pesanan Saya
+                </a>
                 @endauth
             </div>
         </div>
     </div>
 
-    <div id="ecMobileSearch" class="hidden md:hidden px-4 pb-3 border-t border-slate-100 pt-3">
+    {{-- Mobile search row --}}
+    <div id="ecMobileSearch" class="hidden md:hidden px-4 pb-3 border-b border-slate-100 pt-3 bg-white">
         <form action="{{ route('frontend.search') }}" method="GET"
-            class="flex border border-slate-200 rounded-xl overflow-hidden focus-within:border-blue-400">
+            class="flex border border-slate-200 rounded-xl overflow-hidden focus-within:border-sky-400 focus-within:ring-2 focus-within:ring-sky-100 transition-all">
             <input type="text" id="ecNavSearchMobile" name="q"
                 value="{{ trim(request('q', $query ?? '')) }}" placeholder="Cari produk..."
-                class="flex-1 px-4 py-2.5 text-sm outline-none" autocomplete="off" />
-            <button type="submit" class="bg-blue-500 text-white px-4">
+                class="flex-1 px-4 py-2.5 text-sm outline-none bg-white" autocomplete="off" />
+            <button type="submit" class="bg-sky-500 hover:bg-sky-600 text-white px-4 flex items-center gap-1.5 font-medium text-sm transition-colors">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
+                Cari
             </button>
         </form>
         <div id="ecNavSearchDropdownMobile"
             class="hidden mt-1 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden"></div>
     </div>
-</nav>
 
 <script>
     (() => {
@@ -387,7 +479,7 @@
         let notifLoaded = false;
 
         const notifTypeIcon = {
-            transaction_created: { bg: 'bg-blue-100', icon: `<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>` },
+            transaction_created: { bg: 'bg-sky-100', icon: `<svg class="w-4 h-4 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>` },
             payment_received:    { bg: 'bg-green-100', icon: `<svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>` },
             order_processed:     { bg: 'bg-indigo-100', icon: `<svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>` },
             order_shipped:       { bg: 'bg-purple-100', icon: `<svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1 13h12l1-13"/></svg>` },
@@ -415,14 +507,14 @@
                 const ic = notifTypeIcon[n.type] || { bg: 'bg-slate-100', icon: `<svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>` };
                 const tag = n.url ? 'a' : 'div';
                 const href = n.url ? `href="${n.url}"` : '';
-                return `<${tag} ${href} class="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 transition-colors cursor-pointer ${n.read ? '' : 'bg-blue-50/40'}">
+                return `<${tag} ${href} class="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 transition-colors cursor-pointer ${n.read ? '' : 'bg-sky-50/40'}">
                     <div class="w-8 h-8 rounded-full ${ic.bg} flex items-center justify-center shrink-0 mt-0.5">${ic.icon}</div>
                     <div class="flex-1 min-w-0">
                         <p class="text-sm font-semibold text-slate-800 leading-tight">${n.title}</p>
                         <p class="text-xs text-slate-500 mt-0.5 line-clamp-2">${n.body}</p>
                         <p class="text-[11px] text-slate-400 mt-1">${n.created_at}</p>
                     </div>
-                    ${!n.read ? '<span class="w-2 h-2 rounded-full bg-blue-500 shrink-0 mt-1.5"></span>' : ''}
+                    ${!n.read ? '<span class="w-2 h-2 rounded-full bg-sky-500 shrink-0 mt-1.5"></span>' : ''}
                 </${tag}>`;
             }).join('');
         }
@@ -457,7 +549,6 @@
             });
         }
 
-        // Poll unread count setiap 60 detik
         if (isAuthenticated && notifUrl) {
             loadNotifications();
             setInterval(() => {
@@ -480,25 +571,102 @@
         const categoryDropdown = document.getElementById('ecCategoryDropdown');
         const categoryMenu = document.getElementById('ecMegaCategoryMenu');
         const categoryContent = document.getElementById('ecMegaCategoryContent');
-        if (categoryTrigger && categoryDropdown && categoryMenu && categoryContent && megaCategories.length > 0) {
-            let active = megaCategories[0].key;
+        if (categoryTrigger && categoryDropdown && categoryMenu && categoryContent) {
+            let active = megaCategories[0]?.key || null;
+
+            const positionCategoryDropdown = () => {
+                const rect = categoryTrigger.getBoundingClientRect();
+                const gap = 6;
+                const left = Math.max(12, rect.left);
+                const rightGap = 24;
+                const width = Math.max(320, window.innerWidth - left - rightGap);
+
+                categoryDropdown.style.width = `${width}px`;
+                categoryDropdown.style.left = `${left}px`;
+                categoryDropdown.style.top = `${rect.bottom + gap}px`;
+                categoryDropdown.style.maxHeight = `${Math.max(280, window.innerHeight - rect.bottom - 24)}px`;
+            };
+
+            const catIcons = {
+                'elektronik': '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>',
+                'fashion pria': '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>',
+                'fashion wanita': '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>',
+                'hp & tablet': '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>',
+                'ibu & bayi': '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>',
+                'kecantikan': '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>',
+                'mainan & anak': '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+                'makanan & minuman': '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>',
+                'olahraga': '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>',
+                'rumah tangga': '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>',
+            };
+            const getCatIcon = (name) => catIcons[name.toLowerCase()] || '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>';
 
             const renderMenu = () => {
-                categoryMenu.innerHTML = megaCategories.map((cat) => `
-                    <a href="#" data-key="${cat.key}" class="block w-full text-left px-3 py-2 rounded-lg text-sm ${cat.key === active ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-700 hover:bg-slate-50'}">
-                        ${cat.name}
-                    </a>
-                `).join('');
+                if (!megaCategories.length) {
+                    categoryMenu.innerHTML = `<div class="px-3 py-2 text-sm text-slate-400">Belum ada kategori</div>`;
+                    return;
+                }
+
+                categoryMenu.innerHTML = megaCategories.map((cat) => {
+                    const isActive = cat.key === active;
+                    return `
+                    <a href="#" data-key="${cat.key}"
+                       class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-all group
+                              ${isActive ? 'bg-sky-500 text-white font-semibold shadow-sm shadow-sky-200' : 'text-slate-600 hover:bg-white hover:text-slate-800 hover:shadow-sm'}">
+                        <span class="${isActive ? 'text-sky-100' : 'text-slate-400 group-hover:text-sky-500 transition-colors'}">${getCatIcon(cat.name)}</span>
+                        <span class="flex-1 leading-tight">${cat.name}</span>
+                        ${isActive ? '<svg class="w-3 h-3 text-sky-200 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/></svg>' : ''}
+                    </a>`;
+                }).join('');
             };
 
             const renderColumns = () => {
+                if (!megaCategories.length) {
+                    categoryContent.innerHTML = `<div class="h-full flex items-center justify-center text-sm text-slate-400">Kategori belum tersedia</div>`;
+                    return;
+                }
+
                 const found = megaCategories.find((x) => x.key === active) || megaCategories[0];
-                categoryContent.innerHTML = `<div class="grid grid-cols-4 gap-6">${found.columns.map((col) => `
-                    <div>
-                        <h5 class="text-sm font-semibold text-slate-800 mb-3">${col.title}</h5>
-                        <ul class="space-y-2">${col.items.length ? col.items.map((item) => `<li><a href="${item.url}" class="text-sm text-slate-600 hover:text-blue-600">${item.name}</a></li>`).join('') : '<li><span class="text-sm text-slate-400">Belum ada kategori detail</span></li>'}</ul>
+                const allItems = found.columns.flatMap(col => col.items);
+                const hasItems = allItems.length > 0;
+
+                categoryContent.innerHTML = `
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="text-base font-bold text-slate-800">${found.name}</h3>
+                            <p class="text-xs text-slate-400 mt-0.5">${allItems.length} sub-kategori tersedia</p>
+                        </div>
+                        <a href="${found.url}"
+                           class="flex items-center gap-1.5 text-xs font-semibold text-sky-600 hover:text-sky-700 bg-sky-50 hover:bg-sky-100 px-3 py-1.5 rounded-lg transition-colors">
+                            Lihat Semua
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                        </a>
                     </div>
-                `).join('')}</div>`;
+                    <div class="h-px bg-gradient-to-r from-sky-100 via-slate-100 to-transparent mb-5"></div>
+                    <div class="grid grid-cols-4 gap-x-6 gap-y-1">
+                        ${found.columns.map((col) => `
+                            <div>
+                                <ul class="space-y-0.5">
+                                    ${col.items.length
+                                        ? col.items.map((item) => `
+                                            <li>
+                                                <a href="${item.url}"
+                                                   class="flex items-center gap-2 text-sm text-slate-600 hover:text-sky-600 py-1.5 px-2 rounded-lg hover:bg-sky-50 group transition-all">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-slate-200 group-hover:bg-sky-400 flex-shrink-0 transition-colors"></span>
+                                                    <span class="flex-1 leading-tight">${item.name}</span>
+                                                    <svg class="w-3 h-3 text-sky-300 opacity-0 group-hover:opacity-100 flex-shrink-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                                                </a>
+                                            </li>`).join('')
+                                        : '<li><span class="text-sm text-slate-300 px-2">Segera hadir</span></li>'}
+                                </ul>
+                            </div>
+                        `).join('')}
+                    </div>
+                    ${hasItems ? '' : `
+                    <div class="mt-6 flex items-center justify-center h-24 rounded-xl bg-slate-50 border border-dashed border-slate-200">
+                        <p class="text-sm text-slate-400">Belum ada sub-kategori</p>
+                    </div>`}
+                `;
             };
 
             renderMenu();
@@ -516,8 +684,21 @@
 
             categoryTrigger.addEventListener('click', (e) => {
                 e.stopPropagation();
+                positionCategoryDropdown();
                 categoryDropdown.classList.toggle('hidden');
             });
+
+            window.addEventListener('resize', () => {
+                if (!categoryDropdown.classList.contains('hidden')) {
+                    positionCategoryDropdown();
+                }
+            });
+
+            window.addEventListener('scroll', () => {
+                if (!categoryDropdown.classList.contains('hidden')) {
+                    positionCategoryDropdown();
+                }
+            }, true);
         }
 
         const accountTrigger = document.getElementById('ecAccountTrigger');
@@ -533,16 +714,13 @@
             if (notifDropdown && notifTrigger && !notifDropdown.contains(e.target) && !notifTrigger.contains(e.target)) {
                 notifDropdown.classList.add('hidden');
             }
-            if (accountDropdown && accountTrigger && !accountDropdown.contains(e.target) && !accountTrigger
-                .contains(e.target)) {
+            if (accountDropdown && accountTrigger && !accountDropdown.contains(e.target) && !accountTrigger.contains(e.target)) {
                 accountDropdown.classList.add('hidden');
             }
 
             const categoryDropdownEl = document.getElementById('ecCategoryDropdown');
             const categoryTriggerEl = document.getElementById('ecCategoryTrigger');
-            if (categoryDropdownEl && categoryTriggerEl && !categoryDropdownEl.contains(e.target) && !
-                categoryTriggerEl
-                .contains(e.target)) {
+            if (categoryDropdownEl && categoryTriggerEl && !categoryDropdownEl.contains(e.target) && !categoryTriggerEl.contains(e.target)) {
                 categoryDropdownEl.classList.add('hidden');
             }
 

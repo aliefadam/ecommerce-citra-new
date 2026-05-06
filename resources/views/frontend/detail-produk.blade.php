@@ -178,45 +178,39 @@
         <div class="grid md:grid-cols-2 gap-10 lg:gap-16">
 
             <!-- LEFT: Gallery -->
-            <div>
+            <div class="flex flex-col gap-3">
                 <!-- Main Image -->
-                <div class="relative rounded-2xl overflow-hidden bg-white shadow-sm border border-slate-100 mb-4">
+                <div class="relative rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 shadow-sm aspect-square md:aspect-[4/3]">
                     <img id="mainImg" src="{{ $productData['image'] }}" alt="{{ $productData['name'] }}"
-                        class="w-full h-80 md:h-[450px] object-cover main-img" />
+                        class="w-full h-full object-cover main-img" />
                     @if ($productData['isFlashSale'])
-                        <div class="absolute top-3 left-3 flex gap-2">
-                            <span
-                                class="bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full">-{{ max(0, $savingPercent) }}%</span>
+                        <div class="absolute top-3 left-3">
+                            <span class="bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-md">-{{ max(0, $savingPercent) }}%</span>
                         </div>
                     @endif
                     <button onclick="toggleWishlist()" id="wishBtn"
-                        class="absolute top-3 right-3 w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center hover:bg-pink-50 transition-colors">
-                        <svg id="wishIcon" class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
+                        class="absolute top-3 right-3 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full shadow-md flex items-center justify-center hover:bg-pink-50 transition-colors">
+                        <svg id="wishIcon" class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                         </svg>
                     </button>
-                    <button
-                        class="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 rounded-full shadow flex items-center justify-center hover:bg-white"
-                        onclick="prevImg()">
-                        <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                        </svg>
-                    </button>
-                    <button
-                        class="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 rounded-full shadow flex items-center justify-center hover:bg-white"
-                        onclick="nextImg()">
-                        <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                        </svg>
-                    </button>
+                    @if (count($productData['images'] ?? [$productData['image']]) > 1)
+                        <button onclick="prevImg()"
+                            class="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/80 backdrop-blur-sm rounded-full shadow flex items-center justify-center hover:bg-white transition-colors">
+                            <i class="ri-arrow-left-s-line text-xl text-slate-600"></i>
+                        </button>
+                        <button onclick="nextImg()"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/80 backdrop-blur-sm rounded-full shadow flex items-center justify-center hover:bg-white transition-colors">
+                            <i class="ri-arrow-right-s-line text-xl text-slate-600"></i>
+                        </button>
+                    @endif
                 </div>
                 <!-- Thumbnails -->
-                <div class="flex gap-3 overflow-x-auto pb-2">
+                <div class="flex gap-2 overflow-x-auto pb-1">
                     @foreach ($productData['images'] ?? [$productData['image']] as $idx => $thumb)
                         <button onclick="setImg({{ $idx }})"
-                            class="thumb-btn flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 {{ $idx === 0 ? 'thumb-active border-blue-400' : 'border-slate-200' }}">
+                            class="thumb-btn flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-all {{ $idx === 0 ? 'thumb-active border-blue-400' : 'border-slate-200 hover:border-slate-300' }}">
                             <img src="{{ $thumb }}" class="w-full h-full object-cover" />
                         </button>
                     @endforeach
@@ -249,17 +243,27 @@
                 <!-- Rating & Sales -->
                 <div class="flex items-center gap-2 sm:gap-4 mb-4 flex-wrap">
                     <div class="flex items-center gap-1">
-                        <span class="text-yellow-400 text-sm sm:text-base">★★★★★</span>
-                        <span
-                            class="font-bold text-slate-800 text-sm">{{ number_format($productData['rating'], 1) }}</span>
-                        <span class="text-slate-500 text-xs sm:text-sm">({{ number_format($productData['reviews']) }}
-                            ulasan)</span>
+                        @php
+                            $ratingVal = (float) $productData['rating'];
+                            $fullStars = (int) floor($ratingVal);
+                            $halfStar = ($ratingVal - $fullStars) >= 0.5;
+                        @endphp
+                        <div class="flex items-center gap-0.5">
+                            @for ($s = 1; $s <= 5; $s++)
+                                @if ($s <= $fullStars)
+                                    <span class="text-yellow-400 text-sm">★</span>
+                                @elseif ($s == $fullStars + 1 && $halfStar)
+                                    <span class="text-yellow-400 text-sm">★</span>
+                                @else
+                                    <span class="text-slate-300 text-sm">★</span>
+                                @endif
+                            @endfor
+                        </div>
+                        <span class="font-bold text-slate-800 text-sm">{{ number_format($productData['rating'], 1) }}</span>
+                        <span class="text-slate-500 text-xs sm:text-sm">({{ number_format($productData['reviews']) }} ulasan)</span>
                     </div>
-                    <span class="text-slate-300 hidden xs:inline">|</span>
-                    <span class="text-slate-600 text-xs sm:text-sm">{{ number_format($productData['sold']) }}
-                        terjual</span>
-                    <span class="text-slate-300 hidden xs:inline">|</span>
-                    <span class="text-slate-600 text-xs sm:text-sm">Wishlist: 456</span>
+                    <span class="text-slate-300 hidden sm:inline">|</span>
+                    <span class="text-slate-600 text-xs sm:text-sm"><span class="font-semibold text-slate-700">{{ number_format($productData['sold']) }}</span> terjual</span>
                 </div>
 
                 <!-- Price -->
@@ -453,16 +457,58 @@
 
         <!-- PRODUK REKOMENDASI -->
         <div class="mt-12">
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-xl font-bold text-slate-800">Produk Rekomendasi</h2>
+            <div class="flex items-center justify-between mb-5">
+                <div class="flex items-center gap-3">
+                    <div class="w-1 h-7 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></div>
+                    <h2 class="text-xl font-bold text-slate-800">Produk Rekomendasi</h2>
+                </div>
                 <a href="{{ route('frontend.kategori') }}"
-                    class="text-blue-600 text-sm font-medium hover:text-blue-700 flex items-center gap-1">
-                    Lihat Semua <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                    </svg>
+                    class="text-blue-600 hover:text-blue-700 font-semibold text-sm flex items-center gap-1 transition-colors">
+                    Lihat Semua <i class="ri-arrow-right-s-line text-base"></i>
                 </a>
             </div>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4" id="recGrid"></div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                @forelse ($relatedProductsJson as $rp)
+                    <a href="{{ url('/detail-produk/' . $rp['slug']) }}"
+                        class="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col">
+                        <div class="relative overflow-hidden aspect-[4/3]">
+                            <img src="{{ $rp['image'] }}" alt="{{ $rp['name'] }}"
+                                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                            @if ($rp['isFlashSale'] && $rp['originalPrice'] > $rp['price'])
+                                @php $disc = round((1 - $rp['price'] / $rp['originalPrice']) * 100); @endphp
+                                <span class="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">-{{ $disc }}%</span>
+                            @endif
+                            <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
+                        </div>
+                        <div class="p-3 flex-1 flex flex-col gap-1">
+                            <p class="text-sm font-semibold text-slate-800 group-hover:text-blue-600 line-clamp-2 leading-snug transition-colors">{{ $rp['name'] }}</p>
+                            <div class="flex items-center gap-1">
+                                @php
+                                    $rpRating = (float) $rp['rating'];
+                                    $rpFull = (int) floor($rpRating);
+                                @endphp
+                                <div class="flex">
+                                    @for ($s = 1; $s <= 5; $s++)
+                                        <span class="{{ $s <= $rpFull ? 'text-yellow-400' : 'text-slate-300' }} text-xs">★</span>
+                                    @endfor
+                                </div>
+                                <span class="text-xs font-medium text-slate-700">{{ number_format($rpRating, 1) }}</span>
+                                @if ($rp['reviews'] > 0)
+                                    <span class="text-xs text-slate-400">({{ number_format($rp['reviews']) }})</span>
+                                @endif
+                            </div>
+                            <div class="flex items-center gap-1.5 flex-wrap mt-auto pt-1">
+                                <span class="font-bold text-slate-900 text-sm">Rp {{ number_format($rp['price'], 0, ',', '.') }}</span>
+                                @if ($rp['originalPrice'] > $rp['price'])
+                                    <span class="text-slate-400 text-xs line-through">Rp {{ number_format($rp['originalPrice'], 0, ',', '.') }}</span>
+                                @endif
+                            </div>
+                        </div>
+                    </a>
+                @empty
+                    <div class="col-span-full text-center py-10 text-slate-400 text-sm">Belum ada produk rekomendasi.</div>
+                @endforelse
+            </div>
         </div>
     </div>
 
@@ -859,53 +905,6 @@
         document.getElementById('reviewImageModal')?.addEventListener('click', function(e) {
             if (e.target === this) closeReviewImageModal();
         });
-
-        // Rekomendasi
-        const recs = [{
-                name: "Polo Shirt Premium",
-                price: 159000,
-                image: "https://images.unsplash.com/photo-1586790170083-2f9ceadc732d?w=300&h=300&fit=crop",
-                rating: 4.7
-            },
-            {
-                name: "Celana Chino Modern",
-                price: 229000,
-                image: "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=300&h=300&fit=crop",
-                rating: 4.6
-            },
-            {
-                name: "Hoodie Oversized",
-                price: 299000,
-                image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=300&h=300&fit=crop",
-                rating: 4.8
-            },
-            {
-                name: "T-Shirt Graphic Art",
-                price: 129000,
-                image: "https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=300&h=300&fit=crop",
-                rating: 4.5
-            },
-            {
-                name: "Jaket Bomber Casual",
-                price: 459000,
-                image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=300&h=300&fit=crop",
-                rating: 4.9
-            },
-        ];
-        document.getElementById('recGrid').innerHTML = recs.map(r => `
-      <a href="{{ route('frontend.detail-produk') }}" class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden card-hover group block">
-        <div class="overflow-hidden">
-          <img src="${r.image}" alt="${r.name}" class="w-full h-36 object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
-        </div>
-        <div class="p-3">
-          <p class="text-xs font-semibold text-slate-800 line-clamp-2 mb-1">${r.name}</p>
-          <div class="flex items-center gap-1 mb-1.5">
-            <span class="text-yellow-400 text-xs">★</span>
-            <span class="text-xs text-slate-600">${r.rating}</span>
-          </div>
-          <p class="font-bold text-slate-900 text-sm">Rp ${r.price.toLocaleString('id-ID')}</p>
-        </div>
-      </a>`).join('');
 
         // Sale Timer
         function updateSaleTimer() {

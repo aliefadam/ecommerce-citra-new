@@ -142,7 +142,14 @@
     </div>
 
     <!-- CATEGORY GRID (All Categories) -->
-    <div id="allCategoriesSection" class="max-w-7xl mx-auto px-4 sm:px-6 pt-5 pb-4">
+    <div id="allCategoriesSection" class="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-4">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2">
+                <div class="w-1 h-6 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></div>
+                <h2 class="text-base font-bold text-slate-800">Semua Kategori</h2>
+            </div>
+            <span class="text-xs text-slate-400">{{ collect($categoryTree ?? [])->count() }} kategori tersedia</span>
+        </div>
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-6">
             @foreach (($categoryTree ?? collect()) as $mainCategory)
                 @php
@@ -155,21 +162,38 @@
                             str_starts_with($mainCategoryImage, 'data:'))
                             ? $mainCategoryImage
                             : ($mainCategoryImage !== '' ? asset('storage/' . ltrim($mainCategoryImage, '/')) : '');
+                    $subCount = $mainCategory->categoryDetails->count();
                 @endphp
                 <button onclick="selectCategory('{{ $mainCategory->slug }}', '{{ $mainCategory->name }}')"
-                    class="cat-card flex items-center gap-3 bg-white rounded-xl px-4 py-3 border border-slate-100 shadow-sm hover:border-blue-300 hover:bg-blue-50/40 hover:shadow-md transition-all group text-left">
-                    <div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-colors overflow-hidden">
+                    class="cat-card group relative flex items-center gap-3 bg-white rounded-2xl px-4 py-3.5 border border-slate-100 shadow-sm hover:shadow-md hover:border-blue-200 hover:bg-gradient-to-r hover:from-blue-50/60 hover:to-indigo-50/40 transition-all duration-300 text-left overflow-hidden">
+                    <!-- Decorative corner -->
+                    <div class="absolute top-0 right-0 w-12 h-12 bg-blue-100/50 rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+
+                    <!-- Image -->
+                    <div class="relative shrink-0 w-14 h-14 rounded-xl overflow-hidden shadow-sm group-hover:shadow-md group-hover:scale-[1.06] transition-all duration-300">
                         @if ($mainCategoryImageUrl !== '')
                             <img src="{{ $mainCategoryImageUrl }}" alt="{{ $mainCategory->name }}"
-                                class="w-9 h-9 object-cover rounded-lg" />
+                                class="w-full h-full object-cover" />
                         @else
-                            <i class="ri-folder-2-line text-base text-blue-600"></i>
+                            <div class="w-full h-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
+                                <i class="ri-folder-2-line text-2xl text-blue-500"></i>
+                            </div>
                         @endif
                     </div>
-                    <div class="min-w-0">
-                        <p class="text-sm font-semibold text-slate-800 truncate">{{ $mainCategory->name }}</p>
-                        <p class="text-xs text-slate-400 mt-0.5">{{ $mainCategory->categoryDetails->count() }} sub kategori</p>
+
+                    <!-- Text -->
+                    <div class="flex-1 min-w-0 relative z-10">
+                        <p class="text-sm font-bold text-slate-800 group-hover:text-blue-700 transition-colors truncate leading-tight">{{ $mainCategory->name }}</p>
+                        <div class="flex items-center gap-1 mt-1">
+                            <i class="ri-stack-line text-[11px] text-slate-400 group-hover:text-blue-400 transition-colors"></i>
+                            <span class="text-xs text-slate-400 group-hover:text-blue-400 transition-colors">
+                                {{ $subCount }} sub kategori
+                            </span>
+                        </div>
                     </div>
+
+                    <!-- Arrow -->
+                    <i class="ri-arrow-right-s-line text-lg text-slate-300 group-hover:text-blue-500 group-hover:translate-x-0.5 transition-all duration-300 relative z-10 shrink-0"></i>
                 </button>
             @endforeach
         </div>
@@ -360,7 +384,7 @@
                 </div>
             </main>
         </div>
-    </div>
+    </div>
 @endsection
 
 @section('script')
