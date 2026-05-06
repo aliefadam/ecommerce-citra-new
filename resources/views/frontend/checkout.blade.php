@@ -341,6 +341,7 @@
                             </svg>
                             Bayar Sekarang
                         </button>
+                        <p id="checkoutHintText" class="text-xs text-slate-500 mt-2 text-center"></p>
 
                         <div class="flex flex-wrap items-center justify-center gap-4 mt-3 text-slate-400">
                             <div class="flex items-center gap-1 text-xs">
@@ -725,10 +726,13 @@
             const shippingValue = typeof shippingCost === 'number' ? shippingCost : 0;
             const grandTotal = subtotal + shippingValue;
             const totalItems = cartItems.reduce((s, i) => s + i.qty, 0);
+            const hasSelectedAddress = !!document.querySelector('input[name="address"]:checked');
             document.getElementById('itemCountText').textContent = totalItems + ' item';
             document.getElementById('sumItems').textContent = totalItems + ' item';
             document.getElementById('subtotalAmt').textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
-            if (typeof shippingCost !== 'number') {
+            if (!hasSelectedAddress) {
+                document.getElementById('shippingAmt').textContent = 'Pilih/Tambahkan alamat dulu';
+            } else if (typeof shippingCost !== 'number') {
                 document.getElementById('shippingAmt').textContent = 'Menghitung Ongkos Kirim...';
             } else {
                 document.getElementById('shippingAmt').textContent = shippingCost === 0 ? 'Gratis' : 'Rp ' +
@@ -737,12 +741,24 @@
             document.getElementById('grandTotal').textContent = 'Rp ' + grandTotal.toLocaleString('id-ID');
             document.getElementById('totalPaid').textContent = 'Rp ' + grandTotal.toLocaleString('id-ID');
             const payBtn = document.getElementById('payBtn');
+            const hintEl = document.getElementById('checkoutHintText');
             if (payBtn) {
-                const shouldDisable = totalItems <= 0 || shippingCost === null;
+                const shouldDisable = totalItems <= 0 || shippingCost === null || !hasSelectedAddress;
                 payBtn.disabled = shouldDisable;
                 payBtn.classList.toggle('opacity-60', shouldDisable);
                 payBtn.classList.toggle('cursor-not-allowed', shouldDisable);
                 payBtn.classList.toggle('pointer-events-none', shouldDisable);
+            }
+            if (hintEl) {
+                if (totalItems <= 0) {
+                    hintEl.textContent = 'Pilih produk terlebih dahulu untuk melanjutkan pembayaran.';
+                } else if (!hasSelectedAddress) {
+                    hintEl.textContent = 'Tambahkan atau pilih alamat pengiriman agar ongkos kirim bisa dihitung.';
+                } else if (shippingCost === null) {
+                    hintEl.textContent = 'Ongkos kirim belum tersedia. Pilih alamat lain atau coba lagi.';
+                } else {
+                    hintEl.textContent = '';
+                }
             }
         }
 
