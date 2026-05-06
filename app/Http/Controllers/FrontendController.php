@@ -1,4 +1,4 @@
-e<?php
+<?php
 
 namespace App\Http\Controllers;
 
@@ -84,7 +84,7 @@ class FrontendController extends Controller
     {
         $products = $this->buildFrontendProducts();
         $categoryTree = MainCategory::query()
-            ->with(['categoryDetails' => fn ($q) => $q->orderBy('name')])
+            ->with(['categoryDetails' => fn($q) => $q->orderBy('name')])
             ->orderBy('name')
             ->get();
         $selectedParentSlug = (string) request()->query('parent', '');
@@ -150,8 +150,8 @@ class FrontendController extends Controller
                 $builder
                     ->whereRaw('LOWER(name) like ?', ['%' . $q . '%'])
                     ->orWhereRaw('LOWER(description) like ?', ['%' . $q . '%'])
-                    ->orWhereHas('mainCategory', fn ($mq) => $mq->whereRaw('LOWER(name) like ?', ['%' . $q . '%']))
-                    ->orWhereHas('categoryDetail', fn ($cq) => $cq->whereRaw('LOWER(name) like ?', ['%' . $q . '%']))
+                    ->orWhereHas('mainCategory', fn($mq) => $mq->whereRaw('LOWER(name) like ?', ['%' . $q . '%']))
+                    ->orWhereHas('categoryDetail', fn($cq) => $cq->whereRaw('LOWER(name) like ?', ['%' . $q . '%']))
                     ->orWhereHas('productVariants.variant', function ($vq) use ($q) {
                         $vq->whereRaw('LOWER(name) like ?', ['%' . $q . '%'])
                             ->orWhereRaw('LOWER(value) like ?', ['%' . $q . '%']);
@@ -247,8 +247,8 @@ class FrontendController extends Controller
         abort_if(!$variant, 404);
 
         $variantGroups = $product->productVariants
-            ->filter(fn ($pv) => $pv->variant && filled($pv->variant->name) && filled($pv->variant->value))
-            ->groupBy(fn ($pv) => strtolower(trim($pv->variant->name)))
+            ->filter(fn($pv) => $pv->variant && filled($pv->variant->name) && filled($pv->variant->value))
+            ->groupBy(fn($pv) => strtolower(trim($pv->variant->name)))
             ->map(function ($items, $groupKey) {
                 return [
                     'key' => $groupKey,
@@ -266,8 +266,8 @@ class FrontendController extends Controller
 
         $galleryImages = $product->productVariants
             ->pluck('image')
-            ->filter(fn ($img) => filled($img))
-            ->map(fn ($img) => $this->normalizeImageUrl((string) $img, '700x700'))
+            ->filter(fn($img) => filled($img))
+            ->map(fn($img) => $this->normalizeImageUrl((string) $img, '700x700'))
             ->unique()
             ->values()
             ->all();
@@ -326,7 +326,7 @@ class FrontendController extends Controller
 
         $reviewItems = TransactionProductReview::query()
             ->with(['user:id,name', 'transactionDetail:id,variant_name'])
-            ->whereHas('transactionDetail', fn ($q) => $q->where('product_id', $product->id))
+            ->whereHas('transactionDetail', fn($q) => $q->where('product_id', $product->id))
             ->latest()
             ->get()
             ->map(function ($review) {
@@ -525,12 +525,12 @@ class FrontendController extends Controller
                 'productVariantId' => (int) $variant->id,
                 'isWishlisted' => auth()->check()
                     ? Wishlist::query()
-                        ->where('user_id', auth()->id())
-                        ->where('product_id', $product->id)
-                        ->exists()
+                    ->where('user_id', auth()->id())
+                    ->where('product_id', $product->id)
+                    ->exists()
                     : false,
                 'variantOptions' => $product->productVariants
-                    ->filter(fn ($pv) => $pv->variant && filled($pv->variant->value))
+                    ->filter(fn($pv) => $pv->variant && filled($pv->variant->value))
                     ->map(function ($pv) use ($isFlashSale, $flashSalePrice) {
                         $basePrice = (int) $pv->price;
                         $displayPrice = $isFlashSale && $flashSalePrice ? (int) $flashSalePrice : $basePrice;
@@ -582,7 +582,7 @@ class FrontendController extends Controller
         $soldMap = TransactionDetail::query()
             ->selectRaw('product_id, SUM(quantity) as sold_qty')
             ->whereIn('product_id', $productIds)
-            ->whereHas('transaction', fn ($q) => $q->whereIn(DB::raw('LOWER(status)'), $deliveredStatuses))
+            ->whereHas('transaction', fn($q) => $q->whereIn(DB::raw('LOWER(status)'), $deliveredStatuses))
             ->groupBy('product_id')
             ->pluck('sold_qty', 'product_id');
 
@@ -642,7 +642,7 @@ class FrontendController extends Controller
             $checkoutItems = collect($checkout['items'] ?? [])->values()->all();
         } elseif ($source === 'cart_selected') {
             $selectedIds = collect($checkout['cart_ids'] ?? [])
-                ->map(fn ($id) => (int) $id)
+                ->map(fn($id) => (int) $id)
                 ->filter()
                 ->values()
                 ->all();
@@ -741,11 +741,11 @@ class FrontendController extends Controller
             ->keyBy('product_id');
         $wishedProductIds = auth()->check()
             ? Wishlist::query()
-                ->where('user_id', auth()->id())
-                ->whereIn('product_id', $productIds)
-                ->pluck('product_id')
-                ->map(fn ($id) => (int) $id)
-                ->all()
+            ->where('user_id', auth()->id())
+            ->whereIn('product_id', $productIds)
+            ->pluck('product_id')
+            ->map(fn($id) => (int) $id)
+            ->all()
             : [];
         $wishedLookup = array_flip($wishedProductIds);
 
@@ -951,7 +951,7 @@ class FrontendController extends Controller
             ->orderByDesc('flash_sale_id')
             ->orderByDesc('id')
             ->get()
-            ->filter(fn ($item) => $item->productVariant && $item->productVariant->product)
+            ->filter(fn($item) => $item->productVariant && $item->productVariant->product)
             ->values();
 
         $mapped = $items->map(function ($item) {
@@ -1042,7 +1042,7 @@ class FrontendController extends Controller
             $salePrice = $flashItem ? (int) $flashItem->discount_price : $basePrice;
             $variantText = trim(
                 ($variant->variant?->name ? $variant->variant->name . ': ' : '') .
-                ($variant->variant?->value ?? '-')
+                    ($variant->variant?->value ?? '-')
             );
 
             return [
