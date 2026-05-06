@@ -12,7 +12,7 @@
                 if (saved === 'dark' || (!saved && prefersDark)) html.classList.add('dark');
             })();
         </script>
-        <title>AdminKit - Register</title>
+        <title>Ecommerce Citra - Register</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
             rel="stylesheet" />
@@ -56,7 +56,8 @@
 
                 <div class="relative z-10 p-10">
                     <h1 class="text-3xl font-bold leading-tight">Temukan produk <br>terbaik untuk Anda</h1>
-                    <p class="mt-2 text-sm text-white/70">Belanja mudah, cepat, dan terpercaya â€” <br>ribuan produk siap
+                    <p class="mt-2 text-sm text-white/70">Belanja mudah, cepat, dan terpercaya â€” <br>ribuan produk
+                        siap
                         dikirim ke seluruh Indonesia.</p>
                     <div class="flex items-center gap-2 mt-6">
                         <div class="w-7 h-2 rounded-full bg-white"></div>
@@ -89,7 +90,8 @@
                             <div>
                                 <label
                                     class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Nama</label>
-                                <input type="text" name="name" value="{{ old('name') }}" placeholder="Nama lengkap"
+                                <input type="text" name="name" value="{{ old('name') }}"
+                                    placeholder="Nama lengkap"
                                     class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200 placeholder-slate-400" />
                             </div>
                             <div>
@@ -107,7 +109,8 @@
                             </div>
                             <div>
                                 <label
-                                    class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Konfirmasi Password</label>
+                                    class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Konfirmasi
+                                    Password</label>
                                 <input type="password" name="password_confirmation" placeholder="••••••••"
                                     class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200 placeholder-slate-400" />
                             </div>
@@ -120,7 +123,8 @@
 
                         <p class="text-sm text-slate-600 dark:text-slate-300 mt-4 text-center">
                             Sudah punya akun?
-                            <a href="{{ route('login') }}" class="text-blue-600 hover:text-blue-700 font-semibold">Sign In</a>
+                            <a href="{{ route('login') }}" class="text-blue-600 hover:text-blue-700 font-semibold">Sign
+                                In</a>
                         </p>
                     </div>
                 </div>
