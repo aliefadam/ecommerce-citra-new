@@ -52,20 +52,24 @@
 
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                     @foreach (($campaign['items'] ?? []) as $fs)
-                        <a href="{{ url('/detail-produk/' . $fs['slug']) }}" class="bg-white rounded-2xl overflow-hidden shadow-sm border border-red-100 card-hover group">
-                            <div class="relative">
+                        <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-red-100 card-hover group flex flex-col">
+                            <a href="{{ url('/detail-produk/' . $fs['slug']) }}" class="relative block overflow-hidden">
                                 <img src="{{ $fs['image'] }}" class="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300" alt="{{ $fs['name'] }}" />
                                 <span class="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">-{{ $fs['discountPercent'] }}%</span>
-                            </div>
-                            <div class="p-3">
-                                <p class="text-sm font-semibold text-slate-800 line-clamp-2 min-h-[40px]">{{ $fs['name'] }}</p>
-                                <div class="mt-2">
+                            </a>
+                            <div class="p-3 flex-1 flex flex-col">
+                                <a href="{{ url('/detail-produk/' . $fs['slug']) }}" class="text-sm font-semibold text-slate-800 hover:text-blue-600 line-clamp-2 min-h-[40px] transition-colors">{{ $fs['name'] }}</a>
+                                <p class="text-[11px] text-slate-500 mt-1">{{ number_format($fs['sold']) }} terjual</p>
+                                <div class="mt-auto pt-1">
                                     <p class="text-base font-bold text-red-500">Rp {{ number_format($fs['price'], 0, ',', '.') }}</p>
                                     <p class="text-xs text-slate-400 line-through">Rp {{ number_format($fs['originalPrice'], 0, ',', '.') }}</p>
                                 </div>
-                                <p class="text-[11px] text-slate-500 mt-2">{{ number_format($fs['sold']) }} terjual</p>
+                                <a href="{{ url('/detail-produk/' . $fs['slug']) }}" class="mt-2 w-full bg-blue-50 hover:bg-blue-500 text-blue-600 hover:text-white text-xs font-semibold py-2 rounded-full transition-all border border-blue-200 hover:border-blue-500 flex items-center justify-center gap-1.5">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                                    Keranjang
+                                </a>
                             </div>
-                        </a>
+                        </div>
                     @endforeach
                 </div>
             </div>

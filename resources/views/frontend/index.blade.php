@@ -488,9 +488,8 @@
                     ->values();
             @endphp
             @forelse ($rekProducts as $rp)
-                <a href="{{ url('/detail-produk/' . $rp['slug']) }}"
-                    class="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col">
-                    <div class="relative overflow-hidden aspect-[4/3]">
+                <div class="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col">
+                    <a href="{{ url('/detail-produk/' . $rp['slug']) }}" class="relative overflow-hidden aspect-[4/3] block">
                         <img src="{{ $rp['image'] }}" alt="{{ $rp['name'] }}"
                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
                         @if (($rp['originalPrice'] ?? 0) > ($rp['price'] ?? 0))
@@ -501,23 +500,18 @@
                         @elseif (($rp['badge'] ?? '') === 'best')
                             <span class="absolute top-2 left-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">TERLARIS</span>
                         @endif
-                        <!-- Quick add overlay -->
-                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
-                        <button onclick="event.preventDefault(); addToCart({{ $rp['id'] }})"
-                            class="absolute bottom-2 right-2 w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center text-blue-600 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 transition-all duration-200 hover:bg-blue-500 hover:text-white">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                            </svg>
-                        </button>
-                    </div>
+                    </a>
                     <div class="p-3 flex-1 flex flex-col gap-1">
-                        <p class="text-sm font-semibold text-slate-800 group-hover:text-blue-600 line-clamp-2 leading-snug transition-colors">{{ $rp['name'] }}</p>
+                        <a href="{{ url('/detail-produk/' . $rp['slug']) }}" class="text-sm font-semibold text-slate-800 hover:text-blue-600 line-clamp-2 leading-snug transition-colors">{{ $rp['name'] }}</a>
                         <div class="flex items-center gap-1">
                             <span class="text-yellow-400 text-xs">★</span>
                             <span class="text-xs font-medium text-slate-700">{{ number_format($rp['rating'], 1) }}</span>
                             @if (!empty($rp['reviews']))
                                 <span class="text-xs text-slate-400">({{ number_format($rp['reviews']) }})</span>
+                            @endif
+                            @if (!empty($rp['sold']))
+                                <span class="text-xs text-slate-300 mx-0.5">•</span>
+                                <span class="text-xs text-slate-400">{{ number_format($rp['sold']) }} terjual</span>
                             @endif
                         </div>
                         <div class="flex items-center gap-1.5 flex-wrap mt-auto pt-1">
@@ -536,8 +530,12 @@
                                 <span class="text-slate-400 text-xs line-through">Rp {{ number_format($rp['originalPrice'], 0, ',', '.') }}</span>
                             @endif
                         </div>
+                        <button onclick="addToCart({{ $rp['id'] }})" class="w-full bg-blue-50 hover:bg-blue-500 text-blue-600 hover:text-white text-xs font-semibold py-2 rounded-full transition-all border border-blue-200 hover:border-blue-500 flex items-center justify-center gap-1.5 mt-1">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                            Keranjang
+                        </button>
                     </div>
-                </a>
+                </div>
             @empty
                 <div class="col-span-full text-center py-10 text-slate-400 text-sm">Belum ada produk rekomendasi.</div>
             @endforelse
