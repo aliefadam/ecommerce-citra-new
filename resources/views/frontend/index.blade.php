@@ -243,33 +243,38 @@
         </div>
     </div>
     <!-- KATEGORI SECTION -->
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl sm:text-2xl font-bold text-slate-800">Explore Popular Categories</h2>
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <p class="text-xs font-medium text-blue-500 tracking-widest uppercase mb-1">Browse</p>
+                <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight">Popular Categories</h2>
+            </div>
             <div class="flex items-center gap-2">
                 <button type="button" onclick="categoryPrev()"
-                    class="w-9 h-9 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center text-slate-600 transition-all shadow-sm">
-                    <i class="ri-arrow-left-s-line text-xl"></i>
+                    class="w-8 h-8 border border-slate-200 hover:border-slate-400 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 transition-all duration-200">
+                    <i class="ri-arrow-left-s-line text-lg"></i>
                 </button>
                 <button type="button" onclick="categoryNext()"
-                    class="w-9 h-9 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center text-slate-600 transition-all shadow-sm">
-                    <i class="ri-arrow-right-s-line text-xl"></i>
+                    class="w-8 h-8 border border-slate-200 hover:border-slate-400 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 transition-all duration-200">
+                    <i class="ri-arrow-right-s-line text-lg"></i>
                 </button>
             </div>
         </div>
-        <div id="categoryTrack" class="flex flex-nowrap items-start gap-6 overflow-x-auto pb-2 px-1">
+        <div id="categoryTrack" class="flex flex-nowrap items-start gap-5 overflow-x-auto py-3 px-2 scrollbar-hide">
             @foreach (collect($homeMainCategories ?? []) as $cat)
                 <a href="{{ route('frontend.kategori', ['parent' => $cat['slug']]) }}"
-                    class="flex flex-col items-center gap-3 group shrink-0">
-                    <div class="w-[110px] h-[110px] rounded-full bg-slate-100 flex items-center justify-center overflow-hidden transition-all group-hover:shadow-lg group-hover:scale-105">
+                    class="flex flex-col items-center gap-3 group shrink-0 w-[100px]">
+                    <div class="relative w-[88px] h-[88px] rounded-full overflow-hidden bg-slate-50 ring-1 ring-slate-100 transition-all duration-300 group-hover:ring-2 group-hover:ring-blue-400 group-hover:shadow-md group-hover:-translate-y-1">
                         @if (!empty($cat['image']))
                             <img src="{{ $cat['image'] }}" alt="{{ $cat['name'] }}"
-                                class="w-full h-full object-cover" />
+                                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                         @else
-                            <i class="{{ $cat['icon'] }} text-4xl text-blue-600"></i>
+                            <div class="w-full h-full flex items-center justify-center">
+                                <i class="{{ $cat['icon'] }} text-3xl text-blue-500"></i>
+                            </div>
                         @endif
                     </div>
-                    <p class="text-xs font-semibold text-slate-700 tracking-widest uppercase text-center">{{ $cat['name'] }}</p>
+                    <p class="text-[11px] font-medium text-slate-500 group-hover:text-slate-800 tracking-wide uppercase text-center leading-tight transition-colors duration-200">{{ $cat['name'] }}</p>
                 </a>
             @endforeach
         </div>
@@ -401,34 +406,30 @@
                     <div class="flex items-center gap-2 sm:gap-3">
                         <div class="flex items-center gap-2 sm:hidden">
                             <button type="button" onclick="openMobileFilter()"
-                                class="w-9 h-9 rounded-xl border border-slate-200 bg-white text-slate-600 flex items-center justify-center">
+                                class="w-9 h-9 rounded-xl border border-slate-200 bg-white text-slate-600 flex items-center justify-center hover:bg-slate-50 transition-colors">
                                 <i class="ri-filter-3-line text-base"></i>
                             </button>
                             <button type="button" onclick="cycleSortMobile()"
-                                class="w-9 h-9 rounded-xl border border-slate-200 bg-white text-slate-600 flex items-center justify-center">
+                                class="w-9 h-9 rounded-xl border border-slate-200 bg-white text-slate-600 flex items-center justify-center hover:bg-slate-50 transition-colors">
                                 <i class="ri-arrow-up-down-line text-base"></i>
                             </button>
                         </div>
                         <select id="sortSelect" onchange="sortProducts()"
-                            class="hidden sm:block border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-blue-400 bg-white">
+                            class="hidden sm:block border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 outline-none focus:border-blue-400 bg-white cursor-pointer">
                             <option value="newest">Terbaru</option>
                             <option value="price-low">Harga Terendah</option>
                             <option value="price-high">Harga Tertinggi</option>
                             <option value="popular">Terpopuler</option>
                         </select>
-                        <div class="flex border border-slate-200 rounded-xl overflow-hidden">
-                            <button onclick="setView('grid')" id="gridBtn" class="p-2 bg-blue-500 text-white">
+                        <div class="flex bg-slate-100 rounded-xl p-1 gap-1">
+                            <button onclick="setView('grid')" id="gridBtn" class="p-1.5 rounded-lg bg-blue-500 text-white transition-all">
                                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                    <path
-                                        d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                                    <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                                 </svg>
                             </button>
-                            <button onclick="setView('list')" id="listBtn"
-                                class="p-2 text-slate-400 hover:text-slate-600 bg-white">
+                            <button onclick="setView('list')" id="listBtn" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 transition-all">
                                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd"
-                                        d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-                                        clip-rule="evenodd" />
+                                    <path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" />
                                 </svg>
                             </button>
                         </div>
@@ -487,9 +488,8 @@
                     ->values();
             @endphp
             @forelse ($rekProducts as $rp)
-                <a href="{{ url('/detail-produk/' . $rp['slug']) }}"
-                    class="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col">
-                    <div class="relative overflow-hidden aspect-[4/3]">
+                <div class="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col">
+                    <a href="{{ url('/detail-produk/' . $rp['slug']) }}" class="relative overflow-hidden aspect-[4/3] block">
                         <img src="{{ $rp['image'] }}" alt="{{ $rp['name'] }}"
                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
                         @if (($rp['originalPrice'] ?? 0) > ($rp['price'] ?? 0))
@@ -500,23 +500,18 @@
                         @elseif (($rp['badge'] ?? '') === 'best')
                             <span class="absolute top-2 left-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">TERLARIS</span>
                         @endif
-                        <!-- Quick add overlay -->
-                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
-                        <button onclick="event.preventDefault(); addToCart({{ $rp['id'] }})"
-                            class="absolute bottom-2 right-2 w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center text-blue-600 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 transition-all duration-200 hover:bg-blue-500 hover:text-white">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                            </svg>
-                        </button>
-                    </div>
+                    </a>
                     <div class="p-3 flex-1 flex flex-col gap-1">
-                        <p class="text-sm font-semibold text-slate-800 group-hover:text-blue-600 line-clamp-2 leading-snug transition-colors">{{ $rp['name'] }}</p>
+                        <a href="{{ url('/detail-produk/' . $rp['slug']) }}" class="text-sm font-semibold text-slate-800 hover:text-blue-600 line-clamp-2 leading-snug transition-colors">{{ $rp['name'] }}</a>
                         <div class="flex items-center gap-1">
                             <span class="text-yellow-400 text-xs">★</span>
                             <span class="text-xs font-medium text-slate-700">{{ number_format($rp['rating'], 1) }}</span>
                             @if (!empty($rp['reviews']))
                                 <span class="text-xs text-slate-400">({{ number_format($rp['reviews']) }})</span>
+                            @endif
+                            @if (!empty($rp['sold']))
+                                <span class="text-xs text-slate-300 mx-0.5">•</span>
+                                <span class="text-xs text-slate-400">{{ number_format($rp['sold']) }} terjual</span>
                             @endif
                         </div>
                         <div class="flex items-center gap-1.5 flex-wrap mt-auto pt-1">
@@ -535,8 +530,12 @@
                                 <span class="text-slate-400 text-xs line-through">Rp {{ number_format($rp['originalPrice'], 0, ',', '.') }}</span>
                             @endif
                         </div>
+                        <button onclick="addToCart({{ $rp['id'] }})" class="w-full bg-blue-50 hover:bg-blue-500 text-blue-600 hover:text-white text-xs font-semibold py-2 rounded-full transition-all border border-blue-200 hover:border-blue-500 flex items-center justify-center gap-1.5 mt-1">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                            Keranjang
+                        </button>
                     </div>
-                </a>
+                </div>
             @empty
                 <div class="col-span-full text-center py-10 text-slate-400 text-sm">Belum ada produk rekomendasi.</div>
             @endforelse
@@ -709,7 +708,7 @@
                 <span class="font-bold text-slate-900 text-base">${priceLabel}</span>
                 ${!isPriceRange && p.originalPrice > p.price ? `<span class="text-slate-400 text-xs line-through">Rp ${p.originalPrice.toLocaleString('id-ID')}</span>` : ''}
               </div>
-              <button onclick="addToCart(${p.id})" class="mt-auto w-full bg-blue-50 hover:bg-blue-500 text-blue-600 hover:text-white text-xs font-semibold py-2 rounded-xl transition-all border border-blue-200 hover:border-blue-500 flex items-center justify-center gap-1.5">
+              <button onclick="addToCart(${p.id})" class="mt-auto w-full bg-blue-50 hover:bg-blue-500 text-blue-600 hover:text-white text-xs font-semibold py-2 rounded-full transition-all border border-blue-200 hover:border-blue-500 flex items-center justify-center gap-1.5">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                 Keranjang
               </button>
