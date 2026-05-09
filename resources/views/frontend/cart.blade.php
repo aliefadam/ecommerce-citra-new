@@ -1,6 +1,6 @@
 @extends('layouts.user')
 
-@section('title', 'Keranjang - Ecommerce Citra')
+@section('title', 'Keranjang - ' . ($appStoreName ?? 'Ecommerce Citra'))
 
 @section('content')
     @include('partials.navbar-user')

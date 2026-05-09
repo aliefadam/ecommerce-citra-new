@@ -1,6 +1,6 @@
 @extends('layouts.user')
 
-@section('title', 'Kategori - Ecommerce Citra')
+@section('title', 'Kategori - ' . ($appStoreName ?? 'Ecommerce Citra'))
 
 @section('style')
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
@@ -944,6 +944,5 @@
         setMegaCategory('rumah-tangga');
     </script>
 @endsection
-
 
 

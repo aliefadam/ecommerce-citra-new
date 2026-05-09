@@ -54,10 +54,14 @@
                 <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin-bottom:18px;">
                     <tr>
                         <td style="background:rgba(255,255,255,0.2);border-radius:10px;width:42px;height:42px;text-align:center;vertical-align:middle;padding:0 10px;">
-                            <img src="https://img.icons8.com/ios-filled/50/ffffff/shopping-cart.png" width="24" height="24" alt="" style="display:block;margin:9px auto;" />
+                            @if (!empty($appStoreLogoUrl))
+                                <img src="{{ $appStoreLogoUrl }}" width="28" height="28" alt="{{ $appStoreName }}" style="display:block;margin:7px auto;object-fit:contain;" />
+                            @else
+                                <img src="https://img.icons8.com/ios-filled/50/ffffff/shopping-cart.png" width="24" height="24" alt="" style="display:block;margin:9px auto;" />
+                            @endif
                         </td>
                         <td style="padding-left:10px;vertical-align:middle;">
-                            <span style="font-size:20px;font-weight:800;color:#ffffff;letter-spacing:-0.3px;">Citra Ecommerce</span>
+                            <span style="font-size:20px;font-weight:800;color:#ffffff;letter-spacing:-0.3px;">{{ $appStoreName }}</span>
                         </td>
                     </tr>
                 </table>
@@ -239,7 +243,7 @@
                     Email ini dikirim secara otomatis. Harap simpan sebagai bukti transaksi Anda.<br>
                     Jika ada pertanyaan, silakan hubungi tim kami melalui halaman bantuan.
                 </p>
-                <p style="font-size:13px;font-weight:700;color:#2563eb;margin:0;">Citra Ecommerce &mdash; Belanja Mudah, Nyaman, Terpercaya</p>
+                <p style="font-size:13px;font-weight:700;color:#2563eb;margin:0;">{{ $appStoreName }} &mdash; Belanja Mudah, Nyaman, Terpercaya</p>
             </td>
         </tr>
 

@@ -42,6 +42,10 @@ class StoreLocationController extends Controller
             'is_active' => true,
         ]);
 
+        if ($request->input('redirect_to') === 'settings') {
+            return redirect()->route('pages.settings', ['tab' => 'location'])->with('success', 'Store location berhasil diperbarui.');
+        }
+
         return redirect()->route('store-locations.edit')->with('success', 'Store location berhasil diperbarui.');
     }
 

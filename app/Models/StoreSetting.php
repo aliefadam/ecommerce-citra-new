@@ -15,6 +15,7 @@ class StoreSetting extends Model
     {
         return [
             'store_name' => 'Ecommerce Citra',
+            'store_logo_path' => '',
             'manual_payment_bank_name' => 'BCA',
             'manual_payment_account_number' => '1234567890',
             'manual_payment_account_name' => 'Ecommerce Citra',

@@ -12,6 +12,9 @@
         h1 { margin: 0; font-size: 28px; }
         h2 { font-size: 14px; margin: 28px 0 10px; color: #475569; text-transform: uppercase; letter-spacing: .04em; }
         p { margin: 4px 0; font-size: 14px; color: #475569; }
+        .brand { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-bottom: 8px; }
+        .brand-logo { width: 38px; height: 38px; border-radius: 10px; object-fit: contain; border: 1px solid #e2e8f0; padding: 4px; }
+        .brand-mark { width: 38px; height: 38px; border-radius: 10px; background: #2563eb; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; }
         table { width: 100%; border-collapse: collapse; margin-top: 12px; }
         th, td { padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: left; font-size: 14px; }
         th { background: #f8fafc; color: #475569; }
@@ -35,7 +38,14 @@
                 <p>{{ optional($transaction->created_at)->translatedFormat('d M Y H:i') }}</p>
             </div>
             <div class="right">
-                <strong>Ecommerce Citra</strong>
+                <div class="brand">
+                    @if (!empty($appStoreLogoUrl))
+                        <img src="{{ $appStoreLogoUrl }}" alt="{{ $appStoreName }}" class="brand-logo">
+                    @else
+                        <span class="brand-mark">{{ strtoupper(substr($appStoreName, 0, 1)) }}</span>
+                    @endif
+                    <strong>{{ $appStoreName }}</strong>
+                </div>
                 <p><span class="badge">{{ strtoupper($transaction->status) }}</span></p>
             </div>
         </div>

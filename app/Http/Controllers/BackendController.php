@@ -7,10 +7,12 @@ use App\Models\TransactionDetail;
 use App\Models\User;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\StoreLocation;
 use App\Models\StoreSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class BackendController extends Controller
 {
@@ -254,22 +256,50 @@ class BackendController extends Controller
     {
         return view('backend.settings', [
             'storeSettings' => StoreSetting::values(),
+            'location' => StoreLocation::query()
+                ->where('is_active', true)
+                ->latest('id')
+                ->first(),
         ]);
     }
 
     public function updateSettings(Request $request)
     {
+        $section = (string) $request->input('section', 'store');
+
+        if ($section === 'manual_payment') {
+            $validated = $request->validate([
+                'manual_payment_bank_name' => ['required', 'string', 'max:80'],
+                'manual_payment_account_number' => ['required', 'string', 'max:80'],
+                'manual_payment_account_name' => ['required', 'string', 'max:120'],
+                'manual_payment_instruction' => ['nullable', 'string', 'max:1000'],
+            ]);
+
+            StoreSetting::setMany($validated);
+
+            return redirect()->route('pages.settings', ['tab' => 'payment'])->with('success', 'Setting pembayaran manual berhasil disimpan.');
+        }
+
         $validated = $request->validate([
             'store_name' => ['required', 'string', 'max:120'],
-            'manual_payment_bank_name' => ['required', 'string', 'max:80'],
-            'manual_payment_account_number' => ['required', 'string', 'max:80'],
-            'manual_payment_account_name' => ['required', 'string', 'max:120'],
-            'manual_payment_instruction' => ['nullable', 'string', 'max:1000'],
+            'store_logo' => ['nullable', 'image', 'max:2048'],
         ]);
 
-        StoreSetting::setMany($validated);
+        $values = [
+            'store_name' => $validated['store_name'],
+        ];
 
-        return back()->with('success', 'Setting toko berhasil disimpan.');
+        if ($request->hasFile('store_logo')) {
+            $currentLogo = (string) StoreSetting::values()['store_logo_path'];
+            if ($currentLogo !== '' && Storage::disk('public')->exists($currentLogo)) {
+                Storage::disk('public')->delete($currentLogo);
+            }
+            $values['store_logo_path'] = $request->file('store_logo')->store('store', 'public');
+        }
+
+        StoreSetting::setMany($values);
+
+        return redirect()->route('pages.settings', ['tab' => 'store'])->with('success', 'Profil toko berhasil disimpan.');
     }
 
     public function changePassword()

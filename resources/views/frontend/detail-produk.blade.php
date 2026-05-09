@@ -1,6 +1,6 @@
 ﻿@extends('layouts.user')
 
-@section('title', ($productData['name'] ?? 'Detail Produk') . ' - Ecommerce Citra')
+@section('title', ($productData['name'] ?? 'Detail Produk') . ' - ' . ($appStoreName ?? 'Ecommerce Citra'))
 
 @section('style')
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
@@ -1131,7 +1131,7 @@
             if (navigator.share) {
                 navigator.share({
                     title: productData.name,
-                    text: 'Cek produk ini di Ecommerce Citra!',
+                    text: `Cek produk ini di ${@json($appStoreName ?? 'Ecommerce Citra')}!`,
                     url: url
                 }).catch(() => {});
             } else {

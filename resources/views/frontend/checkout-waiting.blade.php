@@ -1,6 +1,6 @@
 @extends('layouts.user')
 
-@section('title', 'Menunggu Pembayaran - Ecommerce Citra')
+@section('title', 'Menunggu Pembayaran - ' . ($appStoreName ?? 'Ecommerce Citra'))
 @section('body_class', 'bg-slate-50 text-slate-800 overflow-x-hidden')
 @section('style')
     <style>
@@ -392,7 +392,7 @@
             </div>
 
             <h2 class="text-2xl font-extrabold text-slate-900 mb-2">Pembelian Berhasil! 🎉</h2>
-            <p class="text-slate-600 mb-5">Terima kasih sudah berbelanja di Ecommerce Citra. Pesananmu sedang diproses!</p>
+            <p class="text-slate-600 mb-5">Terima kasih sudah berbelanja di {{ $appStoreName ?? 'Ecommerce Citra' }}. Pesananmu sedang diproses!</p>
 
             <div class="bg-slate-50 rounded-2xl p-4 mb-5 text-left">
                 <div class="space-y-2">

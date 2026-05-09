@@ -12,7 +12,7 @@
                 if (saved === 'dark' || (!saved && prefersDark)) html.classList.add('dark');
             })();
         </script>
-        <title>Ecommerce Citra - Register</title>
+        <title>{{ $appStoreName ?? 'Ecommerce Citra' }} - Register</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
             rel="stylesheet" />
@@ -43,15 +43,17 @@
                 <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-black/30"></div>
 
                 <div class="relative flex items-center gap-3 z-10 p-10">
-                    <div class="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white"
-                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                        </svg>
+                    <div class="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center overflow-hidden">
+                        @if (!empty($appStoreLogoUrl))
+                            <img src="{{ $appStoreLogoUrl }}" alt="{{ $appStoreName }}" class="w-full h-full object-contain bg-white p-1">
+                        @else
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                            </svg>
+                        @endif
                     </div>
-                    <span class="text-xl font-extrabold tracking-tight">
-                        Citra <span class="text-white">Ecommerce</span>
-                    </span>
+                    <span class="text-xl font-extrabold tracking-tight">{{ $appStoreName ?? 'Ecommerce Citra' }}</span>
                 </div>
 
                 <div class="relative z-10 p-10">

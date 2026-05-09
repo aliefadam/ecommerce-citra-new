@@ -173,10 +173,10 @@ return [
         'group' => 'Settings',
         'items' => [
             [
-                'name'   => 'Store Location',
-                'route'  => 'store-locations.edit',
-                'active' => 'store-locations.*',
-                'icon'   => 'map-pin',
+                'name'   => 'Setting Toko',
+                'route'  => 'pages.settings',
+                'active' => 'pages.settings',
+                'icon'   => 'settings',
             ],
             [
                 'name'   => 'Banner',

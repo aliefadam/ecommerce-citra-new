@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\StoreSetting;
 use App\Models\Transaction;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -12,6 +14,20 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $storeSettings = StoreSetting::defaults();
+        try {
+            if (Schema::hasTable('store_settings')) {
+                $storeSettings = StoreSetting::values();
+            }
+        } catch (\Throwable) {
+            $storeSettings = StoreSetting::defaults();
+        }
+
+        $storeLogoPath = trim((string) ($storeSettings['store_logo_path'] ?? ''));
+        View::share('appStoreSettings', $storeSettings);
+        View::share('appStoreName', (string) ($storeSettings['store_name'] ?? 'Ecommerce Citra'));
+        View::share('appStoreLogoUrl', $storeLogoPath !== '' ? asset('storage/' . ltrim($storeLogoPath, '/')) : null);
+
         View::composer('partials.topbar', function ($view) {
             try {
                 $adminNotifications = Transaction::query()

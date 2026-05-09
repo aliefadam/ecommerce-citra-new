@@ -3,13 +3,17 @@
         <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
             <div class="col-span-2 md:col-span-1">
                 <div class="flex items-center gap-2 mb-4">
-                    <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path
-                                d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3z" />
-                        </svg>
+                    <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center overflow-hidden">
+                        @if (!empty($appStoreLogoUrl))
+                            <img src="{{ $appStoreLogoUrl }}" alt="{{ $appStoreName }}" class="w-full h-full object-contain bg-white p-1">
+                        @else
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path
+                                    d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3z" />
+                            </svg>
+                        @endif
                     </div>
-                    <span class="text-white font-extrabold text-xl">Ecommerce Citra</span>
+                    <span class="text-white font-extrabold text-xl">{{ $appStoreName }}</span>
                 </div>
                 <p class="text-sm leading-relaxed mb-4">Platform belanja online terpercaya dengan jutaan produk pilihan
                     dan pengiriman ke seluruh Indonesia.</p>
@@ -81,7 +85,7 @@
             </div>
         </div>
         <div class="border-t border-slate-800 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p class="text-sm text-slate-500">© 2026 Ecommerce Citra. All rights reserved.</p>
+            <p class="text-sm text-slate-500">© 2026 {{ $appStoreName }}. All rights reserved.</p>
             <div class="flex items-center gap-3 flex-wrap justify-center">
                 <div class="bg-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-400 font-medium">Visa</div>
                 <div class="bg-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-400 font-medium">Mastercard</div>
