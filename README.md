@@ -1,58 +1,260 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🛒 Citra E-Commerce
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Citra E-Commerce adalah aplikasi toko online berbasis **Laravel 13** dengan fitur lengkap mulai dari manajemen produk, keranjang belanja, checkout, pembayaran online via **Midtrans**, hingga kalkulasi ongkos kirim otomatis via **RajaOngkir**.
 
-## About Laravel
+## 📋 Daftar Isi
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- [Tech Stack](#-tech-stack)
+- [Fitur](#-fitur)
+- [Persyaratan Sistem](#-persyaratan-sistem)
+- [Instalasi](#-instalasi)
+- [Konfigurasi Environment](#-konfigurasi-environment)
+- [Menjalankan Aplikasi](#-menjalankan-aplikasi)
+- [Struktur Project](#-struktur-project)
+- [Database Seeder](#-database-seeder)
+- [Lisensi](#-lisensi)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 🚀 Tech Stack
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+| Layer            | Teknologi                         |
+| ---------------- | --------------------------------- |
+| **Framework**    | Laravel 13 (PHP 8.3)              |
+| **Frontend**     | Blade Templates + Tailwind CSS 4  |
+| **Build Tool**   | Vite 8                            |
+| **Database**     | MySQL                             |
+| **Payment**      | Midtrans (Sandbox / Production)   |
+| **Shipping**     | RajaOngkir API                    |
+| **Auth**         | Laravel Auth + Google OAuth       |
+| **Mail**         | SMTP (Gmail)                      |
+| **Queue**        | Database Driver                   |
 
-## Learning Laravel
+## ✨ Fitur
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### 🛍️ Frontend (Customer)
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- **Homepage** — Banner slider, flash sale, produk terbaru
+- **Pencarian & Kategori** — Cari produk dan jelajahi berdasarkan kategori
+- **Detail Produk** — Galeri gambar, varian produk, review pelanggan
+- **Flash Sale** — Produk diskon dengan batas waktu
+- **Keranjang Belanja** — Tambah, ubah jumlah, hapus item
+- **Wishlist** — Simpan produk favorit
+- **Checkout** — Pilih alamat, kurir, dan metode pembayaran
+- **Ongkos Kirim** — Kalkulasi otomatis via RajaOngkir (JNE, SiCepat, J&T)
+- **Pembayaran Online** — Integrasi Midtrans (transfer bank, e-wallet, dll)
+- **Profil User** — Edit biodata, ubah password, kelola alamat
+- **Riwayat Transaksi** — Lihat status pesanan & beri review produk
+- **Notifikasi** — Pemberitahuan status pesanan real-time
+- **Login Google** — Autentikasi cepat via Google OAuth
+- **Lupa Password** — Reset password via email
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+### ⚙️ Backend (Admin Panel)
 
-## Agentic Development
+- **Dashboard** — Statistik penjualan & grafik
+- **Manajemen Produk** — CRUD produk dengan varian & gambar
+- **Manajemen Kategori** — Kategori utama & sub-kategori
+- **Manajemen Varian** — Opsi varian produk (ukuran, warna, dll)
+- **Manajemen Stok** — Riwayat pergerakan stok (stock movement)
+- **Flash Sale** — Buat & kelola event flash sale
+- **Manajemen Banner** — Atur banner homepage
+- **Manajemen Transaksi** — Proses & kirim pesanan
+- **Lokasi Toko** — Pengaturan alamat asal pengiriman
+- **Manajemen User** — Daftar user terdaftar
+- **Ganti Password Admin** — Keamanan akun admin
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## 💻 Persyaratan Sistem
 
-```bash
-composer require laravel/boost --dev
+- PHP >= 8.3
+- Composer
+- Node.js & NPM
+- MySQL
+- Laragon / XAMPP / Herd (atau web server lainnya)
 
-php artisan boost:install
+## 📦 Instalasi
+
+1. **Clone repository**
+
+   ```bash
+   git clone https://github.com/username/citra-ecommerce-new.git
+   cd citra-ecommerce-new
+   ```
+
+2. **Install dependensi PHP**
+
+   ```bash
+   composer install
+   ```
+
+3. **Install dependensi JavaScript**
+
+   ```bash
+   npm install
+   ```
+
+4. **Salin file environment**
+
+   ```bash
+   cp .env.example .env
+   ```
+
+5. **Generate application key**
+
+   ```bash
+   php artisan key:generate
+   ```
+
+6. **Konfigurasi database** di file `.env` (lihat [Konfigurasi Environment](#-konfigurasi-environment))
+
+7. **Jalankan migrasi & seeder**
+
+   ```bash
+   php artisan migrate --seed
+   ```
+
+8. **Buat symlink storage**
+
+   ```bash
+   php artisan storage:link
+   ```
+
+## 🔧 Konfigurasi Environment
+
+Sesuaikan variabel berikut di file `.env`:
+
+### Database
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=citra-ecommerce-new
+DB_USERNAME=root
+DB_PASSWORD=
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### Google OAuth
 
-## Contributing
+```env
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_REDIRECT_URI=http://your-domain.com/auth/google/callback
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### RajaOngkir
 
-## Code of Conduct
+```env
+RAJAONGKIR_API_KEY=your-rajaongkir-api-key
+RAJAONGKIR_BASE_URL=https://rajaongkir.komerce.id/api/v1
+RAJAONGKIR_ORIGIN_ID=12345
+RAJAONGKIR_COURIERS=jne:sicepat:jnt
+CHECKOUT_DEFAULT_ITEM_WEIGHT=1
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Midtrans
 
-## Security Vulnerabilities
+```env
+MIDTRANS_CLIENT_KEY=your-midtrans-client-key
+MIDTRANS_SERVER_KEY=your-midtrans-server-key
+MIDTRANS_IS_PRODUCTION=false
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Mail (SMTP Gmail)
 
-## License
+```env
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=465
+MAIL_USERNAME=your-email@gmail.com
+MAIL_PASSWORD=your-app-password
+MAIL_ENCRYPTION=ssl
+MAIL_FROM_ADDRESS="your-email@gmail.com"
+MAIL_FROM_NAME="Citra Ecommerce"
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+> **Catatan:** Untuk Gmail, gunakan [App Password](https://support.google.com/accounts/answer/185833) bukan password akun biasa.
+
+## ▶️ Menjalankan Aplikasi
+
+### Cara Cepat (Semua service sekaligus)
+
+```bash
+composer dev
+```
+
+Perintah ini menjalankan secara bersamaan:
+- `php artisan serve` — Server Laravel
+- `php artisan queue:listen` — Queue worker
+- `php artisan pail` — Log viewer
+- `npm run dev` — Vite dev server
+
+### Cara Manual
+
+```bash
+# Terminal 1 — Laravel server
+php artisan serve
+
+# Terminal 2 — Vite dev server
+npm run dev
+
+# Terminal 3 — Queue worker (opsional, untuk email & notifikasi)
+php artisan queue:listen
+```
+
+Akses aplikasi di: **http://localhost:8000**
+
+## 📁 Struktur Project
+
+```
+citra-ecommerce-new/
+├── app/
+│   ├── Http/
+│   │   ├── Controllers/       # 23 controller (Auth, Frontend, Backend, dll)
+│   │   └── Middleware/         # AdminOnly middleware
+│   ├── Mail/                   # InvoiceOrder mailable
+│   ├── Models/                 # 19 Eloquent model
+│   ├── Providers/              # Service providers
+│   └── Services/               # RajaOngkirService
+├── database/
+│   ├── migrations/             # 33 file migrasi
+│   └── seeders/                # 10 seeder (User, Product, Category, dll)
+├── resources/
+│   ├── css/                    # Stylesheet
+│   ├── js/                     # JavaScript
+│   └── views/
+│       ├── auth/               # Halaman login, register, reset password
+│       ├── backend/            # Admin panel views
+│       ├── emails/             # Template email invoice
+│       ├── frontend/           # Halaman customer-facing
+│       ├── layouts/            # Layout utama
+│       └── partials/           # Komponen reusable
+├── routes/
+│   └── web.php                 # Definisi semua route
+├── public/                     # Asset publik
+├── composer.json               # Dependensi PHP
+├── package.json                # Dependensi JavaScript
+└── vite.config.js              # Konfigurasi Vite + Tailwind
+```
+
+## 🌱 Database Seeder
+
+Jalankan seeder untuk mengisi data awal:
+
+```bash
+php artisan db:seed
+```
+
+Seeder yang tersedia:
+
+| Seeder                  | Keterangan                     |
+| ----------------------- | ------------------------------ |
+| `UserSeeder`            | Akun admin & user demo         |
+| `AddressSeeder`         | Alamat contoh                  |
+| `MainCategorySeeder`    | Kategori utama                 |
+| `CategoryDetailSeeder`  | Sub-kategori                   |
+| `VariantSeeder`         | Varian produk (ukuran, warna)  |
+| `ProductSeeder`         | Produk contoh                  |
+| `BannerSeeder`          | Banner homepage                |
+| `StoreLocationSeeder`   | Lokasi toko asal pengiriman    |
+
+## 📄 Lisensi
+
+Project ini dibuat untuk keperluan pembelajaran dan pengembangan.
