@@ -498,6 +498,24 @@ class FrontendController extends Controller
             })
             ->all();
 
+        $recentIds = collect(session('recently_viewed_products', []))
+            ->map(fn($id) => (int) $id)
+            ->filter(fn($id) => $id > 0 && $id !== (int) $product->id)
+            ->unique()
+            ->take(8)
+            ->values();
+        $recentlyViewedProducts = $this->buildProductCardsByIds($recentIds->all());
+
+        session([
+            'recently_viewed_products' => collect([(int) $product->id])
+                ->merge(session('recently_viewed_products', []))
+                ->map(fn($id) => (int) $id)
+                ->unique()
+                ->take(12)
+                ->values()
+                ->all(),
+        ]);
+
         $relatedProducts = $this->buildRelatedProducts($product->id, $product->main_category_id);
 
         return view('frontend.detail-produk', [
@@ -550,7 +568,43 @@ class FrontendController extends Controller
                 'reviewDistribution' => $ratingDistribution,
             ],
             'relatedProductsJson' => $relatedProducts,
+            'recentlyViewedProductsJson' => $recentlyViewedProducts,
         ]);
+    }
+
+    private function buildProductCardsByIds(array $ids): array
+    {
+        if (empty($ids)) {
+            return [];
+        }
+
+        $products = Product::query()
+            ->with(['productVariants.variant', 'flashSaleItems.flashSale'])
+            ->where('status', 'active')
+            ->whereIn('id', $ids)
+            ->get()
+            ->sortBy(fn($product) => array_search((int) $product->id, $ids, true));
+
+        return $products->map(function ($product) {
+            $variant = $product->productVariants->first();
+            if (!$variant) {
+                return null;
+            }
+
+            $basePrice = (int) $variant->price;
+            $activeFlashSaleItem = $product->flashSaleItems->first(function ($item) {
+                $sale = $item->flashSale;
+                return $sale && $item->is_active && $sale->status === 'active' && $sale->start_at && $sale->end_at && now()->between($sale->start_at, $sale->end_at);
+            });
+
+            return [
+                'name' => (string) $product->name,
+                'price' => $activeFlashSaleItem ? (int) $activeFlashSaleItem->discount_price : $basePrice,
+                'image' => $this->normalizeImageUrl((string) ($variant->image ?? ''), '300x300'),
+                'rating' => 0,
+                'url' => route('frontend.detail-produk', ['slug' => $product->slug]),
+            ];
+        })->filter()->values()->all();
     }
 
     private function buildRelatedProducts(int $excludeProductId, ?int $mainCategoryId): array
@@ -668,6 +722,9 @@ class FrontendController extends Controller
                 'details.productReviews' => function ($q) use ($user) {
                     $q->where('user_id', $user->id);
                 },
+                'details.returnRequestItems.returnRequest',
+                'statusHistories.user',
+                'returnRequests.items',
             ])
             ->where('user_id', $user->id)
             ->latest()

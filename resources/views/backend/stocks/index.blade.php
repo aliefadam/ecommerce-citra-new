@@ -35,6 +35,39 @@
             </div>
         @endif
 
+        @php
+            $lowStockVariants = $variants->filter(fn($v) => (int) $v->stock <= (int) ($v->low_stock_threshold ?? 10))->values();
+        @endphp
+        <div class="mb-6 rounded-2xl border border-amber-200 bg-amber-50 dark:border-amber-900/40 dark:bg-amber-900/20 p-4">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-3">
+                <div>
+                    <h2 class="font-bold text-amber-800 dark:text-amber-300">Low Stock Alert</h2>
+                    <p class="text-sm text-amber-700 dark:text-amber-400">{{ $lowStockVariants->count() }} varian berada di bawah batas stok rendah.</p>
+                </div>
+            </div>
+            @if ($lowStockVariants->isNotEmpty())
+                <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-3">
+                    @foreach ($lowStockVariants->take(6) as $variant)
+                        @php
+                            $variantName = trim((string) ($variant->variant?->name ?? '') . ': ' . (string) ($variant->variant?->value ?? ''), ': ');
+                        @endphp
+                        <form method="POST" action="{{ route('stocks.threshold', $variant) }}" class="rounded-xl bg-white/80 dark:bg-slate-800/80 border border-amber-100 dark:border-amber-900/50 p-3">
+                            @csrf
+                            @method('PATCH')
+                            <p class="text-sm font-semibold text-slate-800 dark:text-slate-200">{{ $variant->product?->name ?? '-' }}</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">{{ $variantName ?: 'Variant' }}</p>
+                            <div class="mt-2 flex items-center gap-2">
+                                <span class="text-xs font-bold px-2 py-1 rounded-full {{ (int) $variant->stock === 0 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700' }}">Stok {{ (int) $variant->stock }}</span>
+                                <input type="number" min="0" name="low_stock_threshold" value="{{ (int) ($variant->low_stock_threshold ?? 10) }}"
+                                    class="w-20 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-2 py-1 text-xs dark:text-slate-200">
+                                <button class="text-xs font-semibold text-blue-600 hover:underline">Simpan batas</button>
+                            </div>
+                        </form>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+
         <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
             <div class="flex flex-col sm:flex-row gap-3 p-4 border-b border-slate-200 dark:border-slate-700">
                 <div class="relative flex-1">
@@ -278,4 +311,3 @@
         });
     </script>
 @endsection
-

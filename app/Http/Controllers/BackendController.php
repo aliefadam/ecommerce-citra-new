@@ -115,7 +115,7 @@ class BackendController extends Controller
             ->whereIn(DB::raw('LOWER(status)'), ['paid', 'settlement', 'capture']);
         $pendingPayment = $this->applyPeriod(Transaction::query(), $period)
             ->whereIn(DB::raw('LOWER(status)'), ['pending', 'menunggu']);
-        $lowStockCount = ProductVariant::where('stock', '<', 10)->count();
+        $lowStockCount = ProductVariant::whereColumn('stock', '<=', 'low_stock_threshold')->count();
 
         return [
             [
@@ -192,7 +192,7 @@ class BackendController extends Controller
             ->latest()->take(7)->get();
 
         $lowStockProducts = ProductVariant::with(['product', 'variant'])
-            ->where('stock', '<', 10)->orderBy('stock')->take(7)->get();
+            ->whereColumn('stock', '<=', 'low_stock_threshold')->orderBy('stock')->take(7)->get();
 
         $orderStatusCards = $this->orderStatusCards($period);
         $actionCards = $this->actionCards($period);

@@ -193,6 +193,36 @@
                                 @endif
                             </div>
                         @endif
+
+                        @if (($payment['payment_type'] ?? '') === 'manual_transfer')
+                            <div class="p-4 rounded-2xl border border-blue-100 bg-blue-50">
+                                <p class="text-sm font-semibold text-slate-800">Transfer Manual</p>
+                                <p class="text-xs text-slate-500 mt-1">Transfer sesuai nominal, lalu upload bukti pembayaran di bawah ini.</p>
+                                <div class="mt-3 rounded-xl bg-white p-3 text-sm text-slate-600">
+                                    <p>Bank: <span class="font-semibold">BCA / 1234567890</span></p>
+                                    <p>Atas nama: <span class="font-semibold">Ecommerce Citra</span></p>
+                                </div>
+                            </div>
+
+                            @if (!empty($payment['payment_proof_path']))
+                                <div class="p-4 rounded-2xl border border-emerald-100 bg-emerald-50 text-sm text-emerald-700">
+                                    Bukti transfer sudah diupload. Status akan berubah setelah admin memverifikasi.
+                                    <a href="{{ asset(ltrim($payment['payment_proof_path'], '/')) }}" target="_blank" class="font-semibold underline ml-1">Lihat bukti</a>
+                                    @if (!empty($payment['payment_admin_note']))
+                                        <p class="mt-2 text-emerald-800">Catatan admin: {{ $payment['payment_admin_note'] }}</p>
+                                    @endif
+                                </div>
+                            @else
+                                <form method="POST" action="{{ route('manual-payment.proof', ['transaction' => $payment['transaction_db_id'] ?? 0]) }}" enctype="multipart/form-data"
+                                    class="p-4 rounded-2xl border border-slate-200 bg-white space-y-3">
+                                    @csrf
+                                    <label class="text-sm font-semibold text-slate-700 block">Upload Bukti Transfer</label>
+                                    <input type="file" name="payment_proof" accept="image/*" required
+                                        class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-400">
+                                    <button class="w-full rounded-xl bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">Kirim Bukti Pembayaran</button>
+                                </form>
+                            @endif
+                        @endif
                     </div>
                 </div>
             </div>
@@ -239,6 +269,12 @@
                                 <span>Ongkos Kirim</span>
                                 <span>Rp {{ number_format((int) ($payment['shipping_cost'] ?? 0), 0, ',', '.') }}</span>
                             </div>
+                            @if ((int) ($payment['discount_amount'] ?? 0) > 0)
+                                <div class="flex justify-between text-sm text-emerald-600">
+                                    <span>Voucher {{ $payment['coupon_code'] ?? '' }}</span>
+                                    <span>- Rp {{ number_format((int) ($payment['discount_amount'] ?? 0), 0, ',', '.') }}</span>
+                                </div>
+                            @endif
                             <div class="flex justify-between items-center pt-3 border-t border-slate-100">
                                 <span class="font-bold text-slate-800">Grand Total</span>
                                 <span class="text-xl font-extrabold text-indigo-600">Rp
@@ -595,7 +631,7 @@
         document.getElementById('refreshStatusBtn')?.addEventListener('click', refreshStatus);
         document.getElementById('openSimulateModalBtn')?.addEventListener('click', runSimulatePayment);
         bindCopyVa();
-        startCountdown();
+        if (paymentType !== 'manual_transfer') startCountdown();
         paintStatus(@json(strtolower((string) ($payment['transaction_status'] ?? 'pending'))));
         if (['settlement', 'capture', 'paid'].includes(@json(strtolower((string) ($payment['transaction_status'] ?? 'pending'))))) {
             switchToMyTransactionButton();

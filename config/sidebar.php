@@ -104,6 +104,18 @@ return [
                 'active' => 'transactions.*',
                 'icon'   => 'receipt',
             ],
+            [
+                'name'   => 'Return / Refund',
+                'route'  => 'return-requests.index',
+                'active' => 'return-requests.*',
+                'icon'   => 'rotate-ccw',
+            ],
+            [
+                'name'   => 'Sales Report',
+                'route'  => 'reports.sales',
+                'active' => 'reports.*',
+                'icon'   => 'bar-chart-3',
+            ],
         ],
     ],
     [
@@ -148,6 +160,12 @@ return [
                 'route'  => 'flash-sales.index',
                 'active' => 'flash-sales.*',
                 'icon'   => 'zap',
+            ],
+            [
+                'name'   => 'Coupons',
+                'route'  => 'coupons.index',
+                'active' => 'coupons.*',
+                'icon'   => 'ticket-percent',
             ],
         ],
     ],

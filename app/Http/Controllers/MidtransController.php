@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Mail\InvoiceOrder;
 use App\Models\Address;
+use App\Models\Coupon;
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
+use App\Models\TransactionStatusHistory;
 use App\Models\UserNotification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -57,12 +59,35 @@ class MidtransController extends Controller
             })->values()->all();
 
             $shippingCost = (int) round((float) $validated['shipping_cost']);
+            $couponData = session('checkout_coupon', []);
+            $couponCode = (string) ($couponData['code'] ?? '');
+            $discountAmount = 0;
+
+            if ($couponCode !== '') {
+                $coupon = Coupon::query()->where('code', $couponCode)->first();
+                $subtotal = collect($validated['items'])->sum(fn($item) => ((int) round((float) $item['price'])) * ((int) $item['qty']));
+                if ($coupon && $coupon->isUsableFor((int) $subtotal)) {
+                    $discountAmount = $coupon->discountFor((int) $subtotal);
+                } else {
+                    session()->forget('checkout_coupon');
+                    throw new RuntimeException('Voucher tidak valid atau sudah tidak bisa digunakan.');
+                }
+            }
+
             if ($shippingCost > 0) {
                 $itemDetails[] = [
                     'id' => 'SHIPPING',
                     'price' => $shippingCost,
                     'quantity' => 1,
                     'name' => mb_substr('Ongkos Kirim - ' . (string) ($validated['shipping_label'] ?? 'Reguler'), 0, 50),
+                ];
+            }
+            if ($discountAmount > 0) {
+                $itemDetails[] = [
+                    'id' => 'DISCOUNT',
+                    'price' => -$discountAmount,
+                    'quantity' => 1,
+                    'name' => mb_substr('Voucher ' . $couponCode, 0, 50),
                 ];
             }
 
@@ -196,6 +221,8 @@ class MidtransController extends Controller
                 'payment_type' => $paymentType,
                 'gross_amount' => $grossAmount,
                 'shipping_cost' => $shippingCost,
+                'coupon_code' => $couponCode,
+                'discount_amount' => $discountAmount,
                 'shipping_label' => (string) ($validated['shipping_label'] ?? 'Reguler'),
                 'items' => $displayItems,
                 'method_label' => strtoupper($validated['payment_method']),
@@ -236,15 +263,21 @@ class MidtransController extends Controller
 
             $data = [
                 'order_id'           => (string) $tx->order_id,
+                'transaction_db_id'  => (int) $tx->id,
                 'transaction_id'     => (string) ($tx->midtrans_transaction_id ?? ''),
                 'transaction_status' => (string) ($tx->status ?? 'pending'),
                 'payment_type'       => (string) ($tx->payment_type ?? ''),
                 'method_label'       => (string) ($tx->payment_method ?? '-'),
+                'gross_amount'       => (int) $tx->grand_total,
                 'va_number'          => (string) ($tx->payment_va_number ?? ''),
                 'va_bank'            => (string) ($tx->payment_va_bank ?? ''),
                 'qr_url'             => (string) ($tx->payment_qr_url ?? ''),
                 'shipping_cost'      => (int) $tx->shipping_cost,
+                'discount_amount'    => (int) ($tx->discount_amount ?? 0),
+                'coupon_code'         => (string) ($tx->coupon_code ?? ''),
                 'shipping_label'     => (string) ($tx->shipping_label ?? ''),
+                'payment_proof_path'  => (string) ($tx->payment_proof_path ?? ''),
+                'payment_admin_note'  => (string) ($tx->payment_admin_note ?? ''),
                 'expires_at'         => $tx->expires_at?->toIso8601String() ?? now()->addMinutes(30)->toIso8601String(),
                 'created_at'         => $tx->created_at?->toIso8601String(),
                 'address_snapshot'   => [
@@ -268,7 +301,13 @@ class MidtransController extends Controller
             session()->put('checkout_waiting.' . $orderId, $data);
         }
 
-        if ($this->isExpired($data) && !$this->shouldBypassExpiryForStatus((string) ($tx?->status ?? 'pending'))) {
+        if (($tx?->payment_type ?? '') === 'manual_transfer') {
+            $data['transaction_status'] = (string) $tx->status;
+            $data['transaction_db_id'] = (int) $tx->id;
+            $data['payment_proof_path'] = (string) ($tx->payment_proof_path ?? '');
+            $data['payment_admin_note'] = (string) ($tx->payment_admin_note ?? '');
+            session()->put('checkout_waiting.' . $orderId, $data);
+        } elseif ($this->isExpired($data) && !$this->shouldBypassExpiryForStatus((string) ($tx?->status ?? 'pending'))) {
             $this->cancelMidtransTransaction($orderId);
             $data['transaction_status'] = 'expire';
             session()->put('checkout_waiting.' . $orderId, $data);
@@ -296,6 +335,14 @@ class MidtransController extends Controller
                 return response()->json([
                     'transaction_status' => $returnStatus,
                     'payment_type' => (string) ($localTx->payment_type ?? ''),
+                    'order_id' => $orderId,
+                ]);
+            }
+
+            if ($localTx && (string) $localTx->payment_type === 'manual_transfer') {
+                return response()->json([
+                    'transaction_status' => (string) $localTx->status,
+                    'payment_type' => 'manual_transfer',
                     'order_id' => $orderId,
                 ]);
             }
@@ -373,12 +420,40 @@ class MidtransController extends Controller
         ]);
 
         try {
-            $this->cancelMidtransTransaction($orderId);
-
             $tx = Transaction::query()
                 ->where('order_id', $orderId)
                 ->where('user_id', $request->user()?->id)
                 ->first();
+
+            if ($tx && (string) $tx->payment_type === 'manual_transfer') {
+                if ($this->shouldBypassExpiryForStatus((string) $tx->status)) {
+                    return response()->json([
+                        'message' => 'Transaksi tidak dapat dibatalkan karena sudah diproses.',
+                    ], 422);
+                }
+
+                $oldStatus = (string) $tx->status;
+                $tx->status = 'dibatalkan';
+                $tx->cancel_reason = $validated['cancel_reason'] ?? null;
+                $tx->cancelled_at = now();
+                $tx->save();
+
+                TransactionStatusHistory::create([
+                    'transaction_id' => $tx->id,
+                    'user_id' => $request->user()?->id,
+                    'from_status' => $oldStatus,
+                    'to_status' => 'dibatalkan',
+                    'type' => 'order_cancelled',
+                    'note' => $validated['cancel_reason'] ?? 'Transaksi manual dibatalkan.',
+                ]);
+
+                return response()->json([
+                    'ok' => true,
+                    'transaction_status' => 'cancel',
+                ]);
+            }
+
+            $this->cancelMidtransTransaction($orderId);
 
             if ($tx && !in_array(strtolower((string) $tx->status), ['dibatalkan', 'cancel', 'expire'], true)) {
                 if ($this->shouldBypassExpiryForStatus((string) $tx->status)) {
@@ -391,6 +466,15 @@ class MidtransController extends Controller
                 $tx->cancel_reason = $validated['cancel_reason'] ?? null;
                 $tx->cancelled_at = now();
                 $tx->save();
+
+                TransactionStatusHistory::create([
+                    'transaction_id' => $tx->id,
+                    'user_id' => $request->user()?->id,
+                    'from_status' => null,
+                    'to_status' => 'dibatalkan',
+                    'type' => 'order_cancelled',
+                    'note' => $validated['cancel_reason'] ?? 'Transaksi dibatalkan.',
+                ]);
 
                 if ($tx->user_id) {
                     UserNotification::create([
@@ -683,7 +767,8 @@ class MidtransController extends Controller
                 return ((int) ($item['price'] ?? 0)) * ((int) ($item['qty'] ?? 0));
             });
             $shippingCost = (int) ($payment['shipping_cost'] ?? 0);
-            $grandTotal = $subtotal + $shippingCost;
+            $discountAmount = min($subtotal, max(0, (int) ($payment['discount_amount'] ?? 0)));
+            $grandTotal = max(0, $subtotal + $shippingCost - $discountAmount);
 
             $transaction = Transaction::query()->firstOrNew(['order_id' => $orderId]);
             $isNew = !$transaction->exists;
@@ -703,6 +788,8 @@ class MidtransController extends Controller
                 'status' => (string) ($payment['transaction_status'] ?? 'pending'),
                 'subtotal_amount' => $subtotal,
                 'shipping_cost' => $shippingCost,
+                'coupon_code' => (string) ($payment['coupon_code'] ?? ''),
+                'discount_amount' => $discountAmount,
                 'grand_total' => $grandTotal,
                 'shipping_label' => (string) ($payment['shipping_label'] ?? ''),
                 'shipping_recipient_name' => (string) ($snapshot['shipping_recipient_name'] ?? ''),
@@ -740,6 +827,9 @@ class MidtransController extends Controller
             }
 
             if ($isNew) {
+                if ($discountAmount > 0 && (string) ($payment['coupon_code'] ?? '') !== '') {
+                    Coupon::query()->where('code', (string) $payment['coupon_code'])->increment('used_count');
+                }
                 $userId = $request->user()?->id;
                 $userEmail = $request->user()?->email;
                 if ($userEmail) {
@@ -755,6 +845,14 @@ class MidtransController extends Controller
                         'url'     => route('frontend.checkout.waiting', ['orderId' => $transaction->order_id]),
                     ]);
                 }
+                TransactionStatusHistory::create([
+                    'transaction_id' => $transaction->id,
+                    'user_id' => $request->user()?->id,
+                    'from_status' => null,
+                    'to_status' => (string) $transaction->status,
+                    'type' => 'checkout',
+                    'note' => 'Checkout dibuat melalui Midtrans.',
+                ]);
             }
         });
     }
@@ -792,6 +890,17 @@ class MidtransController extends Controller
             $tx->paid_at = now();
         }
         $tx->save();
+
+        if ($prevStatus !== (string) $tx->status) {
+            TransactionStatusHistory::create([
+                'transaction_id' => $tx->id,
+                'user_id' => null,
+                'from_status' => $prevStatus,
+                'to_status' => (string) $tx->status,
+                'type' => 'payment_status_sync',
+                'note' => 'Sinkronisasi status pembayaran.',
+            ]);
+        }
 
         if ($isPaid && !in_array(strtolower($prevStatus), ['settlement', 'capture', 'paid'], true) && $tx->user_id) {
             UserNotification::create([

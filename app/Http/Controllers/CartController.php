@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Cart;
 use App\Models\FlashSaleItem;
+use App\Models\Coupon;
 use App\Models\ProductVariant;
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
@@ -215,6 +216,7 @@ class CartController extends Controller
         }
 
         session()->forget('checkout');
+        session()->forget('checkout_coupon');
         if ($orderId !== '') {
             session()->forget('checkout_waiting.' . $orderId);
         }
@@ -302,7 +304,8 @@ class CartController extends Controller
                 return ((int) ($item['price'] ?? 0)) * ((int) ($item['qty'] ?? 0));
             });
             $shippingCost = (int) ($payment['shipping_cost'] ?? 0);
-            $grandTotal = $subtotal + $shippingCost;
+            $discountAmount = min($subtotal, max(0, (int) ($payment['discount_amount'] ?? 0)));
+            $grandTotal = max(0, $subtotal + $shippingCost - $discountAmount);
 
             $transaction = Transaction::query()->create([
                 'user_id' => auth()->id(),
@@ -314,6 +317,8 @@ class CartController extends Controller
                 'status' => (string) ($payment['transaction_status'] ?? 'pending'),
                 'subtotal_amount' => $subtotal,
                 'shipping_cost' => $shippingCost,
+                'coupon_code' => (string) ($payment['coupon_code'] ?? ''),
+                'discount_amount' => $discountAmount,
                 'grand_total' => $grandTotal,
                 'shipping_label' => (string) ($payment['shipping_label'] ?? ''),
                 'paid_at' => now(),
@@ -341,6 +346,10 @@ class CartController extends Controller
 
             if (!empty($detailRows)) {
                 TransactionDetail::query()->insert($detailRows);
+            }
+
+            if ($discountAmount > 0 && (string) ($payment['coupon_code'] ?? '') !== '') {
+                Coupon::query()->where('code', (string) $payment['coupon_code'])->increment('used_count');
             }
         });
     }

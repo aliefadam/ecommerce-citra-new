@@ -26,6 +26,19 @@ class StockController extends Controller
         return view('backend.stocks.index', compact('movements', 'variants'));
     }
 
+    public function updateThreshold(Request $request, ProductVariant $productVariant)
+    {
+        $validated = $request->validate([
+            'low_stock_threshold' => ['required', 'integer', 'min:0'],
+        ]);
+
+        $productVariant->update([
+            'low_stock_threshold' => (int) $validated['low_stock_threshold'],
+        ]);
+
+        return back()->with('success', 'Batas stok rendah berhasil diperbarui.');
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([

@@ -228,6 +228,8 @@
                             <button onclick="setPaymentTab('bank')" id="tab-bank"
                                 class="px-4 py-2 rounded-xl text-sm font-semibold bg-slate-100 text-slate-600 whitespace-nowrap transition-all">Transfer
                                 Bank</button>
+                            <button onclick="setPaymentTab('manual')" id="tab-manual"
+                                class="px-4 py-2 rounded-xl text-sm font-semibold bg-slate-100 text-slate-600 whitespace-nowrap transition-all">Transfer Manual</button>
                         </div>
 
                         <!-- QRIS -->
@@ -286,6 +288,20 @@
                                 <span class="text-sm font-semibold text-slate-700">CIMB</span>
                             </label>
                         </div>
+
+                        <div id="panel-manual" class="hidden">
+                            <label onclick="setPayment('manual_transfer', 'Transfer Manual')"
+                                class="payment-card flex items-center gap-3 p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-blue-300 transition-all">
+                                <input type="radio" name="payment" value="manual_transfer" class="accent-blue-500" />
+                                <span class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+                                    <i class="ri-bank-card-line text-xl"></i>
+                                </span>
+                                <span>
+                                    <span class="block text-sm font-semibold text-slate-700">Transfer Manual</span>
+                                    <span class="block text-xs text-slate-400">Upload bukti transfer setelah checkout</span>
+                                </span>
+                            </label>
+                        </div>
                     </div>
                 </div>
 
@@ -316,6 +332,20 @@
                         <div class="flex justify-between text-sm">
                             <span class="text-slate-600">Ongkos Kirim</span>
                             <span class="font-medium text-slate-800" id="shippingAmt">Menghitung Ongkos Kirim...</span>
+                        </div>
+                        <div class="rounded-xl border border-slate-200 p-3 space-y-2">
+                            <label class="text-xs font-semibold text-slate-600">Voucher</label>
+                            <div class="flex gap-2">
+                                <input id="couponCodeInput" type="text" placeholder="Kode voucher"
+                                    class="min-w-0 flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400 uppercase">
+                                <button type="button" onclick="applyCoupon()"
+                                    class="px-3 py-2 rounded-lg bg-blue-500 text-white text-xs font-semibold hover:bg-blue-600">Pakai</button>
+                            </div>
+                            <div id="couponInfo" class="hidden text-xs"></div>
+                        </div>
+                        <div class="flex justify-between text-sm hidden" id="discountRow">
+                            <span class="text-slate-600">Diskon Voucher</span>
+                            <span class="font-medium text-emerald-600" id="discountAmt">- Rp 0</span>
                         </div>
                         <div class="border-t border-slate-100 pt-3 mt-3">
                             <div class="flex justify-between">
@@ -615,12 +645,17 @@
         const checkoutSource = @json($checkoutSource ?? 'cart_all');
         let shippingCost = null;
         let shippingLabel = 'Reguler';
+        let couponCode = '';
+        let discountAmount = 0;
         let selectedPayment = 'qris';
         let selectedPaymentLabel = 'QRIS';
         const csrfToken = @json(csrf_token());
         const completeCheckoutUrl = @json(route('frontend.checkout.complete'));
         const shippingOptionsUrl = @json(route('frontend.rajaongkir.shipping-options'));
         const midtransChargeUrl = @json(route('frontend.checkout.midtrans.charge'));
+        const manualPaymentUrl = @json(route('frontend.checkout.manual-payment'));
+        const couponApplyUrl = @json(route('frontend.checkout.coupon.apply'));
+        const couponRemoveUrl = @json(route('frontend.checkout.coupon.remove'));
         const roProvincesUrl = @json(route('frontend.rajaongkir.provinces'));
         const roCitiesUrl = @json(route('frontend.rajaongkir.cities'));
         const roDistrictsUrl = @json(route('frontend.rajaongkir.districts'));
@@ -724,12 +759,15 @@
         function updateSummary() {
             const subtotal = cartItems.reduce((s, i) => s + i.price * i.qty, 0);
             const shippingValue = typeof shippingCost === 'number' ? shippingCost : 0;
-            const grandTotal = subtotal + shippingValue;
+            if (discountAmount > subtotal) discountAmount = subtotal;
+            const grandTotal = Math.max(0, subtotal + shippingValue - discountAmount);
             const totalItems = cartItems.reduce((s, i) => s + i.qty, 0);
             const hasSelectedAddress = !!document.querySelector('input[name="address"]:checked');
             document.getElementById('itemCountText').textContent = totalItems + ' item';
             document.getElementById('sumItems').textContent = totalItems + ' item';
             document.getElementById('subtotalAmt').textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
+            document.getElementById('discountRow').classList.toggle('hidden', discountAmount <= 0);
+            document.getElementById('discountAmt').textContent = '- Rp ' + discountAmount.toLocaleString('id-ID');
             if (!hasSelectedAddress) {
                 document.getElementById('shippingAmt').textContent = 'Pilih/Tambahkan alamat dulu';
             } else if (typeof shippingCost !== 'number') {
@@ -759,6 +797,48 @@
                 } else {
                     hintEl.textContent = '';
                 }
+            }
+        }
+
+        async function applyCoupon() {
+            const input = document.getElementById('couponCodeInput');
+            const info = document.getElementById('couponInfo');
+            const code = String(input?.value || '').trim().toUpperCase();
+            const subtotal = cartItems.reduce((s, i) => s + i.price * i.qty, 0);
+            if (!code) return;
+
+            info.className = 'text-xs text-slate-500';
+            info.textContent = 'Memeriksa voucher...';
+            info.classList.remove('hidden');
+
+            try {
+                const res = await fetch(couponApplyUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: JSON.stringify({ code, subtotal }),
+                });
+                const json = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(json?.message || 'Voucher tidak valid.');
+                couponCode = json.code || code;
+                discountAmount = Number(json.discount_amount || 0);
+                input.value = couponCode;
+                info.className = 'text-xs text-emerald-600';
+                info.textContent = `${json.message || 'Voucher digunakan'} (-Rp ${discountAmount.toLocaleString('id-ID')})`;
+                updateSummary();
+            } catch (e) {
+                couponCode = '';
+                discountAmount = 0;
+                await fetch(couponRemoveUrl, {
+                    method: 'DELETE',
+                    headers: { 'X-CSRF-TOKEN': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
+                }).catch(() => {});
+                info.className = 'text-xs text-red-500';
+                info.textContent = e.message || 'Voucher tidak valid.';
+                updateSummary();
             }
         }
 
@@ -857,7 +937,7 @@
         }
 
         function setPaymentTab(tab) {
-            ['qris', 'bank'].forEach(t => {
+            ['qris', 'bank', 'manual'].forEach(t => {
                 document.getElementById('panel-' + t).classList.add('hidden');
                 document.getElementById('tab-' + t).className =
                     'px-4 py-2 rounded-xl text-sm font-semibold bg-slate-100 text-slate-600 whitespace-nowrap transition-all';
@@ -1253,7 +1333,8 @@
                     payment_method: selectedPayment,
                 };
 
-                const tokenRes = await fetch(midtransChargeUrl, {
+                const checkoutUrl = selectedPayment === 'manual_transfer' ? manualPaymentUrl : midtransChargeUrl;
+                const tokenRes = await fetch(checkoutUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

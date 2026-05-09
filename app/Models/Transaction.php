@@ -18,9 +18,16 @@ class Transaction extends Model
         'payment_va_number',
         'payment_va_bank',
         'payment_qr_url',
+        'payment_proof_path',
+        'payment_proof_uploaded_at',
+        'payment_verified_at',
+        'payment_rejected_at',
+        'payment_admin_note',
         'status',
         'subtotal_amount',
         'shipping_cost',
+        'coupon_code',
+        'discount_amount',
         'grand_total',
         'shipping_label',
         'shipping_recipient_name',
@@ -30,6 +37,7 @@ class Transaction extends Model
         'shipping_province',
         'shipping_postal_code',
         'tracking_number',
+        'shipping_note',
         'processed_at',
         'shipped_at',
         'paid_at',
@@ -42,6 +50,9 @@ class Transaction extends Model
         'processed_at' => 'datetime',
         'shipped_at' => 'datetime',
         'paid_at' => 'datetime',
+        'payment_proof_uploaded_at' => 'datetime',
+        'payment_verified_at' => 'datetime',
+        'payment_rejected_at' => 'datetime',
         'expires_at' => 'datetime',
         'cancelled_at' => 'datetime',
     ];
@@ -59,5 +70,15 @@ class Transaction extends Model
     public function productReviews(): HasMany
     {
         return $this->hasMany(TransactionProductReview::class);
+    }
+
+    public function returnRequests(): HasMany
+    {
+        return $this->hasMany(ReturnRequest::class);
+    }
+
+    public function statusHistories(): HasMany
+    {
+        return $this->hasMany(TransactionStatusHistory::class);
     }
 }

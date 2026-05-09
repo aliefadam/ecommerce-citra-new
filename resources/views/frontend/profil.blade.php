@@ -236,6 +236,12 @@
         </div>
     </div>
 
+    @if (session('success') || $errors->any())
+        <div class="fixed top-4 right-4 z-[9999] max-w-sm rounded-xl shadow-2xl px-5 py-3 text-sm font-medium {{ session('success') ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white' }}">
+            {{ session('success') ?: $errors->first() }}
+        </div>
+    @endif
+
     <!-- NAVBAR -->
     @include('partials.navbar-user')
 
@@ -1109,6 +1115,69 @@
             </form>
         </div>
     </div>
+
+    <div id="returnRequestModal" class="fixed inset-0 z-[99999] hidden items-center justify-center bg-black/50 p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h3 class="font-bold text-slate-800 text-lg">Ajukan Return / Refund</h3>
+                    <p id="returnInvoiceText" class="text-xs text-slate-400 mt-0.5"></p>
+                </div>
+                <button type="button" onclick="closeReturnRequestModal()" class="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
+            </div>
+
+            <form method="POST" action="{{ route('frontend.profil.return-requests.store') }}" enctype="multipart/form-data" class="space-y-4">
+                @csrf
+                <input type="hidden" name="transaction_id" id="returnTransactionId" />
+
+                <div>
+                    <label class="text-sm font-semibold text-slate-700 mb-1.5 block">Jenis Pengajuan</label>
+                    <select name="type" id="returnTypeInput"
+                        class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400"
+                        onchange="updateReturnPreview()">
+                        <option value="refund">Refund uang</option>
+                        <option value="exchange">Ganti barang</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="text-sm font-semibold text-slate-700 mb-2 block">Produk yang diajukan</label>
+                    <div id="returnItemsWrap" class="space-y-3"></div>
+                    <p id="returnAmountPreview" class="text-sm font-semibold text-blue-600 mt-3">Estimasi refund: Rp 0</p>
+                </div>
+
+                <div>
+                    <label class="text-sm font-semibold text-slate-700 mb-1.5 block">Alasan</label>
+                    <textarea name="reason" id="returnReasonInput" required placeholder="Contoh: barang rusak, salah varian, ukuran tidak sesuai..."
+                        class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 resize-none h-24"></textarea>
+                </div>
+
+                <div>
+                    <label class="text-sm font-semibold text-slate-700 mb-1.5 block">Catatan Tambahan</label>
+                    <textarea name="customer_note" id="returnNoteInput" placeholder="Nomor rekening refund atau catatan penggantian barang"
+                        class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 resize-none h-20"></textarea>
+                </div>
+
+                <div>
+                    <label class="text-sm font-semibold text-slate-700 mb-1.5 block">Foto Bukti</label>
+                    <input type="file" name="photos[]" multiple accept="image/*"
+                        class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-400" />
+                    <p class="text-xs text-slate-400 mt-1">Maksimal 5 foto, masing-masing maksimal 2MB.</p>
+                </div>
+
+                <p class="text-xs text-slate-500 bg-blue-50 border border-blue-100 rounded-xl p-3">
+                    Pengajuan berlaku maksimal 7 hari sejak pesanan dikirim/selesai. Refund atau penggantian barang diproses manual oleh admin setelah disetujui.
+                </p>
+
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeReturnRequestModal()"
+                        class="flex-1 border border-slate-200 text-slate-600 font-semibold py-2.5 rounded-xl hover:bg-slate-50 transition-colors">Batal</button>
+                    <button type="submit"
+                        class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 rounded-xl transition-colors">Kirim Pengajuan</button>
+                </div>
+            </form>
+        </div>
+    </div>
 @endsection
 
 @section('script')
@@ -1158,8 +1227,15 @@
                         in_array($statusRaw, ['kirim', 'shipping', 'shipped']) => 'kirim',
                         in_array($statusRaw, ['process', 'processing']) => 'proses',
                         in_array($statusRaw, ['cancel', 'expire', 'deny', 'failure', 'failed', 'dibatalkan']) => 'batal',
+                        in_array($statusRaw, ['menunggu_verifikasi']) => 'menunggu_verifikasi',
                         default => 'menunggu',
                     };
+                    $returnEligibleStatuses = ['kirim', 'shipping', 'shipped', 'selesai', 'completed', 'delivered'];
+                    $returnWindowStart = $tx->shipped_at ?? $tx->updated_at ?? $tx->created_at;
+                    $returnDeadline = $returnWindowStart ? $returnWindowStart->copy()->addDays(7)->endOfDay() : null;
+                    $canReturn = in_array($statusRaw, $returnEligibleStatuses, true)
+                        && $returnDeadline
+                        && $returnDeadline->isFuture();
 
                     $resolveImg = function ($img) {
                         $img = (string) ($img ?? '');
@@ -1186,6 +1262,8 @@
                         'payment_method' => (string) ($tx->payment_method ?? '-'),
                         'tracking_number' => (string) ($tx->tracking_number ?? ''),
                         'shipping_cost' => (int) $tx->shipping_cost,
+                        'discount_amount' => (int) ($tx->discount_amount ?? 0),
+                        'coupon_code' => (string) ($tx->coupon_code ?? ''),
                         'shipping_label' => (string) ($tx->shipping_label ?? ''),
                         'shipping_recipient_name' => (string) ($tx->shipping_recipient_name ?? ''),
                         'shipping_phone' => (string) ($tx->shipping_phone ?? ''),
@@ -1193,18 +1271,56 @@
                         'shipping_city' => (string) ($tx->shipping_city ?? ''),
                         'shipping_province' => (string) ($tx->shipping_province ?? ''),
                         'shipping_postal_code' => (string) ($tx->shipping_postal_code ?? ''),
+                        'can_return' => (bool) $canReturn,
+                        'return_deadline' => $returnDeadline ? $returnDeadline->translatedFormat('d M Y') : '',
+                        'invoice_url' => route('invoice.show', ['transaction' => $tx->id]),
+                        'complete_url' => route('frontend.profil.orders.complete', ['transaction' => $tx->id]),
+                        'payment_proof_url' => $tx->payment_proof_path ? asset(ltrim((string) $tx->payment_proof_path, '/')) : '',
+                        'payment_admin_note' => (string) ($tx->payment_admin_note ?? ''),
+                        'payment_proof_upload_url' => route('manual-payment.proof', ['transaction' => $tx->id]),
+                        'status_histories' => $tx->statusHistories
+                            ->sortBy('created_at')
+                            ->map(fn($h) => [
+                                'from_status' => (string) ($h->from_status ?? ''),
+                                'to_status' => (string) $h->to_status,
+                                'type' => (string) $h->type,
+                                'note' => (string) ($h->note ?? ''),
+                                'actor' => (string) ($h->user?->name ?? 'System'),
+                                'created_at' => optional($h->created_at)->translatedFormat('d M Y H:i'),
+                            ])
+                            ->values()
+                            ->all(),
+                        'return_requests' => $tx->returnRequests
+                            ->map(fn($rr) => [
+                                'request_no' => (string) $rr->request_no,
+                                'type' => (string) $rr->type,
+                                'status' => (string) $rr->status,
+                                'refund_amount' => (int) $rr->refund_amount,
+                                'reason' => (string) $rr->reason,
+                                'admin_note' => (string) ($rr->admin_note ?? ''),
+                                'created_at' => optional($rr->created_at)->translatedFormat('d M Y'),
+                            ])
+                            ->values()
+                            ->all(),
                         'items' => $tx->details
                             ->map(
-                                fn($d) => [
+                                function ($d) use ($resolveImg) {
+                                    $usedReturnQty = $d->returnRequestItems
+                                        ->filter(fn($ri) => optional($ri->returnRequest)->status !== 'ditolak')
+                                        ->sum('quantity');
+
+                                    return [
                                     'detail_id' => (int) $d->id,
                                     'name' => $d->product_name,
                                     'variant' => (string) ($d->variant_name ?? ''),
                                     'qty' => (int) $d->quantity,
+                                    'returnable_qty' => max(0, (int) $d->quantity - (int) $usedReturnQty),
                                     'price' => (int) $d->price,
                                     'subtotal' => (int) $d->subtotal,
                                     'image' => $resolveImg($d->image),
                                     'is_reviewed' => $d->productReviews->isNotEmpty(),
-                                ],
+                                    ];
+                                },
                             )
                             ->values()
                             ->all(),
@@ -1499,6 +1615,10 @@
                 label: 'Menunggu Pembayaran',
                 class: 'badge-menunggu'
             },
+            menunggu_verifikasi: {
+                label: 'Menunggu Verifikasi',
+                class: 'badge-menunggu'
+            },
             selesai: {
                 label: 'Selesai',
                 class: 'badge-selesai'
@@ -1545,6 +1665,22 @@
                         </div>
                     </div>
                 `).join('');
+                const returnRequests = Array.isArray(o.return_requests) ? o.return_requests : [];
+                const returnRequestsHtml = returnRequests.length ? `
+                    <div class="mb-3 space-y-2">
+                        ${returnRequests.map((rr) => `
+                            <div class="rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-xs text-slate-600">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="font-semibold text-slate-800">${rr.request_no}</span>
+                                    <span class="px-2 py-0.5 rounded-full bg-white text-blue-600 font-semibold">${rr.type === 'refund' ? 'Refund uang' : 'Ganti barang'}</span>
+                                    <span class="px-2 py-0.5 rounded-full bg-white text-slate-600 font-semibold">${rr.status}</span>
+                                    <span class="ml-auto font-semibold text-blue-600">Rp ${Number(rr.refund_amount || 0).toLocaleString('id-ID')}</span>
+                                </div>
+                                ${rr.admin_note ? `<p class="mt-1 text-slate-500">Catatan admin: ${rr.admin_note}</p>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : '';
                 return `<div class="border border-slate-200 rounded-2xl p-5 hover:border-slate-300 transition-colors">
           <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-3">
             <div>
@@ -1554,17 +1690,23 @@
             <span class="status-badge ${s.class}">${s.label}</span>
           </div>
           <div class="space-y-2 mb-3">${itemsHtml}</div>
+          ${returnRequestsHtml}
           <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-3 border-t border-slate-100">
             <div>
               <span class="text-xs text-slate-500">Total: </span>
               <span class="font-bold text-slate-800">Rp ${o.total.toLocaleString('id-ID')}</span>
               ${o.status === 'kirim' && o.tracking_number ? `<p class="text-xs text-slate-500 mt-1">No. Resi: <span class="font-semibold text-slate-700">${o.tracking_number}</span></p>` : ''}
+              ${o.can_return && o.return_deadline ? `<p class="text-xs text-blue-600 mt-1">Batas return/refund: ${o.return_deadline}</p>` : ''}
             </div>
             <div class="flex flex-wrap gap-2">
               ${o.status === 'menunggu' ? `<a href="${waitingUrlTemplate.replace('__ORDER_ID__', o.order_id)}" class="text-xs border border-orange-300 text-orange-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-orange-50 transition-colors flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>Bayar Sekarang</a>` : ''}
+              ${o.status === 'menunggu_verifikasi' ? `<a href="${waitingUrlTemplate.replace('__ORDER_ID__', o.order_id)}" class="text-xs border border-orange-300 text-orange-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-orange-50 transition-colors">Upload Bukti</a>` : ''}
               ${o.status === 'menunggu' ? `<button type="button" onclick="openOrderCancelModal('${o.order_id}')" class="text-xs border border-red-300 text-red-500 font-semibold px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors">Batalkan</button>` : ''}
               ${Array.isArray(o.items) && o.items.some((it) => !it.is_reviewed) ? '<button onclick="openReviewModal(\'' + o.id + '\')" class="text-xs border border-yellow-300 text-yellow-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-yellow-50 transition-colors">Beri Ulasan</button>' : ''}
               ${o.status === 'kirim' ? `<button onclick="openTrackingModal('${o.id}')" class="text-xs border border-blue-300 text-blue-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors">Lacak Pesanan</button>` : ''}
+              ${o.status === 'kirim' ? `<form method="POST" action="${o.complete_url}" onsubmit="return confirm('Tandai pesanan ini sudah diterima?')" class="inline"><input type="hidden" name="_token" value="${csrfToken}"><input type="hidden" name="_method" value="PATCH"><button type="submit" class="text-xs border border-emerald-300 text-emerald-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-emerald-50 transition-colors">Pesanan Diterima</button></form>` : ''}
+              ${o.can_return && items.some((it) => Number(it.returnable_qty || 0) > 0) ? `<button onclick="openReturnRequestModal('${o.id}')" class="text-xs border border-emerald-300 text-emerald-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-emerald-50 transition-colors">Return / Refund</button>` : ''}
+              ${o.invoice_url ? `<a href="${o.invoice_url}" target="_blank" class="text-xs border border-indigo-300 text-indigo-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-indigo-50 transition-colors">Invoice</a>` : ''}
               <button type="button" onclick="openOrderDetailModal('${o.id}')" class="text-xs border border-slate-300 text-slate-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors">Lihat Detail</button>
             </div>
           </div>
@@ -1638,6 +1780,67 @@
             modal.classList.add('hidden');
             modal.classList.remove('flex');
         }
+
+        function openReturnRequestModal(invoiceNo) {
+            const order = orders.find((x) => x.id === invoiceNo);
+            if (!order) return;
+
+            const modal = document.getElementById('returnRequestModal');
+            if (!modal) return;
+
+            document.getElementById('returnTransactionId').value = String(order.transaction_id || '');
+            document.getElementById('returnInvoiceText').textContent = `Invoice: ${order.id}`;
+            document.getElementById('returnReasonInput').value = '';
+            document.getElementById('returnNoteInput').value = '';
+            document.getElementById('returnTypeInput').value = 'refund';
+
+            const wrap = document.getElementById('returnItemsWrap');
+            const items = (Array.isArray(order.items) ? order.items : []).filter((item) => Number(item.returnable_qty || 0) > 0);
+            wrap.innerHTML = items.map((item) => {
+                const detailId = Number(item.detail_id || 0);
+                const maxQty = Number(item.returnable_qty || 0);
+                return `
+                    <div class="flex items-center gap-3 rounded-xl border border-slate-200 p-3">
+                        <img src="${item.image}" alt="${item.name}" class="w-12 h-12 rounded-lg object-cover border border-slate-100" onerror="this.src='https://via.placeholder.com/80x80?text=No+Image'" />
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-semibold text-slate-800 leading-snug">${item.name}${item.variant ? ` <span class="text-xs text-slate-400 font-normal">(${item.variant})</span>` : ''}</p>
+                            <p class="text-xs text-slate-500">Rp ${Number(item.price || 0).toLocaleString('id-ID')} &bull; bisa diajukan ${maxQty}</p>
+                        </div>
+                        <input type="number" min="0" max="${maxQty}" value="0" name="items[${detailId}]"
+                            data-return-price="${Number(item.price || 0)}"
+                            class="return-qty-input w-20 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
+                            oninput="updateReturnPreview()" />
+                    </div>
+                `;
+            }).join('');
+
+            updateReturnPreview();
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function updateReturnPreview() {
+            let total = 0;
+            document.querySelectorAll('.return-qty-input').forEach((input) => {
+                const qty = Math.max(0, Number(input.value || 0));
+                const max = Math.max(0, Number(input.max || 0));
+                if (qty > max) input.value = String(max);
+                total += Math.min(qty, max) * Number(input.dataset.returnPrice || 0);
+            });
+            const preview = document.getElementById('returnAmountPreview');
+            const type = document.getElementById('returnTypeInput')?.value || 'refund';
+            if (preview) {
+                preview.textContent = `${type === 'refund' ? 'Estimasi refund' : 'Nilai barang pengganti'}: Rp ${total.toLocaleString('id-ID')}`;
+            }
+        }
+
+        function closeReturnRequestModal() {
+            const modal = document.getElementById('returnRequestModal');
+            if (!modal) return;
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
         function openOrderDetailModal(invoiceNo) {
             const o = orders.find(x => x.id === invoiceNo);
             if (!o) return;
@@ -1714,6 +1917,10 @@
                         <span>Ongkos Kirim</span>
                         <span>Rp ${Number(o.shipping_cost || 0).toLocaleString('id-ID')}</span>
                     </div>
+                    ${Number(o.discount_amount || 0) > 0 ? `<div class="flex justify-between text-emerald-600">
+                        <span>Voucher ${o.coupon_code || ''}</span>
+                        <span>- Rp ${Number(o.discount_amount || 0).toLocaleString('id-ID')}</span>
+                    </div>` : ''}
                     <div class="flex justify-between items-center pt-2 border-t border-slate-200">
                         <span class="font-bold text-slate-800">Grand Total</span>
                         <span class="font-bold text-blue-600 text-base">Rp ${Number(o.total || 0).toLocaleString('id-ID')}</span>
@@ -1721,7 +1928,35 @@
                 </div>
             `;
 
-            document.getElementById('orderDetailContent').innerHTML = infoHtml + addressHtml + productsHtml + summaryHtml;
+            const paymentProofHtml = (o.payment_proof_url || o.payment_admin_note) ? `
+                <div>
+                    <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Bukti Pembayaran</h4>
+                    <div class="bg-slate-50 rounded-xl p-4 text-sm text-slate-600">
+                        ${o.payment_proof_url ? `<a href="${o.payment_proof_url}" target="_blank" class="text-blue-600 font-semibold hover:underline">Lihat bukti transfer</a>` : '<p>Belum ada bukti transfer.</p>'}
+                        ${o.payment_admin_note ? `<p class="mt-2">Catatan admin: ${o.payment_admin_note}</p>` : ''}
+                    </div>
+                </div>
+            ` : '';
+
+            const histories = Array.isArray(o.status_histories) ? o.status_histories : [];
+            const historyHtml = histories.length ? `
+                <div>
+                    <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Riwayat Status</h4>
+                    <div class="space-y-2">
+                        ${histories.map((h) => `
+                            <div class="rounded-xl border border-slate-100 p-3 text-sm">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="font-semibold text-slate-800">${h.to_status}</span>
+                                    <span class="text-xs text-slate-400">${h.created_at} oleh ${h.actor}</span>
+                                </div>
+                                ${h.note ? `<p class="text-xs text-slate-500 mt-1">${h.note}</p>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            ` : '';
+
+            document.getElementById('orderDetailContent').innerHTML = infoHtml + addressHtml + productsHtml + paymentProofHtml + historyHtml + summaryHtml;
             const modal = document.getElementById('orderDetailModal');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
@@ -1738,6 +1973,9 @@
         });
         document.getElementById('reviewModal')?.addEventListener('click', function(e) {
             if (e.target === this) closeReviewModal();
+        });
+        document.getElementById('returnRequestModal')?.addEventListener('click', function(e) {
+            if (e.target === this) closeReturnRequestModal();
         });
         document.getElementById('reviewPhotosInput')?.addEventListener('change', function(e) {
             renderReviewPhotoPreview(e?.target?.files || []);
@@ -2462,13 +2700,3 @@
         });
     </script>
 @endsection
-
-
-
-
-
-
-
-
-
-

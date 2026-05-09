@@ -35,4 +35,9 @@ class TransactionDetail extends Model
     {
         return $this->hasMany(TransactionProductReview::class);
     }
+
+    public function returnRequestItems(): HasMany
+    {
+        return $this->hasMany(ReturnRequestItem::class);
+    }
 }

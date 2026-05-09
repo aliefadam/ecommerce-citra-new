@@ -95,10 +95,17 @@
                     </button>
                 </div>
                 <div class="space-y-3">
+                    <label class="text-sm font-medium text-slate-700 dark:text-slate-300">Kurir / Layanan</label>
+                    <input id="shipShippingLabel" type="text"
+                        class="w-full border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Contoh: JNE REG">
                     <label class="text-sm font-medium text-slate-700 dark:text-slate-300">Nomor Resi</label>
                     <input id="shipTrackingNumber" type="text"
                         class="w-full border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="Masukkan nomor resi">
+                    <textarea id="shipShippingNote" rows="3"
+                        class="w-full border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Catatan pengiriman (opsional)"></textarea>
                     <p id="shipError" class="text-xs text-red-500 hidden"></p>
                     <button id="shipSubmitBtn" type="button"
                         class="w-full bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors">
@@ -160,8 +167,15 @@
                     'payment_type' => $tx->payment_type ?? '-',
                     'payment_method' => $tx->payment_method ?? '-',
                     'shipping_cost' => (int) $tx->shipping_cost,
+                    'discount_amount' => (int) ($tx->discount_amount ?? 0),
+                    'coupon_code' => (string) ($tx->coupon_code ?? ''),
                     'shipping_label' => $tx->shipping_label ?? '-',
+                    'shipping_note' => (string) ($tx->shipping_note ?? ''),
                     'grand_total' => (int) $tx->grand_total,
+                    'invoice_url' => route('invoice.show', ['transaction' => $tx->id]),
+                    'detail_url' => route('transactions.show', ['transaction' => $tx->id]),
+                    'payment_type_raw' => (string) ($tx->payment_type ?? ''),
+                    'payment_proof_url' => $tx->payment_proof_path ? asset(ltrim((string) $tx->payment_proof_path, '/')) : '',
                     'tracking_number' => $tx->tracking_number,
                     'shipping_recipient_name' => $tx->shipping_recipient_name ?? '',
                     'shipping_phone' => $tx->shipping_phone ?? '',
@@ -202,6 +216,9 @@
             const s = String(status || '').toLowerCase();
             if (['settlement', 'capture', 'paid'].includes(s)) {
                 return '<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">Paid</span>';
+            }
+            if (s === 'menunggu_verifikasi') {
+                return '<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">Menunggu Verifikasi</span>';
             }
             if (['process'].includes(s)) {
                 return '<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400">Diproses</span>';
@@ -246,6 +263,14 @@
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0 text-slate-400"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 Show Detail
             </button>`;
+            html += `<a href="${tx.detail_url}" class="w-full text-left px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 flex items-center gap-2.5 transition-colors">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0"><path d="M9 18l6-6-6-6"/></svg>
+                Halaman Detail
+            </a>`;
+            html += `<a href="${tx.invoice_url}" target="_blank" class="w-full text-left px-4 py-2.5 text-sm text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 flex items-center gap-2.5 transition-colors">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                Print Invoice
+            </a>`;
             if (['paid', 'settlement', 'capture'].includes(s)) {
                 html += `<button type="button" onclick="processTransaction(${tx.id}); closeFloatingMenu()" class="w-full text-left px-4 py-2.5 text-sm text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 flex items-center gap-2.5 transition-colors">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
@@ -376,6 +401,10 @@
                         <span>Ongkos Kirim</span>
                         <span>Rp ${Number(tx.shipping_cost || 0).toLocaleString('id-ID')}</span>
                     </div>
+                    ${Number(tx.discount_amount || 0) > 0 ? `<div class="flex justify-between text-emerald-600 dark:text-emerald-400">
+                        <span>Voucher ${tx.coupon_code || ''}</span>
+                        <span>- Rp ${Number(tx.discount_amount || 0).toLocaleString('id-ID')}</span>
+                    </div>` : ''}
                     <div class="flex justify-between items-center pt-2 border-t border-slate-200 dark:border-slate-600">
                         <span class="font-bold text-slate-800 dark:text-slate-200">Grand Total</span>
                         <span class="font-bold text-blue-600 dark:text-blue-400 text-base">Rp ${Number(tx.grand_total || 0).toLocaleString('id-ID')}</span>
@@ -418,6 +447,11 @@
             const input = document.getElementById('shipTrackingNumber');
             if (err) err.classList.add('hidden');
             if (input) input.value = '';
+            const label = document.getElementById('shipShippingLabel');
+            const note = document.getElementById('shipShippingNote');
+            const tx = txItems.find((item) => Number(item.id) === Number(id));
+            if (label) label.value = tx?.shipping_label && tx.shipping_label !== '-' ? tx.shipping_label : '';
+            if (note) note.value = tx?.shipping_note || '';
             modal.classList.remove('hidden');
             modal.classList.add('flex');
         }
@@ -435,6 +469,8 @@
             const input = document.getElementById('shipTrackingNumber');
             const err = document.getElementById('shipError');
             const trackingNumber = String(input?.value || '').trim();
+            const shippingLabel = String(document.getElementById('shipShippingLabel')?.value || '').trim();
+            const shippingNote = String(document.getElementById('shipShippingNote')?.value || '').trim();
             if (!trackingNumber) {
                 err.textContent = 'Nomor resi wajib diisi.';
                 err.classList.remove('hidden');
@@ -449,7 +485,9 @@
                     'X-Requested-With': 'XMLHttpRequest',
                 },
                 body: JSON.stringify({
-                    tracking_number: trackingNumber
+                    tracking_number: trackingNumber,
+                    shipping_label: shippingLabel,
+                    shipping_note: shippingNote
                 }),
             });
             if (!res.ok) {

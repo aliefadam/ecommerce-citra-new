@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ProductVariant;
 use App\Models\StockMovement;
 use App\Models\Transaction;
+use App\Models\TransactionStatusHistory;
 use App\Models\UserNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,7 +15,7 @@ class TransactionController extends Controller
     public function index()
     {
         $transactions = Transaction::query()
-            ->with(['user', 'details'])
+            ->with(['user', 'details', 'statusHistories.user'])
             ->latest()
             ->get();
 
@@ -43,6 +44,7 @@ class TransactionController extends Controller
         try {
             DB::transaction(function () use ($transaction, $request) {
                 $transaction->loadMissing('details');
+                $oldStatus = (string) $transaction->status;
 
                 foreach ($transaction->details as $detail) {
                     $variantId = (int) ($detail->product_variant_id ?? 0);
@@ -81,6 +83,8 @@ class TransactionController extends Controller
                 $transaction->status = 'process';
                 $transaction->processed_at = now();
                 $transaction->save();
+
+                $this->recordHistory($transaction, $oldStatus, 'process', 'order_processed', 'Admin memproses pesanan.', $request->user()?->id);
             });
         } catch (\RuntimeException $e) {
             return response()->json(['message' => $e->getMessage()], 422);
@@ -103,16 +107,25 @@ class TransactionController extends Controller
     {
         $validated = $request->validate([
             'tracking_number' => ['required', 'string', 'max:100'],
+            'shipping_label' => ['nullable', 'string', 'max:100'],
+            'shipping_note' => ['nullable', 'string', 'max:500'],
         ]);
 
-        if (!in_array(strtolower((string) $transaction->status), ['process'], true)) {
+        if (!in_array(strtolower((string) $transaction->status), ['process', 'kirim'], true)) {
             return response()->json(['message' => 'Transaksi belum bisa dikirim.'], 422);
         }
 
+        $oldStatus = (string) $transaction->status;
         $transaction->status = 'kirim';
         $transaction->tracking_number = (string) $validated['tracking_number'];
-        $transaction->shipped_at = now();
+        if (!empty($validated['shipping_label'])) {
+            $transaction->shipping_label = (string) $validated['shipping_label'];
+        }
+        $transaction->shipping_note = $validated['shipping_note'] ?? $transaction->shipping_note;
+        $transaction->shipped_at = $transaction->shipped_at ?: now();
         $transaction->save();
+
+        $this->recordHistory($transaction, $oldStatus, 'kirim', 'order_shipped', 'Resi: ' . $validated['tracking_number'], $request->user()?->id);
 
         if ($transaction->user_id) {
             UserNotification::create([
@@ -125,5 +138,66 @@ class TransactionController extends Controller
         }
 
         return response()->json(['ok' => true, 'message' => 'Pesanan dikirim.']);
+    }
+
+    public function verifyPayment(Request $request, Transaction $transaction)
+    {
+        $validated = $request->validate([
+            'action' => ['required', 'in:approve,reject'],
+            'payment_admin_note' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        if ($transaction->payment_type !== 'manual_transfer') {
+            return back()->withErrors(['payment' => 'Transaksi ini bukan pembayaran manual.']);
+        }
+
+        $oldStatus = (string) $transaction->status;
+        if ($validated['action'] === 'approve') {
+            $transaction->status = 'paid';
+            $transaction->paid_at = $transaction->paid_at ?: now();
+            $transaction->payment_verified_at = now();
+            $transaction->payment_rejected_at = null;
+            $transaction->payment_admin_note = $validated['payment_admin_note'] ?? null;
+            $message = 'Pembayaran manual disetujui.';
+        } else {
+            $transaction->status = 'menunggu_verifikasi';
+            $transaction->payment_rejected_at = now();
+            $transaction->payment_admin_note = $validated['payment_admin_note'] ?? 'Bukti transfer ditolak.';
+            $message = 'Bukti pembayaran ditolak.';
+        }
+        $transaction->save();
+
+        $this->recordHistory($transaction, $oldStatus, (string) $transaction->status, 'payment_verification', $message, $request->user()?->id);
+
+        if ($transaction->user_id) {
+            UserNotification::create([
+                'user_id' => $transaction->user_id,
+                'type' => $validated['action'] === 'approve' ? 'payment_received' : 'payment_rejected',
+                'title' => $validated['action'] === 'approve' ? 'Pembayaran Dikonfirmasi' : 'Bukti Transfer Ditolak',
+                'body' => $message . ' Pesanan ' . $transaction->invoice_no . '.',
+                'url' => route('frontend.profil') . '?tab=pesanan',
+            ]);
+        }
+
+        return back()->with('success', $message);
+    }
+
+    public function show(Transaction $transaction)
+    {
+        $transaction->load(['user', 'details', 'statusHistories.user', 'returnRequests.items']);
+
+        return view('backend.transactions.show', compact('transaction'));
+    }
+
+    private function recordHistory(Transaction $transaction, ?string $from, string $to, string $type, ?string $note = null, ?int $userId = null): void
+    {
+        TransactionStatusHistory::create([
+            'transaction_id' => $transaction->id,
+            'user_id' => $userId,
+            'from_status' => $from,
+            'to_status' => $to,
+            'type' => $type,
+            'note' => $note,
+        ]);
     }
 }

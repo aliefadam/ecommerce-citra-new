@@ -455,6 +455,32 @@
             </div>
         </div>
 
+        @if (!empty($recentlyViewedProductsJson))
+            <div class="mt-10 sm:mt-12">
+                <div class="flex items-center justify-between mb-4 sm:mb-5">
+                    <div class="flex items-center gap-3">
+                        <div class="w-1 h-6 sm:h-7 bg-gradient-to-b from-emerald-500 to-blue-600 rounded-full"></div>
+                        <h2 class="text-base sm:text-xl font-bold text-slate-800">Terakhir Dilihat</h2>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    @foreach ($recentlyViewedProductsJson as $rv)
+                        <a href="{{ $rv['url'] }}"
+                            class="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col">
+                            <div class="relative overflow-hidden aspect-[4/3]">
+                                <img src="{{ $rv['image'] }}" alt="{{ $rv['name'] }}"
+                                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                            </div>
+                            <div class="p-3 flex-1 flex flex-col gap-1">
+                                <p class="text-sm font-semibold text-slate-800 group-hover:text-blue-600 line-clamp-2 leading-snug transition-colors">{{ $rv['name'] }}</p>
+                                <span class="font-bold text-slate-900 text-sm mt-auto">Rp {{ number_format($rv['price'], 0, ',', '.') }}</span>
+                            </div>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
         <!-- PRODUK REKOMENDASI -->
         <div class="mt-10 sm:mt-12">
             <div class="flex items-center justify-between mb-4 sm:mb-5">

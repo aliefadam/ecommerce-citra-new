@@ -22,6 +22,14 @@ use App\Http\Controllers\StoreLocationController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\StockController;
+use App\Http\Controllers\ReturnRequestController;
+use App\Http\Controllers\AdminReturnRequestController;
+use App\Http\Controllers\CustomerOrderController;
+use App\Http\Controllers\CouponController;
+use App\Http\Controllers\CheckoutCouponController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\SalesReportController;
+use App\Http\Controllers\ManualPaymentController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -60,15 +68,21 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::resource('variants', VariantController::class)->except(['show']);
         Route::get('stocks', [StockController::class, 'index'])->name('stocks.index');
         Route::post('stocks', [StockController::class, 'store'])->name('stocks.store');
+        Route::patch('stocks/{productVariant}/threshold', [StockController::class, 'updateThreshold'])->name('stocks.threshold');
         Route::resource('flash-sales', FlashSaleController::class)->except(['show']);
+        Route::resource('coupons', CouponController::class)->except(['show', 'create', 'edit']);
         Route::resource('banners', BannerController::class)->except(['show']);
+        Route::get('reports/sales', [SalesReportController::class, 'index'])->name('reports.sales');
         Route::get('store-location', [StoreLocationController::class, 'edit'])->name('store-locations.edit');
         Route::put('store-location', [StoreLocationController::class, 'update'])->name('store-locations.update');
         Route::get('store-location/provinces', [StoreLocationController::class, 'provinces'])->name('store-locations.provinces');
         Route::get('store-location/cities', [StoreLocationController::class, 'cities'])->name('store-locations.cities');
-        Route::resource('transactions', TransactionController::class)->only(['index']);
+        Route::resource('transactions', TransactionController::class)->only(['index', 'show']);
         Route::patch('transactions/{transaction}/process', [TransactionController::class, 'process'])->name('transactions.process');
         Route::patch('transactions/{transaction}/ship', [TransactionController::class, 'ship'])->name('transactions.ship');
+        Route::patch('transactions/{transaction}/verify-payment', [TransactionController::class, 'verifyPayment'])->name('transactions.verify-payment');
+        Route::get('return-requests', [AdminReturnRequestController::class, 'index'])->name('return-requests.index');
+        Route::patch('return-requests/{returnRequest}', [AdminReturnRequestController::class, 'update'])->name('return-requests.update');
     });
 
 });
@@ -80,6 +94,8 @@ Route::middleware('auth')->prefix('profil')->name('frontend.profil.')->group(fun
     Route::put('/addresses/{address}', [AddressController::class, 'update'])->name('addresses.update');
     Route::delete('/addresses/{address}', [AddressController::class, 'destroy'])->name('addresses.destroy');
     Route::post('/reviews', [TransactionReviewController::class, 'store'])->name('reviews.store');
+    Route::post('/return-requests', [ReturnRequestController::class, 'store'])->name('return-requests.store');
+    Route::patch('/orders/{transaction}/complete', [CustomerOrderController::class, 'complete'])->name('orders.complete');
 });
 
 Route::name('frontend.')->group(function () {
@@ -102,6 +118,9 @@ Route::name('frontend.')->group(function () {
         Route::delete('/cart', [CartController::class, 'clear'])->name('cart.clear');
         Route::post('/checkout/buy-now', [CartController::class, 'buyNow'])->name('checkout.buy-now');
         Route::post('/checkout/complete', [CartController::class, 'completeCheckout'])->name('checkout.complete');
+        Route::post('/checkout/manual-payment', [ManualPaymentController::class, 'checkout'])->name('checkout.manual-payment');
+        Route::post('/checkout/coupon/apply', [CheckoutCouponController::class, 'apply'])->name('checkout.coupon.apply');
+        Route::delete('/checkout/coupon', [CheckoutCouponController::class, 'remove'])->name('checkout.coupon.remove');
         Route::get('/rajaongkir/provinces', [RajaOngkirController::class, 'provinces'])->name('rajaongkir.provinces');
         Route::get('/rajaongkir/cities', [RajaOngkirController::class, 'cities'])->name('rajaongkir.cities');
         Route::get('/rajaongkir/districts', [RajaOngkirController::class, 'districts'])->name('rajaongkir.districts');
@@ -124,4 +143,6 @@ Route::name('frontend.')->group(function () {
     });
 });
 
+Route::get('/invoice/{transaction}', [InvoiceController::class, 'show'])->name('invoice.show')->middleware('auth');
+Route::post('/manual-payment/{transaction}/proof', [ManualPaymentController::class, 'uploadProof'])->name('manual-payment.proof')->middleware('auth');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
