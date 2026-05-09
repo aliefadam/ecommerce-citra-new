@@ -9,12 +9,28 @@
       <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Manage your account preferences and system configuration.</p>
     </div>
 
+    @if (session('success'))
+      <div class="mb-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+        {{ session('success') }}
+      </div>
+    @endif
+
+    @if ($errors->any())
+      <div class="mb-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+        {{ $errors->first() }}
+      </div>
+    @endif
+
     <div class="flex flex-col lg:flex-row gap-6">
       <!-- Settings Navigation -->
       <div class="lg:w-56 flex-shrink-0">
         <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-2">
           <nav class="space-y-0.5">
-            <button onclick="showTab('profile')" id="nav-profile" class="settings-tab active w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white transition-all text-left">
+            <button onclick="showTab('store')" id="nav-store" class="settings-tab active w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white transition-all text-left">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"/><path d="M4 9h16v11H4z"/><path d="M9 20v-6h6v6"/></svg>
+              Toko
+            </button>
+            <button onclick="showTab('profile')" id="nav-profile" class="settings-tab w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white transition-all text-left">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
               Profile
             </button>
@@ -45,8 +61,44 @@
 
       <!-- Settings Content -->
       <div class="flex-1 space-y-5">
+        <!-- STORE TAB -->
+        <div id="tab-store" class="settings-content">
+          <form method="POST" action="{{ route('pages.settings.update') }}" class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 mb-5">
+            @csrf
+            <h2 class="font-bold text-slate-800 dark:text-white mb-1">Setting Toko</h2>
+            <p class="text-xs text-slate-400 mb-6">Atur identitas toko dan rekening pembayaran transfer manual.</p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="sm:col-span-2">
+                <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Nama Toko</label>
+                <input type="text" name="store_name" value="{{ old('store_name', $storeSettings['store_name'] ?? 'Ecommerce Citra') }}" required class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200"/>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Bank Transfer Manual</label>
+                <input type="text" name="manual_payment_bank_name" value="{{ old('manual_payment_bank_name', $storeSettings['manual_payment_bank_name'] ?? 'BCA') }}" required placeholder="Contoh: BCA" class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200"/>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Nomor Rekening</label>
+                <input type="text" name="manual_payment_account_number" value="{{ old('manual_payment_account_number', $storeSettings['manual_payment_account_number'] ?? '1234567890') }}" required placeholder="Contoh: 1234567890" class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200"/>
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Atas Nama</label>
+                <input type="text" name="manual_payment_account_name" value="{{ old('manual_payment_account_name', $storeSettings['manual_payment_account_name'] ?? 'Ecommerce Citra') }}" required class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200"/>
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Instruksi Transfer</label>
+                <textarea name="manual_payment_instruction" rows="4" class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200 resize-none">{{ old('manual_payment_instruction', $storeSettings['manual_payment_instruction'] ?? '') }}</textarea>
+              </div>
+            </div>
+
+            <div class="flex justify-end mt-5 gap-3">
+              <button type="submit" class="px-5 py-2.5 text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors">Simpan Setting Toko</button>
+            </div>
+          </form>
+        </div>
+
         <!-- PROFILE TAB -->
-        <div id="tab-profile" class="settings-content">
+        <div id="tab-profile" class="settings-content hidden">
           <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 mb-5">
             <h2 class="font-bold text-slate-800 dark:text-white mb-1">Profile Information</h2>
             <p class="text-xs text-slate-400 mb-6">Update your personal details and public profile.</p>

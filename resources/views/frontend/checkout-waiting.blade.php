@@ -197,10 +197,10 @@
                         @if (($payment['payment_type'] ?? '') === 'manual_transfer')
                             <div class="p-4 rounded-2xl border border-blue-100 bg-blue-50">
                                 <p class="text-sm font-semibold text-slate-800">Transfer Manual</p>
-                                <p class="text-xs text-slate-500 mt-1">Transfer sesuai nominal, lalu upload bukti pembayaran di bawah ini.</p>
+                                <p class="text-xs text-slate-500 mt-1">{{ $manualPaymentSettings['instruction'] ?? 'Transfer sesuai nominal, lalu upload bukti pembayaran di bawah ini.' }}</p>
                                 <div class="mt-3 rounded-xl bg-white p-3 text-sm text-slate-600">
-                                    <p>Bank: <span class="font-semibold">BCA / 1234567890</span></p>
-                                    <p>Atas nama: <span class="font-semibold">Ecommerce Citra</span></p>
+                                    <p>Bank: <span class="font-semibold">{{ $manualPaymentSettings['bank_name'] ?? 'BCA' }} / {{ $manualPaymentSettings['account_number'] ?? '1234567890' }}</span></p>
+                                    <p>Atas nama: <span class="font-semibold">{{ $manualPaymentSettings['account_name'] ?? 'Ecommerce Citra' }}</span></p>
                                 </div>
                             </div>
 

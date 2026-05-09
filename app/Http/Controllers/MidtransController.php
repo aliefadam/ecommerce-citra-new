@@ -8,6 +8,7 @@ use App\Models\Coupon;
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
 use App\Models\TransactionStatusHistory;
+use App\Models\StoreSetting;
 use App\Models\UserNotification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -316,6 +317,7 @@ class MidtransController extends Controller
 
         return view('frontend.checkout-waiting', [
             'payment' => $data,
+            'manualPaymentSettings' => StoreSetting::manualPayment(),
         ]);
     }
 

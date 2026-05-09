@@ -7,6 +7,7 @@ use App\Models\TransactionDetail;
 use App\Models\User;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\StoreSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -251,7 +252,24 @@ class BackendController extends Controller
 
     public function settings()
     {
-        return view('backend.settings');
+        return view('backend.settings', [
+            'storeSettings' => StoreSetting::values(),
+        ]);
+    }
+
+    public function updateSettings(Request $request)
+    {
+        $validated = $request->validate([
+            'store_name' => ['required', 'string', 'max:120'],
+            'manual_payment_bank_name' => ['required', 'string', 'max:80'],
+            'manual_payment_account_number' => ['required', 'string', 'max:80'],
+            'manual_payment_account_name' => ['required', 'string', 'max:120'],
+            'manual_payment_instruction' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        StoreSetting::setMany($validated);
+
+        return back()->with('success', 'Setting toko berhasil disimpan.');
     }
 
     public function changePassword()

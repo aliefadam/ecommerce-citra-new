@@ -54,6 +54,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/components', [BackendController::class, 'components'])->name('pages.components');
         Route::get('/datatables', [BackendController::class, 'datatables'])->name('pages.datatables');
         Route::get('/settings', [BackendController::class, 'settings'])->name('pages.settings');
+        Route::post('/settings', [BackendController::class, 'updateSettings'])->name('pages.settings.update');
         Route::get('/change-password', [BackendController::class, 'changePassword'])->name('pages.change-password');
         Route::post('/change-password', [BackendController::class, 'updatePassword'])->name('pages.change-password.update');
 
