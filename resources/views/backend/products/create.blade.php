@@ -316,9 +316,10 @@
                                                 class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Harga
                                                 (Rp) <span class="text-red-400">*</span></label>
                                             <input type="text" inputmode="numeric" placeholder="0"
-                                                :value="formatNumericInput(row.price)"
-                                                @input="handleNumericInput(row, 'price', $event)"
-                                                @blur="$event.target.value = formatNumericInput(row.price)"
+                                                x-model="row.priceDisplay"
+                                                @focus="row.priceDisplay = sanitizeNumericInput(row.priceDisplay || row.price)"
+                                                @input="syncNumericField(row, 'price', 'priceDisplay')"
+                                                @blur="formatNumericField(row, 'price', 'priceDisplay')"
                                                 class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
                                             <input type="hidden" :name="`variants[${index}][price]`"
                                                 :value="row.price" />
@@ -328,9 +329,10 @@
                                                 class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Stok
                                                 <span class="text-red-400">*</span></label>
                                             <input type="text" inputmode="numeric" placeholder="0"
-                                                :value="formatNumericInput(row.stock)"
-                                                @input="handleNumericInput(row, 'stock', $event)"
-                                                @blur="$event.target.value = formatNumericInput(row.stock)"
+                                                x-model="row.stockDisplay"
+                                                @focus="row.stockDisplay = sanitizeNumericInput(row.stockDisplay || row.stock)"
+                                                @input="syncNumericField(row, 'stock', 'stockDisplay')"
+                                                @blur="formatNumericField(row, 'stock', 'stockDisplay')"
                                                 class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
                                             <input type="hidden" :name="`variants[${index}][stock]`"
                                                 :value="row.stock" />
@@ -509,7 +511,9 @@
                     imageStoredPath: r.imageStoredPath || '',
                     sku: r.sku || '',
                     price: r.price || '',
+                    priceDisplay: '',
                     stock: r.stock || '',
+                    stockDisplay: '',
                 })),
                 nextId: oldRows.length,
 
@@ -566,9 +570,13 @@
                     const digits = this.sanitizeNumericInput(value);
                     return digits ? new Intl.NumberFormat('id-ID').format(Number(digits)) : '';
                 },
-                handleNumericInput(row, field, event) {
-                    row[field] = this.sanitizeNumericInput(event.target.value);
-                    event.target.value = this.formatNumericInput(row[field]);
+                syncNumericField(row, field, displayField) {
+                    row[field] = this.sanitizeNumericInput(row[displayField]);
+                    row[displayField] = row[field];
+                },
+                formatNumericField(row, field, displayField) {
+                    row[field] = this.sanitizeNumericInput(row[displayField]);
+                    row[displayField] = this.formatNumericInput(row[field]);
                 },
 
                 filteredValues(row) {
@@ -623,7 +631,9 @@
                         imageStoredPath: '',
                         sku: '',
                         price: '',
-                        stock: ''
+                        priceDisplay: '',
+                        stock: '',
+                        stockDisplay: ''
                     });
                 },
                 removeRow(id) {
@@ -638,6 +648,13 @@
                         row.imagePreview = e.target.result;
                     };
                     reader.readAsDataURL(file);
+                },
+                init() {
+                    this.rows = this.rows.map((row) => ({
+                        ...row,
+                        priceDisplay: this.formatNumericInput(row.price),
+                        stockDisplay: this.formatNumericInput(row.stock),
+                    }));
                 },
             };
         }

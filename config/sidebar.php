@@ -11,27 +11,6 @@ return [
                 'icon'   => 'layout-grid',
                 'permission' => 'view_dashboard',
             ],
-            [
-                'name'   => 'Customers',
-                'route'  => 'users.index',
-                'active' => 'users.*',
-                'icon'   => 'users',
-                'permission' => 'view_customers',
-            ],
-            [
-                'name'   => 'Admin Users',
-                'route'  => 'admin-users.index',
-                'active' => 'admin-users.*',
-                'icon'   => 'shield-user',
-                'permission' => 'manage_admin_users',
-            ],
-            [
-                'name'   => 'Roles & Permissions',
-                'route'  => 'admin-roles.index',
-                'active' => 'admin-roles.*',
-                'icon'   => 'shield-check',
-                'permission' => 'manage_roles_permissions',
-            ],
             // [
             //     'name'   => 'Dashboard 2',
             //     'route'  => 'pages.dashboard2',
@@ -148,6 +127,13 @@ return [
         'group' => 'Master Data',
         'items' => [
             [
+                'name'   => 'Customers',
+                'route'  => 'users.index',
+                'active' => 'users.*',
+                'icon'   => 'users',
+                'permission' => 'view_customers',
+            ],
+            [
                 'name'   => 'Products',
                 'route'  => 'products.index',
                 'active' => 'products.*',
@@ -219,6 +205,20 @@ return [
                 'active' => 'banners.*',
                 'icon'   => 'image',
                 'permission' => 'manage_banners',
+            ],
+            [
+                'name'   => 'Admin Users',
+                'route'  => 'admin-users.index',
+                'active' => 'admin-users.*',
+                'icon'   => 'shield-user',
+                'permission' => 'manage_admin_users',
+            ],
+            [
+                'name'   => 'Roles & Permissions',
+                'route'  => 'admin-roles.index',
+                'active' => 'admin-roles.*',
+                'icon'   => 'shield-check',
+                'permission' => 'manage_roles_permissions',
             ],
         ],
     ],
