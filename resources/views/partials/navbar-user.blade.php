@@ -453,6 +453,10 @@
                     class="nav-link {{ request()->routeIs('frontend.kategori') ? 'active' : '' }}">
                     Semua Produk
                 </a>
+                <a href="{{ route('frontend.redeem-point') }}"
+                    class="nav-link {{ request()->routeIs('frontend.redeem-point') ? 'active' : '' }}">
+                    Redeem Point
+                </a>
                 <a href="{{ route('frontend.search') }}?sort=newest" class="nav-link">
                     Produk Terbaru
                 </a>

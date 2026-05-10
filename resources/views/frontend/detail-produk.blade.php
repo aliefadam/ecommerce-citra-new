@@ -264,6 +264,12 @@
                     </div>
                     <span class="text-slate-300 hidden sm:inline">|</span>
                     <span class="text-slate-600 text-xs"><span class="font-semibold text-slate-700">{{ number_format($productData['sold']) }}</span> terjual</span>
+                    @if (!empty($productData['isRedeemProduct']))
+                        <span class="text-slate-300 hidden sm:inline">|</span>
+                        <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 border border-amber-200">
+                            Redeem {{ number_format((int) ($productData['redeemPoints'] ?? 0), 0, ',', '.') }} point
+                        </span>
+                    @endif
                 </div>
 
                 <!-- Price -->

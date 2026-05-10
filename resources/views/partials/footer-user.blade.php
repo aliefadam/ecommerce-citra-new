@@ -74,6 +74,8 @@
                         <span class="w-1 h-1 rounded-full bg-slate-600 group-hover:bg-blue-500 transition-colors flex-shrink-0"></span>Semua Produk</a></li>
                     <li><a href="{{ route('frontend.flash-sale') }}" class="text-sm text-slate-400 hover:text-blue-400 transition-colors flex items-center gap-1.5 group">
                         <span class="w-1 h-1 rounded-full bg-slate-600 group-hover:bg-blue-500 transition-colors flex-shrink-0"></span>Flash Sale</a></li>
+                    <li><a href="{{ route('frontend.redeem-point') }}" class="text-sm text-slate-400 hover:text-blue-400 transition-colors flex items-center gap-1.5 group">
+                        <span class="w-1 h-1 rounded-full bg-slate-600 group-hover:bg-blue-500 transition-colors flex-shrink-0"></span>Redeem Point</a></li>
                     <li><a href="{{ route('frontend.kategori') }}" class="text-sm text-slate-400 hover:text-blue-400 transition-colors flex items-center gap-1.5 group">
                         <span class="w-1 h-1 rounded-full bg-slate-600 group-hover:bg-blue-500 transition-colors flex-shrink-0"></span>Produk Baru</a></li>
                     <li><a href="{{ route('frontend.kategori') }}" class="text-sm text-slate-400 hover:text-blue-400 transition-colors flex items-center gap-1.5 group">

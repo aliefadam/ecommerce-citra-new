@@ -9,6 +9,7 @@ use App\Models\ProductVariant;
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
 use Illuminate\Http\Request;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\DB;
 
 class CartController extends Controller
@@ -29,12 +30,19 @@ class CartController extends Controller
             'quantity' => ['required', 'integer', 'min:1'],
         ]);
 
+        $variant = ProductVariant::query()
+            ->with('product')
+            ->findOrFail((int) $validated['product_variant_id']);
+        $this->ensureVariantCanBePurchased($variant, (int) $validated['quantity']);
+
         $cart = Cart::query()->firstOrNew([
             'user_id' => auth()->id(),
             'product_variant_id' => (int) $validated['product_variant_id'],
         ]);
 
-        $cart->quantity = (int) ($cart->exists ? $cart->quantity : 0) + (int) $validated['quantity'];
+        $nextQuantity = (int) ($cart->exists ? $cart->quantity : 0) + (int) $validated['quantity'];
+        $this->ensureVariantCanBePurchased($variant, $nextQuantity);
+        $cart->quantity = $nextQuantity;
         $cart->save();
 
         return response()->json([
@@ -51,6 +59,9 @@ class CartController extends Controller
         $validated = $request->validate([
             'quantity' => ['required', 'integer', 'min:1'],
         ]);
+
+        $cart->loadMissing('productVariant.product');
+        $this->ensureCartItemCanBePurchased($cart, (int) $validated['quantity']);
 
         $cart->update([
             'quantity' => (int) $validated['quantity'],
@@ -107,15 +118,23 @@ class CartController extends Controller
             'cart_ids.*' => ['integer'],
         ]);
 
-        $allowedIds = Cart::query()
+        $cartRows = Cart::query()
+            ->with('productVariant.product')
             ->where('user_id', auth()->id())
             ->whereIn('id', $validated['cart_ids'])
+            ->get();
+
+        $allowedIds = $cartRows
             ->pluck('id')
             ->map(fn ($id) => (int) $id)
             ->values()
             ->all();
 
         abort_if(empty($allowedIds), 422, 'Tidak ada item valid yang dipilih.');
+
+        foreach ($cartRows as $cartRow) {
+            $this->ensureCartItemCanBePurchased($cartRow, (int) $cartRow->quantity);
+        }
 
         session([
             'checkout' => [
@@ -245,7 +264,7 @@ class CartController extends Controller
         return $rows->map(function (Cart $row) {
             $variant = $row->productVariant;
             $product = $variant?->product;
-            if (!$variant || !$product) {
+            if (!$variant || !$product || $product->status !== 'active' || (int) $variant->stock < 1) {
                 return null;
             }
 
@@ -276,6 +295,7 @@ class CartController extends Controller
                 'price' => $salePrice,
                 'origPrice' => $basePrice,
                 'qty' => (int) $row->quantity,
+                'stock' => (int) $variant->stock,
                 'image' => $variant->image
                     ? (str_starts_with($variant->image, 'http://') || str_starts_with($variant->image, 'https://')
                         ? $variant->image
@@ -352,6 +372,40 @@ class CartController extends Controller
                 Coupon::query()->where('code', (string) $payment['coupon_code'])->increment('used_count');
             }
         });
+    }
+
+    private function ensureCartItemCanBePurchased(Cart $cart, int $requestedQuantity): void
+    {
+        $variant = $cart->productVariant;
+        abort_unless($variant instanceof ProductVariant, 404);
+
+        $variant->loadMissing('product');
+        $this->ensureVariantCanBePurchased($variant, $requestedQuantity);
+    }
+
+    private function ensureVariantCanBePurchased(ProductVariant $variant, int $requestedQuantity): void
+    {
+        $product = $variant->product;
+
+        if (!$product || $product->status !== 'active') {
+            $this->abortJson(422, 'Produk ini sudah tidak tersedia.');
+        }
+
+        $stock = max(0, (int) $variant->stock);
+        if ($stock < 1) {
+            $this->abortJson(422, 'Stok produk ini sedang habis.');
+        }
+
+        if ($requestedQuantity > $stock) {
+            $this->abortJson(422, 'Jumlah melebihi stok yang tersedia. Stok saat ini: ' . $stock . '.');
+        }
+    }
+
+    private function abortJson(int $status, string $message): never
+    {
+        throw new HttpResponseException(response()->json([
+            'message' => $message,
+        ], $status));
     }
 
     private function generateDailyInvoiceNo(): string

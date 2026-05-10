@@ -131,6 +131,14 @@ class FrontendController extends Controller
         ]);
     }
 
+    public function redeemPoint()
+    {
+        return view('frontend.redeem-point', [
+            'redeemProducts' => $this->buildRedeemProducts(),
+            'userPointBalance' => auth()->check() ? (int) (auth()->user()->point_balance ?? 0) : null,
+        ]);
+    }
+
     public function search(Request $request)
     {
         $query = trim((string) $request->query('q', ''));
@@ -541,6 +549,8 @@ class FrontendController extends Controller
                 'description' => $product->description,
                 'isFlashSale' => $isFlashSale,
                 'flashSalePrice' => $flashSalePrice,
+                'isRedeemProduct' => (bool) $product->is_redeem_product,
+                'redeemPoints' => (int) ($product->redeem_points ?? 0),
                 'variantName' => $variant->variant?->name ?? 'Varian',
                 'variantValue' => $variant->variant?->value ?? '-',
                 'variantGroups' => $variantGroups,
@@ -929,6 +939,66 @@ class FrontendController extends Controller
         ];
     }
 
+    private function buildRedeemProducts(): array
+    {
+        $productIds = Product::query()
+            ->where('status', 'active')
+            ->where('is_redeem_product', true)
+            ->pluck('id')
+            ->all();
+
+        if (empty($productIds)) {
+            return [];
+        }
+
+        $soldMap = TransactionDetail::query()
+            ->selectRaw('product_id, SUM(quantity) as sold_qty')
+            ->whereIn('product_id', $productIds)
+            ->groupBy('product_id')
+            ->pluck('sold_qty', 'product_id');
+
+        $reviewStats = TransactionProductReview::query()
+            ->join('transaction_details', 'transaction_details.id', '=', 'transaction_product_reviews.transaction_detail_id')
+            ->selectRaw('transaction_details.product_id as product_id, AVG(transaction_product_reviews.rating) as avg_rating, COUNT(transaction_product_reviews.id) as total_reviews')
+            ->where('transaction_product_reviews.is_hidden', false)
+            ->whereIn('transaction_details.product_id', $productIds)
+            ->groupBy('transaction_details.product_id')
+            ->get()
+            ->keyBy('product_id');
+
+        return Product::query()
+            ->with(['mainCategory', 'categoryDetail', 'productVariants.variant'])
+            ->where('status', 'active')
+            ->where('is_redeem_product', true)
+            ->latest()
+            ->get()
+            ->map(function ($product) use ($soldMap, $reviewStats) {
+                $variant = $product->productVariants->first();
+                if (!$variant) {
+                    return null;
+                }
+
+                $stats = $reviewStats->get($product->id);
+
+                return [
+                    'id' => (int) $product->id,
+                    'slug' => (string) $product->slug,
+                    'name' => (string) $product->name,
+                    'category' => (string) ($product->categoryDetail?->name ?? $product->mainCategory?->name ?? 'Produk Redeem'),
+                    'image' => $this->normalizeImageUrl((string) ($variant->image ?? ''), '400x400'),
+                    'redeemPoints' => (int) ($product->redeem_points ?? 0),
+                    'stock' => (int) $variant->stock,
+                    'sold' => (int) ($soldMap[$product->id] ?? 0),
+                    'rating' => $stats ? round((float) $stats->avg_rating, 1) : 0.0,
+                    'reviews' => $stats ? (int) $stats->total_reviews : 0,
+                    'detailUrl' => route('frontend.detail-produk', ['slug' => $product->slug]),
+                ];
+            })
+            ->filter()
+            ->values()
+            ->all();
+    }
+
     private function mapHomeCategory(?string $categoryName): string
     {
         $name = strtolower((string) $categoryName);
@@ -1115,7 +1185,12 @@ class FrontendController extends Controller
             /** @var ProductVariant|null $variant */
             $variant = $row->productVariant;
             $product = $variant?->product;
-            if (!$variant || !$product) {
+            if (!$variant || !$product || $product->status !== 'active' || (int) $variant->stock < 1) {
+                return null;
+            }
+
+            $qty = min((int) $row->quantity, max(0, (int) $variant->stock));
+            if ($qty < 1) {
                 return null;
             }
 
@@ -1145,7 +1220,7 @@ class FrontendController extends Controller
                 'variant' => $variantText !== '' ? $variantText : '-',
                 'price' => $salePrice,
                 'origPrice' => $basePrice,
-                'qty' => (int) $row->quantity,
+                'qty' => $qty,
                 'image' => $this->normalizeImageUrl((string) ($variant->image ?? ''), '100x100'),
                 'isFlashSale' => (bool) $flashItem,
             ];

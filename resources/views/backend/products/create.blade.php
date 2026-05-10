@@ -593,7 +593,14 @@
                     return parts.join('-');
                 },
                 sanitizeNumericInput(value) {
-                    return String(value ?? '').replace(/\D+/g, '');
+                    const raw = String(value ?? '').trim();
+                    if (!raw) return '';
+
+                    if (/^\d+[.,]\d{1,2}$/.test(raw)) {
+                        return String(Math.round(Number(raw.replace(',', '.'))));
+                    }
+
+                    return raw.replace(/\D+/g, '');
                 },
                 formatNumericInput(value) {
                     const digits = this.sanitizeNumericInput(value);

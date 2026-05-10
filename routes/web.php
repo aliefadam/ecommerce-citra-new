@@ -112,6 +112,7 @@ Route::middleware('auth')->prefix('profil')->name('frontend.profil.')->group(fun
 Route::name('frontend.')->group(function () {
     Route::get('/', [FrontendController::class, 'index'])->name('index');
     Route::get('/flash-sale', [FrontendController::class, 'flashSale'])->name('flash-sale');
+    Route::get('/redeem-point', [FrontendController::class, 'redeemPoint'])->name('redeem-point');
     Route::get('/pencarian', [FrontendController::class, 'search'])->name('search');
     Route::get('/kategori', [FrontendController::class, 'kategori'])->name('kategori');
     Route::get('/detail-produk/{slug?}', [FrontendController::class, 'detailProduk'])->name('detail-produk');
