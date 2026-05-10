@@ -133,7 +133,7 @@
                                 <h2 class="text-sm font-bold text-slate-700 dark:text-slate-300">Varian Produk</h2>
                                 <p class="text-xs text-slate-400 mt-0.5">Minimal satu varian harus diisi.</p>
                             </div>
-                            <button type="button" @click="addRow"
+                            <button type="button" @click="addRow()"
                                 class="mt-3 flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium px-1 py-1 transition-colors">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">

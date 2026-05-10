@@ -12,6 +12,7 @@
                 ->map(function ($v) use ($variants) {
                     $variantModel = $variants->find($v['variant_id'] ?? null);
                     return [
+                        'productVariantId' => (int) ($v['product_variant_id'] ?? 0) ?: null,
                         'variantId' => (int) ($v['variant_id'] ?? 0) ?: null,
                         'variantName' => $variantModel?->name ?? '',
                         'variantValue' => $variantModel?->value ?? '',
@@ -32,6 +33,7 @@
             $oldVariants = $product->productVariants
                 ->map(function ($pv) {
                     return [
+                        'productVariantId' => $pv->id,
                         'variantId' => $pv->variant_id,
                         'variantName' => $pv->variant?->name ?? '',
                         'variantValue' => $pv->variant?->value ?? '',
@@ -161,7 +163,7 @@
                                 <h2 class="text-sm font-bold text-slate-700 dark:text-slate-300">Varian Produk</h2>
                                 <p class="text-xs text-slate-400 mt-0.5">Minimal satu varian harus diisi.</p>
                             </div>
-                            <button type="button" @click="addRow"
+                            <button type="button" @click="addRow()"
                                 class="mt-3 flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium px-1 py-1 transition-colors">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -256,6 +258,8 @@
                                             </div>
                                             <input type="hidden" :name="`variants[${index}][variant_id]`"
                                                 :value="row.variantId ?? ''">
+                                            <input type="hidden" :name="`variants[${index}][product_variant_id]`"
+                                                :value="row.productVariantId ?? ''">
                                             <input type="hidden" :name="`variants[${index}][existing_image]`"
                                                 :value="row.imageStoredPath ?? ''">
                                             <div x-show="row.valueOpen && row.selectedName"
@@ -561,6 +565,7 @@
 
                 rows: oldRows.map((r, i) => ({
                     id: i,
+                    productVariantId: r.productVariantId || null,
                     nameSearch: r.variantName || '',
                     nameOpen: false,
                     selectedName: r.variantName || null,
@@ -680,6 +685,7 @@
                 addRow() {
                     this.rows.push({
                         id: this.nextId++,
+                        productVariantId: null,
                         nameSearch: '',
                         nameOpen: false,
                         selectedName: null,
