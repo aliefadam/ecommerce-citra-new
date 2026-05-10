@@ -60,7 +60,9 @@ class ImageOptimizer
     private function createImage(UploadedFile $file): \GdImage
     {
         $contents = file_get_contents($file->getRealPath());
-        $image = $contents !== false ? imagecreatefromstring($contents) : false;
+        // Some PNG files contain an invalid embedded ICC profile. GD/libpng can still
+        // decode the image, but emits a warning that Laravel may convert to an exception.
+        $image = $contents !== false ? @imagecreatefromstring($contents) : false;
 
         if (!$image instanceof \GdImage) {
             throw new \RuntimeException('File gambar tidak bisa diproses.');
