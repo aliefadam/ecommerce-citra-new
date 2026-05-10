@@ -42,6 +42,10 @@ class ProductController extends Controller
 
     public function store(Request $request, ImageOptimizer $imageOptimizer)
     {
+        $request->merge([
+            'variants' => $this->normalizeVariantNumericFields($request->input('variants', [])),
+        ]);
+
         $validated = $request->validate([
             'name'                  => ['required', 'string', 'max:255'],
             'main_category_id'      => ['nullable', 'exists:main_categories,id'],
@@ -119,6 +123,10 @@ class ProductController extends Controller
 
     public function update(Request $request, Product $product, ImageOptimizer $imageOptimizer)
     {
+        $request->merge([
+            'variants' => $this->normalizeVariantNumericFields($request->input('variants', [])),
+        ]);
+
         $validated = $request->validate([
             'name'                  => ['required', 'string', 'max:255'],
             'main_category_id'      => ['nullable', 'exists:main_categories,id'],
@@ -226,5 +234,26 @@ class ProductController extends Controller
         $segments = array_filter([$productPart, $namePart, $valuePart], fn ($s) => $s !== '');
 
         return implode('-', $segments);
+    }
+
+    private function normalizeVariantNumericFields(array $variants): array
+    {
+        return collect($variants)
+            ->map(function ($variant) {
+                if (!is_array($variant)) {
+                    return $variant;
+                }
+
+                foreach (['price', 'stock'] as $field) {
+                    if (!array_key_exists($field, $variant)) {
+                        continue;
+                    }
+
+                    $variant[$field] = preg_replace('/\D+/', '', (string) $variant[$field]) ?? '';
+                }
+
+                return $variant;
+            })
+            ->all();
     }
 }

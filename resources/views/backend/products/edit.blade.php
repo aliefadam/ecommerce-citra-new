@@ -346,17 +346,25 @@
                                             <label
                                                 class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Harga
                                                 (Rp) <span class="text-red-400">*</span></label>
-                                            <input type="number" min="0" step="100"
-                                                :name="`variants[${index}][price]`" x-model="row.price" placeholder="0"
+                                            <input type="text" inputmode="numeric" placeholder="0"
+                                                :value="formatNumericInput(row.price)"
+                                                @input="handleNumericInput(row, 'price', $event)"
+                                                @blur="$event.target.value = formatNumericInput(row.price)"
                                                 class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                            <input type="hidden" :name="`variants[${index}][price]`"
+                                                :value="row.price" />
                                         </div>
                                         <div>
                                             <label
                                                 class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Stok
                                                 <span class="text-red-400">*</span></label>
-                                            <input type="number" min="0" :name="`variants[${index}][stock]`"
-                                                x-model="row.stock" placeholder="0"
+                                            <input type="text" inputmode="numeric" placeholder="0"
+                                                :value="formatNumericInput(row.stock)"
+                                                @input="handleNumericInput(row, 'stock', $event)"
+                                                @blur="$event.target.value = formatNumericInput(row.stock)"
                                                 class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                            <input type="hidden" :name="`variants[${index}][stock]`"
+                                                :value="row.stock" />
                                         </div>
                                     </div>
 
@@ -581,6 +589,17 @@
                         this.slugify(row.valueSearch),
                     ].filter(Boolean);
                     return parts.join('-');
+                },
+                sanitizeNumericInput(value) {
+                    return String(value ?? '').replace(/\D+/g, '');
+                },
+                formatNumericInput(value) {
+                    const digits = this.sanitizeNumericInput(value);
+                    return digits ? new Intl.NumberFormat('id-ID').format(Number(digits)) : '';
+                },
+                handleNumericInput(row, field, event) {
+                    row[field] = this.sanitizeNumericInput(event.target.value);
+                    event.target.value = this.formatNumericInput(row[field]);
                 },
 
                 filteredValues(row) {
