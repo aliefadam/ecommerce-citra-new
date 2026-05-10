@@ -10,16 +10,16 @@ class CategorySeeder extends Seeder
     public function run(): void
     {
         $categories = [
-            'Rumah Tangga',
-            'Fashion Pria',
-            'Fashion Wanita',
-            'Elektronik',
-            'Kecantikan',
-            'Olahraga',
-            'Mainan & Anak',
-            'HP & Tablet',
-            'Makanan & Minuman',
-            'Ibu & Bayi',
+            'Baut',
+            'Mur',
+            'Ring & Washer',
+            'Sekrup',
+            'Dynabolt & Anchor',
+            'Tools & Perkakas',
+            'Paku',
+            'Klem & Bracket',
+            'Chemical & Lem',
+            'Safety & Abrasive',
         ];
 
         foreach ($categories as $name) {

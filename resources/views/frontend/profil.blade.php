@@ -525,7 +525,7 @@
                                 <div class="md:col-span-2">
                                     <label class="text-sm font-semibold text-slate-700 mb-1.5 block">Bio</label>
                                     <textarea id="bio" name="bio" placeholder="Ceritakan sedikit tentang diri kamu..."
-                                        class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all resize-none h-20">Suka belanja online, terutama fashion dan elektronik ?</textarea>
+                                        class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all resize-none h-20">Sering belanja kebutuhan bengkel, baut, mur, dan perkakas proyek.</textarea>
                                 </div>
                             </div>
 

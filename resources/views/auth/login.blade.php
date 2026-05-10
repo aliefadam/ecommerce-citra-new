@@ -60,9 +60,9 @@
 
                 <!-- Bottom text + dots -->
                 <div class="relative z-10 p-10">
-                    <h1 class="text-3xl font-bold leading-tight">Temukan produk <br>terbaik untuk Anda</h1>
-                    <p class="mt-2 text-sm text-white/70">Belanja mudah, cepat, dan terpercaya — <br>ribuan produk siap
-                        dikirim ke seluruh Indonesia.</p>
+                    <h1 class="text-3xl font-bold leading-tight">Kebutuhan fastener <br>untuk proyek Anda</h1>
+                    <p class="mt-2 text-sm text-white/70">Baut, mur, ring, anchor, dan perkakas teknik siap dikirim
+                        ke seluruh Indonesia.</p>
                     <!-- Slider dots -->
                     <div class="flex items-center gap-2 mt-6">
                         <div class="w-7 h-2 rounded-full bg-white"></div>

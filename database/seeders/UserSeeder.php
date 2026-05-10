@@ -26,7 +26,7 @@ class UserSeeder extends Seeder
                 'phone_number' => '81200000000',
                 'birth_date' => '1990-01-01',
                 'social_url' => 'https://instagram.com/admin',
-                'bio' => 'Admin Ecommerce Citra',
+                'bio' => 'Admin toko baut, mur, fastener, dan perkakas teknik',
                 'password' => Hash::make('123123'),
             ]
         );
@@ -44,7 +44,7 @@ class UserSeeder extends Seeder
                 'phone_number' => '81234567890',
                 'birth_date' => '1995-07-15',
                 'social_url' => 'https://instagram.com/aliefadam',
-                'bio' => 'Suka belanja online, terutama fashion dan elektronik',
+                'bio' => 'Sering belanja kebutuhan bengkel, baut, mur, dan perkakas proyek',
                 'password' => Hash::make('123123'),
             ]
         );

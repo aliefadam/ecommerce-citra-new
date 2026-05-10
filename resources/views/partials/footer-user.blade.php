@@ -15,8 +15,8 @@
                     </div>
                     <span class="text-white font-extrabold text-xl">{{ $appStoreName }}</span>
                 </div>
-                <p class="text-sm leading-relaxed mb-4">Platform belanja online terpercaya dengan jutaan produk pilihan
-                    dan pengiriman ke seluruh Indonesia.</p>
+                <p class="text-sm leading-relaxed mb-4">Toko baut, mur, fastener, anchor, dan perkakas teknik untuk
+                    kebutuhan bengkel, proyek, dan industri.</p>
                 <div class="flex gap-3">
                     <a href="#"
                         class="w-9 h-9 bg-slate-800 rounded-lg flex items-center justify-center hover:bg-blue-600 transition-colors">

@@ -16,12 +16,16 @@ class CategoryDetailSeeder extends Seeder
     public function run(): void
     {
         $map = [
-            'Rumah Tangga' => ['Dekorasi', 'Kamar Mandi', 'Kebutuhan Rumah', 'Tempat Penyimpanan'],
-            'Fashion Pria' => ['Kemeja', 'Kaos', 'Celana Chino', 'Sepatu Pria', 'Tas Pria'],
-            'Fashion Wanita' => ['Blouse', 'Dress', 'Rok', 'Tas Wanita'],
-            'Elektronik' => ['Laptop', 'Audio', 'Wearable', 'Kamera'],
-            'Kecantikan' => ['Skincare', 'Body Care', 'Makeup'],
-            'Olahraga' => ['Sepatu Lari', 'Peralatan Gym', 'Aksesoris Olahraga'],
+            'Baut' => ['Baut Hex', 'Baut L', 'Baut Roofing', 'Baut Stainless', 'Baut HTB'],
+            'Mur' => ['Mur Hex', 'Mur Nyloc', 'Mur Flange', 'Mur Kuping', 'Mur Stainless'],
+            'Ring & Washer' => ['Ring Plat', 'Ring Per', 'Washer Stainless', 'Washer Galvanis'],
+            'Sekrup' => ['Sekrup Kayu', 'Sekrup Gypsum', 'Sekrup SDS', 'Sekrup Mesin'],
+            'Dynabolt & Anchor' => ['Dynabolt', 'Fischer', 'Drop In Anchor', 'Chemical Anchor'],
+            'Tools & Perkakas' => ['Kunci Pas', 'Kunci L', 'Mata Bor', 'Obeng', 'Tang'],
+            'Paku' => ['Paku Beton', 'Paku Kayu', 'Paku Rivet', 'Paku Tembak'],
+            'Klem & Bracket' => ['Klem Pipa', 'Bracket L', 'U Bolt', 'Clamp Stainless'],
+            'Chemical & Lem' => ['Lem Besi', 'Sealant', 'Anti Karat', 'Threadlocker'],
+            'Safety & Abrasive' => ['Sarung Tangan', 'Kacamata Safety', 'Mata Gerinda', 'Amplas'],
         ];
 
         foreach ($map as $mainName => $details) {

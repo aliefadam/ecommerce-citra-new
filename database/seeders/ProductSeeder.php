@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\MainCategory;
 use App\Models\CategoryDetail;
+use App\Models\MainCategory;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Variant;
@@ -12,131 +12,140 @@ use Illuminate\Support\Str;
 
 class ProductSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         $products = [
             [
-                'name' => 'Kemeja Oxford Slim Fit',
-                'main_category' => 'Fashion Pria',
-                'category_detail' => 'Kemeja',
-                'price' => 189000,
-                'stock' => 1245,
-                'image' => 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop',
-                'description' => 'Kemeja pria slim fit untuk gaya kasual dan semi formal.',
-                'variant' => ['name' => 'Ukuran', 'value' => 'M'],
+                'old_slug' => 'kemeja-oxford-slim-fit',
+                'name' => 'Baut Hex M8 x 25mm Galvanis',
+                'main_category' => 'Baut',
+                'category_detail' => 'Baut Hex',
+                'price' => 850,
+                'stock' => 12450,
+                'image' => 'https://images.unsplash.com/photo-1609205807107-e8ec2120f9de?w=400&h=400&fit=crop',
+                'description' => 'Baut hex galvanis ukuran M8 x 25mm untuk kebutuhan konstruksi, rangka, dan perakitan umum.',
+                'variant' => ['name' => 'Diameter', 'value' => 'M8'],
             ],
             [
-                'name' => 'Sneakers Urban Street',
-                'main_category' => 'Olahraga',
-                'category_detail' => 'Sepatu Lari',
-                'price' => 459000,
-                'stock' => 3421,
-                'image' => 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop',
-                'description' => 'Sneakers ringan dan nyaman untuk aktivitas harian.',
-                'variant' => ['name' => 'Ukuran Sepatu', 'value' => '42'],
+                'old_slug' => 'sneakers-urban-street',
+                'name' => 'Mur Hex M8 Baja Galvanis',
+                'main_category' => 'Mur',
+                'category_detail' => 'Mur Hex',
+                'price' => 450,
+                'stock' => 18000,
+                'image' => 'https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=400&h=400&fit=crop',
+                'description' => 'Mur hex M8 dengan lapisan galvanis, cocok dipasangkan dengan baut M8 untuk kebutuhan bengkel dan proyek.',
+                'variant' => ['name' => 'Diameter', 'value' => 'M8'],
             ],
             [
-                'name' => 'Smart Watch Series 5',
-                'main_category' => 'Elektronik',
-                'category_detail' => 'Wearable',
-                'price' => 1299000,
-                'stock' => 892,
-                'image' => 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop',
-                'description' => 'Smart watch modern dengan fitur kesehatan dan notifikasi pintar.',
-                'variant' => ['name' => 'Warna', 'value' => 'Hitam'],
+                'old_slug' => 'smart-watch-series-5',
+                'name' => 'Ring Plat M8 Galvanis',
+                'main_category' => 'Ring & Washer',
+                'category_detail' => 'Ring Plat',
+                'price' => 250,
+                'stock' => 22500,
+                'image' => 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=400&h=400&fit=crop',
+                'description' => 'Ring plat M8 untuk meratakan tekanan baut dan mur pada permukaan material.',
+                'variant' => ['name' => 'Diameter', 'value' => 'M8'],
             ],
             [
-                'name' => 'Tas Ransel Laptop 15',
-                'main_category' => 'Fashion Pria',
-                'category_detail' => 'Tas Pria',
-                'price' => 345000,
-                'stock' => 2134,
-                'image' => 'https://images.unsplash.com/photo-1491637639811-60e2756cc1c7?w=400&h=400&fit=crop',
-                'description' => 'Tas ransel multifungsi untuk laptop hingga 15 inci.',
-                'variant' => ['name' => 'Warna', 'value' => 'Biru'],
+                'old_slug' => 'tas-ransel-laptop-15',
+                'name' => 'Sekrup SDS 12 x 20mm',
+                'main_category' => 'Sekrup',
+                'category_detail' => 'Sekrup SDS',
+                'price' => 650,
+                'stock' => 9600,
+                'image' => 'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=400&h=400&fit=crop',
+                'description' => 'Sekrup self drilling untuk pemasangan baja ringan, atap, dan material metal tipis.',
+                'variant' => ['name' => 'Panjang', 'value' => '25mm'],
             ],
             [
-                'name' => 'Skincare Serum Vitamin C',
-                'main_category' => 'Kecantikan',
-                'category_detail' => 'Skincare',
-                'price' => 189000,
-                'stock' => 5678,
-                'image' => 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400&h=400&fit=crop',
-                'description' => 'Serum wajah vitamin C untuk mencerahkan dan meratakan warna kulit.',
-                'variant' => ['name' => 'Kapasitas', 'value' => '32GB'],
+                'old_slug' => 'skincare-serum-vitamin-c',
+                'name' => 'Dynabolt M10 x 75mm',
+                'main_category' => 'Dynabolt & Anchor',
+                'category_detail' => 'Dynabolt',
+                'price' => 3500,
+                'stock' => 4200,
+                'image' => 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=400&h=400&fit=crop',
+                'description' => 'Dynabolt M10 x 75mm untuk pemasangan bracket, rangka, dan dudukan pada beton.',
+                'variant' => ['name' => 'Diameter', 'value' => 'M10'],
             ],
             [
-                'name' => 'Celana Chino Slim',
-                'main_category' => 'Fashion Pria',
-                'category_detail' => 'Celana Chino',
-                'price' => 229000,
-                'stock' => 987,
-                'image' => 'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=400&h=400&fit=crop',
-                'description' => 'Celana chino slim fit dengan bahan nyaman dipakai seharian.',
-                'variant' => ['name' => 'Ukuran', 'value' => 'L'],
+                'old_slug' => 'celana-chino-slim',
+                'name' => 'Baut L Stainless M6 x 30mm',
+                'main_category' => 'Baut',
+                'category_detail' => 'Baut L',
+                'price' => 1200,
+                'stock' => 7300,
+                'image' => 'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=400&h=400&fit=crop',
+                'description' => 'Baut L stainless untuk aplikasi yang membutuhkan kepala tanam dan tampilan rapi.',
+                'variant' => ['name' => 'Material', 'value' => 'Stainless 304'],
             ],
             [
-                'name' => 'Wireless Earbuds Pro',
-                'main_category' => 'Elektronik',
-                'category_detail' => 'Audio',
-                'price' => 599000,
-                'stock' => 3210,
-                'image' => 'https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?w=400&h=400&fit=crop',
-                'description' => 'Earbuds nirkabel dengan suara jernih dan baterai tahan lama.',
-                'variant' => ['name' => 'Warna', 'value' => 'Hitam'],
+                'old_slug' => 'wireless-earbuds-pro',
+                'name' => 'Kunci L Set 9 Pcs',
+                'main_category' => 'Tools & Perkakas',
+                'category_detail' => 'Kunci L',
+                'price' => 45000,
+                'stock' => 850,
+                'image' => 'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=400&h=400&fit=crop',
+                'description' => 'Set kunci L ukuran lengkap untuk instalasi baut socket dan pekerjaan bengkel.',
+                'variant' => ['name' => 'Kemasan', 'value' => 'Pcs'],
             ],
             [
-                'name' => 'Dress Floral Premium',
-                'main_category' => 'Fashion Wanita',
-                'category_detail' => 'Dress',
-                'price' => 279000,
-                'stock' => 1567,
-                'image' => 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400&h=400&fit=crop',
-                'description' => 'Dress floral premium dengan detail elegan dan bahan ringan.',
-                'variant' => ['name' => 'Ukuran', 'value' => 'M'],
+                'old_slug' => 'dress-floral-premium',
+                'name' => 'Mur Nyloc M10',
+                'main_category' => 'Mur',
+                'category_detail' => 'Mur Nyloc',
+                'price' => 950,
+                'stock' => 6400,
+                'image' => 'https://images.unsplash.com/photo-1565043666747-69f6646db940?w=400&h=400&fit=crop',
+                'description' => 'Mur nyloc M10 dengan pengunci nylon untuk mengurangi risiko kendor akibat getaran.',
+                'variant' => ['name' => 'Diameter', 'value' => 'M10'],
             ],
             [
-                'name' => 'Running Shoes Lite',
-                'main_category' => 'Olahraga',
-                'category_detail' => 'Sepatu Lari',
-                'price' => 539000,
-                'stock' => 2345,
-                'image' => 'https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=400&h=400&fit=crop',
-                'description' => 'Sepatu lari ringan untuk performa harian.',
-                'variant' => ['name' => 'Ukuran Sepatu', 'value' => '41'],
+                'old_slug' => 'running-shoes-lite',
+                'name' => 'Mata Bor Besi HSS 6mm',
+                'main_category' => 'Tools & Perkakas',
+                'category_detail' => 'Mata Bor',
+                'price' => 12500,
+                'stock' => 1500,
+                'image' => 'https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?w=400&h=400&fit=crop',
+                'description' => 'Mata bor HSS 6mm untuk pengeboran besi, aluminium, dan material metal ringan.',
+                'variant' => ['name' => 'Diameter', 'value' => 'M6'],
             ],
             [
-                'name' => 'Blender Portable Mini',
-                'main_category' => 'Rumah Tangga',
-                'category_detail' => 'Kebutuhan Rumah',
-                'price' => 149000,
-                'stock' => 789,
-                'image' => 'https://images.unsplash.com/photo-1570222094114-d054a817e56b?w=400&h=400&fit=crop',
-                'description' => 'Blender mini portabel untuk kebutuhan minuman praktis.',
-                'variant' => ['name' => 'Warna', 'value' => 'Putih'],
+                'old_slug' => 'blender-portable-mini',
+                'name' => 'Fischer S6 Nylon Anchor',
+                'main_category' => 'Dynabolt & Anchor',
+                'category_detail' => 'Fischer',
+                'price' => 500,
+                'stock' => 12000,
+                'image' => 'https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?w=400&h=400&fit=crop',
+                'description' => 'Fischer nylon S6 untuk pemasangan sekrup pada dinding bata, beton ringan, dan panel.',
+                'variant' => ['name' => 'Diameter', 'value' => 'M6'],
             ],
             [
-                'name' => 'Hoodie Oversized Fleece',
-                'main_category' => 'Fashion Pria',
-                'category_detail' => 'Kaos',
-                'price' => 299000,
-                'stock' => 4321,
-                'image' => 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop',
-                'description' => 'Hoodie oversized berbahan fleece lembut dan hangat.',
-                'variant' => ['name' => 'Ukuran', 'value' => 'L'],
+                'old_slug' => 'hoodie-oversized-fleece',
+                'name' => 'U Bolt M10 Galvanis',
+                'main_category' => 'Klem & Bracket',
+                'category_detail' => 'U Bolt',
+                'price' => 8500,
+                'stock' => 2200,
+                'image' => 'https://images.unsplash.com/photo-1581092334247-154d02272fb8?w=400&h=400&fit=crop',
+                'description' => 'U bolt galvanis untuk menjepit pipa, tiang, dan komponen rangka.',
+                'variant' => ['name' => 'Diameter', 'value' => 'M10'],
             ],
             [
-                'name' => 'Kamera Mirrorless Entry',
-                'main_category' => 'Elektronik',
-                'category_detail' => 'Kamera',
-                'price' => 5499000,
-                'stock' => 234,
-                'image' => 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400&h=400&fit=crop',
-                'description' => 'Kamera mirrorless entry-level untuk foto dan video berkualitas.',
-                'variant' => ['name' => 'Warna', 'value' => 'Hitam'],
+                'old_slug' => 'kamera-mirrorless-entry',
+                'name' => 'Threadlocker Medium Strength',
+                'main_category' => 'Chemical & Lem',
+                'category_detail' => 'Threadlocker',
+                'price' => 38000,
+                'stock' => 540,
+                'image' => 'https://images.unsplash.com/photo-1581092162384-8987c1d64718?w=400&h=400&fit=crop',
+                'description' => 'Cairan pengunci ulir kekuatan sedang untuk mencegah baut dan mur mudah longgar.',
+                'variant' => ['name' => 'Kemasan', 'value' => 'Pcs'],
             ],
         ];
 
@@ -159,18 +168,25 @@ class ProductSeeder extends Seeder
                 );
             }
 
-            $savedProduct = Product::updateOrCreate(
-                ['slug' => $slug],
-                [
-                    'name' => $product['name'],
-                    'slug' => $slug,
-                    'main_category_id' => $mainCategory?->id,
-                    'category_detail_id' => $detail?->id,
-                    'category_id' => null,
-                    'description' => $product['description'],
-                    'status' => 'active',
-                ]
-            );
+            $savedProduct = Product::query()
+                ->where('slug', $product['old_slug'])
+                ->orWhere('slug', $slug)
+                ->first();
+
+            if (!$savedProduct) {
+                $savedProduct = new Product();
+            }
+
+            $savedProduct->fill([
+                'name' => $product['name'],
+                'slug' => $slug,
+                'main_category_id' => $mainCategory?->id,
+                'category_detail_id' => $detail?->id,
+                'category_id' => null,
+                'description' => $product['description'],
+                'status' => 'active',
+            ]);
+            $savedProduct->save();
 
             $variantKey = $product['variant']['name'] . '::' . $product['variant']['value'];
             $variant = $variants->get($variantKey);

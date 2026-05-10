@@ -916,23 +916,26 @@ class FrontendController extends Controller
         $name = strtolower((string) $categoryName);
 
         return match (true) {
-            str_contains($name, 'fashion') => 'fashion',
-            str_contains($name, 'elektronik') => 'elektronik',
-            str_contains($name, 'kecantikan') => 'kecantikan',
-            str_contains($name, 'olahraga') => 'olahraga',
-            str_contains($name, 'rumah') => 'rumah',
-            default => 'fashion',
+            str_contains($name, 'baut') => 'baut',
+            str_contains($name, 'mur') => 'mur',
+            str_contains($name, 'ring') || str_contains($name, 'washer') => 'ring-washer',
+            str_contains($name, 'sekrup') => 'sekrup',
+            str_contains($name, 'dynabolt') || str_contains($name, 'anchor') => 'anchor',
+            str_contains($name, 'tool') || str_contains($name, 'perkakas') => 'tools',
+            default => 'fastener',
         };
     }
 
     private function homeCategoryLabel(string $key): string
     {
         return match ($key) {
-            'fashion' => 'Fashion',
-            'elektronik' => 'Elektronik',
-            'rumah' => 'Rumah & Dapur',
-            'olahraga' => 'Olahraga',
-            'kecantikan' => 'Kecantikan',
+            'baut' => 'Baut',
+            'mur' => 'Mur',
+            'ring-washer' => 'Ring & Washer',
+            'sekrup' => 'Sekrup',
+            'anchor' => 'Dynabolt & Anchor',
+            'tools' => 'Tools & Perkakas',
+            'fastener' => 'Fastener',
             default => ucfirst($key),
         };
     }
@@ -941,14 +944,16 @@ class FrontendController extends Controller
     {
         $n = strtolower($name);
         return match (true) {
-            str_contains($n, 'fashion') && str_contains($n, 'pria') => 'ri-t-shirt-line',
-            str_contains($n, 'fashion') && str_contains($n, 'wanita') => 'ri-women-line',
-            str_contains($n, 'elektronik') => 'ri-computer-line',
-            str_contains($n, 'rumah') => 'ri-home-smile-2-line',
-            str_contains($n, 'olahraga') => 'ri-riding-line',
-            str_contains($n, 'kecantikan') => 'ri-magic-line',
-            str_contains($n, 'mainan') => 'ri-gamepad-line',
-            str_contains($n, 'hp') || str_contains($n, 'tablet') => 'ri-smartphone-line',
+            str_contains($n, 'baut') => 'ri-screwdriver-line',
+            str_contains($n, 'mur') => 'ri-settings-3-line',
+            str_contains($n, 'ring') || str_contains($n, 'washer') => 'ri-record-circle-line',
+            str_contains($n, 'sekrup') => 'ri-tools-line',
+            str_contains($n, 'dynabolt') || str_contains($n, 'anchor') => 'ri-anchor-line',
+            str_contains($n, 'tool') || str_contains($n, 'perkakas') => 'ri-hammer-line',
+            str_contains($n, 'paku') => 'ri-pushpin-line',
+            str_contains($n, 'klem') || str_contains($n, 'bracket') => 'ri-braces-line',
+            str_contains($n, 'chemical') || str_contains($n, 'lem') => 'ri-flask-line',
+            str_contains($n, 'safety') || str_contains($n, 'abrasive') => 'ri-shield-check-line',
             default => 'ri-price-tag-3-line',
         };
     }
@@ -977,16 +982,15 @@ class FrontendController extends Controller
         $name = strtolower((string) $categoryName);
 
         return match (true) {
-            str_contains($name, 'fashion pria') => 'fashion-pria',
-            str_contains($name, 'fashion wanita') => 'fashion-wanita',
-            str_contains($name, 'fashion') => 'fashion-pria',
-            str_contains($name, 'elektronik') => 'elektronik',
-            str_contains($name, 'kecantikan') => 'kecantikan',
-            str_contains($name, 'olahraga') => 'olahraga',
-            str_contains($name, 'rumah') => 'rumah',
-            str_contains($name, 'mainan') => 'mainan',
-            str_contains($name, 'hp') => 'hp',
-            default => 'fashion-pria',
+            str_contains($name, 'baut') => 'baut',
+            str_contains($name, 'mur') => 'mur',
+            str_contains($name, 'ring') || str_contains($name, 'washer') => 'ring-washer',
+            str_contains($name, 'sekrup') => 'sekrup',
+            str_contains($name, 'dynabolt') || str_contains($name, 'anchor') => 'anchor',
+            str_contains($name, 'tool') || str_contains($name, 'perkakas') => 'tools',
+            str_contains($name, 'paku') => 'paku',
+            str_contains($name, 'klem') || str_contains($name, 'bracket') => 'klem-bracket',
+            default => 'fastener',
         };
     }
 
