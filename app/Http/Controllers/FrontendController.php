@@ -563,7 +563,7 @@ class FrontendController extends Controller
                     : false,
                 'variantOptions' => $product->productVariants
                     ->filter(fn($pv) => $pv->variant && filled($pv->variant->value))
-                    ->map(function ($pv) use ($isFlashSale, $flashSalePrice) {
+                    ->map(function ($pv) use ($product, $isFlashSale, $flashSalePrice) {
                         $basePrice = (int) $pv->price;
                         $displayPrice = $isFlashSale && $flashSalePrice ? (int) $flashSalePrice : $basePrice;
 
