@@ -243,8 +243,8 @@
         </div>
     </div>
     <!-- KATEGORI SECTION -->
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        <div class="flex items-center justify-between mb-8">
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 py-5">
+        <div class="flex items-center justify-between mb-4">
             <div>
                 <p class="text-xs font-medium text-blue-500 tracking-widest uppercase mb-1">Browse</p>
                 <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight">Popular Categories</h2>

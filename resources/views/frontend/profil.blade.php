@@ -258,7 +258,7 @@
         </div>
     </div>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-5">
         <div class="flex flex-col lg:flex-row gap-8">
 
             <!-- SIDEBAR -->
@@ -302,18 +302,41 @@
                 </div>
 
                 <!-- Level Badge -->
-                <div class="bg-gradient-to-r from-amber-400 to-orange-500 rounded-2xl p-4 mb-4 text-white">
+                @php
+                    $memberTier = $membershipSummary['current_tier'] ?? null;
+                    $nextTier = $membershipSummary['next_tier'] ?? null;
+                    $memberColor = $memberTier?->color ?? 'amber';
+                    $memberGradient = match ($memberColor) {
+                        'emerald' => 'from-emerald-400 to-green-500',
+                        'blue' => 'from-sky-400 to-blue-500',
+                        'purple' => 'from-violet-400 to-purple-500',
+                        'rose' => 'from-rose-400 to-pink-500',
+                        'orange' => 'from-orange-400 to-orange-600',
+                        'slate' => 'from-slate-400 to-slate-600',
+                        default => 'from-amber-400 to-orange-500',
+                    };
+                @endphp
+                <div class="bg-gradient-to-r {{ $memberGradient }} rounded-2xl p-4 mb-4 text-white">
                     <div class="flex items-center justify-between mb-2">
                         <div>
                             <p class="text-xs font-medium text-amber-100">Level Member</p>
-                            <p class="font-bold text-lg">Gold Member</p>
+                            <p class="font-bold text-lg">{{ $memberTier?->name ?? 'Member' }}</p>
                         </div>
-                        {{-- <div class="text-3xl">VIP</div> --}}
+                        <div class="text-right">
+                            <p class="text-xs text-white/75">Total Spending</p>
+                            <p class="text-sm font-semibold">Rp {{ number_format((int) ($membershipSummary['total_spending'] ?? 0), 0, ',', '.') }}</p>
+                        </div>
                     </div>
                     <div class="bg-white/20 rounded-full h-2 mb-1">
-                        <div class="bg-white rounded-full h-2" style="width:65%"></div>
+                        <div class="bg-white rounded-full h-2" style="width:{{ (int) ($membershipSummary['progress_percent'] ?? 0) }}%"></div>
                     </div>
-                    <p class="text-xs text-amber-100">6.500 / 10.000 poin menuju Platinum</p>
+                    @if (!$memberTier && !$nextTier)
+                        <p class="text-xs text-amber-100">Tier membership belum diatur oleh admin.</p>
+                    @elseif ($nextTier)
+                        <p class="text-xs text-amber-100">Rp {{ number_format((int) ($membershipSummary['total_spending'] ?? 0), 0, ',', '.') }} / Rp {{ number_format((int) ($membershipSummary['next_minimum'] ?? 0), 0, ',', '.') }} menuju {{ $nextTier->name }}</p>
+                    @else
+                        <p class="text-xs text-amber-100">Anda sudah berada di tier tertinggi.</p>
+                    @endif
                 </div>
 
                 <!-- Navigation Menu -->

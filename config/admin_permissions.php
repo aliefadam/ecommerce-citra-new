@@ -28,6 +28,7 @@ return [
             'label' => 'Customers',
             'permissions' => [
                 'view_customers' => 'View customer data',
+                'manage_membership_tiers' => 'Manage membership tiers',
             ],
         ],
         'administration' => [

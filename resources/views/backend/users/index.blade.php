@@ -29,6 +29,7 @@
                             <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400 w-12">#</th>
                             <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Name</th>
                             <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Email</th>
+                            <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Point</th>
                             <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Total Spent</th>
                             <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Transactions</th>
                             <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Registered At</th>
@@ -54,6 +55,9 @@
                     'id' => $u->id,
                     'name' => $u->name,
                     'email' => $u->email,
+                    'membership_tier_name' => (string) ($u->membership_tier_name ?? 'Member'),
+                    'point_balance' => (int) ($u->point_balance ?? 0),
+                    'lifetime_points' => (int) ($u->lifetime_points ?? 0),
                     'total_spent' => (int) ($u->total_spent ?? 0),
                     'transactions_count' => (int) ($u->transactions_count ?? 0),
                     'registered_at' => optional($u->created_at)->format('d M Y H:i'),
@@ -69,8 +73,15 @@
             return `
                 <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                     <td class="px-4 py-3.5 text-slate-500 dark:text-slate-400">${visibleIndex + 1}</td>
-                    <td class="px-4 py-3.5 font-medium text-slate-800 dark:text-slate-200">${user.name || '-'}</td>
+                    <td class="px-4 py-3.5">
+                        <div class="font-medium text-slate-800 dark:text-slate-200">${user.name || '-'}</div>
+                        <div class="text-xs text-slate-400">${user.membership_tier_name || 'Member'}</div>
+                    </td>
                     <td class="px-4 py-3.5 text-slate-500 dark:text-slate-400">${user.email || '-'}</td>
+                    <td class="px-4 py-3.5 text-slate-500 dark:text-slate-400">
+                        <div class="font-semibold text-slate-800 dark:text-slate-200">${Number(user.point_balance || 0).toLocaleString('id-ID')} pt</div>
+                        <div class="text-xs text-slate-400">Lifetime ${Number(user.lifetime_points || 0).toLocaleString('id-ID')} pt</div>
+                    </td>
                     <td class="px-4 py-3.5 font-semibold text-slate-800 dark:text-slate-200">Rp ${Number(user.total_spent || 0).toLocaleString('id-ID')}</td>
                     <td class="px-4 py-3.5 text-slate-500 dark:text-slate-400">${Number(user.transactions_count || 0).toLocaleString('id-ID')}</td>
                     <td class="px-4 py-3.5 text-slate-500 dark:text-slate-400">${user.registered_at || '-'}</td>
@@ -88,7 +99,7 @@
             paginationButtonsId: 'usersPaginationButtons',
             searchFields: ['name', 'email'],
             renderRow: (user, index) => renderUserRow(user, index),
-            emptyRowHtml: '<tr><td colspan="6" class="text-center py-12 text-slate-400 dark:text-slate-500">No users found</td></tr>',
+            emptyRowHtml: '<tr><td colspan="7" class="text-center py-12 text-slate-400 dark:text-slate-500">No users found</td></tr>',
         });
     </script>
 @endsection

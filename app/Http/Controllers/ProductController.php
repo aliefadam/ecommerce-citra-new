@@ -53,12 +53,22 @@ class ProductController extends Controller
             'category_id'           => ['nullable', 'exists:category_details,id'],
             'status'                => ['required', Rule::in(['active', 'inactive'])],
             'description'           => ['nullable', 'string'],
+            'is_redeem_product'     => ['nullable', 'boolean'],
+            'redeem_points'         => ['nullable', 'integer', 'min:1'],
             'variants'              => ['required', 'array', 'min:1'],
             'variants.*.variant_id' => ['required', 'exists:variants,id', 'distinct'],
             'variants.*.price'      => ['required', 'numeric', 'min:0'],
             'variants.*.stock'      => ['required', 'integer', 'min:0'],
             'variants.*.image'      => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
         ]);
+        if ($request->boolean('is_redeem_product') && empty($validated['redeem_points'])) {
+            return back()
+                ->withErrors(['redeem_points' => 'Harga point wajib diisi jika produk redeem diaktifkan.'])
+                ->withInput();
+        }
+        if (!$request->boolean('is_redeem_product')) {
+            $validated['redeem_points'] = null;
+        }
         $detailId = (int) ($validated['category_detail_id'] ?? $validated['category_id'] ?? 0);
         $detail = CategoryDetail::query()->find($detailId);
         abort_unless($detail, 422);
@@ -76,6 +86,8 @@ class ProductController extends Controller
                 'category_id' => null,
                 'status'      => $validated['status'],
                 'description' => $validated['description'] ?? null,
+                'is_redeem_product' => $request->boolean('is_redeem_product'),
+                'redeem_points' => $validated['redeem_points'] ?? null,
             ]);
 
             $variantNamesById = Variant::whereIn('id', collect($validated['variants'])->pluck('variant_id'))
@@ -134,12 +146,22 @@ class ProductController extends Controller
             'category_id'           => ['nullable', 'exists:category_details,id'],
             'status'                => ['required', Rule::in(['active', 'inactive'])],
             'description'           => ['nullable', 'string'],
+            'is_redeem_product'     => ['nullable', 'boolean'],
+            'redeem_points'         => ['nullable', 'integer', 'min:1'],
             'variants'              => ['required', 'array', 'min:1'],
             'variants.*.variant_id' => ['required', 'exists:variants,id', 'distinct'],
             'variants.*.price'      => ['required', 'numeric', 'min:0'],
             'variants.*.stock'      => ['required', 'integer', 'min:0'],
             'variants.*.image'      => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
         ]);
+        if ($request->boolean('is_redeem_product') && empty($validated['redeem_points'])) {
+            return back()
+                ->withErrors(['redeem_points' => 'Harga point wajib diisi jika produk redeem diaktifkan.'])
+                ->withInput();
+        }
+        if (!$request->boolean('is_redeem_product')) {
+            $validated['redeem_points'] = null;
+        }
         $detailId = (int) ($validated['category_detail_id'] ?? $validated['category_id'] ?? 0);
         $detail = CategoryDetail::query()->find($detailId);
         abort_unless($detail, 422);
@@ -160,6 +182,8 @@ class ProductController extends Controller
                 'category_id' => null,
                 'status'      => $validated['status'],
                 'description' => $validated['description'] ?? null,
+                'is_redeem_product' => $request->boolean('is_redeem_product'),
+                'redeem_points' => $validated['redeem_points'] ?? null,
             ]);
 
             $product->productVariants()->delete();

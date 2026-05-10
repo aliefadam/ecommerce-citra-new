@@ -29,6 +29,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'bio',
     'google_id',
     'avatar',
+    'point_balance',
+    'lifetime_points',
 ])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
@@ -73,6 +75,11 @@ class User extends Authenticatable
     public function adminRole(): BelongsTo
     {
         return $this->belongsTo(AdminRole::class);
+    }
+
+    public function pointHistories(): HasMany
+    {
+        return $this->hasMany(PointHistory::class);
     }
 
     public function canAccessAdminPanel(): bool

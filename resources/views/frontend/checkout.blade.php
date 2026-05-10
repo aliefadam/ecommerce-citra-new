@@ -109,7 +109,7 @@
     <!-- NAVBAR -->
     @include('partials.navbar-user')
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-5">
         <div class="grid lg:grid-cols-3 gap-8">
 
             <!-- LEFT COL -->

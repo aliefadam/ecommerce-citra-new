@@ -79,6 +79,8 @@
                 oldProductName: {{ json_encode(old('name', $product->name)) }},
                 oldCategoryId: {{ $oldCatId ?? 'null' }},
                 oldCategoryName: {{ json_encode($oldCatName) }},
+                oldIsRedeemProduct: {{ old('is_redeem_product', $product->is_redeem_product) ? 'true' : 'false' }},
+                oldRedeemPoints: {{ json_encode(old('redeem_points', $product->redeem_points)) }},
                 oldRows: {{ json_encode($oldVariants) }},
                 variantQuickAddUrl: {{ json_encode(route('variants.quick-add')) }},
             })">
@@ -426,6 +428,29 @@
 
                     {{-- Status --}}
                     <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
+                        <h2 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4">Redeem Point</h2>
+                        <label class="flex items-start gap-3 cursor-pointer">
+                            <input type="checkbox" name="is_redeem_product" value="1" x-model="isRedeemProduct"
+                                class="mt-1 w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                            <div>
+                                <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Aktifkan sebagai produk redeem</p>
+                                <p class="text-xs text-slate-400 mt-1">Produk ini akan muncul di halaman redeem point ketika fitur frontend-nya diaktifkan.</p>
+                            </div>
+                        </label>
+
+                        <div x-show="isRedeemProduct" x-transition class="mt-4">
+                            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Harga Point</label>
+                            <input type="number" min="1" name="redeem_points" x-model="redeemPoints"
+                                placeholder="Contoh: 10"
+                                class="w-full px-4 py-2.5 text-sm rounded-xl border focus:outline-none focus:ring-2 dark:text-slate-200 placeholder-slate-400 {{ $errors->has('redeem_points') ? 'border-2 border-red-400 bg-red-50 dark:bg-red-900/10 dark:border-red-600 focus:ring-red-400' : 'border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 focus:ring-blue-500' }}" />
+                            <p class="text-xs text-slate-400 mt-1.5">Isi jumlah point yang dibutuhkan untuk redeem 1 produk.</p>
+                            @error('redeem_points')
+                                <p class="text-xs text-red-500 mt-1.5">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
                         <h2 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4">Status</h2>
                         <select name="status"
                             class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200">
@@ -485,6 +510,8 @@
             oldProductName,
             oldCategoryId,
             oldCategoryName,
+            oldIsRedeemProduct,
+            oldRedeemPoints,
             oldRows,
             variantQuickAddUrl
         }) {
@@ -495,6 +522,8 @@
                 categorySearch: oldCategoryName || '',
                 categoryId: oldCategoryId || null,
                 categoryOpen: false,
+                isRedeemProduct: !!oldIsRedeemProduct,
+                redeemPoints: oldRedeemPoints || '',
 
                 get filteredCategories() {
                     const keyword = this.categorySearch.trim().toLowerCase();

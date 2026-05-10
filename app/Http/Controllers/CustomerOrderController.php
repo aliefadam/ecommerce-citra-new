@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Transaction;
 use App\Models\TransactionStatusHistory;
 use App\Models\UserNotification;
+use App\Services\LoyaltyPointService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CustomerOrderController extends Controller
 {
-    public function complete(Request $request, Transaction $transaction)
+    public function complete(Request $request, Transaction $transaction, LoyaltyPointService $loyaltyPointService)
     {
         abort_unless((int) $transaction->user_id === (int) $request->user()->id, 403);
 
@@ -17,18 +19,31 @@ class CustomerOrderController extends Controller
             return back()->withErrors(['order' => 'Pesanan belum bisa ditandai selesai.']);
         }
 
-        $oldStatus = (string) $transaction->status;
-        $transaction->status = 'selesai';
-        $transaction->save();
+        $earnedPoints = DB::transaction(function () use ($request, $transaction, $loyaltyPointService) {
+            $freshTransaction = Transaction::query()->lockForUpdate()->findOrFail($transaction->id);
+            $oldStatus = (string) $freshTransaction->status;
 
-        TransactionStatusHistory::create([
-            'transaction_id' => $transaction->id,
-            'user_id' => $request->user()->id,
-            'from_status' => $oldStatus,
-            'to_status' => 'selesai',
-            'type' => 'order_completed',
-            'note' => 'Customer menandai pesanan sudah diterima.',
-        ]);
+            if (!in_array(strtolower($oldStatus), ['kirim', 'shipping', 'shipped'], true)) {
+                abort(422, 'Pesanan belum bisa ditandai selesai.');
+            }
+
+            $freshTransaction->status = 'selesai';
+            $freshTransaction->save();
+
+            TransactionStatusHistory::create([
+                'transaction_id' => $freshTransaction->id,
+                'user_id' => $request->user()->id,
+                'from_status' => $oldStatus,
+                'to_status' => 'selesai',
+                'type' => 'order_completed',
+                'note' => 'Customer menandai pesanan sudah diterima.',
+            ]);
+
+            $earnedPoints = $loyaltyPointService->awardCompletedTransactionPoints($freshTransaction);
+            $transaction->status = $freshTransaction->status;
+
+            return $earnedPoints;
+        });
 
         UserNotification::create([
             'user_id' => $request->user()->id,
@@ -38,6 +53,11 @@ class CustomerOrderController extends Controller
             'url' => route('frontend.profil') . '?tab=pesanan',
         ]);
 
-        return redirect()->route('frontend.profil', ['tab' => 'pesanan'])->with('success', 'Pesanan berhasil ditandai diterima.');
+        $message = 'Pesanan berhasil ditandai diterima.';
+        if ($earnedPoints > 0) {
+            $message .= ' Anda mendapat ' . number_format($earnedPoints, 0, ',', '.') . ' point.';
+        }
+
+        return redirect()->route('frontend.profil', ['tab' => 'pesanan'])->with('success', $message);
     }
 }

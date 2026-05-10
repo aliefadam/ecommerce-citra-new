@@ -33,6 +33,7 @@ use App\Http\Controllers\CheckoutCouponController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\SalesReportController;
 use App\Http\Controllers\ManualPaymentController;
+use App\Http\Controllers\MemberTierController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -63,6 +64,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
         Route::resource('products', ProductController::class)->except(['show'])->middleware('admin.permission:manage_catalog');
         Route::get('/users', [UserController::class, 'index'])->name('users.index')->middleware('admin.permission:view_customers');
+        Route::resource('member-tiers', MemberTierController::class)->parameters(['member-tiers' => 'memberTier'])->except(['show'])->middleware('admin.permission:manage_membership_tiers');
         Route::resource('admin-users', AdminUserController::class)->parameters(['admin-users' => 'adminUser'])->except(['show'])->middleware('admin.permission:manage_admin_users');
         Route::resource('admin-roles', AdminRoleController::class)->parameters(['admin-roles' => 'adminRole'])->except(['show'])->middleware('admin.permission:manage_roles_permissions');
 

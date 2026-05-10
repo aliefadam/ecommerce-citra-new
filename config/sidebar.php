@@ -134,6 +134,13 @@ return [
                 'permission' => 'view_customers',
             ],
             [
+                'name'   => 'Membership Tiers',
+                'route'  => 'member-tiers.index',
+                'active' => 'member-tiers.*',
+                'icon'   => 'medal',
+                'permission' => 'manage_membership_tiers',
+            ],
+            [
                 'name'   => 'Products',
                 'route'  => 'products.index',
                 'active' => 'products.*',

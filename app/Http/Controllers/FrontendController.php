@@ -13,6 +13,7 @@ use App\Models\Transaction;
 use App\Models\UserNotification;
 use App\Models\Wishlist;
 use App\Models\Banner;
+use App\Services\MembershipTierService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -716,7 +717,7 @@ class FrontendController extends Controller
         ]);
     }
 
-    public function profil()
+    public function profil(MembershipTierService $membershipTierService)
     {
         abort_unless(auth()->check(), 403);
 
@@ -754,7 +755,9 @@ class FrontendController extends Controller
             'wishlists' => (int) $wishlists->count(),
         ];
 
-        return view('frontend.profil', compact('user', 'addresses', 'transactions', 'notifications', 'wishlists', 'profileStats'));
+        $membershipSummary = $membershipTierService->resolveForUser($user);
+
+        return view('frontend.profil', compact('user', 'addresses', 'transactions', 'notifications', 'wishlists', 'profileStats', 'membershipSummary'));
     }
 
     private function buildFrontendProducts(): array
