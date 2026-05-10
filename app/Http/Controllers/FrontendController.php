@@ -218,7 +218,7 @@ class FrontendController extends Controller
                 'sold' => $sold,
                 'rating' => round($rating, 1),
                 'reviews' => $reviews,
-                'image' => $this->normalizeImageUrl((string) ($variant->image ?? ''), '400x400'),
+                'image' => $this->resolveProductVariantImageUrl($product, $variant, '400x400'),
             ];
         })->filter()->values()->all();
 
@@ -495,7 +495,7 @@ class FrontendController extends Controller
                 return [
                     'name' => (string) $recProduct->name,
                     'price' => $recDisplayPrice,
-                    'image' => $this->normalizeImageUrl((string) ($recVariant->image ?? ''), '300x300'),
+                    'image' => $this->resolveProductVariantImageUrl($recProduct, $recVariant, '300x300'),
                     'rating' => round($rating, 1),
                     'url' => route('frontend.detail-produk', ['slug' => $recProduct->slug]),
                     '_score' => $score,
@@ -571,7 +571,7 @@ class FrontendController extends Controller
                             'id' => (int) $pv->id,
                             'name' => strtolower((string) ($pv->variant->name ?? '')),
                             'value' => (string) ($pv->variant->value ?? ''),
-                            'image' => $this->normalizeImageUrl((string) ($pv->image ?? ''), '700x700'),
+                            'image' => $this->resolveProductVariantImageUrl($product, $pv, '700x700'),
                             'price' => $basePrice,
                             'displayPrice' => $displayPrice,
                             'stock' => (int) $pv->stock,
@@ -615,7 +615,7 @@ class FrontendController extends Controller
             return [
                 'name' => (string) $product->name,
                 'price' => $activeFlashSaleItem ? (int) $activeFlashSaleItem->discount_price : $basePrice,
-                'image' => $this->normalizeImageUrl((string) ($variant->image ?? ''), '300x300'),
+                'image' => $this->resolveProductVariantImageUrl($product, $variant, '300x300'),
                 'rating' => 0,
                 'url' => route('frontend.detail-produk', ['slug' => $product->slug]),
             ];
@@ -686,7 +686,7 @@ class FrontendController extends Controller
                 'id' => (int) $product->id,
                 'slug' => (string) $product->slug,
                 'name' => (string) $product->name,
-                'image' => $this->normalizeImageUrl((string) ($variant->image ?? ''), '400x400'),
+                'image' => $this->resolveProductVariantImageUrl($product, $variant, '400x400'),
                 'price' => $displayPrice,
                 'originalPrice' => $price,
                 'rating' => $rating,
@@ -833,7 +833,7 @@ class FrontendController extends Controller
                 continue;
             }
 
-            $image = $this->normalizeImageUrl((string) ($variant->image ?? ''), '400x400');
+            $image = $this->resolveProductVariantImageUrl($product, $variant, '400x400');
             $variantFilters = $product->productVariants
                 ->filter(fn($pv) => $pv->variant && filled($pv->variant->name) && filled($pv->variant->value))
                 ->map(fn($pv) => [
@@ -985,7 +985,7 @@ class FrontendController extends Controller
                     'slug' => (string) $product->slug,
                     'name' => (string) $product->name,
                     'category' => (string) ($product->categoryDetail?->name ?? $product->mainCategory?->name ?? 'Produk Redeem'),
-                    'image' => $this->normalizeImageUrl((string) ($variant->image ?? ''), '400x400'),
+                    'image' => $this->resolveProductVariantImageUrl($product, $variant, '400x400'),
                     'redeemPoints' => (int) ($product->redeem_points ?? 0),
                     'stock' => (int) $variant->stock,
                     'sold' => (int) ($soldMap[$product->id] ?? 0),
@@ -1095,6 +1095,13 @@ class FrontendController extends Controller
         return asset('storage/' . ltrim($image, '/'));
     }
 
+    private function resolveProductVariantImageUrl(Product $product, ?ProductVariant $variant, string $fallbackSize = '400x400'): string
+    {
+        $image = trim((string) (($variant?->image) ?: ($product->firstAvailableImagePath() ?? '')));
+
+        return $this->normalizeImageUrl($image, $fallbackSize);
+    }
+
     private function buildActiveFlashSaleData(): array
     {
         $now = now();
@@ -1131,7 +1138,7 @@ class FrontendController extends Controller
                 'id' => $item->id,
                 'slug' => $product->slug,
                 'name' => $product->name,
-                'image' => $this->normalizeImageUrl((string) ($variant->image ?? ''), '400x400'),
+                'image' => $this->resolveProductVariantImageUrl($product, $variant, '400x400'),
                 'price' => (int) round($salePrice),
                 'originalPrice' => (int) round($basePrice),
                 'discountPercent' => max(0, $discountPercent),
@@ -1221,7 +1228,7 @@ class FrontendController extends Controller
                 'price' => $salePrice,
                 'origPrice' => $basePrice,
                 'qty' => $qty,
-                'image' => $this->normalizeImageUrl((string) ($variant->image ?? ''), '100x100'),
+                'image' => $this->resolveProductVariantImageUrl($product, $variant, '100x100'),
                 'isFlashSale' => (bool) $flashItem,
             ];
         })->filter()->values()->all();

@@ -98,8 +98,7 @@
             ->take(60)
             ->get()
             ->map(function ($product) {
-                $variant = $product->productVariants->first();
-                $image = (string) ($variant?->image ?? '');
+                $image = trim((string) ($product->firstAvailableImagePath() ?? ''));
                 if ($image !== '' && !str_starts_with($image, 'http://') && !str_starts_with($image, 'https://')) {
                     $image = asset('storage/' . ltrim($image, '/'));
                 }

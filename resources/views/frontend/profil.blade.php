@@ -1365,7 +1365,7 @@
                         return null;
                     }
 
-                    $image = (string) ($variant->image ?? '');
+                    $image = trim((string) (($variant->image ?? '') ?: ($product->firstAvailableImagePath() ?? '')));
                     $imageUrl = $image === ''
                         ? 'https://via.placeholder.com/300x300?text=No+Image'
                         : (str_starts_with($image, 'http://') ||

@@ -47,7 +47,7 @@ class WishlistController extends Controller
                     'slug' => (string) $product->slug,
                     'price' => $price,
                     'rating' => 0,
-                    'image' => $this->resolveImage((string) ($variant->image ?? '')),
+                    'image' => $this->resolveImage((string) (($variant->image ?? '') ?: ($product->firstAvailableImagePath() ?? ''))),
                 ];
             })
             ->filter()

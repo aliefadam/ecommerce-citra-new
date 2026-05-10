@@ -157,7 +157,7 @@ class CartController extends Controller
         ]);
 
         $variant = ProductVariant::query()
-            ->with(['product', 'variant', 'flashSaleItems.flashSale'])
+            ->with(['product.productVariants', 'variant', 'flashSaleItems.flashSale'])
             ->findOrFail((int) $validated['product_variant_id']);
 
         $product = $variant->product;
@@ -191,11 +191,7 @@ class CartController extends Controller
                     'price' => $salePrice,
                     'origPrice' => $basePrice,
                     'qty' => (int) $validated['quantity'],
-                    'image' => $variant->image
-                        ? (str_starts_with($variant->image, 'http://') || str_starts_with($variant->image, 'https://')
-                            ? $variant->image
-                            : asset('storage/' . ltrim($variant->image, '/')))
-                        : 'https://via.placeholder.com/100x100?text=No+Image',
+                    'image' => $this->resolveVariantImageUrl($variant),
                     'isFlashSale' => (bool) $flashItem,
                 ]],
             ],
@@ -256,7 +252,7 @@ class CartController extends Controller
     private function buildCartItems(int $userId): array
     {
         $rows = Cart::query()
-            ->with(['productVariant.product', 'productVariant.variant', 'productVariant.flashSaleItems.flashSale'])
+            ->with(['productVariant.product.productVariants', 'productVariant.variant', 'productVariant.flashSaleItems.flashSale'])
             ->where('user_id', $userId)
             ->latest()
             ->get();
@@ -296,14 +292,30 @@ class CartController extends Controller
                 'origPrice' => $basePrice,
                 'qty' => (int) $row->quantity,
                 'stock' => (int) $variant->stock,
-                'image' => $variant->image
-                    ? (str_starts_with($variant->image, 'http://') || str_starts_with($variant->image, 'https://')
-                        ? $variant->image
-                        : asset('storage/' . ltrim($variant->image, '/')))
-                    : 'https://via.placeholder.com/100x100?text=No+Image',
+                'image' => $this->resolveVariantImageUrl($variant),
                 'isFlashSale' => (bool) $flashItem,
             ];
         })->filter()->values()->all();
+    }
+
+    private function resolveVariantImageUrl(ProductVariant $variant): string
+    {
+        $image = trim((string) ($variant->image ?: $variant->product?->firstAvailableImagePath() ?: ''));
+
+        if ($image === '') {
+            return 'https://via.placeholder.com/100x100?text=No+Image';
+        }
+
+        if (
+            str_starts_with($image, 'http://') ||
+            str_starts_with($image, 'https://') ||
+            str_starts_with($image, '//') ||
+            str_starts_with($image, 'data:')
+        ) {
+            return $image;
+        }
+
+        return asset('storage/' . ltrim($image, '/'));
     }
 
     private function recordTransactionFromPayment(array $payment): void

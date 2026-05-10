@@ -41,4 +41,23 @@ class Product extends Model
     {
         return $this->hasMany(Wishlist::class);
     }
+
+    public function firstAvailableImagePath(): ?string
+    {
+        if ($this->relationLoaded('productVariants')) {
+            $image = $this->productVariants
+                ->pluck('image')
+                ->map(fn ($value) => trim((string) $value))
+                ->first(fn ($value) => $value !== '');
+
+            return $image ?: null;
+        }
+
+        $image = $this->productVariants()
+            ->whereNotNull('image')
+            ->where('image', '!=', '')
+            ->value('image');
+
+        return filled($image) ? (string) $image : null;
+    }
 }
