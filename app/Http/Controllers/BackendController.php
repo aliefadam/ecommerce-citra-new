@@ -280,6 +280,24 @@ class BackendController extends Controller
             return redirect()->route('pages.settings', ['tab' => 'payment'])->with('success', 'Setting pembayaran manual berhasil disimpan.');
         }
 
+        if ($section === 'social_media') {
+            $validated = $request->validate([
+                'social_instagram' => ['nullable', 'url', 'max:255'],
+                'social_tiktok'    => ['nullable', 'url', 'max:255'],
+                'social_facebook'  => ['nullable', 'url', 'max:255'],
+                'social_twitter'   => ['nullable', 'url', 'max:255'],
+                'social_youtube'   => ['nullable', 'url', 'max:255'],
+                'social_whatsapp'  => ['nullable', 'url', 'max:255'],
+                'social_shopee'    => ['nullable', 'url', 'max:255'],
+                'social_tokopedia' => ['nullable', 'url', 'max:255'],
+                'social_lazada'    => ['nullable', 'url', 'max:255'],
+            ]);
+
+            StoreSetting::setMany(array_map(fn($v) => $v ?? '', $validated));
+
+            return redirect()->route('pages.settings', ['tab' => 'social'])->with('success', 'Link social media berhasil disimpan.');
+        }
+
         $validated = $request->validate([
             'store_name' => ['required', 'string', 'max:120'],
             'store_logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],

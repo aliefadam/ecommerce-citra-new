@@ -4,7 +4,7 @@
 
 @section('content')
     @php
-        $activeTab = in_array(request('tab', 'store'), ['store', 'location', 'payment'], true) ? request('tab', 'store') : 'store';
+        $activeTab = in_array(request('tab', 'store'), ['store', 'location', 'payment', 'social'], true) ? request('tab', 'store') : 'store';
         $logoPath = (string) ($storeSettings['store_logo_path'] ?? '');
         $logoUrl = $logoPath !== '' ? asset('storage/' . ltrim($logoPath, '/')) : null;
     @endphp
@@ -45,6 +45,11 @@
                             class="settings-tab {{ $activeTab === 'payment' ? 'active' : '' }} w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white transition-all text-left">
                             <i data-lucide="credit-card" class="w-[17px] h-[17px]"></i>
                             Manual Payment
+                        </button>
+                        <button type="button" onclick="showTab('social')" id="nav-social"
+                            class="settings-tab {{ $activeTab === 'social' ? 'active' : '' }} w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white transition-all text-left">
+                            <i data-lucide="share-2" class="w-[17px] h-[17px]"></i>
+                            Social Media
                         </button>
                     </nav>
                 </div>
@@ -138,6 +143,60 @@
 
                         <div class="flex justify-end mt-6">
                             <button type="submit" class="px-5 py-2.5 text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors">Simpan Lokasi</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="tab-social" class="settings-content {{ $activeTab === 'social' ? '' : 'hidden' }}">
+                    <form method="POST" action="{{ route('pages.settings.update') }}"
+                        class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
+                        @csrf
+                        <input type="hidden" name="section" value="social_media">
+
+                        <h2 class="font-bold text-slate-800 dark:text-white mb-1">Social Media</h2>
+                        <p class="text-xs text-slate-400 mb-6">Isi URL profil / halaman toko yang ingin ditampilkan. Kosongkan kolom yang tidak dipakai.</p>
+
+                        {{-- Marketplace --}}
+                        <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">Marketplace</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 pb-6 border-b border-slate-100 dark:border-slate-700">
+                            @foreach ([
+                                'social_shopee'    => ['Shopee',    'https://shopee.co.id/namatoko'],
+                                'social_tokopedia' => ['Tokopedia', 'https://www.tokopedia.com/namatoko'],
+                                'social_lazada'    => ['Lazada',    'https://www.lazada.co.id/shop/namatoko'],
+                            ] as $key => [$label, $placeholder])
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">{{ $label }}</label>
+                                    <input type="url" name="{{ $key }}"
+                                        value="{{ old($key, $storeSettings[$key] ?? '') }}"
+                                        placeholder="{{ $placeholder }}"
+                                        class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200">
+                                </div>
+                            @endforeach
+                        </div>
+
+                        {{-- Social --}}
+                        <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">Sosial Media</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            @foreach ([
+                                'social_instagram' => ['Instagram', 'https://www.instagram.com/namatoko'],
+                                'social_tiktok'    => ['TikTok',    'https://www.tiktok.com/@namatoko'],
+                                'social_facebook'  => ['Facebook',  'https://www.facebook.com/namatoko'],
+                                'social_twitter'   => ['X / Twitter', 'https://x.com/namatoko'],
+                                'social_youtube'   => ['YouTube',   'https://www.youtube.com/@namatoko'],
+                                'social_whatsapp'  => ['WhatsApp',  'https://wa.me/628123456789'],
+                            ] as $key => [$label, $placeholder])
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">{{ $label }}</label>
+                                    <input type="url" name="{{ $key }}"
+                                        value="{{ old($key, $storeSettings[$key] ?? '') }}"
+                                        placeholder="{{ $placeholder }}"
+                                        class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200">
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <div class="flex justify-end mt-5">
+                            <button type="submit" class="px-5 py-2.5 text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors">Simpan Social Media</button>
                         </div>
                     </form>
                 </div>

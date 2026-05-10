@@ -24,6 +24,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\ReturnRequestController;
 use App\Http\Controllers\AdminReturnRequestController;
+use App\Http\Controllers\AdminProductReviewController;
 use App\Http\Controllers\CustomerOrderController;
 use App\Http\Controllers\CouponController;
 use App\Http\Controllers\CheckoutCouponController;
@@ -84,6 +85,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::patch('transactions/{transaction}/verify-payment', [TransactionController::class, 'verifyPayment'])->name('transactions.verify-payment');
         Route::get('return-requests', [AdminReturnRequestController::class, 'index'])->name('return-requests.index');
         Route::patch('return-requests/{returnRequest}', [AdminReturnRequestController::class, 'update'])->name('return-requests.update');
+        Route::get('product-reviews', [AdminProductReviewController::class, 'index'])->name('product-reviews.index');
+        Route::patch('product-reviews/{review}/toggle', [AdminProductReviewController::class, 'toggle'])->name('product-reviews.toggle');
+        Route::delete('product-reviews/{review}', [AdminProductReviewController::class, 'destroy'])->name('product-reviews.destroy');
     });
 
 });

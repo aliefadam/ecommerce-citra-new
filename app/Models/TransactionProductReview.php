@@ -14,10 +14,14 @@ class TransactionProductReview extends Model
         'rating',
         'message',
         'photos',
+        'is_hidden',
+        'hidden_at',
     ];
 
     protected $casts = [
         'photos' => 'array',
+        'is_hidden' => 'boolean',
+        'hidden_at' => 'datetime',
     ];
 
     public function transaction(): BelongsTo
@@ -35,4 +39,3 @@ class TransactionProductReview extends Model
         return $this->belongsTo(User::class);
     }
 }
-

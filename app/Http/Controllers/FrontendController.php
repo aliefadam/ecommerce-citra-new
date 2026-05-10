@@ -169,6 +169,7 @@ class FrontendController extends Controller
         $reviewsByProduct = TransactionProductReview::query()
             ->selectRaw('transaction_details.product_id as product_id, AVG(transaction_product_reviews.rating) as avg_rating, COUNT(*) as total_reviews')
             ->join('transaction_details', 'transaction_details.id', '=', 'transaction_product_reviews.transaction_detail_id')
+            ->where('transaction_product_reviews.is_hidden', false)
             ->whereIn('transaction_details.product_id', $products->pluck('id'))
             ->groupBy('transaction_details.product_id')
             ->get()
@@ -299,6 +300,7 @@ class FrontendController extends Controller
 
         $reviewBaseQuery = TransactionProductReview::query()
             ->join('transaction_details', 'transaction_details.id', '=', 'transaction_product_reviews.transaction_detail_id')
+            ->where('transaction_product_reviews.is_hidden', false)
             ->where('transaction_details.product_id', $product->id);
 
         $reviewStats = (clone $reviewBaseQuery)
@@ -325,6 +327,7 @@ class FrontendController extends Controller
 
         $reviewItems = TransactionProductReview::query()
             ->with(['user:id,name', 'transactionDetail:id,variant_name'])
+            ->where('is_hidden', false)
             ->whereHas('transactionDetail', fn($q) => $q->where('product_id', $product->id))
             ->latest()
             ->get()
@@ -449,6 +452,7 @@ class FrontendController extends Controller
         $reviewStatsByProduct = TransactionProductReview::query()
             ->join('transaction_details', 'transaction_details.id', '=', 'transaction_product_reviews.transaction_detail_id')
             ->selectRaw('transaction_details.product_id as product_id, AVG(transaction_product_reviews.rating) as avg_rating, COUNT(transaction_product_reviews.id) as total_reviews')
+            ->where('transaction_product_reviews.is_hidden', false)
             ->whereIn('transaction_details.product_id', $candidateIds)
             ->groupBy('transaction_details.product_id')
             ->get()
@@ -642,6 +646,7 @@ class FrontendController extends Controller
         $reviewStats = TransactionProductReview::query()
             ->join('transaction_details', 'transaction_details.id', '=', 'transaction_product_reviews.transaction_detail_id')
             ->selectRaw('transaction_details.product_id as product_id, AVG(transaction_product_reviews.rating) as avg_rating, COUNT(transaction_product_reviews.id) as total_reviews')
+            ->where('transaction_product_reviews.is_hidden', false)
             ->whereIn('transaction_details.product_id', $productIds)
             ->groupBy('transaction_details.product_id')
             ->get()
@@ -791,6 +796,7 @@ class FrontendController extends Controller
         $reviewStats = TransactionProductReview::query()
             ->join('transaction_details', 'transaction_details.id', '=', 'transaction_product_reviews.transaction_detail_id')
             ->selectRaw('transaction_details.product_id as product_id, AVG(transaction_product_reviews.rating) as avg_rating, COUNT(transaction_product_reviews.id) as total_reviews')
+            ->where('transaction_product_reviews.is_hidden', false)
             ->whereIn('transaction_details.product_id', $productIds)
             ->groupBy('transaction_details.product_id')
             ->get()

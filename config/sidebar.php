@@ -111,6 +111,12 @@ return [
                 'icon'   => 'rotate-ccw',
             ],
             [
+                'name'   => 'Ulasan Produk',
+                'route'  => 'product-reviews.index',
+                'active' => 'product-reviews.*',
+                'icon'   => 'star',
+            ],
+            [
                 'name'   => 'Sales Report',
                 'route'  => 'reports.sales',
                 'active' => 'reports.*',

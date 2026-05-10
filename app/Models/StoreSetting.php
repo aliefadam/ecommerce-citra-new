@@ -20,6 +20,15 @@ class StoreSetting extends Model
             'manual_payment_account_number' => '1234567890',
             'manual_payment_account_name' => 'Ecommerce Citra',
             'manual_payment_instruction' => 'Transfer sesuai nominal pesanan, lalu upload bukti pembayaran agar admin bisa memverifikasi.',
+            'social_instagram' => '',
+            'social_tiktok' => '',
+            'social_facebook' => '',
+            'social_twitter' => '',
+            'social_youtube' => '',
+            'social_whatsapp' => '',
+            'social_shopee' => '',
+            'social_tokopedia' => '',
+            'social_lazada' => '',
         ];
     }
 
