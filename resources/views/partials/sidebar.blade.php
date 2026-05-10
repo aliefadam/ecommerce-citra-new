@@ -26,15 +26,40 @@
         </button>
     </div>
 
+    @php
+        $sidebarUser = auth()->user();
+        $canShowSidebarItem = function (array $item) use (&$canShowSidebarItem, $sidebarUser): bool {
+            if (!empty($item['permission']) && !$sidebarUser?->hasAdminPermission($item['permission'])) {
+                return false;
+            }
+
+            if (!empty($item['children'])) {
+                foreach ($item['children'] as $child) {
+                    if ($canShowSidebarItem($child)) {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            return true;
+        };
+    @endphp
+
     <nav class="flex-1 overflow-y-auto px-3 py-4">
         @foreach (config('sidebar') as $section)
+            @php
+                $visibleItems = collect($section['items'])->filter(fn($item) => $canShowSidebarItem($item))->values();
+            @endphp
+            @continue($visibleItems->isEmpty())
             <section class="{{ $loop->first ? '' : 'mt-6' }}">
                 <p class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-4 mb-4">
                     {{ $section['group'] }}
                 </p>
 
                 <div class="space-y-1.5">
-                    @foreach ($section['items'] as $item)
+                    @foreach ($visibleItems as $item)
                         @if (!empty($item['children']))
                             {{-- Dropdown menu --}}
                             <div x-data="{ open: {{ collect($item['children'])->contains(fn($c) => !empty($c['active']) && request()->routeIs($c['active'])) ? 'true' : 'false' }} }">
@@ -68,6 +93,7 @@
                                     class="mt-1 ml-4 pl-4 border-l-2 border-slate-200 dark:border-slate-700 space-y-0.5">
 
                                     @foreach ($item['children'] as $child)
+                                        @continue(!$canShowSidebarItem($child))
                                         @if (!empty($child['children']))
                                             {{-- Nested dropdown --}}
                                             <div x-data="{ openSub: {{ collect($child['children'])->contains(fn($c) => !empty($c['active']) && request()->routeIs($c['active'])) ? 'true' : 'false' }} }">
@@ -105,6 +131,7 @@
                                                     x-transition:leave-end="opacity-0 -translate-y-1"
                                                     class="mt-1 ml-3 pl-3 border-l-2 border-slate-200 dark:border-slate-700 space-y-0.5">
                                                     @foreach ($child['children'] as $grandchild)
+                                                        @continue(!$canShowSidebarItem($grandchild))
                                                         <a href="{{ $grandchild['route'] ? route($grandchild['route']) : '#' }}"
                                                             class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700/60 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200">
                                                             <span

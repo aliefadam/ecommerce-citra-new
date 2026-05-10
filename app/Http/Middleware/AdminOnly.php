@@ -12,15 +12,14 @@ class AdminOnly
     {
         $user = $request->user();
 
-        if (!$user || strtolower((string) $user->role) !== 'admin') {
+        if (!$user || !$user->canAccessAdminPanel()) {
             $fallback = route('frontend.index');
             $previous = url()->previous();
             $target = ($previous && $previous !== $request->fullUrl()) ? $previous : $fallback;
 
-            return redirect($target)->with('error', 'Anda tidak memiliki akses ke halaman admin.');
+            return redirect($target)->with('error', 'You do not have access to the admin area.');
         }
 
         return $next($request);
     }
 }
-

@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -16,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'email',
     'password',
     'role',
+    'admin_role_id',
     'first_name',
     'last_name',
     'username',
@@ -66,5 +68,26 @@ class User extends Authenticatable
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class);
+    }
+
+    public function adminRole(): BelongsTo
+    {
+        return $this->belongsTo(AdminRole::class);
+    }
+
+    public function canAccessAdminPanel(): bool
+    {
+        return strtolower((string) $this->role) === 'admin' || !is_null($this->admin_role_id);
+    }
+
+    public function hasAdminPermission(string $permission): bool
+    {
+        if (strtolower((string) $this->role) === 'admin') {
+            return true;
+        }
+
+        $permissions = $this->adminRole?->permissions ?? [];
+
+        return in_array($permission, $permissions, true);
     }
 }

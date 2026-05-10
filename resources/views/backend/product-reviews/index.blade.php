@@ -1,12 +1,12 @@
 @extends('layouts.app')
 
-@section('title', 'Ulasan Produk')
+@section('title', 'Product Reviews')
 
 @section('content')
     <main class="flex-1 p-4 sm:p-6 mt-6">
         <div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-                <h1 class="text-2xl font-bold text-slate-800 dark:text-white">Ulasan Produk</h1>
+                <h1 class="text-2xl font-bold text-slate-800 dark:text-white">Product Reviews</h1>
                 <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Moderasi ulasan customer yang tampil di halaman produk.</p>
             </div>
             <div class="flex flex-wrap gap-2">

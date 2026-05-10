@@ -10,7 +10,7 @@ class InvoiceController extends Controller
     public function show(Request $request, Transaction $transaction)
     {
         $user = $request->user();
-        abort_unless($user && ($user->role === 'admin' || (int) $transaction->user_id === (int) $user->id), 403);
+        abort_unless($user && ($user->canAccessAdminPanel() || (int) $transaction->user_id === (int) $user->id), 403);
 
         $transaction->load(['user', 'details']);
 

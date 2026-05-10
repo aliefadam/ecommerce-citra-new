@@ -1,12 +1,12 @@
 @extends('layouts.app')
 
-@section('title', 'Users')
+@section('title', 'Customers')
 
 @section('content')
     <main class="flex-1 p-4 sm:p-6 mt-6">
         <div class="mb-6">
-            <h1 class="text-2xl font-bold text-slate-800 dark:text-white">Users</h1>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Daftar pengguna terdaftar (kecuali admin).</p>
+            <h1 class="text-2xl font-bold text-slate-800 dark:text-white">Customers</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Customer accounts registered in the storefront.</p>
         </div>
 
         <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
@@ -17,7 +17,7 @@
                         <circle cx="11" cy="11" r="8" />
                         <line x1="21" y1="21" x2="16.65" y2="16.65" />
                     </svg>
-                    <input id="userSearch" type="text" placeholder="Cari nama / email..."
+                    <input id="userSearch" type="text" placeholder="Search name / email..."
                         class="pl-9 pr-4 py-2 text-sm w-full bg-slate-50 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200 placeholder-slate-400" />
                 </div>
             </div>
@@ -27,11 +27,11 @@
                     <thead class="bg-slate-50 dark:bg-slate-700/50">
                         <tr>
                             <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400 w-12">#</th>
-                            <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Nama</th>
+                            <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Name</th>
                             <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Email</th>
-                            <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Total Belanja</th>
-                            <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Total Transaksi</th>
-                            <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Terdaftar Pada</th>
+                            <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Total Spent</th>
+                            <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Transactions</th>
+                            <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Registered At</th>
                         </tr>
                     </thead>
                     <tbody id="usersTableBody" class="divide-y divide-slate-100 dark:divide-slate-700/60"></tbody>
@@ -92,4 +92,3 @@
         });
     </script>
 @endsection
-
