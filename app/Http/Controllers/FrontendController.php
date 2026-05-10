@@ -90,21 +90,6 @@ class FrontendController extends Controller
         $selectedParentSlug = (string) request()->query('parent', '');
         $selectedCategorySlug = (string) request()->query('category', '');
 
-        $filtered = collect($products['category'])
-            ->filter(function ($product) use ($selectedParentSlug, $selectedCategorySlug) {
-                if ($selectedCategorySlug !== '' && $product['categorySlug'] !== $selectedCategorySlug) {
-                    return false;
-                }
-
-                if ($selectedParentSlug !== '' && $product['parentCategorySlug'] !== $selectedParentSlug) {
-                    return false;
-                }
-
-                return true;
-            })
-            ->values()
-            ->all();
-
         $selectedCategory = $selectedCategorySlug !== ''
             ? CategoryDetail::query()->where('slug', $selectedCategorySlug)->first()
             : null;
@@ -116,7 +101,7 @@ class FrontendController extends Controller
             ?? 'Semua Kategori';
 
         return view('frontend.kategori', [
-            'productsJson' => $filtered,
+            'productsJson' => $products['category'],
             'categoryTree' => $categoryTree,
             'selectedLabel' => $selectedLabel,
             'selectedParentSlug' => $selectedParentSlug,

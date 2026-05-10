@@ -316,6 +316,7 @@
         const allProducts = @json($productsJson);
         const filterMainCategories = @json($filterMainCategories);
         const initialParentSlug = @json($selectedParentSlug ?? '');
+        const initialCategorySlug = @json($selectedCategorySlug ?? '');
         const kategoriBaseUrl = @json(route('frontend.kategori'));
         const isAuthenticated = @json(auth()->check());
         const loginUrl = @json(route('login'));
@@ -326,6 +327,7 @@
         const wishedProductIds = new Set();
 
         let selectedVariantFilters = {};
+        let activeCategorySlug = initialCategorySlug;
         let filteredProducts = [...allProducts];
         let viewMode = 'grid';
         let searchQuery = '';
@@ -342,13 +344,14 @@
             const activeVariantGroups = Object.entries(selectedVariantFilters).filter(([, values]) => values.size > 0);
             return allProducts.filter((p) => {
                 const catMatch = cats.length === 0 || cats.includes(p.parentCategorySlug);
+                const initialCategoryMatch = activeCategorySlug === '' || p.categorySlug === activeCategorySlug;
                 const variantMatch = activeVariantGroups.length === 0 || activeVariantGroups.every(([name, values]) =>
                     Array.isArray(p.variants) && p.variants.some((variant) =>
                         normalizeFilterValue(variant.name) === name && values.has(normalizeFilterValue(variant.value))
                     )
                 );
                 const searchMatch = !searchQuery || p.name.toLowerCase().includes(searchQuery.toLowerCase());
-                return catMatch && variantMatch && searchMatch;
+                return catMatch && initialCategoryMatch && variantMatch && searchMatch;
             });
         }
 
@@ -466,7 +469,7 @@
                 const checked = initialParentSlug !== '' ? cat.slug === initialParentSlug : true;
                 return `<label class="flex items-center gap-2 cursor-pointer group"><input type="checkbox"
                                     class="filter-cat w-4 h-4 rounded accent-blue-500" value="${cat.slug}" ${checked ? 'checked' : ''}
-                                    onchange="applyFilter()" /><span
+                                    onchange="applyCategoryFilter()" /><span
                                     class="text-sm text-slate-600 group-hover:text-slate-800">${cat.name} (${cat.count})</span></label>`;
             }).join('');
             container.innerHTML = items;
@@ -566,6 +569,11 @@
             sortProds();
         }
 
+        function applyCategoryFilter() {
+            activeCategorySlug = '';
+            applyFilter();
+        }
+
         function resetFilter() {
             document.querySelectorAll('.filter-cat').forEach((el) => {
                 el.checked = true;
@@ -578,6 +586,7 @@
                 el.value = '';
                 searchVariantOptions(el);
             });
+            activeCategorySlug = '';
             filteredProducts = [...allProducts];
             sortProds();
         }
