@@ -815,6 +815,15 @@ class FrontendController extends Controller
             }
 
             $image = $this->normalizeImageUrl((string) ($variant->image ?? ''), '400x400');
+            $variantFilters = $product->productVariants
+                ->filter(fn($pv) => $pv->variant && filled($pv->variant->name) && filled($pv->variant->value))
+                ->map(fn($pv) => [
+                    'name' => (string) $pv->variant->name,
+                    'value' => (string) $pv->variant->value,
+                ])
+                ->unique(fn($item) => strtolower($item['name'] . '|' . $item['value']))
+                ->values()
+                ->all();
 
             $variantPrices = $product->productVariants
                 ->pluck('price')
@@ -873,7 +882,7 @@ class FrontendController extends Controller
                 'rating' => round($rating, 1),
                 'reviews' => $reviews,
                 'image' => $image,
-                'colors' => [strtolower($variant->variant?->value ?? 'hitam')],
+                'variants' => $variantFilters,
                 'badge' => $badge,
                 'sold' => $sold,
                 'isNew' => $badge === 'new',
@@ -896,7 +905,7 @@ class FrontendController extends Controller
                 'rating' => round($rating, 1),
                 'reviews' => $reviews,
                 'image' => $image,
-                'colors' => [strtolower($variant->variant?->value ?? 'hitam')],
+                'variants' => $variantFilters,
                 'badge' => $badge,
                 'sold' => $sold,
                 'isNew' => $badge === 'new',

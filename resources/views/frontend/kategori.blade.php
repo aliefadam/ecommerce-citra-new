@@ -221,84 +221,7 @@
                         <div class="space-y-2" id="filterCategoryList"></div>
                     </div>
 
-                    <div class="mb-6">
-                        <h4 class="text-sm font-semibold text-slate-700 mb-3">Rentang Harga</h4>
-                        <div class="space-y-2">
-                            <div class="flex gap-2">
-                                <div class="flex-1">
-                                    <label class="text-xs text-slate-500 mb-1 block">Min</label>
-                                    <input type="number" id="priceMin" placeholder="0"
-                                        class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
-                                        onchange="applyFilter()" />
-                                </div>
-                                <div class="flex-1">
-                                    <label class="text-xs text-slate-500 mb-1 block">Max</label>
-                                    <input type="number" id="priceMax" placeholder="8"
-                                        class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
-                                        onchange="applyFilter()" />
-                                </div>
-                            </div>
-                            <div class="space-y-1.5">
-                                <label class="flex items-center gap-2 cursor-pointer"><input type="radio"
-                                        name="priceRange" class="accent-blue-500" onchange="setPriceRange(0, 100000)" />
-                                    <span class="text-sm text-slate-600">Di bawah Rp 100.000</span></label>
-                                <label class="flex items-center gap-2 cursor-pointer"><input type="radio"
-                                        name="priceRange" class="accent-blue-500"
-                                        onchange="setPriceRange(100000, 500000)" /> <span
-                                        class="text-sm text-slate-600">Rp 100.000 - Rp 500.000</span></label>
-                                <label class="flex items-center gap-2 cursor-pointer"><input type="radio"
-                                        name="priceRange" class="accent-blue-500"
-                                        onchange="setPriceRange(500000, 1000000)" /> <span
-                                        class="text-sm text-slate-600">Rp 500.000 - Rp 1 Juta</span></label>
-                                <label class="flex items-center gap-2 cursor-pointer"><input type="radio"
-                                        name="priceRange" class="accent-blue-500"
-                                        onchange="setPriceRange(1000000, 9999999)" /> <span
-                                        class="text-sm text-slate-600">Di atas Rp 1 Juta</span></label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mb-6">
-                        <h4 class="text-sm font-semibold text-slate-700 mb-3">Warna</h4>
-                        <div class="flex flex-wrap gap-2">
-                            <button onclick="toggleColor(this, 'hitam')"
-                                class="color-btn w-8 h-8 rounded-full bg-slate-900 border-2 border-transparent hover:border-slate-400 transition-all"
-                                title="Hitam"></button>
-                            <button onclick="toggleColor(this, 'putih')"
-                                class="color-btn w-8 h-8 rounded-full bg-white border-2 border-slate-200 hover:border-slate-400 transition-all"
-                                title="Putih"></button>
-                            <button onclick="toggleColor(this, 'merah')"
-                                class="color-btn w-8 h-8 rounded-full bg-red-500 border-2 border-transparent hover:border-red-400 transition-all"
-                                title="Merah"></button>
-                            <button onclick="toggleColor(this, 'biru')"
-                                class="color-btn w-8 h-8 rounded-full bg-blue-500 border-2 border-transparent hover:border-blue-400 transition-all"
-                                title="Biru"></button>
-                            <button onclick="toggleColor(this, 'hijau')"
-                                class="color-btn w-8 h-8 rounded-full bg-blue-500 border-2 border-transparent hover:border-blue-400 transition-all"
-                                title="Hijau"></button>
-                            <button onclick="toggleColor(this, 'kuning')"
-                                class="color-btn w-8 h-8 rounded-full bg-yellow-400 border-2 border-transparent hover:border-yellow-400 transition-all"
-                                title="Kuning"></button>
-                            <button onclick="toggleColor(this, 'ungu')"
-                                class="color-btn w-8 h-8 rounded-full bg-purple-500 border-2 border-transparent hover:border-purple-400 transition-all"
-                                title="Ungu"></button>
-                            <button onclick="toggleColor(this, 'pink')"
-                                class="color-btn w-8 h-8 rounded-full bg-pink-400 border-2 border-transparent hover:border-pink-400 transition-all"
-                                title="Pink"></button>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h4 class="text-sm font-semibold text-slate-700 mb-3">Rating</h4>
-                        <div class="space-y-2">
-                            <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="rating"
-                                    class="accent-blue-500" /><span class="flex gap-0.5">★★★★★</span></label>
-                            <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="rating"
-                                    class="accent-blue-500" /><span class="flex gap-0.5">★★★★ ke atas</span></label>
-                            <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="rating"
-                                    class="accent-blue-500" /><span class="flex gap-0.5">★★★ ke atas</span></label>
-                        </div>
-                    </div>
+                    <div id="filterVariantList" class="space-y-5"></div>
 
                     <button onclick="applyFilter()"
                         class="w-full mt-6 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 rounded-xl transition-colors text-sm">Terapkan
@@ -354,7 +277,7 @@
 
                 <!-- Empty State -->
                 <div id="emptyState" class="hidden text-center py-20">
-                    <div class="text-6xl mb-4">😕</div>
+                    <div class="text-6xl mb-4"></div>
                     <h3 class="text-xl font-bold text-slate-700 mb-2">Produk tidak ditemukan</h3>
                     <p class="text-slate-500 mb-6">Coba ubah kata kunci atau filter pencarian</p>
                     <button onclick="resetAll()"
@@ -362,24 +285,13 @@
                         Filter</button>
                 </div>
 
-                <!-- Pagination -->
-                <div id="pagination" class="flex items-center justify-center gap-2 mt-10">
-                    <button
-                        class="w-9 h-9 rounded-lg border border-slate-200 flex items-center justify-center text-slate-400 hover:border-blue-300">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                        </svg>
-                    </button>
-                    <button class="w-9 h-9 rounded-lg bg-blue-500 text-white font-semibold text-sm">1</button>
-                    <button
-                        class="w-9 h-9 rounded-lg border border-slate-200 text-slate-600 text-sm hover:border-blue-300">2</button>
-                    <button
-                        class="w-9 h-9 rounded-lg border border-slate-200 text-slate-600 text-sm hover:border-blue-300">3</button>
-                    <button
-                        class="w-9 h-9 rounded-lg border border-slate-200 flex items-center justify-center text-slate-400 hover:border-blue-300">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                        </svg>
+                <!-- Load More -->
+                <div id="loadMoreWrapper" class="flex flex-col items-center gap-3 mt-10">
+                    <p id="loadMoreInfo" class="text-xs text-slate-500"></p>
+                    <button type="button" id="loadMoreBtn" onclick="loadMoreProducts()"
+                        class="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-5 py-2.5 text-sm font-semibold text-blue-700 hover:bg-blue-500 hover:text-white hover:border-blue-500 transition-colors">
+                        Muat Lagi
+                        <i class="ri-arrow-down-s-line text-lg"></i>
                     </button>
                 </div>
             </main>
@@ -413,10 +325,13 @@
         const csrfToken = @json(csrf_token());
         const wishedProductIds = new Set();
 
-        let selectedColors = [];
+        let selectedVariantFilters = {};
         let filteredProducts = [...allProducts];
         let viewMode = 'grid';
         let searchQuery = '';
+        const productPageSize = 12;
+        let visibleProductCount = productPageSize;
+        let currentRenderedProducts = [...allProducts];
 
         function getLoginRedirectUrl() {
             return `${loginUrl}?redirect=${encodeURIComponent(window.location.href)}`;
@@ -424,38 +339,49 @@
 
         function getFiltered() {
             const cats = Array.from(document.querySelectorAll('.filter-cat:checked')).map(c => c.value);
-            const min = parseInt(document.getElementById('priceMin')?.value || '0', 10) || 0;
-            const max = parseInt(document.getElementById('priceMax')?.value || '9999999', 10) || 9999999;
+            const activeVariantGroups = Object.entries(selectedVariantFilters).filter(([, values]) => values.size > 0);
             return allProducts.filter((p) => {
                 const catMatch = cats.length === 0 || cats.includes(p.parentCategorySlug);
-                const colorMatch = selectedColors.length === 0 || selectedColors.some((c) =>
-                    Array.isArray(p.colors) && p.colors.includes(c));
-                const priceMatch = p.price >= min && p.price <= max;
+                const variantMatch = activeVariantGroups.length === 0 || activeVariantGroups.every(([name, values]) =>
+                    Array.isArray(p.variants) && p.variants.some((variant) =>
+                        normalizeFilterValue(variant.name) === name && values.has(normalizeFilterValue(variant.value))
+                    )
+                );
                 const searchMatch = !searchQuery || p.name.toLowerCase().includes(searchQuery.toLowerCase());
-                return catMatch && colorMatch && priceMatch && searchMatch;
+                return catMatch && variantMatch && searchMatch;
             });
         }
 
-        function render(prods) {
+        function render(prods, resetVisible = true) {
             const grid = document.getElementById('prodGrid');
             const empty = document.getElementById('emptyState');
-            const pagination = document.getElementById('pagination');
-            document.getElementById('resultCount').textContent = `Menampilkan ${prods.length} produk`;
+            const loadMoreWrapper = document.getElementById('loadMoreWrapper');
+            const loadMoreBtn = document.getElementById('loadMoreBtn');
+            const loadMoreInfo = document.getElementById('loadMoreInfo');
+
+            currentRenderedProducts = [...prods];
+            if (resetVisible) visibleProductCount = productPageSize;
+            const visibleProducts = currentRenderedProducts.slice(0, visibleProductCount);
+
+            document.getElementById('resultCount').textContent =
+                `Menampilkan ${visibleProducts.length} dari ${currentRenderedProducts.length} produk`;
 
             if (prods.length === 0) {
                 grid.innerHTML = '';
                 empty.classList.remove('hidden');
-                pagination.classList.add('hidden');
+                loadMoreWrapper.classList.add('hidden');
                 return;
             }
             empty.classList.add('hidden');
-            pagination.classList.remove('hidden');
+            loadMoreWrapper.classList.toggle('hidden', currentRenderedProducts.length <= productPageSize);
+            loadMoreBtn.classList.toggle('hidden', visibleProducts.length >= currentRenderedProducts.length);
+            loadMoreInfo.textContent = `Sudah tampil ${visibleProducts.length} dari ${currentRenderedProducts.length} produk`;
 
             const gridCols = viewMode === 'grid' ? 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4' :
                 'grid grid-cols-1 gap-4';
             grid.className = gridCols;
 
-            grid.innerHTML = prods.map(p => {
+            grid.innerHTML = visibleProducts.map(p => {
                 const disc = p.origPrice > p.price ? Math.round((1 - p.price / p.origPrice) * 100) : 0;
                 const priceMax = Number(p.priceMax ?? p.price);
                 const isPriceRange = priceMax > Number(p.price);
@@ -482,7 +408,7 @@
                 <div class="flex items-center gap-1 mt-1">
                   <span class="text-yellow-400 text-xs">?</span>
                   <span class="text-xs font-medium text-slate-700">${p.rating}</span>
-                  <span class="text-xs text-slate-400">(${p.reviews}) • ${p.sold.toLocaleString()} terjual</span>
+                  <span class="text-xs text-slate-400">(${p.reviews}) &bull; ${p.sold.toLocaleString()} terjual</span>
                 </div>
               </div>
               <div class="flex items-center justify-between">
@@ -513,10 +439,10 @@
           <div class="p-3 flex-1 flex flex-col">
             <a href="{{ url('/detail-produk') }}/${p.slug}" class="block text-sm font-semibold text-slate-800 hover:text-blue-600 transition-colors line-clamp-2 mb-1">${p.name}</a>
             <div class="flex items-center gap-1 mb-2">
-              <span class="text-yellow-400 text-xs">★</span>
+              <span class="text-yellow-400 text-xs">&#9733;</span>
               <span class="text-xs font-medium text-slate-700">${p.rating}</span>
               <span class="text-xs text-slate-400">(${p.reviews})</span>
-              <span class="text-xs text-slate-300 mx-0.5">•</span>
+              <span class="text-xs text-slate-300 mx-0.5">&bull;</span>
               <span class="text-xs text-slate-400">${p.sold.toLocaleString()} terjual</span>
             </div>
             <div class="flex items-center gap-2 flex-wrap mb-3">
@@ -530,12 +456,12 @@
           </div>
         </div>`;
             }).join('');
+            syncWishlistButtons();
         }
 
         function renderFilterCategories() {
             const container = document.getElementById('filterCategoryList');
             if (!container) return;
-            const allChecked = initialParentSlug === '';
             const items = filterMainCategories.map((cat) => {
                 const checked = initialParentSlug !== '' ? cat.slug === initialParentSlug : true;
                 return `<label class="flex items-center gap-2 cursor-pointer group"><input type="checkbox"
@@ -546,27 +472,93 @@
             container.innerHTML = items;
         }
 
+        function normalizeFilterValue(value) {
+            return String(value || '').trim().toLowerCase();
+        }
+
+        function escapeHtml(value) {
+            return String(value || '').replace(/[&<>"']/g, (char) => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;',
+            } [char]));
+        }
+
+        function renderFilterVariants() {
+            const container = document.getElementById('filterVariantList');
+            if (!container) return;
+
+            const groups = new Map();
+            allProducts.forEach((product) => {
+                (Array.isArray(product.variants) ? product.variants : []).forEach((variant) => {
+                    const name = String(variant.name || '').trim();
+                    const value = String(variant.value || '').trim();
+                    if (!name || !value) return;
+                    if (!groups.has(name)) groups.set(name, new Map());
+                    groups.get(name).set(normalizeFilterValue(value), value);
+                });
+            });
+
+            container.innerHTML = Array.from(groups.entries()).map(([name, values]) => {
+                const groupKey = normalizeFilterValue(name);
+                const valueItems = Array.from(values.entries()).map(([key, label]) => `
+                    <label class="filter-variant-option flex items-center gap-2 cursor-pointer group" data-search-value="${escapeHtml(normalizeFilterValue(label))}">
+                        <input type="checkbox" class="filter-variant w-4 h-4 rounded accent-blue-500"
+                            data-variant-name="${encodeURIComponent(groupKey)}"
+                            data-variant-value="${encodeURIComponent(key)}"
+                            onchange="applyVariantFilter()" />
+                        <span class="text-sm text-slate-600 group-hover:text-slate-800">${escapeHtml(label)}</span>
+                    </label>
+                `).join('');
+
+                return `<div>
+                    <h4 class="text-sm font-semibold text-slate-700 mb-3">${escapeHtml(name)}</h4>
+                    <div class="relative mb-3">
+                        <i class="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                        <input type="search" placeholder="Cari ${escapeHtml(name)}..."
+                            class="filter-variant-search w-full border border-slate-200 rounded-lg pl-8 pr-3 py-2 text-sm focus:outline-none focus:border-blue-400"
+                            data-variant-group="${encodeURIComponent(groupKey)}"
+                            oninput="searchVariantOptions(this)" />
+                    </div>
+                    <div class="filter-variant-options space-y-2" data-variant-group="${encodeURIComponent(groupKey)}">${valueItems}</div>
+                    <p class="filter-variant-empty hidden text-xs text-slate-400" data-variant-group="${encodeURIComponent(groupKey)}">Tidak ada varian yang cocok.</p>
+                </div>`;
+            }).join('');
+        }
+
+        function searchVariantOptions(input) {
+            const group = input.dataset.variantGroup || '';
+            const query = normalizeFilterValue(input.value);
+            const options = document.querySelectorAll(`.filter-variant-options[data-variant-group="${group}"] .filter-variant-option`);
+            let visibleCount = 0;
+
+            options.forEach((option) => {
+                const isVisible = !query || String(option.dataset.searchValue || '').includes(query);
+                option.classList.toggle('hidden', !isVisible);
+                if (isVisible) visibleCount++;
+            });
+
+            const empty = document.querySelector(`.filter-variant-empty[data-variant-group="${group}"]`);
+            if (empty) empty.classList.toggle('hidden', visibleCount > 0);
+        }
+
+        function applyVariantFilter() {
+            selectedVariantFilters = {};
+            document.querySelectorAll('.filter-variant:checked').forEach((input) => {
+                const name = decodeURIComponent(input.dataset.variantName || '');
+                const value = decodeURIComponent(input.dataset.variantValue || '');
+                if (!name || !value) return;
+                if (!selectedVariantFilters[name]) selectedVariantFilters[name] = new Set();
+                selectedVariantFilters[name].add(value);
+            });
+            applyFilter();
+        }
+
         function selectCategory(cat, label) {
             const target = cat === 'semua' ? kategoriBaseUrl : `${kategoriBaseUrl}?parent=${encodeURIComponent(cat)}`;
             window.location.href = target;
-        }
-
-        function setPriceRange(min, max) {
-            document.getElementById('priceMin').value = min;
-            document.getElementById('priceMax').value = max;
-            applyFilter();
-        }
-
-        function toggleColor(btn, color) {
-            const idx = selectedColors.indexOf(color);
-            if (idx === -1) {
-                selectedColors.push(color);
-                btn.classList.add('ring-2', 'ring-blue-500', 'ring-offset-2');
-            } else {
-                selectedColors.splice(idx, 1);
-                btn.classList.remove('ring-2', 'ring-blue-500', 'ring-offset-2');
-            }
-            applyFilter();
         }
 
         function applyFilter() {
@@ -578,13 +570,14 @@
             document.querySelectorAll('.filter-cat').forEach((el) => {
                 el.checked = true;
             });
-            document.getElementById('priceMin').value = '';
-            document.getElementById('priceMax').value = '';
-            document.querySelectorAll('input[name="priceRange"]').forEach((r) => r.checked = false);
-            document.querySelectorAll('input[name="rating"]').forEach((r) => r.checked = false);
-            selectedColors = [];
-            document.querySelectorAll('.color-btn').forEach((b) => b.classList.remove('ring-2', 'ring-blue-500',
-                'ring-offset-2'));
+            selectedVariantFilters = {};
+            document.querySelectorAll('.filter-variant').forEach((el) => {
+                el.checked = false;
+            });
+            document.querySelectorAll('.filter-variant-search').forEach((el) => {
+                el.value = '';
+                searchVariantOptions(el);
+            });
             filteredProducts = [...allProducts];
             sortProds();
         }
@@ -598,6 +591,11 @@
             else if (val === 'sold') prods.sort((a, b) => b.sold - a.sold);
             else prods.sort((a, b) => b.id - a.id);
             render(prods);
+        }
+
+        function loadMoreProducts() {
+            visibleProductCount += productPageSize;
+            render(currentRenderedProducts, false);
         }
 
         function cycleSortMobile() {
@@ -756,6 +754,7 @@
         }
 
         renderFilterCategories();
+        renderFilterVariants();
         applyFilter();
         initWishlistStatus();
 
@@ -944,5 +943,6 @@
         setMegaCategory('rumah-tangga');
     </script>
 @endsection
+
 
 

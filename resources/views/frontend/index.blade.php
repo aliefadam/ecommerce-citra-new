@@ -310,84 +310,7 @@
                         </div>
                     </div>
 
-                    <div class="mb-6">
-                        <h4 class="text-sm font-semibold text-slate-700 mb-3">Rentang Harga</h4>
-                        <div class="space-y-2">
-                            <div class="flex gap-2">
-                                <div class="flex-1">
-                                    <label class="text-xs text-slate-500 mb-1 block">Min</label>
-                                    <input type="number" id="priceMin" placeholder="0"
-                                        class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
-                                        onchange="applyFilter()" />
-                                </div>
-                                <div class="flex-1">
-                                    <label class="text-xs text-slate-500 mb-1 block">Max</label>
-                                    <input type="number" id="priceMax" placeholder="8"
-                                        class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
-                                        onchange="applyFilter()" />
-                                </div>
-                            </div>
-                            <div class="space-y-1.5">
-                                <label class="flex items-center gap-2 cursor-pointer"><input type="radio"
-                                        name="priceRange" class="accent-blue-500" onchange="setPriceRange(0, 100000)" />
-                                    <span class="text-sm text-slate-600">Di bawah Rp 100.000</span></label>
-                                <label class="flex items-center gap-2 cursor-pointer"><input type="radio"
-                                        name="priceRange" class="accent-blue-500"
-                                        onchange="setPriceRange(100000, 500000)" /> <span
-                                        class="text-sm text-slate-600">Rp 100.000 - Rp 500.000</span></label>
-                                <label class="flex items-center gap-2 cursor-pointer"><input type="radio"
-                                        name="priceRange" class="accent-blue-500"
-                                        onchange="setPriceRange(500000, 1000000)" /> <span
-                                        class="text-sm text-slate-600">Rp 500.000 - Rp 1 Juta</span></label>
-                                <label class="flex items-center gap-2 cursor-pointer"><input type="radio"
-                                        name="priceRange" class="accent-blue-500"
-                                        onchange="setPriceRange(1000000, 9999999)" /> <span
-                                        class="text-sm text-slate-600">Di atas Rp 1 Juta</span></label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mb-6">
-                        <h4 class="text-sm font-semibold text-slate-700 mb-3">Warna</h4>
-                        <div class="flex flex-wrap gap-2">
-                            <button onclick="toggleColor(this, 'hitam')"
-                                class="color-btn w-8 h-8 rounded-full bg-slate-900 border-2 border-transparent hover:border-slate-400 transition-all"
-                                title="Hitam"></button>
-                            <button onclick="toggleColor(this, 'putih')"
-                                class="color-btn w-8 h-8 rounded-full bg-white border-2 border-slate-200 hover:border-slate-400 transition-all"
-                                title="Putih"></button>
-                            <button onclick="toggleColor(this, 'merah')"
-                                class="color-btn w-8 h-8 rounded-full bg-red-500 border-2 border-transparent hover:border-red-400 transition-all"
-                                title="Merah"></button>
-                            <button onclick="toggleColor(this, 'biru')"
-                                class="color-btn w-8 h-8 rounded-full bg-blue-500 border-2 border-transparent hover:border-blue-400 transition-all"
-                                title="Biru"></button>
-                            <button onclick="toggleColor(this, 'hijau')"
-                                class="color-btn w-8 h-8 rounded-full bg-blue-500 border-2 border-transparent hover:border-blue-400 transition-all"
-                                title="Hijau"></button>
-                            <button onclick="toggleColor(this, 'kuning')"
-                                class="color-btn w-8 h-8 rounded-full bg-yellow-400 border-2 border-transparent hover:border-yellow-400 transition-all"
-                                title="Kuning"></button>
-                            <button onclick="toggleColor(this, 'ungu')"
-                                class="color-btn w-8 h-8 rounded-full bg-purple-500 border-2 border-transparent hover:border-purple-400 transition-all"
-                                title="Ungu"></button>
-                            <button onclick="toggleColor(this, 'pink')"
-                                class="color-btn w-8 h-8 rounded-full bg-pink-400 border-2 border-transparent hover:border-pink-400 transition-all"
-                                title="Pink"></button>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h4 class="text-sm font-semibold text-slate-700 mb-3">Rating</h4>
-                        <div class="space-y-2">
-                            <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="rating"
-                                    class="accent-blue-500" /><span class="flex gap-0.5">★★★★★</span></label>
-                            <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="rating"
-                                    class="accent-blue-500" /><span class="flex gap-0.5">★★★★ ke atas</span></label>
-                            <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="rating"
-                                    class="accent-blue-500" /><span class="flex gap-0.5">★★★ ke atas</span></label>
-                        </div>
-                    </div>
+                    <div id="homeFilterVariantList" class="space-y-5"></div>
 
                     <button onclick="applyFilter()"
                         class="w-full mt-6 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 rounded-xl transition-colors text-sm">Terapkan
@@ -440,27 +363,13 @@
                 <div id="productGrid" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
                 </div>
 
-                <!-- Pagination -->
-                <div class="flex items-center justify-center gap-2 mt-10">
-                    <button
-                        class="w-9 h-9 rounded-lg border border-slate-200 flex items-center justify-center text-slate-400 hover:border-blue-300 hover:text-blue-600 transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                        </svg>
-                    </button>
-                    <button class="w-9 h-9 rounded-lg bg-blue-500 text-white font-semibold text-sm">1</button>
-                    <button
-                        class="w-9 h-9 rounded-lg border border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600 transition-colors text-sm">2</button>
-                    <button
-                        class="w-9 h-9 rounded-lg border border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600 transition-colors text-sm">3</button>
-                    <span class="text-slate-400">...</span>
-                    <button
-                        class="w-9 h-9 rounded-lg border border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600 transition-colors text-sm">10</button>
-                    <button
-                        class="w-9 h-9 rounded-lg border border-slate-200 flex items-center justify-center text-slate-400 hover:border-blue-300 hover:text-blue-600 transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                        </svg>
+                <!-- Load More -->
+                <div id="homeLoadMoreWrapper" class="flex flex-col items-center gap-3 mt-10">
+                    <p id="homeLoadMoreInfo" class="text-xs text-slate-500"></p>
+                    <button type="button" id="homeLoadMoreBtn" onclick="loadMoreProducts()"
+                        class="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-5 py-2.5 text-sm font-semibold text-blue-700 hover:bg-blue-500 hover:text-white hover:border-blue-500 transition-colors">
+                        Muat Lagi
+                        <i class="ri-arrow-down-s-line text-lg"></i>
                     </button>
                 </div>
             </main>
@@ -504,13 +413,13 @@
                     <div class="p-3 flex-1 flex flex-col gap-1">
                         <a href="{{ url('/detail-produk/' . $rp['slug']) }}" class="text-sm font-semibold text-slate-800 hover:text-blue-600 line-clamp-2 leading-snug transition-colors">{{ $rp['name'] }}</a>
                         <div class="flex items-center gap-1">
-                            <span class="text-yellow-400 text-xs">★</span>
+                            <span class="text-yellow-400 text-xs">&#9733;</span>
                             <span class="text-xs font-medium text-slate-700">{{ number_format($rp['rating'], 1) }}</span>
                             @if (!empty($rp['reviews']))
                                 <span class="text-xs text-slate-400">({{ number_format($rp['reviews']) }})</span>
                             @endif
                             @if (!empty($rp['sold']))
-                                <span class="text-xs text-slate-300 mx-0.5">•</span>
+                                <span class="text-xs text-slate-300 mx-0.5">&bull;</span>
                                 <span class="text-xs text-slate-400">{{ number_format($rp['sold']) }} terjual</span>
                             @endif
                         </div>
@@ -657,17 +566,33 @@
         const carouselTotal = document.querySelectorAll('#carouselTrack > div').length || 1;
 
         let filteredProducts = [...products];
-        let selectedColors = [];
+        let selectedVariantFilters = {};
         let currentView = 'grid';
+        const productPageSize = 12;
+        let visibleProductCount = productPageSize;
+        let currentRenderedProducts = [...products];
 
         function getLoginRedirectUrl() {
             return `${loginUrl}?redirect=${encodeURIComponent(window.location.href)}`;
         }
 
-        function renderProducts(prods) {
+        function renderProducts(prods, resetVisible = true) {
             const grid = document.getElementById('productGrid');
-            document.getElementById('productCount').textContent = `Menampilkan ${prods.length} produk`;
-            grid.innerHTML = prods.map(p => {
+            const loadMoreWrapper = document.getElementById('homeLoadMoreWrapper');
+            const loadMoreBtn = document.getElementById('homeLoadMoreBtn');
+            const loadMoreInfo = document.getElementById('homeLoadMoreInfo');
+
+            currentRenderedProducts = [...prods];
+            if (resetVisible) visibleProductCount = productPageSize;
+            const visibleProducts = currentRenderedProducts.slice(0, visibleProductCount);
+
+            document.getElementById('productCount').textContent =
+                `Menampilkan ${visibleProducts.length} dari ${currentRenderedProducts.length} produk`;
+            loadMoreWrapper.classList.toggle('hidden', currentRenderedProducts.length <= productPageSize);
+            loadMoreBtn.classList.toggle('hidden', visibleProducts.length >= currentRenderedProducts.length);
+            loadMoreInfo.textContent = `Sudah tampil ${visibleProducts.length} dari ${currentRenderedProducts.length} produk`;
+
+            grid.innerHTML = visibleProducts.map(p => {
                 const discount = p.originalPrice > p.price ? Math.round((1 - p.price / p.originalPrice) * 100) : 0;
                 const priceMax = Number(p.priceMax ?? p.price);
                 const isPriceRange = priceMax > Number(p.price);
@@ -681,7 +606,7 @@
                     p.badge === 'best' ?
                     `<span class="bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">TERLARIS</span>` :
                     '';
-                const stars = '?'.repeat(Math.floor(p.rating)) + (p.rating % 1 >= 0.5 ? '½' : '');
+                const stars = '?'.repeat(Math.floor(p.rating)) + (p.rating % 1 >= 0.5 ? '1/2' : '');
                 return `
           <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden card-hover group h-full flex flex-col" data-id="${p.id}">
             <div class="relative overflow-hidden">
@@ -698,10 +623,10 @@
                 <h3 class="text-sm font-semibold text-slate-800 hover:text-blue-600 transition-colors line-clamp-2 min-h-[40px] mb-1">${p.name}</h3>
               </a>
               <div class="flex items-center gap-1 mb-2">
-                <span class="text-yellow-400 text-xs">⭐</span>
+                <span class="text-yellow-400 text-xs">&#9733;</span>
                 <span class="text-xs font-medium text-slate-700">${p.rating}</span>
                 <span class="text-xs text-slate-400">(${p.reviews.toLocaleString()})</span>
-                <span class="text-xs text-slate-300 mx-1">•</span>
+                <span class="text-xs text-slate-300 mx-1">&bull;</span>
                 <span class="text-xs text-slate-400">${p.sold.toLocaleString()} terjual</span>
               </div>
               <div class="flex items-center gap-2 flex-wrap min-h-[28px] mb-3">
@@ -715,6 +640,7 @@
             </div>
           </div>`;
             }).join('');
+            syncWishlistButtons();
         }
 
         async function addToCart(id) {
@@ -813,46 +739,115 @@
             setTimeout(() => toast.classList.add('hidden'), 3000);
         }
 
-        function toggleColor(btn, color) {
-            const idx = selectedColors.indexOf(color);
-            if (idx === -1) {
-                selectedColors.push(color);
-                btn.classList.add('ring-2', 'ring-blue-500', 'ring-offset-2');
-            } else {
-                selectedColors.splice(idx, 1);
-                btn.classList.remove('ring-2', 'ring-blue-500', 'ring-offset-2');
-            }
-            applyFilter();
+        function normalizeFilterValue(value) {
+            return String(value || '').trim().toLowerCase();
         }
 
-        function setPriceRange(min, max) {
-            document.getElementById('priceMin').value = min;
-            document.getElementById('priceMax').value = max;
+        function escapeHtml(value) {
+            return String(value || '').replace(/[&<>"']/g, (char) => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;',
+            } [char]));
+        }
+
+        function renderFilterVariants() {
+            const container = document.getElementById('homeFilterVariantList');
+            if (!container) return;
+
+            const groups = new Map();
+            products.forEach((product) => {
+                (Array.isArray(product.variants) ? product.variants : []).forEach((variant) => {
+                    const name = String(variant.name || '').trim();
+                    const value = String(variant.value || '').trim();
+                    if (!name || !value) return;
+                    if (!groups.has(name)) groups.set(name, new Map());
+                    groups.get(name).set(normalizeFilterValue(value), value);
+                });
+            });
+
+            container.innerHTML = Array.from(groups.entries()).map(([name, values]) => {
+                const groupKey = normalizeFilterValue(name);
+                const valueItems = Array.from(values.entries()).map(([key, label]) => `
+                    <label class="filter-variant-option flex items-center gap-2 cursor-pointer group" data-search-value="${escapeHtml(normalizeFilterValue(label))}">
+                        <input type="checkbox" class="filter-variant w-4 h-4 rounded accent-blue-500"
+                            data-variant-name="${encodeURIComponent(groupKey)}"
+                            data-variant-value="${encodeURIComponent(key)}"
+                            onchange="applyVariantFilter()" />
+                        <span class="text-sm text-slate-600 group-hover:text-slate-800">${escapeHtml(label)}</span>
+                    </label>
+                `).join('');
+
+                return `<div>
+                    <h4 class="text-sm font-semibold text-slate-700 mb-3">${escapeHtml(name)}</h4>
+                    <div class="relative mb-3">
+                        <i class="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                        <input type="search" placeholder="Cari ${escapeHtml(name)}..."
+                            class="filter-variant-search w-full border border-slate-200 rounded-lg pl-8 pr-3 py-2 text-sm focus:outline-none focus:border-blue-400"
+                            data-variant-group="${encodeURIComponent(groupKey)}"
+                            oninput="searchVariantOptions(this)" />
+                    </div>
+                    <div class="filter-variant-options space-y-2" data-variant-group="${encodeURIComponent(groupKey)}">${valueItems}</div>
+                    <p class="filter-variant-empty hidden text-xs text-slate-400" data-variant-group="${encodeURIComponent(groupKey)}">Tidak ada varian yang cocok.</p>
+                </div>`;
+            }).join('');
+        }
+
+        function searchVariantOptions(input) {
+            const group = input.dataset.variantGroup || '';
+            const query = normalizeFilterValue(input.value);
+            const options = document.querySelectorAll(`.filter-variant-options[data-variant-group="${group}"] .filter-variant-option`);
+            let visibleCount = 0;
+
+            options.forEach((option) => {
+                const isVisible = !query || String(option.dataset.searchValue || '').includes(query);
+                option.classList.toggle('hidden', !isVisible);
+                if (isVisible) visibleCount++;
+            });
+
+            const empty = document.querySelector(`.filter-variant-empty[data-variant-group="${group}"]`);
+            if (empty) empty.classList.toggle('hidden', visibleCount > 0);
+        }
+
+        function applyVariantFilter() {
+            selectedVariantFilters = {};
+            document.querySelectorAll('.filter-variant:checked').forEach((input) => {
+                const name = decodeURIComponent(input.dataset.variantName || '');
+                const value = decodeURIComponent(input.dataset.variantValue || '');
+                if (!name || !value) return;
+                if (!selectedVariantFilters[name]) selectedVariantFilters[name] = new Set();
+                selectedVariantFilters[name].add(value);
+            });
             applyFilter();
         }
 
         function applyFilter() {
             const cats = Array.from(document.querySelectorAll('.filter-cat:checked')).map(c => c.value);
-            const min = parseInt(document.getElementById('priceMin').value) || 0;
-            const max = parseInt(document.getElementById('priceMax').value) || 9999999;
+            const activeVariantGroups = Object.entries(selectedVariantFilters).filter(([, values]) => values.size > 0);
             filteredProducts = products.filter(p => {
                 const catMatch = cats.length === 0 || cats.includes(p.parentCategorySlug);
-                const priceMatch = p.price >= min && p.price <= max;
-                const colorMatch = selectedColors.length === 0 || selectedColors.some(c => p.colors.includes(c));
-                return catMatch && priceMatch && colorMatch;
+                const variantMatch = activeVariantGroups.length === 0 || activeVariantGroups.every(([name, values]) =>
+                    Array.isArray(p.variants) && p.variants.some((variant) =>
+                        normalizeFilterValue(variant.name) === name && values.has(normalizeFilterValue(variant.value))
+                    )
+                );
+                return catMatch && variantMatch;
             });
             renderProducts(filteredProducts);
         }
 
         function resetFilter() {
             document.querySelectorAll('.filter-cat').forEach(c => c.checked = true);
-            document.getElementById('priceMin').value = '';
-            document.getElementById('priceMax').value = '';
-            document.querySelectorAll('input[name="priceRange"]').forEach(r => r.checked = false);
-            document.querySelectorAll('input[name="rating"]').forEach(r => r.checked = false);
-            selectedColors = [];
-            document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('ring-2', 'ring-blue-500',
-                'ring-offset-2'));
+            selectedVariantFilters = {};
+            document.querySelectorAll('.filter-variant').forEach((el) => {
+                el.checked = false;
+            });
+            document.querySelectorAll('.filter-variant-search').forEach((el) => {
+                el.value = '';
+                searchVariantOptions(el);
+            });
             filteredProducts = [...products];
             renderProducts(filteredProducts);
         }
@@ -865,6 +860,11 @@
             else if (val === 'popular') sorted.sort((a, b) => b.sold - a.sold);
             else sorted.sort((a, b) => b.id - a.id);
             renderProducts(sorted);
+        }
+
+        function loadMoreProducts() {
+            visibleProductCount += productPageSize;
+            renderProducts(currentRenderedProducts, false);
         }
 
         function cycleSortMobile() {
@@ -1230,7 +1230,9 @@
 
         // Init
         setMegaCategory('rumah-tangga');
+        renderFilterVariants();
         renderProducts(products);
         initWishlistStatus();
     </script>
 @endsection
+
