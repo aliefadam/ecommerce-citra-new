@@ -194,6 +194,11 @@ class ProductSeeder extends Seeder
                 continue;
             }
 
+            ProductVariant::query()
+                ->where('product_id', $savedProduct->id)
+                ->where('variant_id', '!=', $variant->id)
+                ->delete();
+
             ProductVariant::updateOrCreate(
                 [
                     'product_id' => $savedProduct->id,

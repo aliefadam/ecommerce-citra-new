@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
     <head>
@@ -60,11 +60,6 @@
                     <h1 class="text-3xl font-bold leading-tight">Kebutuhan fastener <br>untuk proyek Anda</h1>
                     <p class="mt-2 text-sm text-white/70">Baut, mur, ring, anchor, dan perkakas teknik siap dikirim
                         ke seluruh Indonesia.</p>
-                    <div class="hidden">
-                    <p class="mt-2 text-sm text-white/70">Belanja mudah, cepat, dan terpercaya â€” <br>ribuan produk
-                        siap
-                        dikirim ke seluruh Indonesia.</p>
-                    </div>
                     <div class="flex items-center gap-2 mt-6">
                         <div class="w-7 h-2 rounded-full bg-white"></div>
                         <div class="w-2 h-2 rounded-full bg-white/40"></div>
@@ -110,14 +105,14 @@
                             <div>
                                 <label
                                     class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Password</label>
-                                <input type="password" name="password" placeholder="••••••••"
+                                <input type="password" name="password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
                                     class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200 placeholder-slate-400" />
                             </div>
                             <div>
                                 <label
                                     class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Konfirmasi
                                     Password</label>
-                                <input type="password" name="password_confirmation" placeholder="••••••••"
+                                <input type="password" name="password_confirmation" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
                                     class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200 placeholder-slate-400" />
                             </div>
 

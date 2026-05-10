@@ -1,4 +1,4 @@
-﻿@extends('layouts.user')
+@extends('layouts.user')
 
 @section('title', 'Profil - ' . ($appStoreName ?? 'Ecommerce Citra'))
 
@@ -2464,139 +2464,139 @@
         }
         const megaCategoryData = {
             'rumah-tangga': [{
-                    title: 'Dekorasi',
-                    items: ['Hiasan Dinding', 'Jam Dinding', 'Lilin Aroma', 'Karpet Ruang']
+                    title: 'Baut',
+                    items: ['Baut Hex', 'Baut L', 'Baut Roofing', 'Baut Stainless']
                 },
                 {
-                    title: 'Kamar Mandi',
-                    items: ['Cermin Kamar Mandi', 'Dispenser Sabun', 'Rak Toilet', 'Handuk Mandi']
+                    title: 'Mur',
+                    items: ['Mur Hex', 'Mur Nyloc', 'Mur Flange', 'Mur Kuping']
                 },
                 {
-                    title: 'Kebutuhan Rumah',
-                    items: ['Baterai', 'Humidifier', 'Payung', 'Termometer']
+                    title: 'Sekrup',
+                    items: ['Sekrup Kayu', 'Sekrup Gypsum', 'Sekrup SDS', 'Sekrup Mesin']
                 },
                 {
-                    title: 'Tempat Penyimpanan',
-                    items: ['Box Plastik', 'Keranjang', 'Rak Serbaguna', 'Lemari Kecil']
+                    title: 'Ring & Washer',
+                    items: ['Ring Plat', 'Ring Per', 'Washer Stainless', 'Washer Galvanis']
                 }
             ],
             'fashion-pria': [{
-                    title: 'Atasan',
-                    items: ['Kemeja', 'Kaos', 'Polo Shirt', 'Hoodie']
+                    title: 'Dynabolt',
+                    items: ['Dynabolt M8', 'Dynabolt M10', 'Dynabolt M12', 'Drop In Anchor']
                 },
                 {
-                    title: 'Bawahan',
-                    items: ['Celana Chino', 'Jeans', 'Celana Pendek', 'Jogger']
+                    title: 'Anchor',
+                    items: ['Fischer', 'Chemical Anchor', 'Sleeve Anchor', 'Anchor Bolt']
                 },
                 {
-                    title: 'Aksesoris',
-                    items: ['Topi', 'Ikat Pinggang', 'Dompet', 'Jam Tangan']
+                    title: 'Tools',
+                    items: ['Kunci Pas', 'Kunci L', 'Obeng', 'Tang']
                 },
                 {
-                    title: 'Sepatu Pria',
-                    items: ['Sneakers', 'Pantofel', 'Boots', 'Sandal']
+                    title: 'Mata Bor',
+                    items: ['Mata Bor Besi', 'Mata Bor Beton', 'Hole Saw', 'Countersink']
                 }
             ],
             'fashion-wanita': [{
-                    title: 'Atasan Wanita',
-                    items: ['Blouse', 'Kemeja Wanita', 'Tunik', 'Crop Top']
+                    title: 'Paku',
+                    items: ['Paku Beton', 'Paku Kayu', 'Paku Rivet', 'Paku Tembak']
                 },
                 {
-                    title: 'Bawahan Wanita',
-                    items: ['Rok', 'Jeans Wanita', 'Celana Kulot', 'Legging']
+                    title: 'Klem',
+                    items: ['Klem Pipa', 'U Bolt', 'Clamp Stainless', 'Klem Selang']
                 },
                 {
-                    title: 'Dress',
-                    items: ['Dress Kasual', 'Dress Formal', 'Maxi Dress', 'Midi Dress']
+                    title: 'Bracket',
+                    items: ['Bracket L', 'Bracket Rak', 'Plat Sambung', 'Engsel Besi']
                 },
                 {
-                    title: 'Aksesoris',
-                    items: ['Tas Wanita', 'Perhiasan', 'Hijab', 'Sepatu Wanita']
+                    title: 'Tools',
+                    items: ['Lem Besi', 'Sealant', 'Anti Karat', 'Threadlocker']
                 }
             ],
             'elektronik': [{
-                    title: 'Komputer',
-                    items: ['Laptop', 'PC Desktop', 'Monitor', 'Keyboard']
+                    title: 'Baut Mesin',
+                    items: ['Baut M4', 'Baut M5', 'Baut M6', 'Baut M8']
                 },
                 {
-                    title: 'Gadget',
-                    items: ['Smartphone', 'Tablet', 'Smartwatch', 'Earbuds']
+                    title: 'Material',
+                    items: ['Baja', 'Stainless 304', 'Galvanis', 'Kuningan']
                 },
                 {
-                    title: 'Gaming',
-                    items: ['Konsol', 'Gamepad', 'Mouse Gaming', 'Headset Gaming']
+                    title: 'Grade',
+                    items: ['Grade 4.8', 'Grade 8.8', 'Grade 10.9', 'Grade 12.9']
                 },
                 {
-                    title: 'Aksesoris',
-                    items: ['Power Bank', 'Charger', 'Kabel Data', 'Storage']
+                    title: 'Tools',
+                    items: ['Box Baut', 'Rak Komponen', 'Label SKU', 'Organizer']
                 }
             ],
             'kecantikan': [{
-                    title: 'Perawatan Wajah',
-                    items: ['Facial Wash', 'Toner', 'Serum', 'Moisturizer']
+                    title: 'Abrasive',
+                    items: ['Mata Gerinda', 'Amplas', 'Cutting Wheel', 'Flap Disc']
                 },
                 {
-                    title: 'Makeup',
-                    items: ['Lipstik', 'Foundation', 'Compact Powder', 'Maskara']
+                    title: 'Safety',
+                    items: ['Sarung Tangan', 'Kacamata Safety', 'Masker Kerja', 'Ear Plug']
                 },
                 {
-                    title: 'Perawatan Tubuh',
-                    items: ['Body Lotion', 'Body Scrub', 'Sabun', 'Hand Cream']
+                    title: 'Lem & Sealant',
+                    items: ['Lem Besi', 'Lem PVC', 'Sealant', 'Epoxy']
                 },
                 {
-                    title: 'Perawatan Rambut',
-                    items: ['Shampoo', 'Conditioner', 'Hair Mask', 'Hair Tonic']
+                    title: 'Anti Karat',
+                    items: ['WD Spray', 'Rust Remover', 'Grease', 'Lubricant']
                 }
             ],
             'olahraga': [{
-                    title: 'Fitness',
-                    items: ['Dumbbell', 'Resistance Band', 'Yoga Mat', 'Kettlebell']
+                    title: 'Perkakas Tangan',
+                    items: ['Palu', 'Tang', 'Obeng', 'Kunci Inggris']
                 },
                 {
-                    title: 'Lari',
-                    items: ['Sepatu Lari', 'Jaket Lari', 'Celana Lari', 'Botol Minum']
+                    title: 'Perkakas Ukur',
+                    items: ['Meteran', 'Jangka Sorong', 'Waterpass', 'Siku Ukur']
                 },
                 {
-                    title: 'Sepak Bola',
-                    items: ['Jersey', 'Sepatu Bola', 'Bola', 'Shin Guard']
+                    title: 'Power Tool',
+                    items: ['Bor Listrik', 'Gerinda', 'Impact Driver', 'Blower']
                 },
                 {
-                    title: 'Outdoor',
-                    items: ['Tenda', 'Carrier', 'Sleeping Bag', 'Jaket Gunung']
+                    title: 'Consumable',
+                    items: ['Mata Bor', 'Mata Gerinda', 'Amplas', 'Kabel Ties']
                 }
             ],
             'ibu-bayi': [{
-                    title: 'Makanan Bayi',
-                    items: ['Sereal Bayi', 'Puree', 'Snack Bayi', 'Susu Formula']
+                    title: 'Klem & Clamp',
+                    items: ['Klem Pipa', 'Hose Clamp', 'U Bolt', 'Clamp Stainless']
                 },
                 {
-                    title: 'Perlengkapan Bayi',
-                    items: ['Popok', 'Botol Susu', 'Stroller', 'Baby Carrier']
+                    title: 'Bracket',
+                    items: ['Bracket L', 'Bracket U', 'Plat Sambung', 'Dudukan Rak']
                 },
                 {
-                    title: 'Perawatan Bayi',
-                    items: ['Sabun Bayi', 'Minyak Telon', 'Lotion Bayi', 'Tisu Basah']
+                    title: 'Rivet',
+                    items: ['Paku Rivet', 'Rivet Nut', 'Tang Rivet', 'Blind Rivet']
                 },
                 {
-                    title: 'Ibu Menyusui',
-                    items: ['Pompa ASI', 'Breast Pad', 'Cooler Bag', 'Bantal Menyusui']
+                    title: 'Accessories',
+                    items: ['Cable Tie', 'Fisher', 'Spacer', 'Insert Nut']
                 }
             ],
             'makanan-minuman': [{
-                    title: 'Makanan Ringan',
-                    items: ['Keripik', 'Biskuit', 'Cokelat', 'Kacang']
+                    title: 'Chemical',
+                    items: ['Threadlocker', 'Sealant', 'Epoxy', 'Cleaner']
                 },
                 {
-                    title: 'Minuman',
-                    items: ['Kopi', 'Teh', 'Susu UHT', 'Minuman Isotonik']
+                    title: 'Lem',
+                    items: ['Lem Besi', 'Lem Kayu', 'Lem PVC', 'Lem Serbaguna']
                 },
                 {
-                    title: 'Bahan Pokok',
-                    items: ['Beras', 'Minyak Goreng', 'Gula', 'Tepung']
+                    title: 'Pelumas',
+                    items: ['Grease', 'Oli Serbaguna', 'Anti Karat', 'Contact Cleaner']
                 },
                 {
-                    title: 'Makanan Instan',
-                    items: ['Mie Instan', 'Sarden', 'Kornet', 'Frozen Food']
+                    title: 'Packing',
+                    items: ['Lakban', 'Stretch Film', 'Bubble Wrap', 'Kardus Sparepart']
                 }
             ]
         };

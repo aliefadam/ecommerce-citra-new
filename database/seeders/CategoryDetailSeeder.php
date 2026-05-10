@@ -33,6 +33,12 @@ class CategoryDetailSeeder extends Seeder
             if (!$main) {
                 continue;
             }
+
+            CategoryDetail::query()
+                ->where('main_category_id', $main->id)
+                ->whereNotIn('name', $details)
+                ->delete();
+
             foreach ($details as $detailName) {
                 CategoryDetail::updateOrCreate(
                     ['main_category_id' => $main->id, 'name' => $detailName],
