@@ -10,6 +10,7 @@ use App\Models\TransactionDetail;
 use App\Models\TransactionStatusHistory;
 use App\Models\UserNotification;
 use App\Models\Cart;
+use App\Services\ImageOptimizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -160,15 +161,16 @@ class ManualPaymentController extends Controller
         ]);
     }
 
-    public function uploadProof(Request $request, Transaction $transaction)
+    public function uploadProof(Request $request, Transaction $transaction, ImageOptimizer $imageOptimizer)
     {
         abort_unless((int) $transaction->user_id === (int) $request->user()->id, 403);
 
         $validated = $request->validate([
-            'payment_proof' => ['required', 'image', 'max:2048'],
+            'payment_proof' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
         ]);
 
-        $path = 'storage/' . $validated['payment_proof']->store('payment-proofs', 'public');
+        $oldProof = (string) $transaction->payment_proof_path;
+        $path = $imageOptimizer->storeWebp($validated['payment_proof'], 'payment-proofs', 1400, 1400, 82, true);
         $oldStatus = (string) $transaction->status;
         $transaction->update([
             'payment_proof_path' => $path,
@@ -177,6 +179,8 @@ class ManualPaymentController extends Controller
             'payment_admin_note' => null,
             'status' => 'menunggu_verifikasi',
         ]);
+
+        $imageOptimizer->deletePublicFile($oldProof);
 
         TransactionStatusHistory::create([
             'transaction_id' => $transaction->id,

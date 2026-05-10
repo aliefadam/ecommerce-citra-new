@@ -9,10 +9,10 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\StoreLocation;
 use App\Models\StoreSetting;
+use App\Services\ImageOptimizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 
 class BackendController extends Controller
 {
@@ -263,7 +263,7 @@ class BackendController extends Controller
         ]);
     }
 
-    public function updateSettings(Request $request)
+    public function updateSettings(Request $request, ImageOptimizer $imageOptimizer)
     {
         $section = (string) $request->input('section', 'store');
 
@@ -282,7 +282,7 @@ class BackendController extends Controller
 
         $validated = $request->validate([
             'store_name' => ['required', 'string', 'max:120'],
-            'store_logo' => ['nullable', 'image', 'max:2048'],
+            'store_logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
         $values = [
@@ -291,10 +291,8 @@ class BackendController extends Controller
 
         if ($request->hasFile('store_logo')) {
             $currentLogo = (string) StoreSetting::values()['store_logo_path'];
-            if ($currentLogo !== '' && Storage::disk('public')->exists($currentLogo)) {
-                Storage::disk('public')->delete($currentLogo);
-            }
-            $values['store_logo_path'] = $request->file('store_logo')->store('store', 'public');
+            $values['store_logo_path'] = $imageOptimizer->storeWebp($request->file('store_logo'), 'store', 512, 512, 82);
+            $imageOptimizer->deletePublicFile($currentLogo);
         }
 
         StoreSetting::setMany($values);

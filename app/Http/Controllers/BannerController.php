@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Banner;
+use App\Services\ImageOptimizer;
 use Illuminate\Http\Request;
 
 class BannerController extends Controller
@@ -19,19 +20,19 @@ class BannerController extends Controller
         return view('backend.banners.create');
     }
 
-    public function store(Request $request)
+    public function store(Request $request, ImageOptimizer $imageOptimizer)
     {
         $validated = $request->validate([
             'title' => ['nullable', 'string', 'max:255'],
             'type' => ['required', 'in:carousel,side'],
             'image_url' => ['nullable', 'string', 'max:2048'],
-            'image_file' => ['nullable', 'image', 'max:4096'],
+            'image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:6144'],
             'target_url' => ['nullable', 'url', 'max:2048'],
             'sort_order' => ['required', 'integer', 'min:1'],
             'is_active' => ['nullable', 'boolean'],
         ]);
 
-        $image = $this->resolveImageValue($request, (string) ($validated['image_url'] ?? ''));
+        $image = $this->resolveImageValue($request, $imageOptimizer, (string) ($validated['image_url'] ?? ''));
         if ($image === null) {
             return back()
                 ->withErrors(['image_url' => 'Gambar banner wajib diisi (upload file atau URL).'])
@@ -62,13 +63,13 @@ class BannerController extends Controller
         return view('backend.banners.edit', compact('banner'));
     }
 
-    public function update(Request $request, Banner $banner)
+    public function update(Request $request, Banner $banner, ImageOptimizer $imageOptimizer)
     {
         $validated = $request->validate([
             'title' => ['nullable', 'string', 'max:255'],
             'type' => ['required', 'in:carousel,side'],
             'image_url' => ['nullable', 'string', 'max:2048'],
-            'image_file' => ['nullable', 'image', 'max:4096'],
+            'image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:6144'],
             'target_url' => ['nullable', 'url', 'max:2048'],
             'sort_order' => ['required', 'integer', 'min:1'],
             'is_active' => ['nullable', 'boolean'],
@@ -82,7 +83,8 @@ class BannerController extends Controller
                 ->withInput();
         }
 
-        $image = $this->resolveImageValue($request, (string) ($validated['image_url'] ?? ''), $banner->image);
+        $oldImage = (string) $banner->image;
+        $image = $this->resolveImageValue($request, $imageOptimizer, (string) ($validated['image_url'] ?? ''), $oldImage);
         if ($image === null) {
             return back()
                 ->withErrors(['image_url' => 'Gambar banner wajib diisi (upload file atau URL).'])
@@ -98,6 +100,10 @@ class BannerController extends Controller
             'is_active' => $isActiveTarget,
         ]);
 
+        if ($image !== $oldImage) {
+            $imageOptimizer->deletePublicFile($oldImage);
+        }
+
         return redirect()->route('banners.index')->with('success', 'Banner berhasil diperbarui.');
     }
 
@@ -106,6 +112,8 @@ class BannerController extends Controller
         if ($banner->is_active && $banner->type === 'carousel' && !$this->canDeactivate($banner)) {
             return back()->withErrors(['banner' => 'Minimal harus ada 1 banner carousel aktif.']);
         }
+
+        app(ImageOptimizer::class)->deletePublicFile((string) $banner->image);
 
         $banner->delete();
 
@@ -121,10 +129,10 @@ class BannerController extends Controller
             ->exists();
     }
 
-    private function resolveImageValue(Request $request, string $imageUrl, ?string $fallback = null): ?string
+    private function resolveImageValue(Request $request, ImageOptimizer $imageOptimizer, string $imageUrl, ?string $fallback = null): ?string
     {
         if ($request->hasFile('image_file')) {
-            return $request->file('image_file')->store('banners', 'public');
+            return $imageOptimizer->storeWebp($request->file('image_file'), 'banners', 1600, 700, 82);
         }
 
         $trimmed = trim($imageUrl);

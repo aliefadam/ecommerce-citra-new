@@ -6,6 +6,7 @@ use App\Models\ReturnRequest;
 use App\Models\ReturnRequestItem;
 use App\Models\Transaction;
 use App\Models\UserNotification;
+use App\Services\ImageOptimizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -13,7 +14,7 @@ use Illuminate\Validation\Rule;
 
 class ReturnRequestController extends Controller
 {
-    public function store(Request $request)
+    public function store(Request $request, ImageOptimizer $imageOptimizer)
     {
         $validated = $request->validate([
             'transaction_id' => ['required', 'integer', 'exists:transactions,id'],
@@ -23,7 +24,7 @@ class ReturnRequestController extends Controller
             'items' => ['required', 'array', 'min:1'],
             'items.*' => ['nullable', 'integer', 'min:0'],
             'photos' => ['nullable', 'array', 'max:5'],
-            'photos.*' => ['image', 'max:2048'],
+            'photos.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
         ]);
 
         $transaction = Transaction::query()
@@ -47,7 +48,7 @@ class ReturnRequestController extends Controller
         $photos = [];
 
         foreach ($request->file('photos', []) as $photo) {
-            $photos[] = 'storage/' . $photo->store('return-requests', 'public');
+            $photos[] = $imageOptimizer->storeWebp($photo, 'return-requests', 1200, 1200, 82, true);
         }
 
         try {

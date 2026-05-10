@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\MainCategory;
+use App\Services\ImageOptimizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -20,15 +21,15 @@ class MainCategoryController extends Controller
         return view('backend.main-categories.create');
     }
 
-    public function store(Request $request)
+    public function store(Request $request, ImageOptimizer $imageOptimizer)
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255', Rule::unique('main_categories', 'name')],
             'image_url' => ['nullable', 'string', 'max:2048'],
-            'image_file' => ['nullable', 'image', 'max:4096'],
+            'image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
         ]);
 
-        $image = $this->resolveImageValue($request, (string) ($validated['image_url'] ?? ''));
+        $image = $this->resolveImageValue($request, $imageOptimizer, (string) ($validated['image_url'] ?? ''));
 
         MainCategory::create([
             'name' => $validated['name'],
@@ -48,26 +49,31 @@ class MainCategoryController extends Controller
         return view('backend.main-categories.edit', compact('mainCategory'));
     }
 
-    public function update(Request $request, MainCategory $mainCategory)
+    public function update(Request $request, MainCategory $mainCategory, ImageOptimizer $imageOptimizer)
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255', Rule::unique('main_categories', 'name')->ignore($mainCategory->id)],
             'image_url' => ['nullable', 'string', 'max:2048'],
-            'image_file' => ['nullable', 'image', 'max:4096'],
+            'image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
         ]);
 
-        $image = $this->resolveImageValue($request, (string) ($validated['image_url'] ?? ''), $mainCategory->image);
+        $oldImage = (string) $mainCategory->image;
+        $image = $this->resolveImageValue($request, $imageOptimizer, (string) ($validated['image_url'] ?? ''), $oldImage);
 
         $mainCategory->update([
             'name' => $validated['name'],
             'slug' => $this->uniqueSlug($validated['name'], $mainCategory->id),
             'image' => $image,
         ]);
+        if ($image !== $oldImage) {
+            $imageOptimizer->deletePublicFile($oldImage);
+        }
         return redirect()->route('main-categories.index')->with('success', 'Kategori utama berhasil diperbarui.');
     }
 
     public function destroy(MainCategory $mainCategory)
     {
+        app(ImageOptimizer::class)->deletePublicFile((string) $mainCategory->image);
         $mainCategory->delete();
         return redirect()->route('main-categories.index')->with('success', 'Kategori utama berhasil dihapus.');
     }
@@ -83,10 +89,10 @@ class MainCategoryController extends Controller
         return $slug;
     }
 
-    private function resolveImageValue(Request $request, string $imageUrl, ?string $fallback = null): ?string
+    private function resolveImageValue(Request $request, ImageOptimizer $imageOptimizer, string $imageUrl, ?string $fallback = null): ?string
     {
         if ($request->hasFile('image_file')) {
-            return $request->file('image_file')->store('main-categories', 'public');
+            return $imageOptimizer->storeWebp($request->file('image_file'), 'main-categories', 600, 600, 82);
         }
 
         $trimmed = trim($imageUrl);

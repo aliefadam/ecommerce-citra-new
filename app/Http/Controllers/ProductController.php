@@ -6,6 +6,7 @@ use App\Models\MainCategory;
 use App\Models\CategoryDetail;
 use App\Models\Product;
 use App\Models\Variant;
+use App\Services\ImageOptimizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -39,7 +40,7 @@ class ProductController extends Controller
         return view('backend.products.create', compact('mainCategories', 'categoryDetails', 'categories', 'variants'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, ImageOptimizer $imageOptimizer)
     {
         $validated = $request->validate([
             'name'                  => ['required', 'string', 'max:255'],
@@ -52,7 +53,7 @@ class ProductController extends Controller
             'variants.*.variant_id' => ['required', 'exists:variants,id', 'distinct'],
             'variants.*.price'      => ['required', 'numeric', 'min:0'],
             'variants.*.stock'      => ['required', 'integer', 'min:0'],
-            'variants.*.image'      => ['nullable', 'image', 'max:2048'],
+            'variants.*.image'      => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
         ]);
         $detailId = (int) ($validated['category_detail_id'] ?? $validated['category_id'] ?? 0);
         $detail = CategoryDetail::query()->find($detailId);
@@ -60,7 +61,7 @@ class ProductController extends Controller
 
         $files = $request->file('variants', []);
 
-        DB::transaction(function () use ($validated, $files, $detail) {
+        DB::transaction(function () use ($validated, $files, $detail, $imageOptimizer) {
             $slug = $this->makeUniqueProductSlug($validated['name']);
 
             $product = Product::create([
@@ -79,7 +80,7 @@ class ProductController extends Controller
 
             foreach ($validated['variants'] as $i => $v) {
                 $v['image'] = isset($files[$i]['image'])
-                    ? $files[$i]['image']->store('product-variants', 'public')
+                    ? $imageOptimizer->storeWebp($files[$i]['image'], 'product-variants', 1200, 1200, 82)
                     : null;
                 $variant = $variantNamesById->get($v['variant_id']);
                 $v['sku'] = $this->buildVariantSku($validated['name'], $variant?->name, $variant?->value);
@@ -116,7 +117,7 @@ class ProductController extends Controller
         return view('backend.products.edit', compact('product', 'mainCategories', 'categoryDetails', 'categories', 'variants'));
     }
 
-    public function update(Request $request, Product $product)
+    public function update(Request $request, Product $product, ImageOptimizer $imageOptimizer)
     {
         $validated = $request->validate([
             'name'                  => ['required', 'string', 'max:255'],
@@ -129,7 +130,7 @@ class ProductController extends Controller
             'variants.*.variant_id' => ['required', 'exists:variants,id', 'distinct'],
             'variants.*.price'      => ['required', 'numeric', 'min:0'],
             'variants.*.stock'      => ['required', 'integer', 'min:0'],
-            'variants.*.image'      => ['nullable', 'image', 'max:2048'],
+            'variants.*.image'      => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
         ]);
         $detailId = (int) ($validated['category_detail_id'] ?? $validated['category_id'] ?? 0);
         $detail = CategoryDetail::query()->find($detailId);
@@ -137,7 +138,10 @@ class ProductController extends Controller
 
         $files = $request->file('variants', []);
 
-        DB::transaction(function () use ($validated, $files, $request, $product, $detail) {
+        $oldImages = $product->productVariants()->pluck('image')->filter()->values()->all();
+        $newImages = [];
+
+        DB::transaction(function () use ($validated, $files, $request, $product, $detail, $imageOptimizer, &$newImages) {
             $slug = $this->makeUniqueProductSlug($validated['name'], $product->id);
 
             $product->update([
@@ -158,10 +162,13 @@ class ProductController extends Controller
 
             foreach ($validated['variants'] as $i => $v) {
                 if (isset($files[$i]['image'])) {
-                    $v['image'] = $files[$i]['image']->store('product-variants', 'public');
+                    $v['image'] = $imageOptimizer->storeWebp($files[$i]['image'], 'product-variants', 1200, 1200, 82);
                 } else {
                     $existing = $request->input("variants.{$i}.existing_image");
                     $v['image'] = $existing ?: null;
+                }
+                if (!empty($v['image'])) {
+                    $newImages[] = $v['image'];
                 }
                 $variant = $variantNamesById->get($v['variant_id']);
                 $v['sku'] = $this->buildVariantSku($validated['name'], $variant?->name, $variant?->value);
@@ -170,11 +177,21 @@ class ProductController extends Controller
             }
         });
 
+        collect($oldImages)
+            ->diff($newImages)
+            ->each(fn($path) => $imageOptimizer->deletePublicFile((string) $path));
+
         return redirect()->route('products.index')->with('success', 'Product berhasil diperbarui.');
     }
 
     public function destroy(Product $product)
     {
+        $imageOptimizer = app(ImageOptimizer::class);
+        $product->productVariants()
+            ->pluck('image')
+            ->filter()
+            ->each(fn($path) => $imageOptimizer->deletePublicFile((string) $path));
+
         $product->delete();
 
         return redirect()->route('products.index')->with('success', 'Product berhasil dihapus.');
