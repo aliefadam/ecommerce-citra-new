@@ -6,6 +6,7 @@ use App\Models\Cart;
 use App\Models\FlashSaleItem;
 use App\Models\Coupon;
 use App\Models\ProductVariant;
+use App\Models\TransactionStatusHistory;
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
 use Illuminate\Http\Request;
@@ -196,6 +197,31 @@ class CartController extends Controller
                 ]],
             ],
         ]);
+
+        return redirect()->route('frontend.checkout');
+    }
+
+    public function prepareRedeemCheckout(Request $request)
+    {
+        $validated = $request->validate([
+            'product_variant_id' => ['required', 'integer', 'exists:product_variants,id'],
+            'quantity' => ['required', 'integer', 'min:1'],
+        ]);
+
+        $variant = ProductVariant::query()
+            ->with(['product', 'variant'])
+            ->findOrFail((int) $validated['product_variant_id']);
+
+        $item = $this->buildRedeemCheckoutItem($variant, (int) $validated['quantity']);
+        $this->ensureRedeemItemCanBeProcessed($request->user()->id, $item);
+
+        session([
+            'checkout' => [
+                'source' => 'redeem_point',
+                'items' => [$item],
+            ],
+        ]);
+        session()->forget('checkout_coupon');
 
         return redirect()->route('frontend.checkout');
     }
@@ -410,6 +436,60 @@ class CartController extends Controller
 
         if ($requestedQuantity > $stock) {
             $this->abortJson(422, 'Jumlah melebihi stok yang tersedia. Stok saat ini: ' . $stock . '.');
+        }
+    }
+
+    private function buildRedeemCheckoutItem(ProductVariant $variant, int $quantity, string $note = ''): array
+    {
+        $product = $variant->product;
+        abort_unless($product && $product->status === 'active', 404);
+
+        if (!(bool) $product->is_redeem_product || (int) ($product->redeem_points ?? 0) < 1) {
+            $this->abortJson(422, 'Produk ini belum tersedia untuk redeem point.');
+        }
+
+        $this->ensureVariantCanBePurchased($variant, $quantity);
+
+        $variantText = trim(
+            ($variant->variant?->name ? $variant->variant->name . ': ' : '') .
+            ($variant->variant?->value ?? '-')
+        );
+
+        return [
+            'cartId' => null,
+            'productVariantId' => (int) $variant->id,
+            'id' => (int) $product->id,
+            'slug' => (string) $product->slug,
+            'name' => (string) $product->name,
+            'variant' => $variantText !== '' ? $variantText : '-',
+            'price' => 0,
+            'origPrice' => 0,
+            'qty' => $quantity,
+            'image' => $this->resolveVariantImageUrl($variant),
+            'isFlashSale' => false,
+            'isRedeemProduct' => true,
+            'redeemPoints' => (int) ($product->redeem_points ?? 0),
+            'note' => $note,
+        ];
+    }
+
+    private function ensureRedeemItemCanBeProcessed(int $userId, array $item, ?int $knownBalance = null): void
+    {
+        $requiredPoints = ((int) ($item['redeemPoints'] ?? 0)) * ((int) ($item['qty'] ?? 0));
+        if ($requiredPoints < 1) {
+            $this->abortJson(422, 'Produk redeem tidak memiliki nilai point yang valid.');
+        }
+
+        $pointBalance = $knownBalance;
+        if ($pointBalance === null) {
+            $pointBalance = (int) optional(auth()->user())->point_balance;
+            if ((int) optional(auth()->user())->id !== $userId) {
+                $pointBalance = (int) \App\Models\User::query()->where('id', $userId)->value('point_balance');
+            }
+        }
+
+        if ($pointBalance < $requiredPoints) {
+            $this->abortJson(422, 'Point kamu tidak cukup. Dibutuhkan ' . number_format($requiredPoints, 0, ',', '.') . ' point.');
         }
     }
 

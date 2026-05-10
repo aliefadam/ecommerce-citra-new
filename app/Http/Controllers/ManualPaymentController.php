@@ -10,6 +10,7 @@ use App\Models\TransactionDetail;
 use App\Models\TransactionStatusHistory;
 use App\Models\UserNotification;
 use App\Models\Cart;
+use App\Services\LoyaltyPointService;
 use App\Services\ImageOptimizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +18,7 @@ use Illuminate\Support\Facades\Mail;
 
 class ManualPaymentController extends Controller
 {
-    public function checkout(Request $request)
+    public function checkout(Request $request, LoyaltyPointService $loyaltyPointService)
     {
         $validated = $request->validate([
             'items' => ['required', 'array', 'min:1'],
@@ -29,6 +30,7 @@ class ManualPaymentController extends Controller
             'items.*.note' => ['nullable', 'string', 'max:500'],
             'items.*.price' => ['required', 'numeric', 'min:0'],
             'items.*.qty' => ['required', 'integer', 'min:1'],
+            'items.*.redeemPoints' => ['nullable', 'integer', 'min:0'],
             'shipping_cost' => ['required', 'numeric', 'min:0'],
             'shipping_label' => ['nullable', 'string', 'max:100'],
             'address_id' => ['nullable', 'integer'],
@@ -36,7 +38,7 @@ class ManualPaymentController extends Controller
 
         $orderId = 'MAN-' . now()->format('YmdHis') . '-' . random_int(1000, 9999);
 
-        $transaction = DB::transaction(function () use ($request, $validated, $orderId) {
+        $transaction = DB::transaction(function () use ($request, $validated, $orderId, $loyaltyPointService) {
             $items = collect($validated['items'])->values();
             $subtotal = (int) $items->sum(fn($item) => ((int) round((float) $item['price'])) * ((int) $item['qty']));
             $shippingCost = (int) round((float) $validated['shipping_cost']);
@@ -105,7 +107,9 @@ class ManualPaymentController extends Controller
                     'price' => $price,
                     'quantity' => $qty,
                     'subtotal' => $qty * $price,
-                    'item_note' => (string) ($item['note'] ?? ''),
+                    'item_note' => !empty($item['redeemPoints'])
+                        ? LoyaltyPointService::buildRedeemItemNote((int) $item['redeemPoints'], (string) ($item['note'] ?? ''))
+                        : (string) ($item['note'] ?? ''),
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
@@ -126,6 +130,8 @@ class ManualPaymentController extends Controller
                 'note' => 'Checkout dengan pembayaran transfer manual.',
             ]);
 
+            $loyaltyPointService->reserveRedeemPoints($transaction);
+
             return $transaction;
         });
 
@@ -135,7 +141,7 @@ class ManualPaymentController extends Controller
             if (!empty($ids)) {
                 Cart::query()->where('user_id', $request->user()->id)->whereIn('id', $ids)->delete();
             }
-        } elseif (($checkout['source'] ?? '') !== 'buy_now') {
+        } elseif (!in_array(($checkout['source'] ?? ''), ['buy_now', 'redeem_point'], true)) {
             Cart::query()->where('user_id', $request->user()->id)->delete();
         }
 

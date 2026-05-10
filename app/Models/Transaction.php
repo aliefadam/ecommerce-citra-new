@@ -28,6 +28,10 @@ class Transaction extends Model
         'shipping_cost',
         'coupon_code',
         'discount_amount',
+        'redeem_points_reserved',
+        'redeem_points_reserved_at',
+        'redeem_points_finalized_at',
+        'redeem_points_released_at',
         'grand_total',
         'shipping_label',
         'shipping_recipient_name',
@@ -57,6 +61,9 @@ class Transaction extends Model
         'payment_rejected_at' => 'datetime',
         'expires_at' => 'datetime',
         'cancelled_at' => 'datetime',
+        'redeem_points_reserved_at' => 'datetime',
+        'redeem_points_finalized_at' => 'datetime',
+        'redeem_points_released_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

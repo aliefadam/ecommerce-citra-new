@@ -10,6 +10,7 @@ use App\Models\TransactionDetail;
 use App\Models\TransactionStatusHistory;
 use App\Models\StoreSetting;
 use App\Models\UserNotification;
+use App\Services\LoyaltyPointService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -33,6 +34,7 @@ class MidtransController extends Controller
             'items.*.note' => ['nullable', 'string', 'max:500'],
             'items.*.price' => ['required', 'numeric', 'min:0'],
             'items.*.qty' => ['required', 'integer', 'min:1'],
+            'items.*.redeemPoints' => ['nullable', 'integer', 'min:0'],
             'shipping_cost' => ['required', 'numeric', 'min:0'],
             'shipping_label' => ['nullable', 'string', 'max:100'],
             'address_id' => ['nullable', 'integer'],
@@ -817,7 +819,9 @@ class MidtransController extends Controller
                     'price' => $price,
                     'quantity' => $qty,
                     'subtotal' => $qty * $price,
-                    'item_note' => (string) ($item['note'] ?? ''),
+                    'item_note' => !empty($item['redeemPoints'])
+                        ? LoyaltyPointService::buildRedeemItemNote((int) $item['redeemPoints'], (string) ($item['note'] ?? ''))
+                        : (string) ($item['note'] ?? ''),
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
@@ -829,6 +833,8 @@ class MidtransController extends Controller
             }
 
             if ($isNew) {
+                app(LoyaltyPointService::class)->reserveRedeemPoints($transaction);
+
                 if ($discountAmount > 0 && (string) ($payment['coupon_code'] ?? '') !== '') {
                     Coupon::query()->where('code', (string) $payment['coupon_code'])->increment('used_count');
                 }
@@ -884,6 +890,7 @@ class MidtransController extends Controller
             if (!$tx->cancel_reason) {
                 $tx->cancel_reason = strtolower($status) === 'expire' ? 'Transaksi kadaluarsa (tidak dibayar tepat waktu)' : 'Dibatalkan oleh sistem';
             }
+            app(LoyaltyPointService::class)->releaseRedeemReservation($tx);
         } else {
             $tx->status = $status;
         }
@@ -905,6 +912,8 @@ class MidtransController extends Controller
         }
 
         if ($isPaid && !in_array(strtolower($prevStatus), ['settlement', 'capture', 'paid'], true) && $tx->user_id) {
+            app(LoyaltyPointService::class)->finalizeRedeemReservation($tx);
+
             UserNotification::create([
                 'user_id' => $tx->user_id,
                 'type'    => 'payment_received',

@@ -7,6 +7,7 @@ use App\Models\StockMovement;
 use App\Models\Transaction;
 use App\Models\TransactionStatusHistory;
 use App\Models\UserNotification;
+use App\Services\LoyaltyPointService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -140,7 +141,7 @@ class TransactionController extends Controller
         return response()->json(['ok' => true, 'message' => 'Pesanan dikirim.']);
     }
 
-    public function verifyPayment(Request $request, Transaction $transaction)
+    public function verifyPayment(Request $request, Transaction $transaction, LoyaltyPointService $loyaltyPointService)
     {
         $validated = $request->validate([
             'action' => ['required', 'in:approve,reject'],
@@ -166,6 +167,10 @@ class TransactionController extends Controller
             $message = 'Bukti pembayaran ditolak.';
         }
         $transaction->save();
+
+        if ($validated['action'] === 'approve') {
+            $loyaltyPointService->finalizeRedeemReservation($transaction);
+        }
 
         $this->recordHistory($transaction, $oldStatus, (string) $transaction->status, 'payment_verification', $message, $request->user()?->id);
 

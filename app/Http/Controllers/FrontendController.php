@@ -694,6 +694,8 @@ class FrontendController extends Controller
         $source = (string) ($checkout['source'] ?? '');
         if ($source === 'buy_now') {
             $checkoutItems = collect($checkout['items'] ?? [])->values()->all();
+        } elseif ($source === 'redeem_point') {
+            $checkoutItems = collect($checkout['items'] ?? [])->values()->all();
         } elseif ($source === 'cart_selected') {
             $selectedIds = collect($checkout['cart_ids'] ?? [])
                 ->map(fn($id) => (int) $id)
@@ -967,12 +969,14 @@ class FrontendController extends Controller
 
                 return [
                     'id' => (int) $product->id,
+                    'productVariantId' => (int) $variant->id,
                     'slug' => (string) $product->slug,
                     'name' => (string) $product->name,
                     'category' => (string) ($product->categoryDetail?->name ?? $product->mainCategory?->name ?? 'Produk Redeem'),
                     'image' => $this->resolveProductVariantImageUrl($product, $variant, '400x400'),
                     'redeemPoints' => (int) ($product->redeem_points ?? 0),
                     'stock' => (int) $variant->stock,
+                    'variant' => trim(($variant->variant?->name ? $variant->variant->name . ': ' : '') . ($variant->variant?->value ?? '-')),
                     'sold' => (int) ($soldMap[$product->id] ?? 0),
                     'rating' => $stats ? round((float) $stats->avg_rating, 1) : 0.0,
                     'reviews' => $stats ? (int) $stats->total_reviews : 0,

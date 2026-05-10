@@ -128,6 +128,7 @@ Route::name('frontend.')->group(function () {
         Route::patch('/cart/{cart}', [CartController::class, 'update'])->name('cart.update');
         Route::delete('/cart/{cart}', [CartController::class, 'destroy'])->name('cart.destroy');
         Route::delete('/cart', [CartController::class, 'clear'])->name('cart.clear');
+        Route::post('/redeem-point/checkout', [CartController::class, 'prepareRedeemCheckout'])->name('redeem.prepare-checkout');
         Route::post('/checkout/buy-now', [CartController::class, 'buyNow'])->name('checkout.buy-now');
         Route::post('/checkout/complete', [CartController::class, 'completeCheckout'])->name('checkout.complete');
         Route::post('/checkout/manual-payment', [ManualPaymentController::class, 'checkout'])->name('checkout.manual-payment');

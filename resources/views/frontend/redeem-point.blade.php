@@ -28,7 +28,7 @@
                     <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Saldo Point</p>
                     @auth
                         <div class="mt-2 text-3xl font-extrabold text-blue-600">{{ number_format((int) $userPointBalance, 0, ',', '.') }}</div>
-                        <p class="mt-2 text-sm text-slate-500">Saldo point saat ini di akun kamu. Flow penukaran belum dihubungkan ke checkout.</p>
+                        <p class="mt-2 text-sm text-slate-500">Saldo point saat ini di akun kamu. Produk redeem sekarang bisa dilanjutkan ke checkout khusus point.</p>
                     @else
                         <div class="mt-2 text-xl font-bold text-slate-800">Login untuk melihat point kamu</div>
                         <p class="mt-2 text-sm text-slate-500">Katalog redeem tetap bisa dilihat tanpa login, tapi saldo point hanya muncul setelah masuk.</p>
@@ -79,10 +79,23 @@
 
                             <div class="mt-4 flex items-center justify-between gap-3">
                                 <span class="text-xs text-slate-500">{{ number_format((int) $product['sold']) }} kali ditebus/terjual</span>
-                                <a href="{{ $product['detailUrl'] }}"
-                                    class="inline-flex items-center justify-center rounded-full bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition-colors">
-                                    Lihat Detail
-                                </a>
+                                <div class="flex items-center gap-2">
+                                    @auth
+                                        <form method="POST" action="{{ route('frontend.redeem.prepare-checkout') }}">
+                                            @csrf
+                                            <input type="hidden" name="product_variant_id" value="{{ $product['productVariantId'] }}">
+                                            <input type="hidden" name="quantity" value="1">
+                                            <button type="submit"
+                                                class="inline-flex items-center justify-center rounded-full bg-amber-500 px-4 py-2 text-xs font-semibold text-white hover:bg-amber-600 transition-colors">
+                                                Redeem 1x
+                                            </button>
+                                        </form>
+                                    @endauth
+                                    <a href="{{ $product['detailUrl'] }}"
+                                        class="inline-flex items-center justify-center rounded-full bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition-colors">
+                                        Lihat Detail
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </article>

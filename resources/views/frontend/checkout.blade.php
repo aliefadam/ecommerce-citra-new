@@ -106,6 +106,9 @@
 @endsection
 
 @section('content')
+    @php
+        $isRedeemCheckout = ($checkoutSource ?? 'cart_all') === 'redeem_point';
+    @endphp
     <!-- NAVBAR -->
     @include('partials.navbar-user')
 
@@ -217,10 +220,16 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                             </svg>
-                            Metode Pembayaran
+                            {{ $isRedeemCheckout ? 'Pembayaran Ongkir' : 'Metode Pembayaran' }}
                         </h2>
                     </div>
                     <div class="p-6">
+                        @if ($isRedeemCheckout)
+                            <div class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 mb-5">
+                                <p class="text-sm font-semibold text-amber-800">Produk tetap ditukar dengan point, tetapi ongkir dibayar customer.</p>
+                                <p class="mt-1 text-xs text-amber-700">Point baru akan dipotong setelah pembayaran ongkir berhasil dikonfirmasi.</p>
+                            </div>
+                        @endif
                         <!-- Tabs -->
                         <div class="flex gap-2 mb-5 overflow-x-auto">
                             <button onclick="setPaymentTab('qris')" id="tab-qris"
@@ -232,17 +241,17 @@
                                 class="px-4 py-2 rounded-xl text-sm font-semibold bg-slate-100 text-slate-600 whitespace-nowrap transition-all">Transfer Manual</button>
                         </div>
 
-                        <!-- QRIS -->
-                        <div id="panel-qris" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                            <label onclick="setPayment('qris', 'QRIS')"
-                                class="payment-card active flex items-center gap-3 p-3 border-2 rounded-xl cursor-pointer hover:border-blue-300 transition-all">
-                                <input type="radio" name="payment" value="qris" class="accent-blue-500" checked />
-                                <span class="payment-logo-box">
-                                    <img class="payment-logo-img" alt="QRIS" src="{{ asset('imgs/qris.png') }}" />
-                                </span>
-                                <span class="text-sm font-semibold text-slate-700">QRIS</span>
-                            </label>
-                        </div>
+                            <!-- QRIS -->
+                            <div id="panel-qris" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                <label onclick="setPayment('qris', 'QRIS')"
+                                    class="payment-card active flex items-center gap-3 p-3 border-2 rounded-xl cursor-pointer hover:border-blue-300 transition-all">
+                                    <input type="radio" name="payment" value="qris" class="accent-blue-500" checked />
+                                    <span class="payment-logo-box">
+                                        <img class="payment-logo-img" alt="QRIS" src="{{ asset('imgs/qris.png') }}" />
+                                    </span>
+                                    <span class="text-sm font-semibold text-slate-700">QRIS</span>
+                                </label>
+                            </div>
 
                         <!-- Bank Transfer -->
                         <div id="panel-bank" class="hidden grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -289,19 +298,19 @@
                             </label>
                         </div>
 
-                        <div id="panel-manual" class="hidden">
-                            <label onclick="setPayment('manual_transfer', 'Transfer Manual')"
-                                class="payment-card flex items-center gap-3 p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-blue-300 transition-all">
-                                <input type="radio" name="payment" value="manual_transfer" class="accent-blue-500" />
-                                <span class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
-                                    <i class="ri-bank-card-line text-xl"></i>
-                                </span>
-                                <span>
-                                    <span class="block text-sm font-semibold text-slate-700">Transfer Manual</span>
-                                    <span class="block text-xs text-slate-400">Upload bukti transfer setelah checkout</span>
-                                </span>
-                            </label>
-                        </div>
+                            <div id="panel-manual" class="hidden">
+                                <label onclick="setPayment('manual_transfer', 'Transfer Manual')"
+                                    class="payment-card flex items-center gap-3 p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-blue-300 transition-all">
+                                    <input type="radio" name="payment" value="manual_transfer" class="accent-blue-500" />
+                                    <span class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+                                        <i class="ri-bank-card-line text-xl"></i>
+                                    </span>
+                                    <span>
+                                        <span class="block text-sm font-semibold text-slate-700">Transfer Manual</span>
+                                        <span class="block text-xs text-slate-400">Upload bukti transfer setelah checkout</span>
+                                    </span>
+                                </label>
+                            </div>
                     </div>
                 </div>
 
@@ -326,7 +335,7 @@
                     </div>
                     <div class="p-6 space-y-3">
                         <div class="flex justify-between text-sm">
-                            <span class="text-slate-600">Subtotal (<span id="sumItems">3 item</span>)</span>
+                            <span class="text-slate-600">{{ $isRedeemCheckout ? 'Total Point Redeem' : 'Subtotal' }} (<span id="sumItems">3 item</span>)</span>
                             <span class="font-medium text-slate-800" id="subtotalAmt">Rp 947.000</span>
                         </div>
                         <div class="flex justify-between text-sm">
@@ -337,9 +346,10 @@
                             <label class="text-xs font-semibold text-slate-600">Voucher</label>
                             <div class="flex gap-2">
                                 <input id="couponCodeInput" type="text" placeholder="Kode voucher"
-                                    class="min-w-0 flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400 uppercase">
+                                    class="min-w-0 flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400 uppercase {{ $isRedeemCheckout ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : '' }}"
+                                    {{ $isRedeemCheckout ? 'disabled' : '' }}>
                                 <button type="button" onclick="applyCoupon()"
-                                    class="px-3 py-2 rounded-lg bg-blue-500 text-white text-xs font-semibold hover:bg-blue-600">Pakai</button>
+                                    class="px-3 py-2 rounded-lg bg-blue-500 text-white text-xs font-semibold hover:bg-blue-600 {{ $isRedeemCheckout ? 'opacity-50 cursor-not-allowed pointer-events-none' : '' }}">Pakai</button>
                             </div>
                             <div id="couponInfo" class="hidden text-xs"></div>
                         </div>
@@ -349,10 +359,10 @@
                         </div>
                         <div class="border-t border-slate-100 pt-3 mt-3">
                             <div class="flex justify-between">
-                                <span class="font-bold text-slate-800">Grand Total</span>
+                                <span class="font-bold text-slate-800">{{ $isRedeemCheckout ? 'Total Bayar Ongkir' : 'Grand Total' }}</span>
                                 <span class="font-extrabold text-blue-600 text-xl" id="grandTotal">Rp 888.000</span>
                             </div>
-                            <p class="text-xs text-slate-500 mt-1">Termasuk pajak dan biaya lainnya</p>
+                            <p class="text-xs text-slate-500 mt-1">{{ $isRedeemCheckout ? 'Point digunakan untuk produk, sedangkan ongkir dibayar terpisah oleh customer.' : 'Termasuk pajak dan biaya lainnya' }}</p>
                         </div>
 
                         <!-- Info -->
@@ -369,7 +379,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                             </svg>
-                            Bayar Sekarang
+                            {{ $isRedeemCheckout ? 'Bayar Ongkir & Tukar Point' : 'Bayar Sekarang' }}
                         </button>
                         <p id="checkoutHintText" class="text-xs text-slate-500 mt-2 text-center"></p>
 
@@ -643,6 +653,7 @@
     <script>
         let cartItems = @json($checkoutItems ?? []);
         const checkoutSource = @json($checkoutSource ?? 'cart_all');
+        const isRedeemCheckout = checkoutSource === 'redeem_point';
         let shippingCost = null;
         let shippingLabel = 'Reguler';
         let couponCode = '';
@@ -682,6 +693,8 @@
                 qty: Math.max(1, Number(item?.qty || 1)),
                 image: item?.image || FALLBACK_IMAGE,
                 note: String(item?.note || ''),
+                redeemPoints: Math.max(0, Number(item?.redeemPoints || item?.redeem_points || 0)),
+                isRedeemProduct: Boolean(item?.isRedeemProduct || item?.is_redeem_product || false),
             };
         }
         cartItems = (Array.isArray(cartItems) ? cartItems : []).map((item, idx) => normalizeItem(item, idx));
@@ -714,8 +727,10 @@
             <p class="text-xs text-slate-500 mb-2">${item.variant}</p>
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <div>
-                <span class="font-bold text-slate-900 text-sm">Rp ${item.price.toLocaleString('id-ID')}</span>
-                ${item.origPrice > item.price ? `<span class="text-xs text-slate-400 line-through ml-1">Rp ${item.origPrice.toLocaleString('id-ID')}</span>` : ''}
+                ${isRedeemCheckout
+                    ? `<span class="font-bold text-amber-700 text-sm">${item.redeemPoints.toLocaleString('id-ID')} point</span>`
+                    : `<span class="font-bold text-slate-900 text-sm">Rp ${item.price.toLocaleString('id-ID')}</span>
+                       ${item.origPrice > item.price ? `<span class="text-xs text-slate-400 line-through ml-1">Rp ${item.origPrice.toLocaleString('id-ID')}</span>` : ''}`}
               </div>
               <div class="inline-flex items-center border border-slate-200 rounded-lg overflow-hidden self-start sm:self-auto">
                 <button class="qty-btn px-2.5 py-1 text-slate-500 hover:bg-slate-50 transition-colors text-sm" onclick="changeQty(${i}, -1)">−</button>
@@ -758,6 +773,7 @@
 
         function updateSummary() {
             const subtotal = cartItems.reduce((s, i) => s + i.price * i.qty, 0);
+            const totalRedeemPoints = cartItems.reduce((s, i) => s + (Number(i.redeemPoints || 0) * Number(i.qty || 0)), 0);
             const shippingValue = typeof shippingCost === 'number' ? shippingCost : 0;
             if (discountAmount > subtotal) discountAmount = subtotal;
             const grandTotal = Math.max(0, subtotal + shippingValue - discountAmount);
@@ -765,8 +781,10 @@
             const hasSelectedAddress = !!document.querySelector('input[name="address"]:checked');
             document.getElementById('itemCountText').textContent = totalItems + ' item';
             document.getElementById('sumItems').textContent = totalItems + ' item';
-            document.getElementById('subtotalAmt').textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
-            document.getElementById('discountRow').classList.toggle('hidden', discountAmount <= 0);
+            document.getElementById('subtotalAmt').textContent = isRedeemCheckout
+                ? totalRedeemPoints.toLocaleString('id-ID') + ' point'
+                : 'Rp ' + subtotal.toLocaleString('id-ID');
+            document.getElementById('discountRow').classList.toggle('hidden', discountAmount <= 0 || isRedeemCheckout);
             document.getElementById('discountAmt').textContent = '- Rp ' + discountAmount.toLocaleString('id-ID');
             if (!hasSelectedAddress) {
                 document.getElementById('shippingAmt').textContent = 'Pilih/Tambahkan alamat dulu';
@@ -776,12 +794,16 @@
                 document.getElementById('shippingAmt').textContent = shippingCost === 0 ? 'Gratis' : 'Rp ' +
                     shippingCost.toLocaleString('id-ID');
             }
-            document.getElementById('grandTotal').textContent = 'Rp ' + grandTotal.toLocaleString('id-ID');
-            document.getElementById('totalPaid').textContent = 'Rp ' + grandTotal.toLocaleString('id-ID');
+            document.getElementById('grandTotal').textContent = isRedeemCheckout
+                ? 'Rp ' + shippingValue.toLocaleString('id-ID')
+                : 'Rp ' + grandTotal.toLocaleString('id-ID');
+            document.getElementById('totalPaid').textContent = isRedeemCheckout
+                ? 'Rp ' + shippingValue.toLocaleString('id-ID')
+                : 'Rp ' + grandTotal.toLocaleString('id-ID');
             const payBtn = document.getElementById('payBtn');
             const hintEl = document.getElementById('checkoutHintText');
             if (payBtn) {
-                const shouldDisable = totalItems <= 0 || shippingCost === null || !hasSelectedAddress;
+                const shouldDisable = totalItems <= 0 || !hasSelectedAddress || shippingCost === null;
                 payBtn.disabled = shouldDisable;
                 payBtn.classList.toggle('opacity-60', shouldDisable);
                 payBtn.classList.toggle('cursor-not-allowed', shouldDisable);
@@ -789,7 +811,7 @@
             }
             if (hintEl) {
                 if (totalItems <= 0) {
-                    hintEl.textContent = 'Pilih produk terlebih dahulu untuk melanjutkan pembayaran.';
+                    hintEl.textContent = isRedeemCheckout ? 'Pilih produk redeem terlebih dahulu untuk melanjutkan penukaran.' : 'Pilih produk terlebih dahulu untuk melanjutkan pembayaran.';
                 } else if (!hasSelectedAddress) {
                     hintEl.textContent = 'Tambahkan atau pilih alamat pengiriman agar ongkos kirim bisa dihitung.';
                 } else if (shippingCost === null) {
@@ -801,6 +823,7 @@
         }
 
         async function applyCoupon() {
+            if (isRedeemCheckout) return;
             const input = document.getElementById('couponCodeInput');
             const info = document.getElementById('couponInfo');
             const code = String(input?.value || '').trim().toUpperCase();
@@ -1310,7 +1333,7 @@
             btn.disabled = true;
             btn.innerHTML = `
         <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-        Memproses Pembayaran...`;
+        ${isRedeemCheckout ? 'Memproses Pembayaran Ongkir...' : 'Memproses Pembayaran...'}`;
 
             try {
                 const checkedAddress = document.querySelector('input[name="address"]:checked');
@@ -1326,6 +1349,7 @@
                         note: i.note || '',
                         price: i.price,
                         qty: i.qty,
+                        redeemPoints: Number(i.redeemPoints || 0),
                     })),
                     shipping_cost: Number(shippingCost || 0),
                     shipping_label: String(shippingLabel || 'Reguler'),
@@ -1346,7 +1370,7 @@
 
                 if (!tokenRes.ok) {
                     const err = await tokenRes.json().catch(() => ({}));
-                    throw new Error(err?.message || 'Gagal membuat transaksi Midtrans.');
+                    throw new Error(err?.message || (isRedeemCheckout ? 'Gagal membuat transaksi redeem.' : 'Gagal membuat transaksi Midtrans.'));
                 }
 
                 const tokenJson = await tokenRes.json();
@@ -1355,13 +1379,13 @@
 
                 btn.disabled = false;
                 btn.innerHTML =
-                    `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>Bayar Sekarang`;
+                    `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>${isRedeemCheckout ? 'Bayar Ongkir & Tukar Point' : 'Bayar Sekarang'}`;
                 window.location.href = redirectUrl;
             } catch (e) {
                 btn.disabled = false;
                 btn.innerHTML =
-                    `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>Bayar Sekarang`;
-                alert(e?.message || 'Terjadi kesalahan saat memproses pembayaran.');
+                    `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>${isRedeemCheckout ? 'Bayar Ongkir & Tukar Point' : 'Bayar Sekarang'}`;
+                alert(e?.message || (isRedeemCheckout ? 'Terjadi kesalahan saat memproses redeem.' : 'Terjadi kesalahan saat memproses pembayaran.'));
             }
         }
 

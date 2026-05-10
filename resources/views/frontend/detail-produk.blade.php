@@ -378,6 +378,16 @@
                         </svg>
                         Beli Sekarang
                     </button>
+                    @if (!empty($productData['isRedeemProduct']))
+                        <button type="button" onclick="redeemNow()"
+                            class="flex-1 h-11 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm shadow-amber-100 text-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-10V6m0 12v2m9-8a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Redeem Point
+                        </button>
+                    @endif
                 </div>
             </div>
         </div>
@@ -568,12 +578,27 @@
             </svg>
             Beli Sekarang
         </button>
+        @if (!empty($productData['isRedeemProduct']))
+            <button type="button" onclick="redeemNow()"
+                class="flex-1 bg-amber-500 text-white font-semibold py-2.5 rounded-xl text-sm flex items-center justify-center gap-1.5 shadow-sm shadow-amber-100">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-10V6m0 12v2m9-8a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Redeem
+            </button>
+        @endif
     </div>
 
     <form id="buyNowForm" method="POST" action="{{ route('frontend.checkout.buy-now') }}" class="hidden">
         @csrf
         <input type="hidden" name="product_variant_id" id="buyNowVariantId" value="{{ $productData['productVariantId'] ?? 0 }}">
         <input type="hidden" name="quantity" id="buyNowQty" value="1">
+    </form>
+
+    <form id="redeemNowForm" method="POST" action="{{ route('frontend.redeem.prepare-checkout') }}" class="hidden">
+        @csrf
+        <input type="hidden" name="product_variant_id" id="redeemNowVariantId" value="{{ $productData['productVariantId'] ?? 0 }}">
+        <input type="hidden" name="quantity" id="redeemNowQty" value="1">
     </form>
 
     <div id="reviewImageModal" class="fixed inset-0 z-[99999] hidden items-center justify-center bg-black/70 p-4">
@@ -690,6 +715,17 @@
                 const form = document.getElementById('buyNowForm');
                 const variantInput = document.getElementById('buyNowVariantId');
                 const qtyInput = document.getElementById('buyNowQty');
+                if (!form || !variantInput || !qtyInput) return;
+                variantInput.value = String(Number(pending.product_variant_id || 0));
+                qtyInput.value = String(Math.max(1, Number(pending.quantity || 1)));
+                form.submit();
+                return;
+            }
+
+            if (pending.type === 'redeem_now') {
+                const form = document.getElementById('redeemNowForm');
+                const variantInput = document.getElementById('redeemNowVariantId');
+                const qtyInput = document.getElementById('redeemNowQty');
                 if (!form || !variantInput || !qtyInput) return;
                 variantInput.value = String(Number(pending.product_variant_id || 0));
                 qtyInput.value = String(Math.max(1, Number(pending.quantity || 1)));
@@ -865,6 +901,27 @@
             const form = document.getElementById('buyNowForm');
             const variantInput = document.getElementById('buyNowVariantId');
             const qtyInput = document.getElementById('buyNowQty');
+            if (!form || !variantInput || !qtyInput) return false;
+            variantInput.value = String(variantId || 0);
+            qtyInput.value = String(qty || 1);
+            form.submit();
+            return false;
+        }
+
+        function redeemNow() {
+            const variantId = resolveSelectedVariantId();
+            if (!isAuthenticated) {
+                savePendingAuthAction({
+                    type: 'redeem_now',
+                    product_variant_id: variantId,
+                    quantity: qty,
+                });
+                window.location.href = getLoginRedirectUrl();
+                return false;
+            }
+            const form = document.getElementById('redeemNowForm');
+            const variantInput = document.getElementById('redeemNowVariantId');
+            const qtyInput = document.getElementById('redeemNowQty');
             if (!form || !variantInput || !qtyInput) return false;
             variantInput.value = String(variantId || 0);
             qtyInput.value = String(qty || 1);
