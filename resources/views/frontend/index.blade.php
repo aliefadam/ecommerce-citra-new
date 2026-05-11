@@ -280,6 +280,106 @@
         </div>
     </section>
 
+    @php
+        $flashSaleItems = collect($flashSale['items'] ?? [])->take(10);
+    @endphp
+
+    @if ($flashSaleItems->isNotEmpty())
+        <!-- FLASH SALE SECTION -->
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 py-5">
+            <div class="bg-gradient-to-r from-red-50 to-orange-50 rounded-3xl p-6 border border-red-100">
+                <!-- Header -->
+                <div class="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
+                    <div class="flex items-center gap-4 flex-wrap">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-11 h-11 bg-gradient-to-br from-red-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-red-200">
+                                <i class="ri-flashlight-fill text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-1.5">
+                                    <h2 class="text-xl sm:text-2xl font-extrabold text-slate-800">Flash Sale</h2>
+                                </div>
+                                <p class="text-slate-500 text-[11px] sm:text-xs">Penawaran terbatas, jangan sampai habis!</p>
+                            </div>
+                        </div>
+                        <!-- Countdown -->
+                        <div class="hidden sm:flex items-center gap-2 pl-4 border-l border-red-200">
+                            <span class="text-slate-500 text-sm">Berakhir:</span>
+                            <div class="flex gap-1.5 items-center">
+                                <div class="bg-red-500 text-white rounded-lg px-2.5 py-1.5 text-center min-w-[42px] shadow-sm">
+                                    <div id="fs-hours" class="text-base font-bold leading-none">05</div>
+                                    <div class="text-[10px] text-red-200 mt-0.5">Jam</div>
+                                </div>
+                                <span class="text-red-400 font-bold text-lg">:</span>
+                                <div class="bg-red-500 text-white rounded-lg px-2.5 py-1.5 text-center min-w-[42px] shadow-sm">
+                                    <div id="fs-minutes" class="text-base font-bold leading-none">23</div>
+                                    <div class="text-[10px] text-red-200 mt-0.5">Mnt</div>
+                                </div>
+                                <span class="text-red-400 font-bold text-lg">:</span>
+                                <div class="bg-red-500 text-white rounded-lg px-2.5 py-1.5 text-center min-w-[42px] shadow-sm">
+                                    <div id="fs-seconds" class="text-base font-bold leading-none">47</div>
+                                    <div class="text-[10px] text-red-200 mt-0.5">Dtk</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="{{ route('frontend.flash-sale') }}"
+                        class="text-red-500 hover:text-red-600 font-semibold text-xs sm:text-sm flex items-center gap-1 bg-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl border border-red-200 hover:border-red-300 transition-colors whitespace-nowrap self-start sm:self-auto">
+                        Lihat Semua <i class="ri-arrow-right-line"></i>
+                    </a>
+                </div>
+                <div class="sm:hidden flex items-center gap-1.5 mb-3">
+                    <span class="text-slate-500 text-[11px]">Berakhir:</span>
+                    <div class="bg-red-500 text-white rounded-md px-2 py-1 text-xs font-bold" id="fs-hours-mobile">05</div>
+                    <span class="text-red-400 font-bold text-xs">:</span>
+                    <div class="bg-red-500 text-white rounded-md px-2 py-1 text-xs font-bold" id="fs-minutes-mobile">23</div>
+                    <span class="text-red-400 font-bold text-xs">:</span>
+                    <div class="bg-red-500 text-white rounded-md px-2 py-1 text-xs font-bold" id="fs-seconds-mobile">47</div>
+                </div>
+                <div class="sm:hidden flex items-center justify-end gap-2 mb-3">
+                    <button type="button" onclick="flashSalePrev()"
+                        class="w-8 h-8 rounded-xl border border-red-200 bg-white text-red-500 hover:bg-red-50 transition-colors flex items-center justify-center">
+                        <i class="ri-arrow-left-s-line text-lg"></i>
+                    </button>
+                    <button type="button" onclick="flashSaleNext()"
+                        class="w-8 h-8 rounded-xl border border-red-200 bg-white text-red-500 hover:bg-red-50 transition-colors flex items-center justify-center">
+                        <i class="ri-arrow-right-s-line text-lg"></i>
+                    </button>
+                </div>
+
+                <!-- Flash Sale Products -->
+                <div id="flashSaleTrack"
+                    class="flex sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 overflow-x-auto sm:overflow-visible scroll-smooth pb-1">
+                    @foreach ($flashSaleItems as $fs)
+                        <a href="{{ url('/detail-produk/' . $fs['slug']) }}"
+                            class="min-w-[220px] w-[220px] sm:min-w-0 sm:w-auto bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow card-hover group border border-red-50">
+                            <div class="relative">
+                                <img src="{{ $fs['image'] }}"
+                                    class="w-full h-36 object-cover group-hover:scale-105 transition-transform duration-300" />
+                                <span
+                                    class="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">-{{ $fs['discountPercent'] }}%</span>
+                            </div>
+                            <div class="p-3">
+                                <p class="text-[11px] sm:text-xs font-semibold text-slate-800 line-clamp-2 mb-1">
+                                    {{ $fs['name'] }}</p>
+                                <p class="text-sm sm:text-base font-bold text-red-500">Rp
+                                    {{ number_format($fs['price'], 0, ',', '.') }}</p>
+                                <p class="text-[11px] sm:text-xs text-slate-400 line-through">Rp
+                                    {{ number_format($fs['originalPrice'], 0, ',', '.') }}</p>
+                                <div class="mt-2 w-full bg-red-100 rounded-full h-1.5">
+                                    <div class="bg-red-500 h-1.5 rounded-full"
+                                        style="width:{{ 100 - $fs['remainingPercent'] }}%"></div>
+                                </div>
+                                <p class="text-[10px] text-slate-500 mt-0.5">Tersisa {{ $fs['remainingPercent'] }}%</p>
+                            </div>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+    @endif
+
     <!-- PRODUK SECTION -->
     <section class="max-w-7xl mx-auto px-4 sm:px-6 pb-8">
         <div class="flex flex-col lg:flex-row gap-8"> <!-- SIDEBAR FILTER -->
@@ -451,104 +551,6 @@
         </div>
     </section>
 
-    <!-- FLASH SALE SECTION -->
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 py-5">
-        <div class="bg-gradient-to-r from-red-50 to-orange-50 rounded-3xl p-6 border border-red-100">
-            <!-- Header -->
-            <div class="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
-                <div class="flex items-center gap-4 flex-wrap">
-                    <div class="flex items-center gap-3">
-                        <div
-                            class="w-11 h-11 bg-gradient-to-br from-red-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-red-200">
-                            <i class="ri-flashlight-fill text-white text-xl"></i>
-                        </div>
-                        <div>
-                            <div class="flex items-center gap-1.5">
-                                <h2 class="text-xl sm:text-2xl font-extrabold text-slate-800">Flash Sale</h2>
-                            </div>
-                            <p class="text-slate-500 text-[11px] sm:text-xs">Penawaran terbatas, jangan sampai habis!</p>
-                        </div>
-                    </div>
-                    <!-- Countdown -->
-                    <div class="hidden sm:flex items-center gap-2 pl-4 border-l border-red-200">
-                        <span class="text-slate-500 text-sm">Berakhir:</span>
-                        <div class="flex gap-1.5 items-center">
-                            <div class="bg-red-500 text-white rounded-lg px-2.5 py-1.5 text-center min-w-[42px] shadow-sm">
-                                <div id="fs-hours" class="text-base font-bold leading-none">05</div>
-                                <div class="text-[10px] text-red-200 mt-0.5">Jam</div>
-                            </div>
-                            <span class="text-red-400 font-bold text-lg">:</span>
-                            <div class="bg-red-500 text-white rounded-lg px-2.5 py-1.5 text-center min-w-[42px] shadow-sm">
-                                <div id="fs-minutes" class="text-base font-bold leading-none">23</div>
-                                <div class="text-[10px] text-red-200 mt-0.5">Mnt</div>
-                            </div>
-                            <span class="text-red-400 font-bold text-lg">:</span>
-                            <div class="bg-red-500 text-white rounded-lg px-2.5 py-1.5 text-center min-w-[42px] shadow-sm">
-                                <div id="fs-seconds" class="text-base font-bold leading-none">47</div>
-                                <div class="text-[10px] text-red-200 mt-0.5">Dtk</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <a href="{{ route('frontend.flash-sale') }}"
-                    class="text-red-500 hover:text-red-600 font-semibold text-xs sm:text-sm flex items-center gap-1 bg-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl border border-red-200 hover:border-red-300 transition-colors whitespace-nowrap self-start sm:self-auto">
-                    Lihat Semua <i class="ri-arrow-right-line"></i>
-                </a>
-            </div>
-            <div class="sm:hidden flex items-center gap-1.5 mb-3">
-                <span class="text-slate-500 text-[11px]">Berakhir:</span>
-                <div class="bg-red-500 text-white rounded-md px-2 py-1 text-xs font-bold" id="fs-hours-mobile">05</div>
-                <span class="text-red-400 font-bold text-xs">:</span>
-                <div class="bg-red-500 text-white rounded-md px-2 py-1 text-xs font-bold" id="fs-minutes-mobile">23</div>
-                <span class="text-red-400 font-bold text-xs">:</span>
-                <div class="bg-red-500 text-white rounded-md px-2 py-1 text-xs font-bold" id="fs-seconds-mobile">47</div>
-            </div>
-            <div class="sm:hidden flex items-center justify-end gap-2 mb-3">
-                <button type="button" onclick="flashSalePrev()"
-                    class="w-8 h-8 rounded-xl border border-red-200 bg-white text-red-500 hover:bg-red-50 transition-colors flex items-center justify-center">
-                    <i class="ri-arrow-left-s-line text-lg"></i>
-                </button>
-                <button type="button" onclick="flashSaleNext()"
-                    class="w-8 h-8 rounded-xl border border-red-200 bg-white text-red-500 hover:bg-red-50 transition-colors flex items-center justify-center">
-                    <i class="ri-arrow-right-s-line text-lg"></i>
-                </button>
-            </div>
-
-            <!-- Flash Sale Products -->
-            <div id="flashSaleTrack"
-                class="flex sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 overflow-x-auto sm:overflow-visible scroll-smooth pb-1">
-                @forelse (collect($flashSale['items'] ?? [])->take(10) as $fs)
-                    <a href="{{ url('/detail-produk/' . $fs['slug']) }}"
-                        class="min-w-[220px] w-[220px] sm:min-w-0 sm:w-auto bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow card-hover group border border-red-50">
-                        <div class="relative">
-                            <img src="{{ $fs['image'] }}"
-                                class="w-full h-36 object-cover group-hover:scale-105 transition-transform duration-300" />
-                            <span
-                                class="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">-{{ $fs['discountPercent'] }}%</span>
-                        </div>
-                        <div class="p-3">
-                            <p class="text-[11px] sm:text-xs font-semibold text-slate-800 line-clamp-2 mb-1">
-                                {{ $fs['name'] }}</p>
-                            <p class="text-sm sm:text-base font-bold text-red-500">Rp
-                                {{ number_format($fs['price'], 0, ',', '.') }}</p>
-                            <p class="text-[11px] sm:text-xs text-slate-400 line-through">Rp
-                                {{ number_format($fs['originalPrice'], 0, ',', '.') }}</p>
-                            <div class="mt-2 w-full bg-red-100 rounded-full h-1.5">
-                                <div class="bg-red-500 h-1.5 rounded-full"
-                                    style="width:{{ 100 - $fs['remainingPercent'] }}%"></div>
-                            </div>
-                            <p class="text-[10px] text-slate-500 mt-0.5">Tersisa {{ $fs['remainingPercent'] }}%</p>
-                        </div>
-                    </a>
-                @empty
-                    <div
-                        class="col-span-full min-w-[220px] w-full bg-white rounded-2xl border border-red-100 p-6 text-center text-sm text-slate-500">
-                        Belum ada flash sale aktif saat ini.
-                    </div>
-                @endforelse
-            </div>
-        </div>
-    </section>
 @endsection
 
 @section('script')
@@ -1235,4 +1237,3 @@
         initWishlistStatus();
     </script>
 @endsection
-

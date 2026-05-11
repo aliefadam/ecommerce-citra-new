@@ -200,18 +200,14 @@
                 </div>
                 <button onclick="closeTrackingModal()"
                     class="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                    </svg>
+                    <i class="fi fi-rr-cross-small text-sm leading-none"></i>
                 </button>
             </div>
             <div class="overflow-y-auto flex-1 px-6 py-5">
                 {{-- Courier info --}}
                 <div class="flex items-center gap-3 bg-slate-50 rounded-xl p-3 mb-5 border border-slate-100">
                     <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
-                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1 13h12l1-13"/>
-                        </svg>
+                        <i class="fi fi-rr-truck-side text-base text-blue-600 leading-none"></i>
                     </div>
                     <div class="min-w-0">
                         <p id="trackingCourier" class="text-sm font-semibold text-slate-800"></p>
@@ -229,9 +225,7 @@
     <!-- Toast -->
     <div id="toast" class="fixed top-4 right-4 z-[9999] hidden">
         <div class="toast bg-blue-500 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-            </svg>
+            <i class="fi fi-rr-badge-check text-base leading-none"></i>
             <span id="toast-msg">Berhasil!</span>
         </div>
     </div>
@@ -250,9 +244,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3">
             <nav class="flex items-center gap-2 text-sm text-slate-500">
                 <a href="{{ route('frontend.index') }}" class="hover:text-blue-600">Beranda</a>
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                </svg>
+                <i class="fi fi-rr-angle-small-right text-xs leading-none"></i>
                 <span class="text-slate-800 font-medium">Profil Saya</span>
             </nav>
         </div>
@@ -344,69 +336,45 @@
                     <div class="py-1">
                         <button onclick="showTab('biodata')" id="nav-biodata"
                             class="sidebar-item active w-full flex items-center gap-3 px-5 py-3.5 text-sm font-medium">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
+                            <i class="fi fi-rr-user text-sm leading-none"></i>
                             Biodata Diri
                         </button>
                         <button onclick="showTab('keamanan')" id="nav-keamanan"
                             class="sidebar-item w-full flex items-center gap-3 px-5 py-3.5 text-sm font-medium text-slate-600">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                            </svg>
+                            <i class="fi fi-rr-lock text-sm leading-none"></i>
                             Password & Keamanan
                         </button>
                         <button onclick="showTab('alamat')" id="nav-alamat"
                             class="sidebar-item w-full flex items-center gap-3 px-5 py-3.5 text-sm font-medium text-slate-600">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            </svg>
+                            <i class="fi fi-rr-marker text-sm leading-none"></i>
                             Alamat Saya
                         </button>
                         <a href="{{ route('frontend.cart') }}"
                             class="sidebar-item w-full flex items-center gap-3 px-5 py-3.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                            </svg>
+                            <i class="fi fi-rr-shopping-cart text-sm leading-none"></i>
                             Keranjang
                         </a>
                         <button onclick="showTab('pesanan')" id="nav-pesanan"
                             class="sidebar-item w-full flex items-center gap-3 px-5 py-3.5 text-sm font-medium text-slate-600">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                            </svg>
+                            <i class="fi fi-rr-box-open-full text-sm leading-none"></i>
                             Riwayat Pesanan
                             <span
                                 class="ml-auto bg-blue-100 text-blue-600 text-xs font-bold px-2 py-0.5 rounded-full">{{ isset($transactions) ? $transactions->count() : 0 }}</span>
                         </button>
                         <button onclick="showTab('wishlist')" id="nav-wishlist"
                             class="sidebar-item w-full flex items-center gap-3 px-5 py-3.5 text-sm font-medium text-slate-600">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                            </svg>
+                            <i class="fi fi-rr-heart text-sm leading-none"></i>
                             Wishlist
                         </button>
                         <button onclick="showTab('notif')" id="nav-notif"
                             class="sidebar-item w-full flex items-center gap-3 px-5 py-3.5 text-sm font-medium text-slate-600">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                            </svg>
+                            <i class="fi fi-rr-bell text-sm leading-none"></i>
                             Notifikasi
                         </button>
                         <div class="border-t border-slate-100 mt-1">
                             <button onclick="confirmLogout()"
                                 class="w-full flex items-center gap-3 px-5 py-3.5 text-sm font-medium text-red-500 hover:bg-red-50 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                                </svg>
+                                <i class="fi fi-rr-exit text-sm leading-none"></i>
                                 Keluar
                             </button>
                         </div>
@@ -939,16 +907,20 @@
                             $typeConfig = [
                                 'transaction_created' => ['bg' => 'bg-blue-100',   'color' => 'text-blue-600'],
                                 'payment_received'    => ['bg' => 'bg-green-100',  'color' => 'text-green-600'],
+                                'payment_rejected'    => ['bg' => 'bg-rose-100',   'color' => 'text-rose-600'],
                                 'order_processed'     => ['bg' => 'bg-indigo-100', 'color' => 'text-indigo-600'],
                                 'order_shipped'       => ['bg' => 'bg-purple-100', 'color' => 'text-purple-600'],
+                                'order_completed'     => ['bg' => 'bg-emerald-100', 'color' => 'text-emerald-600'],
                             ];
                             $typeIcons = [
-                                'transaction_created' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>',
-                                'payment_received'    => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>',
-                                'order_processed'     => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>',
-                                'order_shipped'       => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1 13h12l1-13"/>',
+                                'transaction_created' => 'fi fi-rr-receipt',
+                                'payment_received'    => 'fi fi-rr-badge-check',
+                                'payment_rejected'    => 'fi fi-rr-triangle-warning',
+                                'order_processed'     => 'fi fi-rr-box-open-full',
+                                'order_shipped'       => 'fi fi-rr-truck-side',
+                                'order_completed'     => 'fi fi-rr-badge-check',
                             ];
-                            $defaultIcon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>';
+                            $defaultIcon = 'fi fi-rr-bell';
                         @endphp
 
                         <div class="divide-y divide-slate-100">
@@ -960,9 +932,7 @@
                                 @endphp
                                 <div class="p-5 flex gap-4 {{ $isUnread ? 'bg-blue-50/50' : '' }} hover:bg-slate-50 transition-colors">
                                     <div class="w-10 h-10 {{ $cfg['bg'] }} rounded-full flex items-center justify-center flex-shrink-0">
-                                        <svg class="w-5 h-5 {{ $cfg['color'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            {!! $icon !!}
-                                        </svg>
+                                        <i class="{{ $icon }} text-base {{ $cfg['color'] }} leading-none"></i>
                                     </div>
                                     <div class="flex-1 min-w-0">
                                         <p class="font-semibold text-slate-800 text-sm mb-0.5">{{ $notif->title }}</p>
@@ -970,7 +940,7 @@
                                         <div class="flex items-center gap-3 mt-1.5">
                                             <p class="text-xs text-slate-400">{{ $notif->created_at->diffForHumans() }}</p>
                                             @if($notif->url)
-                                                <a href="{{ $notif->url }}" class="text-xs text-blue-600 font-medium hover:underline">Lihat →</a>
+                                                <a href="{{ $notif->url }}" class="inline-flex items-center gap-1 text-xs text-blue-600 font-medium hover:underline">Lihat <i class="fi fi-rr-angle-small-right text-[10px] leading-none"></i></a>
                                             @endif
                                         </div>
                                     </div>
@@ -981,9 +951,7 @@
                             @empty
                                 <div class="px-6 py-12 text-center">
                                     <div class="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                                        <svg class="w-7 h-7 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-                                        </svg>
+                                        <i class="fi fi-rr-bell text-xl text-slate-400 leading-none"></i>
                                     </div>
                                     <p class="text-sm font-medium text-slate-600">Belum ada notifikasi</p>
                                     <p class="text-xs text-slate-400 mt-1">Notifikasi pesanan dan aktivitas akun akan muncul di sini</p>
@@ -1007,9 +975,7 @@
                 </div>
                 <button type="button" onclick="closeOrderDetailModal()"
                     class="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                        <path d="M18 6L6 18M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
+                    <i class="fi fi-rr-cross-small text-sm leading-none"></i>
                 </button>
             </div>
             <div id="orderDetailContent" class="overflow-y-auto flex-1 px-6 py-4 space-y-5"></div>
@@ -1020,9 +986,7 @@
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-slate-100">
             <div class="flex items-center gap-3 mb-4">
                 <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
-                    <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
+                    <i class="fi fi-rr-cross-small text-base text-red-500 leading-none"></i>
                 </div>
                 <div>
                     <p class="font-semibold text-slate-800">Batalkan Pesanan</p>
@@ -1062,9 +1026,7 @@
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-slate-100">
             <div class="flex items-center gap-3 mb-4">
                 <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
-                    <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                    </svg>
+                    <i class="fi fi-rr-exit text-base text-red-500 leading-none"></i>
                 </div>
                 <div>
                     <p class="font-semibold text-slate-800">Keluar dari akun?</p>
@@ -1925,7 +1887,7 @@
                                     </div>
                                     <div class="flex-1 min-w-0">
                                         <p class="text-sm font-medium text-slate-800 leading-snug">${d.name}${d.variant ? " <span style='font-size:11px;color:#94a3b8;font-weight:400'>(" + d.variant + ")</span>" : ""}</p>
-                                        <p class="text-xs text-slate-500 mt-0.5">${d.qty} × Rp ${Number(d.price || 0).toLocaleString('id-ID')}</p>
+                                        <p class="text-xs text-slate-500 mt-0.5">${d.qty} Ã— Rp ${Number(d.price || 0).toLocaleString('id-ID')}</p>
                                     </div>
                                     <div class="text-sm font-semibold text-slate-800 shrink-0">Rp ${Number(d.subtotal || 0).toLocaleString('id-ID')}</div>
                                 </div>
@@ -2036,7 +1998,7 @@
             syncWishlistCount();
             if (!wishlistItems.length) {
                 grid.innerHTML =
-                    '<div class="col-span-2 sm:col-span-3 text-center py-12"><div class="text-5xl mb-3">♡</div><p class="text-slate-500">Wishlist kamu masih kosong</p></div>';
+                    '<div class="col-span-2 sm:col-span-3 text-center py-12"><div class="text-5xl mb-3">â™¡</div><p class="text-slate-500">Wishlist kamu masih kosong</p></div>';
                 return;
             }
 
@@ -2046,7 +2008,7 @@
           <a href="{{ url('/detail-produk') }}/${w.slug}">
             <img src="${w.image}" class="w-full h-36 object-cover group-hover:scale-105 transition-transform duration-300" />
           </a>
-          <button onclick="removeWishlist(${w.product_id})" class="absolute top-2 right-2 w-7 h-7 bg-white/90 rounded-full flex items-center justify-center text-red-400 hover:text-red-500 text-xs opacity-0 group-hover:opacity-100 transition-all">✕</button>
+          <button onclick="removeWishlist(${w.product_id})" class="absolute top-2 right-2 w-7 h-7 bg-white/90 rounded-full flex items-center justify-center text-red-400 hover:text-red-500 text-xs opacity-0 group-hover:opacity-100 transition-all">âœ•</button>
         </div>
         <div class="p-3">
           <a href="{{ url('/detail-produk') }}/${w.slug}" class="text-xs font-semibold text-slate-800 line-clamp-2 mb-1 block hover:text-blue-600">${w.name}</a>
@@ -2094,7 +2056,7 @@
             document.getElementById('trackingCourier').textContent = courier;
             document.getElementById('trackingStatusBadge').textContent = 'Dalam Pengiriman';
 
-            // Dummy timeline — ganti dengan API tracking nyata saat tersedia
+            // Dummy timeline â€” ganti dengan API tracking nyata saat tersedia
             const dummySteps = [
                 { done: true,  time: o.date,                            label: 'Pesanan Dibuat',           desc: 'Pesanan berhasil dibuat dan menunggu konfirmasi pembayaran.' },
                 { done: true,  time: '',                                 label: 'Pembayaran Diterima',      desc: 'Pembayaran telah dikonfirmasi oleh sistem.' },
