@@ -412,35 +412,84 @@
                     </div>
                 </div>
 
-                <div class="w-px h-5 bg-slate-200 mx-3 flex-shrink-0"></div>
+                {{-- Mobile hamburger (hidden on desktop) --}}
+                <button id="ecMobileNavToggle" type="button"
+                    class="md:hidden flex items-center gap-1.5 ml-2 px-3 py-1.5 rounded-full border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors flex-shrink-0">
+                    <i id="ecMobileNavIcon" class="fi fi-rr-menu-burger text-sm leading-none"></i>
+                    <span class="text-xs">Menu</span>
+                </button>
 
-                {{-- Nav links --}}
+                <div class="w-px h-5 bg-slate-200 mx-3 flex-shrink-0 hidden md:block"></div>
+
+                {{-- Nav links (desktop only) --}}
                 <a href="{{ route('frontend.index') }}"
-                    class="nav-link {{ request()->routeIs('frontend.index') ? 'active' : '' }}">
+                    class="nav-link hidden md:inline-flex {{ request()->routeIs('frontend.index') ? 'active' : '' }}">
                     Beranda
                 </a>
                 <a href="{{ route('frontend.kategori') }}"
-                    class="nav-link {{ request()->routeIs('frontend.kategori') ? 'active' : '' }}">
+                    class="nav-link hidden md:inline-flex {{ request()->routeIs('frontend.kategori') ? 'active' : '' }}">
                     Semua Produk
                 </a>
                 <a href="{{ route('frontend.redeem-point') }}"
-                    class="nav-link {{ request()->routeIs('frontend.redeem-point') ? 'active' : '' }}">
+                    class="nav-link hidden md:inline-flex {{ request()->routeIs('frontend.redeem-point') ? 'active' : '' }}">
                     Redeem Point
                 </a>
-                <a href="{{ route('frontend.search') }}?sort=newest" class="nav-link">
+                <a href="{{ route('frontend.search') }}?sort=newest" class="nav-link hidden md:inline-flex">
                     Produk Terbaru
                 </a>
                 <a href="{{ route('frontend.search') }}?sort=popular"
-                    class="nav-link flex items-center gap-1.5 !text-amber-500 !font-semibold">
+                    class="nav-link hidden md:inline-flex items-center gap-1.5 !text-amber-500 !font-semibold">
                     <i class="fi fi-rr-star text-[13px] text-amber-400 leading-none"></i>
                     Terlaris
                 </a>
                 @auth
-                    <a href="{{ route('frontend.profil') }}?tab=pesanan" class="nav-link">
+                    <a href="{{ route('frontend.profil') }}?tab=pesanan" class="nav-link hidden md:inline-flex">
                         Pesanan Saya
                     </a>
                 @endauth
             </div>
+        </div>
+    </div>
+
+    {{-- Mobile nav drawer --}}
+    <div id="ecMobileNavDrawer"
+        class="hidden md:hidden border-t border-slate-100 bg-white shadow-lg z-[60]">
+        <div class="px-4 py-3 grid grid-cols-2 gap-2">
+            <a href="{{ route('frontend.index') }}"
+                class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors
+                       {{ request()->routeIs('frontend.index') ? 'bg-blue-50 text-blue-600' : 'text-slate-600 hover:bg-slate-50' }}">
+                <i class="fi fi-rr-home text-base leading-none {{ request()->routeIs('frontend.index') ? 'text-blue-500' : 'text-slate-400' }}"></i>
+                Beranda
+            </a>
+            <a href="{{ route('frontend.kategori') }}"
+                class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors
+                       {{ request()->routeIs('frontend.kategori') ? 'bg-blue-50 text-blue-600' : 'text-slate-600 hover:bg-slate-50' }}">
+                <i class="fi fi-rr-apps text-base leading-none {{ request()->routeIs('frontend.kategori') ? 'text-blue-500' : 'text-slate-400' }}"></i>
+                Semua Produk
+            </a>
+            <a href="{{ route('frontend.redeem-point') }}"
+                class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors
+                       {{ request()->routeIs('frontend.redeem-point') ? 'bg-amber-50 text-amber-600' : 'text-slate-600 hover:bg-slate-50' }}">
+                <i class="fi fi-rr-coin text-base leading-none {{ request()->routeIs('frontend.redeem-point') ? 'text-amber-500' : 'text-slate-400' }}"></i>
+                Redeem Point
+            </a>
+            <a href="{{ route('frontend.search') }}?sort=newest"
+                class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+                <i class="fi fi-rr-sparkles text-base text-slate-400 leading-none"></i>
+                Produk Terbaru
+            </a>
+            <a href="{{ route('frontend.search') }}?sort=popular"
+                class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold text-amber-500 hover:bg-amber-50 transition-colors">
+                <i class="fi fi-rr-star text-base text-amber-400 leading-none"></i>
+                Terlaris
+            </a>
+            @auth
+            <a href="{{ route('frontend.profil') }}?tab=pesanan"
+                class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+                <i class="fi fi-rr-box-open-full text-base text-slate-400 leading-none"></i>
+                Pesanan Saya
+            </a>
+            @endauth
         </div>
     </div>
 </nav>
@@ -864,7 +913,28 @@
             });
         }
 
+        // Mobile nav hamburger toggle
+        const mobileNavToggle = document.getElementById('ecMobileNavToggle');
+        const mobileNavDrawer = document.getElementById('ecMobileNavDrawer');
+        const mobileNavIcon = document.getElementById('ecMobileNavIcon');
+        if (mobileNavToggle && mobileNavDrawer) {
+            mobileNavToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isOpen = !mobileNavDrawer.classList.contains('hidden');
+                mobileNavDrawer.classList.toggle('hidden');
+                mobileNavIcon.className = isOpen
+                    ? 'fi fi-rr-menu-burger text-sm leading-none'
+                    : 'fi fi-rr-cross text-sm leading-none';
+            });
+        }
+
         document.addEventListener('click', (e) => {
+            if (mobileNavDrawer && mobileNavToggle &&
+                !mobileNavDrawer.contains(e.target) && !mobileNavToggle.contains(e.target)) {
+                mobileNavDrawer.classList.add('hidden');
+                if (mobileNavIcon) mobileNavIcon.className = 'fi fi-rr-menu-burger text-sm leading-none';
+            }
+
             if (notifDropdown && notifTrigger && !notifDropdown.contains(e.target) && !notifTrigger
                 .contains(e.target)) {
                 notifDropdown.classList.add('hidden');
