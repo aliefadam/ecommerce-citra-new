@@ -460,7 +460,7 @@
                 </div>
 
                 <!-- Products Grid -->
-                <div id="productGrid" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                <div id="productGrid" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
                 </div>
 
                 <!-- Load More -->
@@ -489,7 +489,7 @@
             </a>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4" id="rekomendasiGrid">
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-4" id="rekomendasiGrid">
             @php
                 $rekProducts = collect($productsJson ?? [])
                     ->sortByDesc('rating')
@@ -497,51 +497,47 @@
                     ->values();
             @endphp
             @forelse ($rekProducts as $rp)
-                <div class="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col">
-                    <a href="{{ url('/detail-produk/' . $rp['slug']) }}" class="relative overflow-hidden aspect-[4/3] block">
+                <div class="group bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 overflow-hidden flex flex-col">
+                    <a href="{{ url('/detail-produk/' . $rp['slug']) }}" class="relative overflow-hidden aspect-square block">
                         <img src="{{ $rp['image'] }}" alt="{{ $rp['name'] }}"
                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
                         @if (($rp['originalPrice'] ?? 0) > ($rp['price'] ?? 0))
                             @php $disc = round((1 - $rp['price'] / $rp['originalPrice']) * 100); @endphp
-                            <span class="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">-{{ $disc }}%</span>
+                            <span class="absolute top-1.5 left-1.5 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow">-{{ $disc }}%</span>
                         @elseif (($rp['badge'] ?? '') === 'new')
-                            <span class="absolute top-2 left-2 bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">BARU</span>
+                            <span class="absolute top-1.5 left-1.5 bg-blue-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow">BARU</span>
                         @elseif (($rp['badge'] ?? '') === 'best')
-                            <span class="absolute top-2 left-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">TERLARIS</span>
+                            <span class="absolute top-1.5 left-1.5 bg-amber-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow">TERLARIS</span>
                         @endif
                     </a>
-                    <div class="p-3 flex-1 flex flex-col gap-1">
-                        <a href="{{ url('/detail-produk/' . $rp['slug']) }}" class="text-sm font-semibold text-slate-800 hover:text-blue-600 line-clamp-2 leading-snug transition-colors">{{ $rp['name'] }}</a>
-                        <div class="flex items-center gap-1">
-                            <span class="text-yellow-400 text-xs">&#9733;</span>
-                            <span class="text-xs font-medium text-slate-700">{{ number_format($rp['rating'], 1) }}</span>
-                            @if (!empty($rp['reviews']))
-                                <span class="text-xs text-slate-400">({{ number_format($rp['reviews']) }})</span>
-                            @endif
+                    <div class="p-2 flex-1 flex flex-col gap-1">
+                        <a href="{{ url('/detail-produk/' . $rp['slug']) }}" class="text-[11px] sm:text-xs font-semibold text-slate-800 hover:text-blue-600 line-clamp-2 leading-snug transition-colors">{{ $rp['name'] }}</a>
+                        <div class="flex items-center gap-0.5">
+                            <span class="text-yellow-400 text-[10px]">&#9733;</span>
+                            <span class="text-[10px] font-medium text-slate-600">{{ number_format($rp['rating'], 1) }}</span>
                             @if (!empty($rp['sold']))
-                                <span class="text-xs text-slate-300 mx-0.5">&bull;</span>
-                                <span class="text-xs text-slate-400">{{ number_format($rp['sold']) }} terjual</span>
+                                <span class="text-[10px] text-slate-400 ml-0.5">· {{ number_format($rp['sold']) }} terjual</span>
                             @endif
                         </div>
-                        <div class="flex items-center gap-1.5 flex-wrap mt-auto pt-1">
+                        <div class="mt-auto pt-0.5">
                             @php
                                 $rpPrice = (int) ($rp['price'] ?? 0);
                                 $rpPriceMax = (int) ($rp['priceMax'] ?? $rpPrice);
                             @endphp
-                            <span class="font-bold text-slate-900 text-sm">
+                            <span class="font-bold text-slate-900 text-xs sm:text-sm">
                                 @if ($rpPriceMax > $rpPrice)
-                                    Rp {{ number_format($rpPrice, 0, ',', '.') }} - Rp {{ number_format($rpPriceMax, 0, ',', '.') }}
+                                    Rp {{ number_format($rpPrice, 0, ',', '.') }}
                                 @else
                                     Rp {{ number_format($rpPrice, 0, ',', '.') }}
                                 @endif
                             </span>
-                            @if ($rpPriceMax <= $rpPrice && ($rp['originalPrice'] ?? 0) > ($rp['price'] ?? 0))
-                                <span class="text-slate-400 text-xs line-through">Rp {{ number_format($rp['originalPrice'], 0, ',', '.') }}</span>
+                            @if (($rp['originalPrice'] ?? 0) > ($rp['price'] ?? 0))
+                                <span class="text-slate-400 text-[10px] line-through block">Rp {{ number_format($rp['originalPrice'], 0, ',', '.') }}</span>
                             @endif
                         </div>
-                        <button onclick="addToCart({{ $rp['id'] }})" class="w-full bg-blue-50 hover:bg-blue-500 text-blue-600 hover:text-white text-xs font-semibold py-2 rounded-full transition-all border border-blue-200 hover:border-blue-500 flex items-center justify-center gap-1.5 mt-1">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                            Keranjang
+                        <button onclick="addToCart({{ $rp['id'] }})" class="w-full bg-blue-50 hover:bg-blue-500 text-blue-600 hover:text-white text-[10px] font-semibold py-1.5 rounded-lg transition-all border border-blue-200 hover:border-blue-500 flex items-center justify-center gap-1 mt-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                            + Keranjang
                         </button>
                     </div>
                 </div>
@@ -610,34 +606,32 @@
                     '';
                 const stars = '?'.repeat(Math.floor(p.rating)) + (p.rating % 1 >= 0.5 ? '1/2' : '');
                 return `
-          <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden card-hover group h-full flex flex-col" data-id="${p.id}">
-            <div class="relative overflow-hidden">
+          <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden card-hover group h-full flex flex-col" data-id="${p.id}">
+            <div class="relative overflow-hidden aspect-square">
               <a href="{{ url('/detail-produk') }}/${p.slug}">
-                <img src="${p.image}" alt="${p.name}" class="w-full h-44 sm:h-52 object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                <img src="${p.image}" alt="${p.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
               </a>
-              <div class="absolute top-2 left-2 flex gap-1 flex-wrap">${badgeHtml}</div>
-              <button onclick="addToWishlist(${p.id})" data-wishlist-btn data-product-id="${p.id}" class="absolute top-2 right-2 w-8 h-8 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-pink-50">
-                <svg class="w-4 h-4 text-pink-500" fill="${p.isWishlisted ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+              <div class="absolute top-1.5 left-1.5 flex gap-1 flex-wrap">${badgeHtml}</div>
+              <button onclick="addToWishlist(${p.id})" data-wishlist-btn data-product-id="${p.id}" class="absolute top-1.5 right-1.5 w-7 h-7 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-pink-50">
+                <svg class="w-3.5 h-3.5 text-pink-500" fill="${p.isWishlisted ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
               </button>
             </div>
-            <div class="p-3 flex-1 flex flex-col">
+            <div class="p-2 flex-1 flex flex-col">
               <a href="{{ url('/detail-produk') }}/${p.slug}" class="block">
-                <h3 class="text-sm font-semibold text-slate-800 hover:text-blue-600 transition-colors line-clamp-2 min-h-[40px] mb-1">${p.name}</h3>
+                <h3 class="text-[11px] sm:text-xs font-semibold text-slate-800 hover:text-blue-600 transition-colors line-clamp-2 leading-snug mb-1">${p.name}</h3>
               </a>
-              <div class="flex items-center gap-1 mb-2">
-                <span class="text-yellow-400 text-xs">&#9733;</span>
-                <span class="text-xs font-medium text-slate-700">${p.rating}</span>
-                <span class="text-xs text-slate-400">(${p.reviews.toLocaleString()})</span>
-                <span class="text-xs text-slate-300 mx-1">&bull;</span>
-                <span class="text-xs text-slate-400">${p.sold.toLocaleString()} terjual</span>
+              <div class="flex items-center gap-0.5 mb-1">
+                <span class="text-yellow-400 text-[10px]">&#9733;</span>
+                <span class="text-[10px] font-medium text-slate-600">${p.rating}</span>
+                <span class="text-[10px] text-slate-400 ml-0.5">· ${p.sold.toLocaleString()} terjual</span>
               </div>
-              <div class="flex items-center gap-2 flex-wrap min-h-[28px] mb-3">
-                <span class="font-bold text-slate-900 text-base">${priceLabel}</span>
-                ${!isPriceRange && p.originalPrice > p.price ? `<span class="text-slate-400 text-xs line-through">Rp ${p.originalPrice.toLocaleString('id-ID')}</span>` : ''}
+              <div class="mt-auto">
+                <p class="text-xs sm:text-sm font-bold text-slate-900">${priceLabel}</p>
+                ${!isPriceRange && p.originalPrice > p.price ? `<p class="text-[10px] text-slate-400 line-through">Rp ${p.originalPrice.toLocaleString('id-ID')}</p>` : ''}
               </div>
-              <button onclick="addToCart(${p.id})" class="mt-auto w-full bg-blue-50 hover:bg-blue-500 text-blue-600 hover:text-white text-xs font-semibold py-2 rounded-full transition-all border border-blue-200 hover:border-blue-500 flex items-center justify-center gap-1.5">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                Keranjang
+              <button onclick="addToCart(${p.id})" class="mt-1.5 w-full bg-blue-50 hover:bg-blue-500 text-blue-600 hover:text-white text-[10px] font-semibold py-1.5 rounded-lg transition-all border border-blue-200 hover:border-blue-500 flex items-center justify-center gap-1">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                + Keranjang
               </button>
             </div>
           </div>`;
@@ -889,7 +883,7 @@
             currentView = v;
             const grid = document.getElementById('productGrid');
             if (v === 'grid') {
-                grid.className = 'grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4';
+                grid.className = 'grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4';
                 document.getElementById('gridBtn').className = 'p-2 bg-blue-500 text-white';
                 document.getElementById('listBtn').className = 'p-2 text-slate-400 hover:text-slate-600 bg-white';
             } else {

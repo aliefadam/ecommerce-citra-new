@@ -272,7 +272,7 @@
                 </div>
 
                 <!-- Products -->
-                <div id="prodGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div id="prodGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
                 </div>
 
                 <!-- Empty State -->
@@ -380,7 +380,7 @@
             loadMoreBtn.classList.toggle('hidden', visibleProducts.length >= currentRenderedProducts.length);
             loadMoreInfo.textContent = `Sudah tampil ${visibleProducts.length} dari ${currentRenderedProducts.length} produk`;
 
-            const gridCols = viewMode === 'grid' ? 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4' :
+            const gridCols = viewMode === 'grid' ? 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4' :
                 'grid grid-cols-1 gap-4';
             grid.className = gridCols;
 
@@ -429,32 +429,30 @@
             </div>
           </div>`;
                 }
-                return `<div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden card-hover group h-full flex flex-col">
-          <div class="relative overflow-hidden">
+                return `<div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden card-hover group h-full flex flex-col">
+          <div class="relative overflow-hidden aspect-square">
             <a href="{{ url('/detail-produk') }}/${p.slug}">
-              <img src="${p.image}" alt="${p.name}" class="w-full h-44 object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+              <img src="${p.image}" alt="${p.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
             </a>
-            <div class="absolute top-2 left-2 flex gap-1">${badge}</div>
-            <button onclick="toggleWishlist(${p.id})" data-wishlist-btn data-product-id="${p.id}" class="absolute top-2 right-2 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-pink-50 text-pink-500">
-              <svg class="w-4 h-4" fill="${p.isWishlisted ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+            <div class="absolute top-1.5 left-1.5 flex gap-1">${badge}</div>
+            <button onclick="toggleWishlist(${p.id})" data-wishlist-btn data-product-id="${p.id}" class="absolute top-1.5 right-1.5 w-7 h-7 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-pink-50 text-pink-500">
+              <svg class="w-3.5 h-3.5" fill="${p.isWishlisted ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
             </button>
           </div>
-          <div class="p-3 flex-1 flex flex-col">
-            <a href="{{ url('/detail-produk') }}/${p.slug}" class="block text-sm font-semibold text-slate-800 hover:text-blue-600 transition-colors line-clamp-2 mb-1">${p.name}</a>
-            <div class="flex items-center gap-1 mb-2">
-              <span class="text-yellow-400 text-xs">&#9733;</span>
-              <span class="text-xs font-medium text-slate-700">${p.rating}</span>
-              <span class="text-xs text-slate-400">(${p.reviews})</span>
-              <span class="text-xs text-slate-300 mx-0.5">&bull;</span>
-              <span class="text-xs text-slate-400">${p.sold.toLocaleString()} terjual</span>
+          <div class="p-2 flex-1 flex flex-col">
+            <a href="{{ url('/detail-produk') }}/${p.slug}" class="block text-[11px] sm:text-xs font-semibold text-slate-800 hover:text-blue-600 transition-colors line-clamp-2 leading-snug mb-1">${p.name}</a>
+            <div class="flex items-center gap-0.5 mb-1">
+              <span class="text-yellow-400 text-[10px]">&#9733;</span>
+              <span class="text-[10px] font-medium text-slate-600">${p.rating}</span>
+              <span class="text-[10px] text-slate-400 ml-0.5">· ${p.sold.toLocaleString()} terjual</span>
             </div>
-            <div class="flex items-center gap-2 flex-wrap mb-3">
-              <span class="font-bold text-slate-900">${priceLabel}</span>
-              ${!isPriceRange && p.origPrice > p.price ? `<span class="text-slate-400 text-xs line-through">Rp ${p.origPrice.toLocaleString('id-ID')}</span>` : ''}
+            <div class="mt-auto">
+              <p class="text-xs sm:text-sm font-bold text-slate-900">${priceLabel}</p>
+              ${!isPriceRange && p.origPrice > p.price ? `<p class="text-[10px] text-slate-400 line-through">Rp ${p.origPrice.toLocaleString('id-ID')}</p>` : ''}
             </div>
-            <button onclick="addCart(${p.id})" class="mt-auto w-full bg-blue-50 hover:bg-blue-500 text-blue-600 hover:text-white text-xs font-semibold py-2 rounded-full transition-all border border-blue-200 hover:border-blue-500 flex items-center justify-center gap-1.5">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-              Keranjang
+            <button onclick="addCart(${p.id})" class="mt-1.5 w-full bg-blue-50 hover:bg-blue-500 text-blue-600 hover:text-white text-[10px] font-semibold py-1.5 rounded-lg transition-all border border-blue-200 hover:border-blue-500 flex items-center justify-center gap-1">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+              + Keranjang
             </button>
           </div>
         </div>`;
