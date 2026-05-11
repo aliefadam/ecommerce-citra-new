@@ -555,7 +555,7 @@
     </div>
 
     <!-- STICKY BOTTOM BAR (Mobile) -->
-    <div class="sticky bottom-[55px] md:hidden bg-white border-t border-slate-200 px-3 py-2.5 flex flex-col gap-2">
+    <div class="sticky bottom-[76px] md:hidden bg-white border-t border-slate-200 px-3 py-2.5 flex flex-col gap-2">
         <div class="flex gap-2">
             <button onclick="addToCart()"
                 class="flex-1 bg-blue-50 border border-blue-300 text-blue-700 font-semibold py-2.5 rounded-xl text-sm flex items-center justify-center gap-1.5">
