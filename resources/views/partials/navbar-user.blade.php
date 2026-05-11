@@ -419,34 +419,35 @@
                     <span class="text-xs">Menu</span>
                 </button>
 
-                <div class="w-px h-5 bg-slate-200 mx-3 flex-shrink-0 hidden md:block"></div>
-
                 {{-- Nav links (desktop only) --}}
-                <a href="{{ route('frontend.index') }}"
-                    class="nav-link hidden md:inline-flex {{ request()->routeIs('frontend.index') ? 'active' : '' }}">
-                    Beranda
-                </a>
-                <a href="{{ route('frontend.kategori') }}"
-                    class="nav-link hidden md:inline-flex {{ request()->routeIs('frontend.kategori') ? 'active' : '' }}">
-                    Semua Produk
-                </a>
-                <a href="{{ route('frontend.redeem-point') }}"
-                    class="nav-link hidden md:inline-flex {{ request()->routeIs('frontend.redeem-point') ? 'active' : '' }}">
-                    Redeem Point
-                </a>
-                <a href="{{ route('frontend.search') }}?sort=newest" class="nav-link hidden md:inline-flex">
-                    Produk Terbaru
-                </a>
-                <a href="{{ route('frontend.search') }}?sort=popular"
-                    class="nav-link hidden md:inline-flex items-center gap-1.5 !text-amber-500 !font-semibold">
-                    <i class="fi fi-rr-star text-[13px] text-amber-400 leading-none"></i>
-                    Terlaris
-                </a>
-                @auth
-                    <a href="{{ route('frontend.profil') }}?tab=pesanan" class="nav-link hidden md:inline-flex">
-                        Pesanan Saya
+                <div class="hidden md:flex items-center">
+                    <div class="w-px h-5 bg-slate-200 mx-3 flex-shrink-0"></div>
+                    <a href="{{ route('frontend.index') }}"
+                        class="nav-link {{ request()->routeIs('frontend.index') ? 'active' : '' }}">
+                        Beranda
                     </a>
-                @endauth
+                    <a href="{{ route('frontend.kategori') }}"
+                        class="nav-link {{ request()->routeIs('frontend.kategori') ? 'active' : '' }}">
+                        Semua Produk
+                    </a>
+                    <a href="{{ route('frontend.redeem-point') }}"
+                        class="nav-link {{ request()->routeIs('frontend.redeem-point') ? 'active' : '' }}">
+                        Redeem Point
+                    </a>
+                    <a href="{{ route('frontend.search') }}?sort=newest" class="nav-link">
+                        Produk Terbaru
+                    </a>
+                    <a href="{{ route('frontend.search') }}?sort=popular"
+                        class="nav-link flex items-center gap-1.5 !text-amber-500 !font-semibold">
+                        <i class="fi fi-rr-star text-[13px] text-amber-400 leading-none"></i>
+                        Terlaris
+                    </a>
+                    @auth
+                        <a href="{{ route('frontend.profil') }}?tab=pesanan" class="nav-link">
+                            Pesanan Saya
+                        </a>
+                    @endauth
+                </div>
             </div>
         </div>
     </div>
