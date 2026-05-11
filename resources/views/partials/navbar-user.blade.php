@@ -2,9 +2,9 @@
 <div
     class="relative overflow-hidden bg-gradient-to-r from-violet-700 via-indigo-600 to-sky-600 text-white text-center text-xs py-2 px-4">
     <div class="relative z-10 flex items-center justify-center gap-2">
-        <span class="text-yellow-300 text-sm">Ã¢Ëœâ€¦</span>
+        <span class="text-yellow-300 text-sm">✨</span>
         <span class="font-medium tracking-wide">Belanja lebih hemat dengan promo spesial hari ini</span>
-        <span class="hidden sm:inline text-indigo-200">Ã¢â‚¬â€</span>
+        <span class="hidden sm:inline text-indigo-200">→</span>
         <a href="{{ route('frontend.flash-sale') }}"
             class="hidden sm:inline-flex items-center gap-1 font-bold text-yellow-300 hover:text-yellow-100 transition-colors ml-1 border-b border-yellow-400/50 pb-px">
             Lihat Promo
