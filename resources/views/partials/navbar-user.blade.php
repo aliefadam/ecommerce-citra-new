@@ -238,7 +238,7 @@
             </div>
 
             {{-- Right actions --}}
-            <div class="flex items-center gap-0.5 flex-shrink-0">
+            <div class="flex items-center gap-0.5 flex-shrink-0 ml-auto">
                 {{-- Mobile search toggle --}}
                 <button id="ecMobileSearchToggle"
                     class="md:hidden p-2.5 rounded-xl hover:bg-slate-100 transition-colors text-slate-500">
