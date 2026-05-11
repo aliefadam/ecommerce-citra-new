@@ -41,10 +41,12 @@
                     <i class="fi fi-rr-bolt text-[1.15rem] leading-none"></i>
                     <span class="text-[11px] font-medium">Promo</span>
                 </a>
+                @php $mobileCartCount = auth()->check() ? (int) auth()->user()->carts()->sum('quantity') : 0; @endphp
                 <a href="{{ route('frontend.cart') }}"
                     class="py-2 flex flex-col items-center justify-center gap-1 text-slate-500 relative">
                     <i class="fi fi-rr-shopping-cart text-[1.15rem] leading-none"></i>
-                    <span class="absolute top-1.5 right-6 w-4 h-4 rounded-full bg-blue-500 text-white text-[10px] flex items-center justify-center">3</span>
+                    <span id="mobileCartBadge"
+                        class="absolute top-1.5 right-6 w-4 h-4 rounded-full bg-blue-500 text-white text-[10px] items-center justify-center {{ $mobileCartCount > 0 ? 'flex' : 'hidden' }}">{{ $mobileCartCount }}</span>
                     <span class="text-[11px] font-medium">Keranjang</span>
                 </a>
                 <a href="{{ route('frontend.profil') }}"

@@ -496,17 +496,17 @@
 </nav>
 
 {{-- Mobile search row --}}
-<div id="ecMobileSearch" class="hidden md:hidden px-4 pb-3 border-b border-slate-100 pt-3 bg-white">
+<div id="ecMobileSearch" class="hidden md:hidden px-4 pb-3 border-b border-slate-100 pt-3 bg-white overflow-hidden">
     <form action="{{ route('frontend.search') }}" method="GET"
-        class="flex border-2 border-slate-200 rounded-full overflow-hidden focus-within:border-sky-400 focus-within:ring-2 focus-within:ring-sky-100 transition-all bg-slate-50">
-        <div class="flex items-center pl-3 text-slate-400">
+        class="flex w-full border-2 border-slate-200 rounded-full overflow-hidden focus-within:border-sky-400 focus-within:ring-2 focus-within:ring-sky-100 transition-all bg-slate-50">
+        <div class="flex items-center pl-3 text-slate-400 flex-shrink-0">
             <i class="fi fi-rr-search text-sm leading-none"></i>
         </div>
         <input type="text" id="ecNavSearchMobile" name="q" value="{{ trim(request('q', $query ?? '')) }}"
-            placeholder="Cari produk..." class="flex-1 px-3 py-2.5 text-sm outline-none bg-transparent"
+            placeholder="Cari produk..." class="flex-1 min-w-0 px-3 py-2.5 text-sm outline-none bg-transparent"
             autocomplete="off" />
         <button type="submit"
-            class="bg-sky-500 hover:bg-sky-600 text-white px-4 flex items-center gap-1.5 font-medium text-sm transition-colors rounded-full my-1 mr-1">
+            class="flex-shrink-0 bg-sky-500 hover:bg-sky-600 text-white px-4 flex items-center font-medium text-sm transition-colors rounded-full my-1 mr-1">
             Cari
         </button>
     </form>
@@ -598,33 +598,32 @@
 
         function syncCartBadge() {
             const badge = document.getElementById('cartCount');
-            if (!badge) return;
+            const mobileBadge = document.getElementById('mobileCartBadge');
+
+            const applyCount = (qty) => {
+                if (badge) {
+                    badge.textContent = String(qty);
+                    badge.classList.toggle('hidden', qty <= 0);
+                    badge.classList.toggle('flex', qty > 0);
+                }
+                if (mobileBadge) {
+                    mobileBadge.textContent = String(qty);
+                    mobileBadge.classList.toggle('hidden', qty <= 0);
+                    mobileBadge.classList.toggle('flex', qty > 0);
+                }
+            };
+
             if (!isAuthenticated || !cartCountUrl) {
-                badge.textContent = '0';
-                badge.classList.add('hidden');
-                badge.classList.remove('flex');
+                applyCount(0);
                 return;
             }
 
             fetch(cartCountUrl, {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
                 })
-                .then((res) => res.ok ? res.json() : {
-                    count: 0
-                })
-                .then((data) => {
-                    const totalQty = Number(data?.count || 0);
-                    badge.textContent = String(totalQty);
-                    badge.classList.toggle('hidden', totalQty <= 0);
-                    badge.classList.toggle('flex', totalQty > 0);
-                })
-                .catch(() => {
-                    badge.textContent = '0';
-                    badge.classList.add('hidden');
-                    badge.classList.remove('flex');
-                });
+                .then((res) => res.ok ? res.json() : { count: 0 })
+                .then((data) => applyCount(Number(data?.count || 0)))
+                .catch(() => applyCount(0));
         }
         syncCartBadge();
         window.addEventListener('cart:updated', syncCartBadge);
@@ -721,12 +720,32 @@
             }
         }
 
+        const positionNotifDropdown = () => {
+            const rect = notifTrigger.getBoundingClientRect();
+            if (window.innerWidth < 768) {
+                const margin = 12;
+                notifDropdown.style.position = 'fixed';
+                notifDropdown.style.top = (rect.bottom + 6) + 'px';
+                notifDropdown.style.left = margin + 'px';
+                notifDropdown.style.right = margin + 'px';
+                notifDropdown.style.width = 'auto';
+            } else {
+                notifDropdown.style.position = '';
+                notifDropdown.style.top = '';
+                notifDropdown.style.left = '';
+                notifDropdown.style.right = '';
+                notifDropdown.style.width = '';
+            }
+        };
+
         if (notifTrigger && notifDropdown && isAuthenticated) {
             notifTrigger.addEventListener('click', (e) => {
                 e.stopPropagation();
+                const opening = notifDropdown.classList.contains('hidden');
                 notifDropdown.classList.toggle('hidden');
-                if (!notifDropdown.classList.contains('hidden') && !notifLoaded) {
-                    loadNotifications();
+                if (opening) {
+                    positionNotifDropdown();
+                    if (!notifLoaded) loadNotifications();
                 }
             });
         }
