@@ -414,7 +414,7 @@
 
                 {{-- Mobile hamburger (hidden on desktop) --}}
                 <button id="ecMobileNavToggle" type="button"
-                    class="md:hidden flex items-center gap-1.5 ml-2 px-3 py-1.5 rounded-full border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors flex-shrink-0">
+                    class="md:hidden flex items-center gap-1.5 ml-auto px-3 py-1.5 rounded-full border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors flex-shrink-0">
                     <i id="ecMobileNavIcon" class="fi fi-rr-menu-burger text-sm leading-none"></i>
                     <span class="text-xs">Menu</span>
                 </button>
