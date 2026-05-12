@@ -382,7 +382,7 @@ class ProductSeeder extends Seeder
 
                     return [
                         'variant' => [
-                            'name' => 'Spesifikasi',
+                            'name' => 'Varian SKU',
                             'value' => $diameter . ' x ' . $panjang . ' - ' . $tipeDrat,
                         ],
                         'price' => $this->estimateBautMurPrice($diameter, $panjang, $tipeDrat),

@@ -11,17 +11,6 @@ class VariantSeeder extends Seeder
     public function run(): void
     {
         $variants = [
-            ['name' => 'Diameter',      'value' => 'M4'],
-            ['name' => 'Diameter',      'value' => 'M5'],
-            ['name' => 'Diameter',      'value' => 'M6'],
-            ['name' => 'Diameter',      'value' => 'M8'],
-            ['name' => 'Diameter',      'value' => 'M10'],
-            ['name' => 'Diameter',      'value' => 'M12'],
-            ['name' => 'Panjang',       'value' => '16mm'],
-            ['name' => 'Panjang',       'value' => '25mm'],
-            ['name' => 'Panjang',       'value' => '50mm'],
-            ['name' => 'Panjang',       'value' => '75mm'],
-            ['name' => 'Panjang',       'value' => '100mm'],
             ['name' => 'Material',      'value' => 'Baja'],
             ['name' => 'Material',      'value' => 'Stainless 304'],
             ['name' => 'Material',      'value' => 'Galvanis'],
@@ -33,6 +22,33 @@ class VariantSeeder extends Seeder
             ['name' => 'Kemasan',       'value' => 'Pack 100'],
             ['name' => 'Kemasan',       'value' => 'Dus'],
         ];
+
+        $diameters = [
+            'M1.6', 'M2', 'M2.5', 'M3', 'M4', 'M5', 'M6', 'M8', 'M10', 'M12',
+            'M14', 'M16', 'M18', 'M20', 'M22', 'M24', 'M27', 'M30', 'M33', 'M36',
+            'M39', 'M42', 'M45', 'M48', 'M52', 'M56', 'M60',
+        ];
+
+        $lengths = [
+            '10mm', '12mm', '16mm', '20mm', '25mm', '30mm', '35mm', '40mm', '45mm', '50mm',
+            '55mm', '60mm', '65mm', '70mm', '75mm', '80mm', '90mm', '100mm', '110mm', '120mm',
+            '125mm', '130mm', '140mm', '150mm', '160mm', '170mm', '180mm', '190mm', '200mm',
+            '220mm', '240mm', '260mm', '280mm', '300mm',
+        ];
+
+        $threadTypes = ['Full Drat', 'Half Drat'];
+
+        foreach ($diameters as $diameter) {
+            $variants[] = ['name' => 'Diameter', 'value' => $diameter];
+        }
+
+        foreach ($lengths as $length) {
+            $variants[] = ['name' => 'Panjang', 'value' => $length];
+        }
+
+        foreach ($threadTypes as $threadType) {
+            $variants[] = ['name' => 'Tipe Drat', 'value' => $threadType];
+        }
 
         $bautMur109Specs = [
             'M10' => [
@@ -154,7 +170,7 @@ class VariantSeeder extends Seeder
         foreach ($bautMur109Specs as $diameter => $items) {
             foreach ($items as [$panjang, $tipeDrat]) {
                 $variants[] = [
-                    'name' => 'Spesifikasi',
+                    'name' => 'Varian SKU',
                     'value' => trim($diameter . ' x ' . $panjang . ' - ' . $tipeDrat),
                 ];
             }
