@@ -232,8 +232,7 @@
 
 {{-- ── 1. Pusat Bantuan ── --}}
 <div id="modal-pusat-bantuan" class="footer-modal fixed inset-0 z-[901] items-center justify-center p-4 hidden">
-    <div
-        class="bg-white border border-slate-200 rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col">
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col">
         <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
             <div class="flex items-center gap-3">
                 <div class="w-8 h-8 bg-blue-50 rounded-xl flex items-center justify-center">
@@ -251,7 +250,8 @@
             </button>
         </div>
         <div class="overflow-y-auto px-6 py-5 space-y-5 text-sm text-slate-600 leading-relaxed">
-            <p>Selamat datang di Pusat Bantuan <span class="text-blue-600 font-semibold">{{ $appStoreName }}</span>. Kami
+            <p>Selamat datang di Pusat Bantuan <span class="text-blue-600 font-semibold">{{ $appStoreName }}</span>.
+                Kami
                 siap membantu Anda menemukan produk yang tepat dan menyelesaikan setiap kendala pembelian.</p>
 
             <div class="space-y-3">
@@ -284,8 +284,7 @@
 
 {{-- ── 2. Kebijakan Privasi ── --}}
 <div id="modal-kebijakan-privasi" class="footer-modal fixed inset-0 z-[901] items-center justify-center p-4 hidden">
-    <div
-        class="bg-white border border-slate-200 rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col">
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col">
         <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
             <div class="flex items-center gap-3">
                 <div class="w-8 h-8 bg-blue-50 rounded-xl flex items-center justify-center">
@@ -343,8 +342,7 @@
 
 {{-- ── 3. Syarat & Ketentuan ── --}}
 <div id="modal-syarat-ketentuan" class="footer-modal fixed inset-0 z-[901] items-center justify-center p-4 hidden">
-    <div
-        class="bg-white border border-slate-200 rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col">
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col">
         <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
             <div class="flex items-center gap-3">
                 <div class="w-8 h-8 bg-blue-50 rounded-xl flex items-center justify-center">
@@ -403,8 +401,7 @@
 
 {{-- ── 4. Cara Belanja ── --}}
 <div id="modal-cara-belanja" class="footer-modal fixed inset-0 z-[901] items-center justify-center p-4 hidden">
-    <div
-        class="bg-white border border-slate-200 rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col">
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col">
         <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
             <div class="flex items-center gap-3">
                 <div class="w-8 h-8 bg-blue-50 rounded-xl flex items-center justify-center">
@@ -454,8 +451,7 @@
 
 {{-- ── 5. Hubungi Kami ── --}}
 <div id="modal-hubungi-kami" class="footer-modal fixed inset-0 z-[901] items-center justify-center p-4 hidden">
-    <div
-        class="bg-white border border-slate-200 rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col">
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col">
         <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
             <div class="flex items-center gap-3">
                 <div class="w-8 h-8 bg-blue-50 rounded-xl flex items-center justify-center">
@@ -486,7 +482,8 @@
                             </svg>
                         </div>
                         <div>
-                            <p class="text-slate-800 font-semibold group-hover:text-green-700 transition-colors">WhatsApp</p>
+                            <p class="text-slate-800 font-semibold group-hover:text-green-700 transition-colors">
+                                WhatsApp</p>
                             <p class="text-xs text-slate-500">Chat langsung, respons cepat</p>
                         </div>
                         <svg class="w-4 h-4 text-slate-300 group-hover:text-green-600 ml-auto transition-colors"
@@ -507,7 +504,8 @@
                             </svg>
                         </div>
                         <div>
-                            <p class="text-slate-800 font-semibold group-hover:text-pink-700 transition-colors">Instagram</p>
+                            <p class="text-slate-800 font-semibold group-hover:text-pink-700 transition-colors">
+                                Instagram</p>
                             <p class="text-xs text-slate-500">Ikuti update produk terbaru</p>
                         </div>
                         <svg class="w-4 h-4 text-slate-300 group-hover:text-pink-600 ml-auto transition-colors"
