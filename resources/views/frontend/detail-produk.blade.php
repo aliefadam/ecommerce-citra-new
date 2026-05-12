@@ -4,7 +4,6 @@
 
 @section('style')
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
     <style>
         * {
             font-family: 'Poppins', sans-serif;
@@ -23,50 +22,29 @@
             border-color: #2563eb;
         }
 
-        .variant-select {
-            transition: all 0.2s ease;
+        .variant-chip {
+            transition: all 0.15s ease;
+            cursor: pointer;
+            user-select: none;
         }
 
-        .variant-select:focus {
-            border-color: #60a5fa;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
-        }
-
-        .ts-wrapper.single .ts-control {
-            min-height: 46px;
-            border-radius: 0.75rem;
-            border-color: #e2e8f0;
-            box-shadow: none;
-            padding: 0.625rem 0.875rem;
-            font-size: 0.875rem;
-            color: #334155;
-        }
-
-        .ts-wrapper.single.focus .ts-control {
-            border-color: #60a5fa;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
-        }
-
-        .ts-wrapper .ts-dropdown {
-            border-color: #e2e8f0;
-            border-radius: 0.75rem;
-            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12);
-            overflow: hidden;
-        }
-
-        .ts-wrapper .ts-dropdown .option {
-            padding: 0.625rem 0.875rem;
-            font-size: 0.875rem;
-            color: #334155;
-        }
-
-        .ts-wrapper .ts-dropdown .active {
-            background: #eff6ff;
+        .variant-chip:hover:not(:disabled) {
+            border-color: #93c5fd;
+            background-color: #eff6ff;
             color: #1d4ed8;
         }
 
-        .ts-wrapper .ts-control > input {
-            font-size: 0.875rem;
+        .variant-chip.chip-active {
+            border-color: #2563eb;
+            background-color: #eff6ff;
+            color: #1d4ed8;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+        }
+
+        .variant-chip:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            text-decoration: line-through;
         }
 
         .color-swatch.active {
@@ -330,18 +308,28 @@
 
                 @foreach ($otherGroups as $group)
                     <div class="mb-5" data-variant-group="{{ $group['key'] }}">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs sm:text-sm font-semibold text-slate-700">{{ $group['label'] }}:
-                                <span id="selected-{{ $group['key'] }}"
-                                    class="text-blue-600 font-bold">{{ $defaultOther[$group['key']] ?? '-' }}</span>
-                            </span>
+                        <div class="flex items-center gap-1.5 mb-3">
+                            <span class="text-xs sm:text-sm font-semibold text-slate-600">{{ $group['label'] }}:</span>
+                            <span id="selected-{{ $group['key'] }}"
+                                class="text-xs sm:text-sm font-bold text-blue-600">{{ $defaultOther[$group['key']] ?? '-' }}</span>
                         </div>
-                        <select onchange="selectVariantValue(this, '{{ $group['key'] }}')" data-group-key="{{ $group['key'] }}"
-                            class="variant-select w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none">
+                        <select class="hidden" data-group-key="{{ $group['key'] }}">
                             @foreach ($group['values'] as $value)
                                 <option value="{{ $value }}" @selected(($defaultOther[$group['key']] ?? null) === $value)>{{ $value }}</option>
                             @endforeach
                         </select>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach ($group['values'] as $value)
+                                <button type="button"
+                                    onclick="selectChip(this, '{{ $group['key'] }}', '{{ $value }}')"
+                                    data-chip-group="{{ $group['key'] }}"
+                                    data-chip-value="{{ $value }}"
+                                    class="variant-chip px-3.5 py-1.5 rounded-lg border text-sm font-medium
+                                        {{ ($defaultOther[$group['key']] ?? null) === $value ? 'chip-active' : 'border-slate-200 bg-white text-slate-700' }}">
+                                    {{ $value }}
+                                </button>
+                            @endforeach
+                        </div>
                     </div>
                 @endforeach
                 <!-- Quantity -->
@@ -609,7 +597,6 @@
 @endsection
 
 @section('script')
-    <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
     <script>
         const productData = @json($productData);
         const isAuthenticated = @json(auth()->check());
@@ -622,7 +609,6 @@
         let currentImg = 0;
         let qty = 1;
         let isWishlisted = Boolean(productData.isWishlisted);
-        const variantSelectInstances = new Map();
 
         function setImg(i) {
             currentImg = i;
@@ -772,6 +758,22 @@
             applySelectedVariantData();
         }
 
+        function selectChip(btn, groupKey, value) {
+            document.querySelectorAll(`[data-chip-group="${groupKey}"]`).forEach((chip) => {
+                chip.classList.remove('chip-active');
+                chip.classList.add('border-slate-200', 'bg-white', 'text-slate-700');
+            });
+            btn.classList.add('chip-active');
+            btn.classList.remove('border-slate-200', 'bg-white', 'text-slate-700');
+
+            const groupEl = document.querySelector(`[data-variant-group="${groupKey}"]`);
+            const select = groupEl?.querySelector('select[data-group-key]');
+            if (select) {
+                select.value = value;
+                selectVariantValue(select, groupKey);
+            }
+        }
+
         function normalizeVariantAttrValue(groupKey, value) {
             const raw = String(value || '').trim().toLowerCase();
             return groupKey === 'length_mm' ? raw.replace(/mm$/i, '') : raw;
@@ -807,80 +809,41 @@
                 const select = groupEl.querySelector('select[data-group-key]');
                 if (!select) return;
 
-                const optionsEls = Array.from(select.options);
+                const chips = Array.from(groupEl.querySelectorAll('[data-chip-value]'));
                 let hasSelectedAvailable = false;
 
-                optionsEls.forEach((optionEl) => {
-                    const testSelections = {
-                        ...currentSelections,
-                        [group.key]: String(optionEl.value || ''),
-                    };
+                chips.forEach((chip) => {
+                    const chipValue = String(chip.getAttribute('data-chip-value') || '');
+                    const testSelections = { ...currentSelections, [group.key]: chipValue };
                     const available = options.some((option) => variantMatchesSelections(option, testSelections));
 
-                    optionEl.disabled = !available;
-                    optionEl.hidden = !available;
-
-                    if (String(select.value || '') === String(optionEl.value || '') && available) {
+                    chip.disabled = !available;
+                    if (String(select.value || '') === chipValue && available) {
                         hasSelectedAvailable = true;
                     }
                 });
 
                 if (!hasSelectedAvailable) {
-                    const firstAvailable = optionsEls.find((optionEl) => !optionEl.disabled);
+                    const firstAvailable = chips.find((chip) => !chip.disabled);
                     if (!firstAvailable) return;
-                    select.value = String(firstAvailable.value || '');
+                    const newValue = String(firstAvailable.getAttribute('data-chip-value') || '');
+                    select.value = newValue;
+
+                    chips.forEach((chip) => {
+                        const isActive = String(chip.getAttribute('data-chip-value') || '') === newValue;
+                        chip.classList.toggle('chip-active', isActive);
+                        chip.classList.toggle('border-slate-200', !isActive);
+                        chip.classList.toggle('bg-white', !isActive);
+                        chip.classList.toggle('text-slate-700', !isActive);
+                    });
                 }
 
                 const label = document.getElementById('selected-' + group.key);
-                if (label) {
-                    label.textContent = String(select.value || '-');
-                }
-
-                refreshVariantSelectControl(select);
+                if (label) label.textContent = String(select.value || '-');
             });
         }
 
-        function initializeVariantSelects() {
-            document.querySelectorAll('select[data-group-key]').forEach((select) => {
-                const groupKey = select.getAttribute('data-group-key');
-                if (!groupKey) return;
-
-                if (select.tomselect) {
-                    variantSelectInstances.set(groupKey, select.tomselect);
-                    return;
-                }
-
-                const instance = new TomSelect(select, {
-                    create: false,
-                    maxItems: 1,
-                    closeAfterSelect: true,
-                    allowEmptyOption: false,
-                    copyClassesToDropdown: false,
-                    searchField: ['text'],
-                    render: {
-                        no_results(data, escape) {
-                            return `<div class="px-3 py-2 text-sm text-slate-500">Tidak ada hasil untuk "${escape(data.input)}"</div>`;
-                        }
-                    },
-                    onChange() {
-                        selectVariantValue(select, groupKey);
-                    },
-                });
-
-                variantSelectInstances.set(groupKey, instance);
-            });
-        }
-
-        function refreshVariantSelectControl(select) {
-            const groupKey = select?.getAttribute('data-group-key');
-            const instance = (groupKey && variantSelectInstances.get(groupKey)) || select?.tomselect;
-            if (!instance) return;
-
-            instance.clearCache();
-            instance.sync();
-            instance.refreshOptions(false);
-            instance.inputState();
-        }
+        function initializeVariantSelects() {}
 
         async function toggleWishlist() {
             if (!isAuthenticated) {
