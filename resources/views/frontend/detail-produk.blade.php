@@ -4,6 +4,7 @@
 
 @section('style')
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
     <style>
         * {
             font-family: 'Poppins', sans-serif;
@@ -29,6 +30,43 @@
         .variant-select:focus {
             border-color: #60a5fa;
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+        }
+
+        .ts-wrapper.single .ts-control {
+            min-height: 46px;
+            border-radius: 0.75rem;
+            border-color: #e2e8f0;
+            box-shadow: none;
+            padding: 0.625rem 0.875rem;
+            font-size: 0.875rem;
+            color: #334155;
+        }
+
+        .ts-wrapper.single.focus .ts-control {
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+        }
+
+        .ts-wrapper .ts-dropdown {
+            border-color: #e2e8f0;
+            border-radius: 0.75rem;
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12);
+            overflow: hidden;
+        }
+
+        .ts-wrapper .ts-dropdown .option {
+            padding: 0.625rem 0.875rem;
+            font-size: 0.875rem;
+            color: #334155;
+        }
+
+        .ts-wrapper .ts-dropdown .active {
+            background: #eff6ff;
+            color: #1d4ed8;
+        }
+
+        .ts-wrapper .ts-control > input {
+            font-size: 0.875rem;
         }
 
         .color-swatch.active {
@@ -571,6 +609,7 @@
 @endsection
 
 @section('script')
+    <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
     <script>
         const productData = @json($productData);
         const isAuthenticated = @json(auth()->check());
@@ -583,6 +622,7 @@
         let currentImg = 0;
         let qty = 1;
         let isWishlisted = Boolean(productData.isWishlisted);
+        const variantSelectInstances = new Map();
 
         function setImg(i) {
             currentImg = i;
@@ -795,7 +835,51 @@
                 if (label) {
                     label.textContent = String(select.value || '-');
                 }
+
+                refreshVariantSelectControl(select);
             });
+        }
+
+        function initializeVariantSelects() {
+            document.querySelectorAll('select[data-group-key]').forEach((select) => {
+                const groupKey = select.getAttribute('data-group-key');
+                if (!groupKey) return;
+
+                if (select.tomselect) {
+                    variantSelectInstances.set(groupKey, select.tomselect);
+                    return;
+                }
+
+                const instance = new TomSelect(select, {
+                    create: false,
+                    maxItems: 1,
+                    closeAfterSelect: true,
+                    allowEmptyOption: false,
+                    copyClassesToDropdown: false,
+                    searchField: ['text'],
+                    render: {
+                        no_results(data, escape) {
+                            return `<div class="px-3 py-2 text-sm text-slate-500">Tidak ada hasil untuk "${escape(data.input)}"</div>`;
+                        }
+                    },
+                    onChange() {
+                        selectVariantValue(select, groupKey);
+                    },
+                });
+
+                variantSelectInstances.set(groupKey, instance);
+            });
+        }
+
+        function refreshVariantSelectControl(select) {
+            const groupKey = select?.getAttribute('data-group-key');
+            const instance = (groupKey && variantSelectInstances.get(groupKey)) || select?.tomselect;
+            if (!instance) return;
+
+            instance.clearCache();
+            instance.sync();
+            instance.refreshOptions(false);
+            instance.inputState();
         }
 
         async function toggleWishlist() {
@@ -932,6 +1016,7 @@
             setTimeout(() => toast.classList.add('hidden'), 3000);
         }
 
+        initializeVariantSelects();
         applySelectedVariantData();
         syncWishIcon();
         resumePendingAuthActionIfAny();
