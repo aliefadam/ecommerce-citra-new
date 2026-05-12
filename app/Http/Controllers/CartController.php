@@ -12,6 +12,7 @@ use App\Models\TransactionDetail;
 use Illuminate\Http\Request;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class CartController extends Controller
 {
@@ -486,6 +487,12 @@ class CartController extends Controller
 
     private function abortJson(int $status, string $message): never
     {
+        if (!request()->expectsJson()) {
+            throw ValidationException::withMessages([
+                'checkout' => $message,
+            ]);
+        }
+
         throw new HttpResponseException(response()->json([
             'message' => $message,
         ], $status));

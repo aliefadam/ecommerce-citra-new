@@ -530,6 +530,10 @@
                                 <span class="text-slate-400 text-[10px] line-through block">Rp {{ number_format($rp['originalPrice'], 0, ',', '.') }}</span>
                             @endif
                         </div>
+                        <a href="{{ url('/detail-produk/' . $rp['slug']) }}"
+                            class="mt-2 inline-flex w-full items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-[11px] sm:text-xs font-semibold text-blue-600 transition-colors hover:border-blue-500 hover:bg-blue-500 hover:text-white">
+                            Detail
+                        </a>
                     </div>
                 </div>
             @empty
@@ -615,6 +619,7 @@
               <div class="mt-auto">
                 <p class="text-xs sm:text-sm font-bold text-slate-900">${priceLabel}</p>
                 ${p.originalPrice > p.price ? `<p class="text-[10px] text-slate-400 line-through">Rp ${p.originalPrice.toLocaleString('id-ID')}</p>` : ''}
+                <a href="{{ url('/detail-produk') }}/${p.slug}" class="mt-2 inline-flex w-full items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-[11px] sm:text-xs font-semibold text-blue-600 transition-colors hover:border-blue-500 hover:bg-blue-500 hover:text-white">Detail</a>
               </div>
             </div>
           </div>`;

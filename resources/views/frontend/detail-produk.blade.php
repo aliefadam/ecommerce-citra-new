@@ -22,15 +22,29 @@
             border-color: #2563eb;
         }
 
-        .variant-btn {
-            transition: all 0.2s;
+        .variant-chip {
+            transition: all 0.15s ease;
+            cursor: pointer;
+            user-select: none;
         }
 
-        .variant-btn.active {
-            border-color: #2563eb;
+        .variant-chip:hover:not(:disabled) {
+            border-color: #93c5fd;
+            background-color: #eff6ff;
             color: #1d4ed8;
-            background: #eff6ff;
-            font-weight: 600;
+        }
+
+        .variant-chip.chip-active {
+            border-color: #2563eb;
+            background-color: #eff6ff;
+            color: #1d4ed8;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+        }
+
+        .variant-chip:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            text-decoration: line-through;
         }
 
         .color-swatch.active {
@@ -152,6 +166,14 @@
 
     <!-- NAVBAR -->
     @include('partials.navbar-user')
+
+    @if ($errors->any())
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4">
+            <div class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                {{ $errors->first() }}
+            </div>
+        </div>
+    @endif
 
     <!-- BREADCRUMB -->
     <div class="bg-white border-b border-slate-100">
@@ -294,17 +316,26 @@
 
                 @foreach ($otherGroups as $group)
                     <div class="mb-5" data-variant-group="{{ $group['key'] }}">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs sm:text-sm font-semibold text-slate-700">{{ $group['label'] }}:
-                                <span id="selected-{{ $group['key'] }}"
-                                    class="text-blue-600 font-bold">{{ $defaultOther[$group['key']] ?? '-' }}</span>
-                            </span>
+                        <div class="flex items-center gap-1.5 mb-3">
+                            <span class="text-xs sm:text-sm font-semibold text-slate-600">{{ $group['label'] }}:</span>
+                            <span id="selected-{{ $group['key'] }}"
+                                class="text-xs sm:text-sm font-bold text-blue-600">{{ $defaultOther[$group['key']] ?? '-' }}</span>
                         </div>
-                        <div class="flex gap-2 flex-wrap">
-                            @foreach ($group['values'] as $idx => $value)
-                                <button onclick="selectVariantValue(this, '{{ $group['key'] }}', '{{ $value }}')"
-                                    data-group-key="{{ $group['key'] }}" data-value="{{ $value }}"
-                                    class="variant-btn {{ $idx === 0 ? 'active border-blue-400' : 'border-slate-200 text-slate-600' }} border-2 rounded-xl px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium hover:border-blue-300 transition-all">{{ $value }}</button>
+                        <select class="hidden" data-group-key="{{ $group['key'] }}">
+                            @foreach ($group['values'] as $value)
+                                <option value="{{ $value }}" @selected(($defaultOther[$group['key']] ?? null) === $value)>{{ $value }}</option>
+                            @endforeach
+                        </select>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach ($group['values'] as $value)
+                                <button type="button"
+                                    onclick="selectChip(this, '{{ $group['key'] }}', '{{ $value }}')"
+                                    data-chip-group="{{ $group['key'] }}"
+                                    data-chip-value="{{ $value }}"
+                                    class="variant-chip px-3.5 py-1.5 rounded-lg border text-sm font-medium
+                                        {{ ($defaultOther[$group['key']] ?? null) === $value ? 'chip-active' : 'border-slate-200 bg-white text-slate-700' }}">
+                                    {{ $value }}
+                                </button>
                             @endforeach
                         </div>
                     </div>
@@ -728,19 +759,27 @@
             }
         }
 
-        function selectVariantValue(btn, groupKey, value) {
-            const wrapper = btn.closest('.mb-5');
-            if (wrapper) {
-                wrapper.querySelectorAll('.variant-btn').forEach(b => {
-                    b.classList.remove('active', 'border-blue-400');
-                    b.classList.add('border-slate-200', 'text-slate-600');
-                });
-            }
-            btn.classList.add('active', 'border-blue-400');
-            btn.classList.remove('border-slate-200', 'text-slate-600');
+        function selectVariantValue(select, groupKey) {
+            const value = String(select?.value || '');
             const label = document.getElementById('selected-' + groupKey);
             if (label) label.textContent = value;
             applySelectedVariantData();
+        }
+
+        function selectChip(btn, groupKey, value) {
+            document.querySelectorAll(`[data-chip-group="${groupKey}"]`).forEach((chip) => {
+                chip.classList.remove('chip-active');
+                chip.classList.add('border-slate-200', 'bg-white', 'text-slate-700');
+            });
+            btn.classList.add('chip-active');
+            btn.classList.remove('border-slate-200', 'bg-white', 'text-slate-700');
+
+            const groupEl = document.querySelector(`[data-variant-group="${groupKey}"]`);
+            const select = groupEl?.querySelector('select[data-group-key]');
+            if (select) {
+                select.value = value;
+                selectVariantValue(select, groupKey);
+            }
         }
 
         function normalizeVariantAttrValue(groupKey, value) {
@@ -752,9 +791,9 @@
             const selections = {};
             document.querySelectorAll('[data-variant-group]').forEach((group) => {
                 const key = group.getAttribute('data-variant-group');
-                const active = group.querySelector('.variant-btn.active');
-                if (!key || !active) return;
-                selections[key] = String(active.getAttribute('data-value') || '');
+                const select = group.querySelector('select[data-group-key]');
+                if (!key || !select) return;
+                selections[key] = String(select.value || '');
             });
             return selections;
         }
@@ -775,40 +814,44 @@
                 const groupEl = document.querySelector(`[data-variant-group="${group.key}"]`);
                 if (!groupEl) return;
 
-                const buttons = Array.from(groupEl.querySelectorAll('.variant-btn'));
-                let hasActiveAvailable = false;
+                const select = groupEl.querySelector('select[data-group-key]');
+                if (!select) return;
 
-                buttons.forEach((button) => {
-                    const testSelections = {
-                        ...currentSelections,
-                        [group.key]: String(button.getAttribute('data-value') || ''),
-                    };
+                const chips = Array.from(groupEl.querySelectorAll('[data-chip-value]'));
+                let hasSelectedAvailable = false;
+
+                chips.forEach((chip) => {
+                    const chipValue = String(chip.getAttribute('data-chip-value') || '');
+                    const testSelections = { ...currentSelections, [group.key]: chipValue };
                     const available = options.some((option) => variantMatchesSelections(option, testSelections));
 
-                    button.disabled = !available;
-                    button.classList.toggle('opacity-40', !available);
-                    button.classList.toggle('cursor-not-allowed', !available);
-
-                    if (button.classList.contains('active') && available) {
-                        hasActiveAvailable = true;
+                    chip.disabled = !available;
+                    if (String(select.value || '') === chipValue && available) {
+                        hasSelectedAvailable = true;
                     }
                 });
 
-                if (!hasActiveAvailable) {
-                    const firstAvailable = buttons.find((button) => !button.disabled);
-                    if (firstAvailable) {
-                        buttons.forEach((button) => {
-                            button.classList.remove('active', 'border-blue-400');
-                            button.classList.add('border-slate-200', 'text-slate-600');
-                        });
-                        firstAvailable.classList.add('active', 'border-blue-400');
-                        firstAvailable.classList.remove('border-slate-200', 'text-slate-600');
-                        const label = document.getElementById('selected-' + group.key);
-                        if (label) label.textContent = String(firstAvailable.getAttribute('data-value') || '');
-                    }
+                if (!hasSelectedAvailable) {
+                    const firstAvailable = chips.find((chip) => !chip.disabled);
+                    if (!firstAvailable) return;
+                    const newValue = String(firstAvailable.getAttribute('data-chip-value') || '');
+                    select.value = newValue;
+
+                    chips.forEach((chip) => {
+                        const isActive = String(chip.getAttribute('data-chip-value') || '') === newValue;
+                        chip.classList.toggle('chip-active', isActive);
+                        chip.classList.toggle('border-slate-200', !isActive);
+                        chip.classList.toggle('bg-white', !isActive);
+                        chip.classList.toggle('text-slate-700', !isActive);
+                    });
                 }
+
+                const label = document.getElementById('selected-' + group.key);
+                if (label) label.textContent = String(select.value || '-');
             });
         }
+
+        function initializeVariantSelects() {}
 
         async function toggleWishlist() {
             if (!isAuthenticated) {
@@ -944,6 +987,7 @@
             setTimeout(() => toast.classList.add('hidden'), 3000);
         }
 
+        initializeVariantSelects();
         applySelectedVariantData();
         syncWishIcon();
         resumePendingAuthActionIfAny();
