@@ -39,14 +39,13 @@ class ProductController extends Controller
                 $category->detail_name = (string) $category->getOriginal('name');
                 return $category;
             });
-        $variants   = Variant::orderBy('name')->orderBy('value')->get();
         $attributeDefinitions = AttributeDefinition::query()
             ->orderBy('sort_order')
             ->orderBy('name')
             ->get();
 
         $categories = $categoryDetails;
-        return view('backend.products.create', compact('mainCategories', 'categoryDetails', 'categories', 'variants', 'attributeDefinitions'));
+        return view('backend.products.create', compact('mainCategories', 'categoryDetails', 'categories', 'attributeDefinitions'));
     }
 
     public function store(Request $request, ImageOptimizer $imageOptimizer)
@@ -65,7 +64,6 @@ class ProductController extends Controller
             'is_redeem_product'     => ['nullable', 'boolean'],
             'redeem_points'         => ['nullable', 'integer', 'min:1'],
             'variants'              => ['required', 'array', 'min:1'],
-            'variants.*.variant_id' => ['required', 'exists:variants,id', 'distinct'],
             'variants.*.price'      => ['required', 'numeric', 'min:0'],
             'variants.*.stock'      => ['required', 'integer', 'min:0'],
             'variants.*.weight_grams' => ['required', 'integer', 'min:1'],
@@ -109,18 +107,15 @@ class ProductController extends Controller
                 'redeem_points' => $validated['redeem_points'] ?? null,
             ]);
 
-            $variantNamesById = Variant::whereIn('id', collect($validated['variants'])->pluck('variant_id'))
-                ->get()
-                ->keyBy('id');
-
             foreach ($validated['variants'] as $i => $v) {
                 $attributes = $v['attributes'] ?? [];
                 unset($v['attributes']);
                 $v['image'] = isset($files[$i]['image'])
                     ? $imageOptimizer->storeWebp($files[$i]['image'], 'product-variants', 1200, 1200, 82)
                     : null;
-                $variant = $variantNamesById->get($v['variant_id']);
-                $v['sku'] = $this->buildVariantSku($validated['name'], $variant?->name, $variant?->value);
+                $variantMeta = $this->resolveInternalVariant($attributes, $attributeDefinitions);
+                $v['variant_id'] = $variantMeta['variant_id'];
+                $v['sku'] = $this->buildVariantSku($validated['name'], $variantMeta['label']);
 
                 $productVariant = $product->productVariants()->create($v);
                 $this->syncVariantAttributes($productVariant, $attributes, $attributeDefinitions);
@@ -149,14 +144,13 @@ class ProductController extends Controller
                 $category->detail_name = (string) $category->getOriginal('name');
                 return $category;
             });
-        $variants   = Variant::orderBy('name')->orderBy('value')->get();
         $attributeDefinitions = AttributeDefinition::query()
             ->orderBy('sort_order')
             ->orderBy('name')
             ->get();
 
         $categories = $categoryDetails;
-        return view('backend.products.edit', compact('product', 'mainCategories', 'categoryDetails', 'categories', 'variants', 'attributeDefinitions'));
+        return view('backend.products.edit', compact('product', 'mainCategories', 'categoryDetails', 'categories', 'attributeDefinitions'));
     }
 
     public function update(Request $request, Product $product, ImageOptimizer $imageOptimizer)
@@ -176,7 +170,6 @@ class ProductController extends Controller
             'redeem_points'         => ['nullable', 'integer', 'min:1'],
             'variants'              => ['required', 'array', 'min:1'],
             'variants.*.product_variant_id' => ['nullable', 'integer'],
-            'variants.*.variant_id' => ['required', 'exists:variants,id', 'distinct'],
             'variants.*.price'      => ['required', 'numeric', 'min:0'],
             'variants.*.stock'      => ['required', 'integer', 'min:0'],
             'variants.*.weight_grams' => ['required', 'integer', 'min:1'],
@@ -205,7 +198,7 @@ class ProductController extends Controller
         $files = $request->file('variants', []);
         $attributeDefinitions = AttributeDefinition::query()->get()->keyBy('id');
 
-        $existingVariants = $product->productVariants()->with('variant')->get()->keyBy('id');
+        $existingVariants = $product->productVariants()->with('variant', 'attributeValues.definition')->get()->keyBy('id');
         $submittedVariants = collect($validated['variants'])
             ->values()
             ->map(function (array $variant) {
@@ -220,9 +213,7 @@ class ProductController extends Controller
                     return false;
                 }
 
-                $existingVariant = $existingVariants->get($productVariantId);
-
-                return $existingVariant && (int) $existingVariant->variant_id === (int) $variant['variant_id'];
+                return $existingVariants->has($productVariantId);
             })
             ->pluck('product_variant_id')
             ->values();
@@ -262,10 +253,6 @@ class ProductController extends Controller
                     ->delete();
             }
 
-            $variantNamesById = Variant::whereIn('id', collect($validated['variants'])->pluck('variant_id'))
-                ->get()
-                ->keyBy('id');
-
             foreach ($submittedVariants as $i => $v) {
                 $existingVariant = null;
                 if (!empty($v['product_variant_id']) && $keptVariantIds->contains($v['product_variant_id'])) {
@@ -283,8 +270,9 @@ class ProductController extends Controller
                 if (!empty($v['image'])) {
                     $newImages[] = $v['image'];
                 }
-                $variant = $variantNamesById->get($v['variant_id']);
-                $v['sku'] = $this->buildVariantSku($validated['name'], $variant?->name, $variant?->value);
+                $variantMeta = $this->resolveInternalVariant($attributes, $attributeDefinitions);
+                $v['variant_id'] = $variantMeta['variant_id'];
+                $v['sku'] = $this->buildVariantSku($validated['name'], $variantMeta['label']);
                 unset($v['product_variant_id']);
 
                 if ($existingVariant) {
@@ -338,13 +326,12 @@ class ProductController extends Controller
         return $slug;
     }
 
-    private function buildVariantSku(string $productName, ?string $variantName, ?string $variantValue): string
+    private function buildVariantSku(string $productName, ?string $variantDescriptor): string
     {
         $productPart = Str::upper(Str::slug($productName, '-'));
-        $namePart = Str::upper(Str::slug((string) $variantName, '-'));
-        $valuePart = Str::upper(Str::slug((string) $variantValue, '-'));
+        $descriptorPart = Str::upper(Str::slug((string) $variantDescriptor, '-'));
 
-        $segments = array_filter([$productPart, $namePart, $valuePart], fn ($s) => $s !== '');
+        $segments = array_filter([$productPart, $descriptorPart], fn ($s) => $s !== '');
 
         return implode('-', $segments);
     }
@@ -408,6 +395,63 @@ class ProductController extends Controller
         return $normalized;
     }
 
+    private function resolveInternalVariant(array $attributes, $attributeDefinitions): array
+    {
+        $label = $this->buildInternalVariantLabel($attributes, $attributeDefinitions);
+        $variant = Variant::query()->firstOrCreate([
+            'name' => 'Varian SKU',
+            'value' => $label,
+        ]);
+
+        return [
+            'variant_id' => (int) $variant->id,
+            'label' => $label,
+        ];
+    }
+
+    private function buildInternalVariantLabel(array $attributes, $attributeDefinitions): string
+    {
+        $attributesByDefinition = collect($attributes)
+            ->filter(fn ($attribute) => is_array($attribute) && !empty($attribute['attribute_definition_id']))
+            ->keyBy(fn ($attribute) => (int) $attribute['attribute_definition_id']);
+
+        $segments = [];
+
+        foreach (['diameter', 'length_mm', 'thread_type', 'grade', 'material'] as $code) {
+            $definition = $attributeDefinitions->firstWhere('code', $code);
+            if (!$definition) {
+                continue;
+            }
+
+            $attribute = $attributesByDefinition->get((int) $definition->id);
+            if (!$attribute) {
+                continue;
+            }
+
+            $value = trim((string) ($attribute['value_text'] ?? ''));
+            if ($value === '' && isset($attribute['value_number']) && $attribute['value_number'] !== null && $attribute['value_number'] !== '') {
+                $value = rtrim(rtrim((string) $attribute['value_number'], '0'), '.');
+            }
+
+            if ($value === '') {
+                continue;
+            }
+
+            $segments[] = match ($code) {
+                'length_mm' => $value . 'mm',
+                default => $value,
+            };
+        }
+
+        if ($segments === []) {
+            throw ValidationException::withMessages([
+                'variants' => 'Setiap varian minimal harus memiliki satu atribut teknis agar kombinasi SKU bisa dibentuk.',
+            ]);
+        }
+
+        return implode(' - ', $segments);
+    }
+
     private function syncVariantAttributes(ProductVariant $productVariant, array $attributes, $attributeDefinitions): void
     {
         $attributesByDefinition = collect($attributes)
@@ -466,10 +510,7 @@ class ProductController extends Controller
         return $usedVariantIds
             ->map(function (int $variantId) use ($existingVariants) {
                 $productVariant = $existingVariants->get($variantId);
-                $variantName = trim(implode(': ', array_filter([
-                    $productVariant?->variant?->name,
-                    $productVariant?->variant?->value,
-                ], fn ($value) => filled($value))));
+                $variantName = $productVariant?->attributeSummary() ?? '';
 
                 return $variantName !== '' ? $variantName : 'ID #' . $variantId;
             })

@@ -133,6 +133,7 @@ class FrontendController extends Controller
                 'mainCategory',
                 'categoryDetail',
                 'productVariants.variant',
+                'productVariants.attributeValues.definition',
                 'flashSaleItems.flashSale',
             ])
             ->where('status', 'active');
@@ -148,6 +149,11 @@ class FrontendController extends Controller
                     ->orWhereHas('productVariants.variant', function ($vq) use ($q) {
                         $vq->whereRaw('LOWER(name) like ?', ['%' . $q . '%'])
                             ->orWhereRaw('LOWER(value) like ?', ['%' . $q . '%']);
+                    })
+                    ->orWhereHas('productVariants.attributeValues', function ($aq) use ($q) {
+                        $aq->whereRaw('LOWER(COALESCE(value_text, "")) like ?', ['%' . $q . '%'])
+                            ->orWhereRaw('CAST(value_number as CHAR) like ?', ['%' . $q . '%'])
+                            ->orWhereHas('definition', fn($dq) => $dq->whereRaw('LOWER(name) like ?', ['%' . $q . '%']));
                     });
             });
         }
@@ -197,7 +203,7 @@ class FrontendController extends Controller
                 'name' => (string) $product->name,
                 'category' => (string) ($product->mainCategory?->name ?? '-'),
                 'category_detail' => (string) ($product->categoryDetail?->name ?? ''),
-                'variant' => trim(((string) ($variant->variant?->name ?? '')) . ': ' . ((string) ($variant->variant?->value ?? '')), ': '),
+                'variant' => $variant->attributeSummary(),
                 'price' => $price,
                 'originalPrice' => $basePrice,
                 'sold' => $sold,
@@ -231,6 +237,7 @@ class FrontendController extends Controller
             'mainCategory',
             'categoryDetail',
             'productVariants.variant',
+            'productVariants.attributeValues.definition',
             'flashSaleItems.flashSale',
         ])
             ->where('status', 'active')
@@ -240,23 +247,7 @@ class FrontendController extends Controller
         $variant = $product->productVariants->first();
         abort_if(!$variant, 404);
 
-        $variantGroups = $product->productVariants
-            ->filter(fn($pv) => $pv->variant && filled($pv->variant->name) && filled($pv->variant->value))
-            ->groupBy(fn($pv) => strtolower(trim($pv->variant->name)))
-            ->map(function ($items, $groupKey) {
-                return [
-                    'key' => $groupKey,
-                    'label' => $items->first()->variant->name,
-                    'values' => $items
-                        ->pluck('variant.value')
-                        ->filter()
-                        ->unique()
-                        ->values()
-                        ->all(),
-                ];
-            })
-            ->values()
-            ->all();
+        $variantGroups = $this->buildAttributeVariantGroups($product->productVariants);
 
         $galleryImages = $product->productVariants
             ->pluck('image')
@@ -536,8 +527,8 @@ class FrontendController extends Controller
                 'flashSalePrice' => $flashSalePrice,
                 'isRedeemProduct' => (bool) $product->is_redeem_product,
                 'redeemPoints' => (int) ($product->redeem_points ?? 0),
-                'variantName' => $variant->variant?->name ?? 'Varian',
-                'variantValue' => $variant->variant?->value ?? '-',
+                'variantName' => $variant->attributeSummary(),
+                'variantValue' => $variant->skuLabel(),
                 'variantGroups' => $variantGroups,
                 'productVariantId' => (int) $variant->id,
                 'isWishlisted' => auth()->check()
@@ -547,15 +538,15 @@ class FrontendController extends Controller
                     ->exists()
                     : false,
                 'variantOptions' => $product->productVariants
-                    ->filter(fn($pv) => $pv->variant && filled($pv->variant->value))
                     ->map(function ($pv) use ($product, $isFlashSale, $flashSalePrice) {
                         $basePrice = (int) $pv->price;
                         $displayPrice = $isFlashSale && $flashSalePrice ? (int) $flashSalePrice : $basePrice;
 
                         return [
                             'id' => (int) $pv->id,
-                            'name' => strtolower((string) ($pv->variant->name ?? '')),
-                            'value' => (string) ($pv->variant->value ?? ''),
+                            'label' => $pv->skuLabel(),
+                            'summary' => $pv->attributeSummary(),
+                            'attributes' => $this->buildVariantAttributeMap($pv),
                             'image' => $this->resolveProductVariantImageUrl($product, $pv, '700x700'),
                             'price' => $basePrice,
                             'displayPrice' => $displayPrice,
@@ -579,7 +570,7 @@ class FrontendController extends Controller
         }
 
         $products = Product::query()
-            ->with(['productVariants.variant', 'flashSaleItems.flashSale'])
+            ->with(['productVariants.variant', 'productVariants.attributeValues.definition', 'flashSaleItems.flashSale'])
             ->where('status', 'active')
             ->whereIn('id', $ids)
             ->get()
@@ -611,7 +602,7 @@ class FrontendController extends Controller
     {
         $deliveredStatuses = ['paid', 'settlement', 'capture', 'process', 'processing', 'kirim', 'shipping', 'shipped', 'selesai', 'completed', 'delivered'];
 
-        $query = Product::with(['mainCategory', 'categoryDetail', 'productVariants.variant', 'flashSaleItems.flashSale'])
+        $query = Product::with(['mainCategory', 'categoryDetail', 'productVariants.variant', 'productVariants.attributeValues.definition', 'flashSaleItems.flashSale'])
             ->where('status', 'active')
             ->where('id', '!=', $excludeProductId);
 
@@ -622,7 +613,7 @@ class FrontendController extends Controller
         $products = $query->latest()->limit(20)->get();
 
         if ($products->isEmpty()) {
-            $products = Product::with(['mainCategory', 'categoryDetail', 'productVariants.variant', 'flashSaleItems.flashSale'])
+            $products = Product::with(['mainCategory', 'categoryDetail', 'productVariants.variant', 'productVariants.attributeValues.definition', 'flashSaleItems.flashSale'])
                 ->where('status', 'active')
                 ->where('id', '!=', $excludeProductId)
                 ->latest()
@@ -777,6 +768,7 @@ class FrontendController extends Controller
             'mainCategory',
             'categoryDetail',
             'productVariants.variant',
+            'productVariants.attributeValues.definition',
             'flashSaleItems.flashSale',
         ])
             ->where('status', 'active')
@@ -822,11 +814,7 @@ class FrontendController extends Controller
 
             $image = $this->resolveProductVariantImageUrl($product, $variant, '400x400');
             $variantFilters = $product->productVariants
-                ->filter(fn($pv) => $pv->variant && filled($pv->variant->name) && filled($pv->variant->value))
-                ->map(fn($pv) => [
-                    'name' => (string) $pv->variant->name,
-                    'value' => (string) $pv->variant->value,
-                ])
+                ->flatMap(fn($pv) => $this->buildVariantFilterPairs($pv))
                 ->unique(fn($item) => strtolower($item['name'] . '|' . $item['value']))
                 ->values()
                 ->all();
@@ -955,6 +943,7 @@ class FrontendController extends Controller
 
         return Product::query()
             ->with(['mainCategory', 'categoryDetail', 'productVariants.variant'])
+            ->with(['productVariants.attributeValues.definition'])
             ->where('status', 'active')
             ->where('is_redeem_product', true)
             ->latest()
@@ -976,7 +965,7 @@ class FrontendController extends Controller
                     'image' => $this->resolveProductVariantImageUrl($product, $variant, '400x400'),
                     'redeemPoints' => (int) ($product->redeem_points ?? 0),
                     'stock' => (int) $variant->stock,
-                    'variant' => trim(($variant->variant?->name ? $variant->variant->name . ': ' : '') . ($variant->variant?->value ?? '-')),
+                    'variant' => $variant->attributeSummary(),
                     'sold' => (int) ($soldMap[$product->id] ?? 0),
                     'rating' => $stats ? round((float) $stats->avg_rating, 1) : 0.0,
                     'reviews' => $stats ? (int) $stats->total_reviews : 0,
@@ -1091,6 +1080,94 @@ class FrontendController extends Controller
         return $this->normalizeImageUrl($image, $fallbackSize);
     }
 
+    private function buildVariantAttributeMap(ProductVariant $variant): array
+    {
+        return $variant->attributeValues
+            ->mapWithKeys(function ($attribute) {
+                $code = strtolower((string) ($attribute->definition?->code ?? ''));
+                if ($code === '') {
+                    return [];
+                }
+
+                $value = $attribute->value_text;
+                if (($value === null || $value === '') && $attribute->value_number !== null) {
+                    $value = rtrim(rtrim((string) $attribute->value_number, '0'), '.');
+                }
+
+                return [$code => (string) $value];
+            })
+            ->all();
+    }
+
+    private function buildVariantFilterPairs(ProductVariant $variant): array
+    {
+        $labels = [
+            'diameter' => 'Diameter',
+            'length_mm' => 'Panjang',
+            'thread_type' => 'Tipe Drat',
+            'grade' => 'Grade',
+            'material' => 'Material',
+        ];
+
+        return collect($this->buildVariantAttributeMap($variant))
+            ->map(function ($value, $code) use ($labels) {
+                if (!isset($labels[$code]) || trim((string) $value) === '') {
+                    return null;
+                }
+
+                return [
+                    'name' => $labels[$code],
+                    'value' => $code === 'length_mm' ? $value . 'mm' : $value,
+                ];
+            })
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+    private function buildAttributeVariantGroups($variants): array
+    {
+        $labels = [
+            'diameter' => 'Diameter',
+            'length_mm' => 'Panjang',
+            'thread_type' => 'Tipe Drat',
+            'grade' => 'Grade',
+            'material' => 'Material',
+        ];
+
+        $order = ['diameter', 'length_mm', 'thread_type', 'grade', 'material'];
+
+        return collect($order)
+            ->map(function ($code) use ($variants, $labels) {
+                $values = collect($variants)
+                    ->map(function ($variant) use ($code) {
+                        $value = $variant->attributeValue($code);
+                        if (!$value) {
+                            return null;
+                        }
+
+                        return $code === 'length_mm' ? $value . 'mm' : $value;
+                    })
+                    ->filter()
+                    ->unique()
+                    ->values()
+                    ->all();
+
+                if ($values === []) {
+                    return null;
+                }
+
+                return [
+                    'key' => $code,
+                    'label' => $labels[$code] ?? ucfirst($code),
+                    'values' => $values,
+                ];
+            })
+            ->filter()
+            ->values()
+            ->all();
+    }
+
     private function buildActiveFlashSaleData(): array
     {
         $now = now();
@@ -1169,7 +1246,7 @@ class FrontendController extends Controller
     private function buildCheckoutItems(int $userId, ?array $cartIds = null): array
     {
         $query = \App\Models\Cart::query()
-            ->with(['productVariant.product', 'productVariant.variant', 'productVariant.flashSaleItems.flashSale'])
+            ->with(['productVariant.product', 'productVariant.variant', 'productVariant.attributeValues.definition', 'productVariant.flashSaleItems.flashSale'])
             ->where('user_id', $userId)
             ->latest();
         if (is_array($cartIds) && !empty($cartIds)) {
@@ -1202,10 +1279,7 @@ class FrontendController extends Controller
             });
 
             $salePrice = $flashItem ? (int) $flashItem->discount_price : $basePrice;
-            $variantText = trim(
-                ($variant->variant?->name ? $variant->variant->name . ': ' : '') .
-                    ($variant->variant?->value ?? '-')
-            );
+            $variantText = $variant->attributeSummary();
 
             return [
                 'cartId' => (int) $row->id,

@@ -158,7 +158,7 @@ class CartController extends Controller
         ]);
 
         $variant = ProductVariant::query()
-            ->with(['product.productVariants', 'variant', 'flashSaleItems.flashSale'])
+            ->with(['product.productVariants', 'variant', 'attributeValues.definition', 'flashSaleItems.flashSale'])
             ->findOrFail((int) $validated['product_variant_id']);
 
         $product = $variant->product;
@@ -174,10 +174,7 @@ class CartController extends Controller
             return $sale->start_at && $sale->end_at && $now->between($sale->start_at, $sale->end_at);
         });
         $salePrice = $flashItem ? (int) $flashItem->discount_price : $basePrice;
-        $variantText = trim(
-            ($variant->variant?->name ? $variant->variant->name . ': ' : '') .
-            ($variant->variant?->value ?? '-')
-        );
+        $variantText = $variant->attributeSummary();
 
         session([
             'checkout' => [
@@ -209,7 +206,7 @@ class CartController extends Controller
         ]);
 
         $variant = ProductVariant::query()
-            ->with(['product', 'variant'])
+            ->with(['product', 'variant', 'attributeValues.definition'])
             ->findOrFail((int) $validated['product_variant_id']);
 
         $item = $this->buildRedeemCheckoutItem($variant, (int) $validated['quantity']);
@@ -278,7 +275,7 @@ class CartController extends Controller
     private function buildCartItems(int $userId): array
     {
         $rows = Cart::query()
-            ->with(['productVariant.product.productVariants', 'productVariant.variant', 'productVariant.flashSaleItems.flashSale'])
+            ->with(['productVariant.product.productVariants', 'productVariant.variant', 'productVariant.attributeValues.definition', 'productVariant.flashSaleItems.flashSale'])
             ->where('user_id', $userId)
             ->latest()
             ->get();
@@ -302,10 +299,7 @@ class CartController extends Controller
             });
 
             $salePrice = $flashItem ? (int) $flashItem->discount_price : $basePrice;
-            $variantText = trim(
-                ($variant->variant?->name ? $variant->variant->name . ': ' : '') .
-                ($variant->variant?->value ?? '-')
-            );
+            $variantText = $variant->attributeSummary();
 
             return [
                 'cartId' => $row->id,
@@ -450,10 +444,7 @@ class CartController extends Controller
 
         $this->ensureVariantCanBePurchased($variant, $quantity);
 
-        $variantText = trim(
-            ($variant->variant?->name ? $variant->variant->name . ': ' : '') .
-            ($variant->variant?->value ?? '-')
-        );
+        $variantText = $variant->attributeSummary();
 
         return [
             'cartId' => null,

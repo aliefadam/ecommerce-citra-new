@@ -49,7 +49,7 @@
                 <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-3">
                     @foreach ($lowStockVariants->take(6) as $variant)
                         @php
-                            $variantName = trim((string) ($variant->variant?->name ?? '') . ': ' . (string) ($variant->variant?->value ?? ''), ': ');
+                            $variantName = $variant->attributeSummary();
                         @endphp
                         <form method="POST" action="{{ route('stocks.threshold', $variant) }}" class="rounded-xl bg-white/80 dark:bg-slate-800/80 border border-amber-100 dark:border-amber-900/50 p-3">
                             @csrf
@@ -176,9 +176,7 @@
         $stockItems = $movements
             ->map(function ($m) {
                 $productName = (string) ($m->productVariant?->product?->name ?? '-');
-                $variantName = (string) ($m->productVariant?->variant?->name ?? '');
-                $variantValue = (string) ($m->productVariant?->variant?->value ?? '');
-                $variantText = trim(($variantName !== '' ? $variantName . ': ' : '') . $variantValue);
+                $variantText = (string) ($m->productVariant?->attributeSummary() ?? '');
                 return [
                     'id' => $m->id,
                     'product' => $productName,
@@ -198,9 +196,7 @@
         $variantItems = $variants
             ->map(function ($v) {
                 $productName = (string) ($v->product?->name ?? '-');
-                $variantName = (string) ($v->variant?->name ?? '');
-                $variantValue = (string) ($v->variant?->value ?? '');
-                $variantText = trim(($variantName !== '' ? $variantName . ': ' : '') . $variantValue);
+                $variantText = (string) $v->skuLabel();
                 return [
                     'id' => $v->id,
                     'label' => $productName . ' - ' . ($variantText ?: 'Variant') . ' (stok: ' . ((int) $v->stock) . ')',

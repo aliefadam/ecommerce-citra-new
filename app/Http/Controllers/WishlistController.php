@@ -12,7 +12,7 @@ class WishlistController extends Controller
         $user = $request->user();
 
         $wishlists = Wishlist::query()
-            ->with(['product.productVariants.variant', 'product.flashSaleItems.flashSale'])
+            ->with(['product.productVariants.variant', 'product.productVariants.attributeValues.definition', 'product.flashSaleItems.flashSale'])
             ->where('user_id', $user->id)
             ->latest()
             ->get();

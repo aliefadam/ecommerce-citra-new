@@ -9,8 +9,7 @@
 
         if (old('variants')) {
             $oldVariants = collect(old('variants'))
-                ->map(function ($v) use ($variants) {
-                    $variantModel = $variants->find($v['variant_id'] ?? null);
+                ->map(function ($v) {
                     $attributes = collect($v['attributes'] ?? [])
                         ->mapWithKeys(function ($attribute, $key) {
                             $definitionId = (int) ($attribute['attribute_definition_id'] ?? $key);
@@ -25,9 +24,6 @@
 
                     return [
                         'productVariantId' => (int) ($v['product_variant_id'] ?? 0) ?: null,
-                        'variantId' => (int) ($v['variant_id'] ?? 0) ?: null,
-                        'variantName' => $variantModel?->name ?? '',
-                        'variantValue' => $variantModel?->value ?? '',
                         'sku' => $v['sku'] ?? '',
                         'price' => $v['price'] ?? '',
                         'stock' => $v['stock'] ?? '',
@@ -61,9 +57,6 @@
 
                     return [
                         'productVariantId' => $pv->id,
-                        'variantId' => $pv->variant_id,
-                        'variantName' => $pv->variant?->name ?? '',
-                        'variantValue' => $pv->variant?->value ?? '',
                         'sku' => $pv->sku ?? '',
                         'price' => $pv->price,
                         'stock' => $pv->stock,
@@ -87,9 +80,6 @@
         if (empty($oldVariants)) {
             $oldVariants = [
                 [
-                    'variantId' => null,
-                    'variantName' => '',
-                    'variantValue' => '',
                     'sku' => '',
                     'price' => '',
                     'stock' => '',
@@ -120,7 +110,6 @@
         <form action="{{ route('products.update', $product) }}" method="POST" enctype="multipart/form-data"
             x-data="productForm({
                 categories: {{ $categories->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'group' => $c->group_name ?? '-', 'detail' => $c->detail_name ?? $c->name]) }},
-                allVariants: {{ $variants->map(fn($v) => ['id' => $v->id, 'name' => $v->name, 'value' => $v->value]) }},
                 attributeDefinitions: {{ $attributeDefinitions->map(fn($definition) => ['id' => $definition->id, 'code' => $definition->code, 'name' => $definition->name, 'dataType' => $definition->data_type, 'unit' => $definition->unit]) }},
                 oldProductName: {{ json_encode(old('name', $product->name)) }},
                 oldCategoryId: {{ $oldCatId ?? 'null' }},
@@ -230,115 +219,15 @@
                                 <div
                                     class="border border-slate-200 dark:border-slate-600 rounded-xl p-4 space-y-3 bg-slate-50/50 dark:bg-slate-700/20">
 
-                                    {{-- Tipe + Nilai + Delete --}}
-                                    <div class="grid grid-cols-[1fr_1fr_auto] gap-2 items-start">
-
-                                        {{-- Tipe Varian --}}
-                                        <div class="relative" @click.outside="row.nameOpen = false">
-                                            <label
-                                                class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Tipe
-                                                <span class="text-red-400">*</span></label>
-                                            <div
-                                                class="flex items-center gap-1 w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 cursor-text">
-                                                <input type="text" x-model="row.nameSearch"
-                                                    @input="row.nameOpen = true; row.selectedName = null; row.valueSearch = ''; row.variantId = null"
-                                                    @focus="row.nameOpen = true" placeholder="Cari tipe..."
-                                                    class="flex-1 bg-transparent outline-none text-sm text-slate-700 dark:text-slate-200 placeholder-slate-400 min-w-0" />
-                                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
-                                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                                    stroke-linejoin="round" class="text-slate-400 flex-shrink-0">
-                                                    <polyline points="6 9 12 15 18 9" />
-                                                </svg>
-                                            </div>
-                                            <div x-show="row.nameOpen"
-                                                x-transition:enter="transition ease-out duration-100"
-                                                x-transition:enter-start="opacity-0 -translate-y-1"
-                                                x-transition:enter-end="opacity-100 translate-y-0"
-                                                class="absolute z-30 top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl shadow-lg overflow-hidden max-h-44 overflow-y-auto">
-                                                <template x-for="n in filteredNames(row.nameSearch)"
-                                                    :key="n">
-                                                    <button type="button" @click="selectName(row, n)"
-                                                        class="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 transition-colors"
-                                                        :class="row.selectedName === n ?
-                                                            'bg-blue-50 dark:bg-blue-900/20 text-blue-600 font-medium' :
-                                                            ''"
-                                                        x-text="n"></button>
-                                                </template>
-                                                <button type="button" x-show="nameShowAddNew(row)"
-                                                    @click="addLocalName(row)"
-                                                    class="w-full text-left px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors border-t border-slate-100 dark:border-slate-700 flex items-center gap-2">
-                                                    <svg width="13" height="13" viewBox="0 0 24 24"
-                                                        fill="none" stroke="currentColor" stroke-width="2.5"
-                                                        stroke-linecap="round" stroke-linejoin="round">
-                                                        <line x1="12" y1="5" x2="12"
-                                                            y2="19" />
-                                                        <line x1="5" y1="12" x2="19"
-                                                            y2="12" />
-                                                    </svg>
-                                                    Tambah "<span x-text="row.nameSearch"></span>"
-                                                </button>
-                                                <div x-show="filteredNames(row.nameSearch).length === 0 && !nameShowAddNew(row)"
-                                                    class="px-3 py-2 text-sm text-slate-400">Ketik untuk mencari...</div>
-                                            </div>
+                                    <div class="flex items-center justify-between gap-3">
+                                        <div>
+                                            <p class="text-sm font-semibold text-slate-700 dark:text-slate-200" x-text="rowLabel(row)"></p>
+                                            <p class="text-xs text-slate-400 mt-0.5">Sistem membentuk SKU internal dari atribut teknis varian ini.</p>
                                         </div>
-
-                                        {{-- Nilai Varian --}}
-                                        <div class="relative" @click.outside="row.valueOpen = false">
-                                            <label
-                                                class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Nilai
-                                                <span class="text-red-400">*</span></label>
-                                            <div class="flex items-center gap-1 w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 cursor-text"
-                                                :class="!row.selectedName ? 'opacity-60' : ''">
-                                                <input type="text" x-model="row.valueSearch"
-                                                    @input="row.valueOpen = true; row.variantId = null"
-                                                    @focus="if(row.selectedName) row.valueOpen = true"
-                                                    :disabled="!row.selectedName" placeholder="Cari nilai..."
-                                                    class="flex-1 bg-transparent outline-none text-sm text-slate-700 dark:text-slate-200 placeholder-slate-400 min-w-0 disabled:cursor-not-allowed" />
-                                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
-                                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                                    stroke-linejoin="round" class="text-slate-400 flex-shrink-0">
-                                                    <polyline points="6 9 12 15 18 9" />
-                                                </svg>
-                                            </div>
-                                            <input type="hidden" :name="`variants[${index}][variant_id]`"
-                                                :value="row.variantId ?? ''">
-                                            <input type="hidden" :name="`variants[${index}][product_variant_id]`"
-                                                :value="row.productVariantId ?? ''">
-                                            <input type="hidden" :name="`variants[${index}][existing_image]`"
-                                                :value="row.imageStoredPath ?? ''">
-                                            <div x-show="row.valueOpen && row.selectedName"
-                                                x-transition:enter="transition ease-out duration-100"
-                                                x-transition:enter-start="opacity-0 -translate-y-1"
-                                                x-transition:enter-end="opacity-100 translate-y-0"
-                                                class="absolute z-30 top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl shadow-lg overflow-hidden max-h-44 overflow-y-auto">
-                                                <template x-for="v in filteredValues(row)" :key="v.id">
-                                                    <button type="button" @click="selectValue(row, v)"
-                                                        class="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 transition-colors"
-                                                        :class="row.variantId === v.id ?
-                                                            'bg-blue-50 dark:bg-blue-900/20 text-blue-600 font-medium' :
-                                                            ''"
-                                                        x-text="v.value"></button>
-                                                </template>
-                                                <button type="button" x-show="valueShowAddNew(row)"
-                                                    @click="addNewValue(row)"
-                                                    class="w-full text-left px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors border-t border-slate-100 dark:border-slate-700 flex items-center gap-2">
-                                                    <svg width="13" height="13" viewBox="0 0 24 24"
-                                                        fill="none" stroke="currentColor" stroke-width="2.5"
-                                                        stroke-linecap="round" stroke-linejoin="round">
-                                                        <line x1="12" y1="5" x2="12"
-                                                            y2="19" />
-                                                        <line x1="5" y1="12" x2="19"
-                                                            y2="12" />
-                                                    </svg>
-                                                    Tambah "<span x-text="row.valueSearch"></span>"
-                                                </button>
-                                                <div x-show="filteredValues(row).length === 0 && !valueShowAddNew(row)"
-                                                    class="px-3 py-2 text-sm text-slate-400">Tidak ada nilai untuk tipe ini
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {{-- Delete button --}}
+                                        <input type="hidden" :name="`variants[${index}][product_variant_id]`"
+                                            :value="row.productVariantId ?? ''">
+                                        <input type="hidden" :name="`variants[${index}][existing_image]`"
+                                            :value="row.imageStoredPath ?? ''">
                                         <div class="flex items-end pb-0.5">
                                             <button type="button" @click="removeRow(row.id)"
                                                 :disabled="rows.length <= 1"
@@ -619,7 +508,6 @@
 
         function productForm({
             categories,
-            allVariants,
             attributeDefinitions,
             oldProductName,
             oldCategoryId,
@@ -644,7 +532,6 @@
 
             return {
                 categories,
-                allVariants,
                 attributeDefinitions,
                 productName: oldProductName || '',
                 categorySearch: oldCategoryName || '',
@@ -690,12 +577,6 @@
                 rows: oldRows.map((r, i) => ({
                     id: i,
                     productVariantId: r.productVariantId || null,
-                    nameSearch: r.variantName || '',
-                    nameOpen: false,
-                    selectedName: r.variantName || null,
-                    valueSearch: r.variantValue || '',
-                    valueOpen: false,
-                    variantId: r.variantId,
                     imagePreview: r.imagePath || null,
                     imageStoredPath: r.imageStoredPath || '',
                     sku: r.sku || '',
@@ -710,36 +591,6 @@
                     attributes: normalizeAttributes(r.attributes || {}),
                 })),
                 nextId: oldRows.length,
-
-                variantNames() {
-                    return [...new Set(this.allVariants.map(v => v.name))].sort();
-                },
-                filteredNames(search) {
-                    const names = this.variantNames();
-                    if (!search || !search.trim()) return names;
-                    return names.filter(n => n.toLowerCase().includes(search.toLowerCase()));
-                },
-                nameShowAddNew(row) {
-                    const s = (row.nameSearch || '').trim().toLowerCase();
-                    return s && !this.filteredNames(row.nameSearch).some(n => n.toLowerCase() === s);
-                },
-                selectName(row, name) {
-                    if (row.selectedName !== name) {
-                        row.valueSearch = '';
-                        row.variantId = null;
-                    }
-                    row.selectedName = name;
-                    row.nameSearch = name;
-                    row.nameOpen = false;
-                },
-                addLocalName(row) {
-                    const name = (row.nameSearch || '').trim();
-                    if (!name) return;
-                    row.selectedName = name;
-                    row.nameOpen = false;
-                    row.valueSearch = '';
-                    row.variantId = null;
-                },
                 slugify(value) {
                     return String(value || '')
                         .normalize('NFKD')
@@ -749,11 +600,22 @@
                         .replace(/-+/g, '-')
                         .toUpperCase();
                 },
+                attributeState(row, code) {
+                    const definition = this.attributeDefinitions.find((item) => item.code === code);
+                    if (!definition) return null;
+                    return row.attributes?.[String(definition.id)] || null;
+                },
+                rowLabel(row) {
+                    const diameter = this.attributeState(row, 'diameter')?.valueText || '';
+                    const lengthMm = this.attributeState(row, 'length_mm')?.valueNumber || '';
+                    const threadType = this.attributeState(row, 'thread_type')?.valueText || '';
+
+                    return [diameter, lengthMm ? `${lengthMm}mm` : '', threadType].filter(Boolean).join(' - ') || 'Varian Baru';
+                },
                 generatedSku(row) {
                     const parts = [
                         this.slugify(this.productName),
-                        this.slugify(row.selectedName || row.nameSearch),
-                        this.slugify(row.valueSearch),
+                        this.slugify(this.rowLabel(row)),
                     ].filter(Boolean);
                     return parts.join('-');
                 },
@@ -780,54 +642,10 @@
                     row[displayField] = this.formatNumericInput(row[field]);
                 },
 
-                filteredValues(row) {
-                    if (!row.selectedName) return [];
-                    const vals = this.allVariants.filter(v => v.name === row.selectedName);
-                    if (!row.valueSearch || !row.valueSearch.trim()) return vals;
-                    return vals.filter(v => v.value.toLowerCase().includes(row.valueSearch.toLowerCase()));
-                },
-                valueShowAddNew(row) {
-                    if (!row.selectedName) return false;
-                    const s = (row.valueSearch || '').trim().toLowerCase();
-                    return s && !this.filteredValues(row).some(v => v.value.toLowerCase() === s);
-                },
-                selectValue(row, variant) {
-                    row.variantId = variant.id;
-                    row.valueSearch = variant.value;
-                    row.valueOpen = false;
-                },
-                async addNewValue(row) {
-                    const name = row.selectedName;
-                    const value = (row.valueSearch || '').trim();
-                    if (!name || !value) return;
-                    try {
-                        const res = await fetch(variantQuickAddUrl, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
-                            },
-                            body: JSON.stringify({
-                                name,
-                                value
-                            })
-                        });
-                        const data = await res.json();
-                        this.allVariants = [...this.allVariants, data];
-                        this.selectValue(row, data);
-                    } catch {}
-                },
-
                 addRow() {
                     this.rows.push({
                         id: this.nextId++,
                         productVariantId: null,
-                        nameSearch: '',
-                        nameOpen: false,
-                        selectedName: null,
-                        valueSearch: '',
-                        valueOpen: false,
-                        variantId: null,
                         imagePreview: null,
                         imageStoredPath: '',
                         sku: '',

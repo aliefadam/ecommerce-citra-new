@@ -245,7 +245,7 @@
                     'label' => trim(
                         ($v->product?->name ?? '-') .
                             ' - ' .
-                            ($v->variant?->value ?? '-') .
+                            $v->skuLabel() .
                             ' | Stock ' .
                             (int) $v->stock,
                     ),

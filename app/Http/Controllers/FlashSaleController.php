@@ -19,7 +19,7 @@ class FlashSaleController extends Controller
 
     public function create()
     {
-        $productVariants = ProductVariant::with(['product', 'variant'])
+        $productVariants = ProductVariant::with(['product', 'variant', 'attributeValues.definition'])
             ->orderByDesc('id')
             ->get();
 
@@ -61,7 +61,7 @@ class FlashSaleController extends Controller
     public function edit(FlashSale $flashSale)
     {
         $flashSale->load('items');
-        $productVariants = ProductVariant::with(['product', 'variant'])
+        $productVariants = ProductVariant::with(['product', 'variant', 'attributeValues.definition'])
             ->orderByDesc('id')
             ->get();
 

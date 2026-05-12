@@ -14,12 +14,12 @@ class StockController extends Controller
     public function index()
     {
         $movements = StockMovement::query()
-            ->with(['productVariant.product', 'productVariant.variant', 'adminUser'])
+            ->with(['productVariant.product', 'productVariant.variant', 'productVariant.attributeValues.definition', 'adminUser'])
             ->latest()
             ->get();
 
         $variants = ProductVariant::query()
-            ->with(['product', 'variant'])
+            ->with(['product', 'variant', 'attributeValues.definition'])
             ->orderByDesc('id')
             ->get();
 

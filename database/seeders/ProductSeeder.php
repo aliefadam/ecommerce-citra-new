@@ -525,10 +525,11 @@ class ProductSeeder extends Seeder
 
     private function generateSku(string $productName, string $variantName, string $variantValue): string
     {
+        $descriptor = trim($variantName === 'Varian SKU' ? $variantValue : trim($variantName . ' ' . $variantValue));
+
         $parts = [
             Str::upper(Str::slug($productName, '-')),
-            Str::upper(Str::slug($variantName, '-')),
-            Str::upper(Str::slug($variantValue, '-')),
+            Str::upper(Str::slug($descriptor, '-')),
         ];
 
         return implode('-', array_filter($parts));

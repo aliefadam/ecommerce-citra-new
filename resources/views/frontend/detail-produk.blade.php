@@ -135,9 +135,7 @@
         $savingPercent =
             $productData['origPrice'] > 0 ? round((1 - $displayPrice / $productData['origPrice']) * 100) : 0;
         $variantGroups = collect($productData['variantGroups'] ?? []);
-        $colorGroup = $variantGroups->first(fn($g) => str_contains(strtolower($g['key'] ?? ''), 'warna'));
-        $otherGroups = $variantGroups->filter(fn($g) => !str_contains(strtolower($g['key'] ?? ''), 'warna'))->values();
-        $defaultColor = $colorGroup['values'][0] ?? null;
+        $otherGroups = $variantGroups->values();
         $defaultOther = $otherGroups->mapWithKeys(fn($g) => [$g['key'] => $g['values'][0] ?? null])->all();
         $reviewItems = collect($productData['reviewItems'] ?? []);
         $reviewDistribution = collect($productData['reviewDistribution'] ?? []);
@@ -294,40 +292,8 @@
                     @endif
                 </div>
 
-                @if ($colorGroup)
-                    <div class="mb-5">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-sm font-semibold text-slate-700">{{ $colorGroup['label'] }}: <span
-                                    id="selectedColor" class="text-blue-600 font-bold">{{ $defaultColor }}</span></span>
-                        </div>
-                        <div class="flex gap-3 flex-wrap">
-                            @foreach ($colorGroup['values'] as $idx => $color)
-                                @php
-                                    $key = strtolower(trim($color));
-                                    $swatchClass = match (true) {
-                                        str_contains($key, 'putih') => 'bg-white border-2 border-slate-200',
-                                        str_contains($key, 'hitam') => 'bg-slate-900',
-                                        str_contains($key, 'abu') => 'bg-slate-400',
-                                        str_contains($key, 'biru') => 'bg-blue-700',
-                                        str_contains($key, 'merah') => 'bg-red-500',
-                                        str_contains($key, 'hijau') => 'bg-green-600',
-                                        str_contains($key, 'kuning') => 'bg-yellow-400',
-                                        str_contains($key, 'ungu') => 'bg-purple-600',
-                                        str_contains($key, 'pink') => 'bg-pink-400',
-                                        str_contains($key, 'orange') => 'bg-orange-500',
-                                        default => 'bg-slate-300',
-                                    };
-                                @endphp
-                                <button onclick="selectColor(this, '{{ $color }}')"
-                                    class="color-swatch w-10 h-10 rounded-full {{ $swatchClass }} {{ $idx === 0 ? 'outline outline-2 outline-blue-500 outline-offset-2' : '' }} hover:scale-110 transition-transform"
-                                    title="{{ $color }}"></button>
-                            @endforeach
-                        </div>
-                    </div>
-                @endif
-
                 @foreach ($otherGroups as $group)
-                    <div class="mb-5">
+                    <div class="mb-5" data-variant-group="{{ $group['key'] }}">
                         <div class="flex items-center justify-between mb-2">
                             <span class="text-xs sm:text-sm font-semibold text-slate-700">{{ $group['label'] }}:
                                 <span id="selected-{{ $group['key'] }}"
@@ -337,6 +303,7 @@
                         <div class="flex gap-2 flex-wrap">
                             @foreach ($group['values'] as $idx => $value)
                                 <button onclick="selectVariantValue(this, '{{ $group['key'] }}', '{{ $value }}')"
+                                    data-group-key="{{ $group['key'] }}" data-value="{{ $value }}"
                                     class="variant-btn {{ $idx === 0 ? 'active border-blue-400' : 'border-slate-200 text-slate-600' }} border-2 rounded-xl px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium hover:border-blue-300 transition-all">{{ $value }}</button>
                             @endforeach
                         </div>
@@ -401,7 +368,7 @@
                     class="tab-btn pb-3 text-sm font-semibold text-slate-500 hover:text-slate-700 whitespace-nowrap">Ulasan
                     ({{ number_format($productData['reviews']) }})</button>
                 <button onclick="switchTab('size')" id="tab-size"
-                    class="tab-btn pb-3 text-sm font-semibold text-slate-500 hover:text-slate-700 whitespace-nowrap">Variant</button>
+                    class="tab-btn pb-3 text-sm font-semibold text-slate-500 hover:text-slate-700 whitespace-nowrap">Varian</button>
             </div>
 
             <!-- Deskripsi -->
@@ -439,12 +406,12 @@
 
             <!-- Size Guide -->
             <div id="content-size" class="hidden bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                <h3 class="font-bold text-slate-800 mb-4">Daftar Variant</h3>
+                <h3 class="font-bold text-slate-800 mb-4">Daftar Varian</h3>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left">
                         <thead class="bg-slate-50">
                             <tr>
-                                <th class="px-4 py-3 font-semibold text-slate-700 rounded-tl-xl">Variant</th>
+                                <th class="px-4 py-3 font-semibold text-slate-700 rounded-tl-xl">Varian</th>
                                 <th class="px-4 py-3 font-semibold text-slate-700">Harga</th>
                                 <th class="px-4 py-3 font-semibold text-slate-700">Stok</th>
                                 <th class="px-4 py-3 font-semibold text-slate-700 rounded-tr-xl">Status</th>
@@ -453,7 +420,7 @@
                         <tbody class="divide-y divide-slate-100">
                             @forelse (($productData['variantOptions'] ?? []) as $option)
                                 <tr>
-                                    <td class="px-4 py-3 font-medium text-slate-800">{{ $option['name'] }}: {{ $option['value'] }}</td>
+                                    <td class="px-4 py-3 font-medium text-slate-800">{{ $option['summary'] ?? '-' }}</td>
                                     <td class="px-4 py-3 text-slate-600">
                                         Rp {{ number_format($productData['isFlashSale'] ? ($option['displayPrice'] ?? 0) : ($option['price'] ?? 0), 0, ',', '.') }}
                                     </td>
@@ -732,14 +699,9 @@
             const options = Array.isArray(productData.variantOptions) ? productData.variantOptions : [];
             if (!options.length) return;
 
-            const selectedColor = (document.getElementById('selectedColor')?.textContent || '').trim().toLowerCase();
-            const selectedOthers = Array.from(document.querySelectorAll('[id^="selected-"]'))
-                .map((el) => (el.textContent || '').trim().toLowerCase())
-                .filter(Boolean);
-            const selectedValues = [selectedColor, ...selectedOthers].filter(Boolean);
-
-            let selectedVariant = options.find((opt) => selectedValues.includes(String(opt.value || '').trim()
-                .toLowerCase()));
+            syncVariantAvailability();
+            const selections = getSelectedVariantSelections();
+            let selectedVariant = options.find((opt) => variantMatchesSelections(opt, selections));
             if (!selectedVariant) selectedVariant = options[0];
             if (!selectedVariant) return;
 
@@ -766,15 +728,6 @@
             }
         }
 
-        function selectColor(btn, color) {
-            document.querySelectorAll('.color-swatch').forEach(b => b.style.outline = 'none');
-            btn.style.outline = '2px solid #2563eb';
-            btn.style.outlineOffset = '2px';
-            const label = document.getElementById('selectedColor');
-            if (label) label.textContent = color;
-            applySelectedVariantData();
-        }
-
         function selectVariantValue(btn, groupKey, value) {
             const wrapper = btn.closest('.mb-5');
             if (wrapper) {
@@ -788,6 +741,73 @@
             const label = document.getElementById('selected-' + groupKey);
             if (label) label.textContent = value;
             applySelectedVariantData();
+        }
+
+        function normalizeVariantAttrValue(groupKey, value) {
+            const raw = String(value || '').trim().toLowerCase();
+            return groupKey === 'length_mm' ? raw.replace(/mm$/i, '') : raw;
+        }
+
+        function getSelectedVariantSelections() {
+            const selections = {};
+            document.querySelectorAll('[data-variant-group]').forEach((group) => {
+                const key = group.getAttribute('data-variant-group');
+                const active = group.querySelector('.variant-btn.active');
+                if (!key || !active) return;
+                selections[key] = String(active.getAttribute('data-value') || '');
+            });
+            return selections;
+        }
+
+        function variantMatchesSelections(option, selections) {
+            const attrs = option.attributes || {};
+            return Object.entries(selections).every(([key, value]) => {
+                return normalizeVariantAttrValue(key, attrs[key] || '') === normalizeVariantAttrValue(key, value);
+            });
+        }
+
+        function syncVariantAvailability() {
+            const options = Array.isArray(productData.variantOptions) ? productData.variantOptions : [];
+            const groups = Array.isArray(productData.variantGroups) ? productData.variantGroups : [];
+            const currentSelections = getSelectedVariantSelections();
+
+            groups.forEach((group) => {
+                const groupEl = document.querySelector(`[data-variant-group="${group.key}"]`);
+                if (!groupEl) return;
+
+                const buttons = Array.from(groupEl.querySelectorAll('.variant-btn'));
+                let hasActiveAvailable = false;
+
+                buttons.forEach((button) => {
+                    const testSelections = {
+                        ...currentSelections,
+                        [group.key]: String(button.getAttribute('data-value') || ''),
+                    };
+                    const available = options.some((option) => variantMatchesSelections(option, testSelections));
+
+                    button.disabled = !available;
+                    button.classList.toggle('opacity-40', !available);
+                    button.classList.toggle('cursor-not-allowed', !available);
+
+                    if (button.classList.contains('active') && available) {
+                        hasActiveAvailable = true;
+                    }
+                });
+
+                if (!hasActiveAvailable) {
+                    const firstAvailable = buttons.find((button) => !button.disabled);
+                    if (firstAvailable) {
+                        buttons.forEach((button) => {
+                            button.classList.remove('active', 'border-blue-400');
+                            button.classList.add('border-slate-200', 'text-slate-600');
+                        });
+                        firstAvailable.classList.add('active', 'border-blue-400');
+                        firstAvailable.classList.remove('border-slate-200', 'text-slate-600');
+                        const label = document.getElementById('selected-' + group.key);
+                        if (label) label.textContent = String(firstAvailable.getAttribute('data-value') || '');
+                    }
+                }
+            });
         }
 
         async function toggleWishlist() {
@@ -832,14 +852,9 @@
         function resolveSelectedVariantId() {
             const options = Array.isArray(productData.variantOptions) ? productData.variantOptions : [];
             if (!options.length) return Number(productData.productVariantId || 0);
-            const selectedColor = (document.getElementById('selectedColor')?.textContent || '').trim().toLowerCase();
-            const selectedOthers = Array.from(document.querySelectorAll('[id^="selected-"]'))
-                .map((el) => (el.textContent || '').trim().toLowerCase())
-                .filter(Boolean);
-            const byColor = options.find((opt) => String(opt.value || '').trim().toLowerCase() === selectedColor);
-            if (byColor) return Number(byColor.id || 0);
-            const byOther = options.find((opt) => selectedOthers.includes(String(opt.value || '').trim().toLowerCase()));
-            if (byOther) return Number(byOther.id || 0);
+            const selections = getSelectedVariantSelections();
+            const exactMatch = options.find((opt) => variantMatchesSelections(opt, selections));
+            if (exactMatch) return Number(exactMatch.id || 0);
             return Number(productData.productVariantId || options[0]?.id || 0);
         }
 
@@ -854,12 +869,10 @@
                 window.location.href = getLoginRedirectUrl();
                 return;
             }
-            const color = document.getElementById('selectedColor')?.textContent || '';
-            const variantSelections = Array.from(document.querySelectorAll('[id^=\"selected-\"]'))
+            const variantText = Array.from(document.querySelectorAll('[id^=\"selected-\"]'))
                 .map(el => el.textContent)
                 .filter(Boolean)
-                .join(', ');
-            const variantText = [color, variantSelections].filter(Boolean).join(' | ');
+                .join(' | ');
             const price = productData.isFlashSale && productData.flashSalePrice ? productData.flashSalePrice : productData
                 .price;
             const res = await fetch(cartStoreUrl, {

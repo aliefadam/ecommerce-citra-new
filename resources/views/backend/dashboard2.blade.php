@@ -445,8 +445,7 @@
                                     <td class="px-4 py-3">
                                         <div class="text-xs font-medium text-slate-800 dark:text-white">
                                             {{ Str::limit($pv->product?->name ?? '-', 28) }}</div>
-                                        <div class="text-xs text-slate-400">{{ $pv->variant?->name }}
-                                            {{ $pv->variant?->value }}</div>
+                                        <div class="text-xs text-slate-400">{{ $pv->attributeSummary() }}</div>
                                     </td>
                                     <td class="px-4 py-3 text-xs font-mono text-slate-500 dark:text-slate-400">
                                         {{ $pv->sku ?? '-' }}</td>

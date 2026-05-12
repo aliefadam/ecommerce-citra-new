@@ -194,7 +194,7 @@ class BackendController extends Controller
         $recentTransactions = $this->applyPeriod(Transaction::with('user'), $period)
             ->latest()->take(7)->get();
 
-        $lowStockProducts = ProductVariant::with(['product', 'variant'])
+        $lowStockProducts = ProductVariant::with(['product', 'variant', 'attributeValues.definition'])
             ->whereColumn('stock', '<=', 'low_stock_threshold')->orderBy('stock')->take(7)->get();
 
         $orderStatusCards = $this->orderStatusCards($period);
