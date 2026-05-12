@@ -72,10 +72,6 @@
                             <p class="text-xs sm:text-sm font-bold text-slate-900">Rp ${p.price.toLocaleString('id-ID')}</p>
                             ${p.originalPrice > p.price ? `<p class="text-[10px] text-slate-400 line-through">Rp ${p.originalPrice.toLocaleString('id-ID')}</p>` : ''}
                         </div>
-                        <a href="{{ url('/detail-produk') }}/${p.slug}" class="mt-1.5 w-full bg-blue-50 hover:bg-blue-500 text-blue-600 hover:text-white text-[10px] font-semibold py-1.5 rounded-lg transition-all border border-blue-200 hover:border-blue-500 flex items-center justify-center gap-1">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                            + Keranjang
-                        </a>
                     </div>
                 </div>
             `).join('');

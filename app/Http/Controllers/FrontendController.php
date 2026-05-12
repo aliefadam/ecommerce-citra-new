@@ -1217,6 +1217,7 @@ class FrontendController extends Controller
                 'price' => $salePrice,
                 'origPrice' => $basePrice,
                 'qty' => $qty,
+                'weightGrams' => (int) ($variant->weight_grams ?: (int) env('CHECKOUT_DEFAULT_ITEM_WEIGHT', 1000)),
                 'image' => $this->resolveProductVariantImageUrl($product, $variant, '100x100'),
                 'isFlashSale' => (bool) $flashItem,
             ];

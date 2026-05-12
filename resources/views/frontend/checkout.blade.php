@@ -680,6 +680,7 @@
 
         function normalizeItem(item, index = 0) {
             const price = Number(item?.price || 0);
+            const defaultWeightPerItem = Number(@json((int) env('CHECKOUT_DEFAULT_ITEM_WEIGHT', 1000)));
             return {
                 key: item?.key || `${item?.product_id || item?.id || 'item'}::${item?.variant || '-'}`,
                 cartId: item?.cartId || item?.cart_id || null,
@@ -695,14 +696,19 @@
                 note: String(item?.note || ''),
                 redeemPoints: Math.max(0, Number(item?.redeemPoints || item?.redeem_points || 0)),
                 isRedeemProduct: Boolean(item?.isRedeemProduct || item?.is_redeem_product || false),
+                weightGrams: Math.max(1, Number(item?.weightGrams || item?.weight_grams || defaultWeightPerItem || 1)),
             };
         }
         cartItems = (Array.isArray(cartItems) ? cartItems : []).map((item, idx) => normalizeItem(item, idx));
 
         function totalCheckoutWeight() {
-            const defaultWeightPerItem = Number(@json((int) env('CHECKOUT_DEFAULT_ITEM_WEIGHT', 1000)));
-            const totalQty = cartItems.reduce((s, i) => s + Number(i.qty || 0), 0);
-            return Math.max(1, totalQty * Math.max(1, defaultWeightPerItem));
+            const totalWeight = cartItems.reduce((sum, item) => {
+                const itemWeight = Math.max(1, Number(item.weightGrams || 0));
+                const qty = Math.max(1, Number(item.qty || 0));
+                return sum + (itemWeight * qty);
+            }, 0);
+
+            return Math.max(1, totalWeight);
         }
 
         function renderCart() {

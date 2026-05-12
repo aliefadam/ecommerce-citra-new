@@ -522,23 +522,14 @@
                         <div class="mt-auto pt-0.5">
                             @php
                                 $rpPrice = (int) ($rp['price'] ?? 0);
-                                $rpPriceMax = (int) ($rp['priceMax'] ?? $rpPrice);
                             @endphp
                             <span class="font-bold text-slate-900 text-xs sm:text-sm">
-                                @if ($rpPriceMax > $rpPrice)
-                                    Rp {{ number_format($rpPrice, 0, ',', '.') }}
-                                @else
-                                    Rp {{ number_format($rpPrice, 0, ',', '.') }}
-                                @endif
+                                Rp {{ number_format($rpPrice, 0, ',', '.') }}
                             </span>
                             @if (($rp['originalPrice'] ?? 0) > ($rp['price'] ?? 0))
                                 <span class="text-slate-400 text-[10px] line-through block">Rp {{ number_format($rp['originalPrice'], 0, ',', '.') }}</span>
                             @endif
                         </div>
-                        <button onclick="addToCart({{ $rp['id'] }})" class="w-full bg-blue-50 hover:bg-blue-500 text-blue-600 hover:text-white text-[10px] font-semibold py-1.5 rounded-lg transition-all border border-blue-200 hover:border-blue-500 flex items-center justify-center gap-1 mt-1">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                            + Keranjang
-                        </button>
                     </div>
                 </div>
             @empty
@@ -592,11 +583,7 @@
 
             grid.innerHTML = visibleProducts.map(p => {
                 const discount = p.originalPrice > p.price ? Math.round((1 - p.price / p.originalPrice) * 100) : 0;
-                const priceMax = Number(p.priceMax ?? p.price);
-                const isPriceRange = priceMax > Number(p.price);
-                const priceLabel = isPriceRange ?
-                    `Rp ${Number(p.price).toLocaleString('id-ID')} - Rp ${priceMax.toLocaleString('id-ID')}` :
-                    `Rp ${Number(p.price).toLocaleString('id-ID')}`;
+                const priceLabel = `Rp ${Number(p.price).toLocaleString('id-ID')}`;
                 const badgeHtml = p.isFlashSale ?
                     `<span class="badge-promo text-white text-[10px] font-bold px-2 py-0.5 rounded-full">-${discount}%</span>` :
                     p.badge === 'new' ?
@@ -627,12 +614,8 @@
               </div>
               <div class="mt-auto">
                 <p class="text-xs sm:text-sm font-bold text-slate-900">${priceLabel}</p>
-                ${!isPriceRange && p.originalPrice > p.price ? `<p class="text-[10px] text-slate-400 line-through">Rp ${p.originalPrice.toLocaleString('id-ID')}</p>` : ''}
+                ${p.originalPrice > p.price ? `<p class="text-[10px] text-slate-400 line-through">Rp ${p.originalPrice.toLocaleString('id-ID')}</p>` : ''}
               </div>
-              <button onclick="addToCart(${p.id})" class="mt-1.5 w-full bg-blue-50 hover:bg-blue-500 text-blue-600 hover:text-white text-[10px] font-semibold py-1.5 rounded-lg transition-all border border-blue-200 hover:border-blue-500 flex items-center justify-center gap-1">
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                + Keranjang
-              </button>
             </div>
           </div>`;
             }).join('');

@@ -8,8 +8,20 @@
         $oldCatName = $oldCatId ? $categories->find($oldCatId)?->name ?? '' : '';
 
         $oldVariants = collect(old('variants', []))
-            ->map(function ($v) use ($variants) {
+            ->map(function ($v) use ($variants, $attributeDefinitions) {
                 $variantModel = $variants->find($v['variant_id'] ?? null);
+                $attributes = collect($v['attributes'] ?? [])
+                    ->mapWithKeys(function ($attribute, $key) {
+                        $definitionId = (int) ($attribute['attribute_definition_id'] ?? $key);
+
+                        return [$definitionId => [
+                            'attributeDefinitionId' => $definitionId,
+                            'valueText' => $attribute['value_text'] ?? '',
+                            'valueNumber' => $attribute['value_number'] ?? '',
+                        ]];
+                    })
+                    ->all();
+
                 return [
                     'variantId' => (int) ($v['variant_id'] ?? 0) ?: null,
                     'variantName' => $variantModel?->name ?? '',
@@ -17,6 +29,11 @@
                     'sku' => $v['sku'] ?? '',
                     'price' => $v['price'] ?? '',
                     'stock' => $v['stock'] ?? '',
+                    'weightGrams' => $v['weight_grams'] ?? '',
+                    'lengthCm' => $v['length_cm'] ?? '',
+                    'widthCm' => $v['width_cm'] ?? '',
+                    'heightCm' => $v['height_cm'] ?? '',
+                    'attributes' => $attributes,
                     'imagePath' => null,
                     'imageStoredPath' => '',
                 ];
@@ -33,6 +50,17 @@
                     'sku' => '',
                     'price' => '',
                     'stock' => '',
+                    'weightGrams' => '',
+                    'lengthCm' => '',
+                    'widthCm' => '',
+                    'heightCm' => '',
+                    'attributes' => $attributeDefinitions->mapWithKeys(fn ($definition) => [
+                        $definition->id => [
+                            'attributeDefinitionId' => $definition->id,
+                            'valueText' => '',
+                            'valueNumber' => '',
+                        ],
+                    ])->all(),
                     'imagePath' => null,
                     'imageStoredPath' => '',
                 ],
@@ -49,6 +77,7 @@
         <form action="{{ route('products.store') }}" method="POST" enctype="multipart/form-data" x-data="productForm({
             categories: {{ $categories->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'group' => $c->group_name ?? '-', 'detail' => $c->detail_name ?? $c->name]) }},
             allVariants: {{ $variants->map(fn($v) => ['id' => $v->id, 'name' => $v->name, 'value' => $v->value]) }},
+            attributeDefinitions: {{ $attributeDefinitions->map(fn($definition) => ['id' => $definition->id, 'code' => $definition->code, 'name' => $definition->name, 'dataType' => $definition->data_type, 'unit' => $definition->unit]) }},
             oldProductName: {{ json_encode(old('name')) }},
             oldCategoryId: {{ $oldCatId ?? 'null' }},
             oldCategoryName: {{ json_encode($oldCatName) }},
@@ -305,7 +334,7 @@
                                     </div>
 
                                     {{-- SKU + Harga + Stok --}}
-                                    <div class="grid grid-cols-3 gap-2">
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
                                         <div>
                                             <label
                                                 class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">SKU</label>
@@ -338,6 +367,71 @@
                                                 class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
                                             <input type="hidden" :name="`variants[${index}][stock]`"
                                                 :value="row.stock" />
+                                        </div>
+                                    </div>
+
+                                    {{-- Logistik --}}
+                                    <div class="rounded-xl border border-slate-200 dark:border-slate-600 bg-white/70 dark:bg-slate-800/40 p-3">
+                                        <div class="flex items-center justify-between gap-2 mb-3">
+                                            <div>
+                                                <h3 class="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide">Logistik</h3>
+                                                <p class="text-[11px] text-slate-400 mt-0.5">Berat dipakai untuk perhitungan ongkir. Dimensi disimpan untuk referensi packing.</p>
+                                            </div>
+                                        </div>
+                                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                            <div>
+                                                <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Berat (gram) <span class="text-red-400">*</span></label>
+                                                <input type="number" min="1" step="1" placeholder="100"
+                                                    :name="`variants[${index}][weight_grams]`" x-model="row.weightGrams"
+                                                    class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Panjang (cm)</label>
+                                                <input type="number" min="0" step="0.01" placeholder="0"
+                                                    :name="`variants[${index}][length_cm]`" x-model="row.lengthCm"
+                                                    class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Lebar (cm)</label>
+                                                <input type="number" min="0" step="0.01" placeholder="0"
+                                                    :name="`variants[${index}][width_cm]`" x-model="row.widthCm"
+                                                    class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Tinggi (cm)</label>
+                                                <input type="number" min="0" step="0.01" placeholder="0"
+                                                    :name="`variants[${index}][height_cm]`" x-model="row.heightCm"
+                                                    class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {{-- Spesifikasi Teknis --}}
+                                    <div class="rounded-xl border border-slate-200 dark:border-slate-600 bg-white/70 dark:bg-slate-800/40 p-3">
+                                        <div class="mb-3">
+                                            <h3 class="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide">Spesifikasi Teknis</h3>
+                                            <p class="text-[11px] text-slate-400 mt-0.5">Isi atribut yang relevan untuk varian ini agar bisa dipakai untuk filter dan informasi produk.</p>
+                                        </div>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
+                                            @foreach ($attributeDefinitions as $definition)
+                                                <div>
+                                                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">{{ $definition->name }}@if($definition->unit) ({{ $definition->unit }}) @endif</label>
+                                                    <input type="hidden"
+                                                        :name="`variants[${index}][attributes][{{ $definition->id }}][attribute_definition_id]`"
+                                                        value="{{ $definition->id }}" />
+                                                    @if ($definition->data_type === 'number')
+                                                        <input type="number" min="0" step="0.001" placeholder="{{ $definition->unit ?: '0' }}"
+                                                            :name="`variants[${index}][attributes][{{ $definition->id }}][value_number]`"
+                                                            x-model="row.attributes['{{ $definition->id }}'].valueNumber"
+                                                            class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                                    @else
+                                                        <input type="text" placeholder="Isi {{ strtolower($definition->name) }}..."
+                                                            :name="`variants[${index}][attributes][{{ $definition->id }}][value_text]`"
+                                                            x-model="row.attributes['{{ $definition->id }}'].valueText"
+                                                            class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                                    @endif
+                                                </div>
+                                            @endforeach
                                         </div>
                                     </div>
 
@@ -475,6 +569,7 @@
         function productForm({
             categories,
             allVariants,
+            attributeDefinitions,
             oldProductName,
             oldCategoryId,
             oldCategoryName,
@@ -483,9 +578,23 @@
             oldRows,
             variantQuickAddUrl
         }) {
+            const normalizeAttributes = (attributes = {}) => {
+                const map = {};
+                attributeDefinitions.forEach((definition) => {
+                    const current = attributes?.[definition.id] || attributes?.[String(definition.id)] || {};
+                    map[String(definition.id)] = {
+                        attributeDefinitionId: definition.id,
+                        valueText: current.valueText ?? current.value_text ?? '',
+                        valueNumber: current.valueNumber ?? current.value_number ?? '',
+                    };
+                });
+                return map;
+            };
+
             return {
                 categories,
                 allVariants,
+                attributeDefinitions,
                 productName: oldProductName || '',
                 categorySearch: oldCategoryName || '',
                 categoryId: oldCategoryId || null,
@@ -543,6 +652,11 @@
                     priceDisplay: '',
                     stock: r.stock || '',
                     stockDisplay: '',
+                    weightGrams: r.weightGrams || '',
+                    lengthCm: r.lengthCm || '',
+                    widthCm: r.widthCm || '',
+                    heightCm: r.heightCm || '',
+                    attributes: normalizeAttributes(r.attributes || {}),
                 })),
                 nextId: oldRows.length,
 
@@ -669,7 +783,12 @@
                         price: '',
                         priceDisplay: '',
                         stock: '',
-                        stockDisplay: ''
+                        stockDisplay: '',
+                        weightGrams: '',
+                        lengthCm: '',
+                        widthCm: '',
+                        heightCm: '',
+                        attributes: normalizeAttributes()
                     });
                 },
                 removeRow(id) {

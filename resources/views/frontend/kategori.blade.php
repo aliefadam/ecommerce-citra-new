@@ -386,11 +386,7 @@
 
             grid.innerHTML = visibleProducts.map(p => {
                 const disc = p.origPrice > p.price ? Math.round((1 - p.price / p.origPrice) * 100) : 0;
-                const priceMax = Number(p.priceMax ?? p.price);
-                const isPriceRange = priceMax > Number(p.price);
-                const priceLabel = isPriceRange ?
-                    `Rp ${Number(p.price).toLocaleString('id-ID')} - Rp ${priceMax.toLocaleString('id-ID')}` :
-                    `Rp ${Number(p.price).toLocaleString('id-ID')}`;
+                const priceLabel = `Rp ${Number(p.price).toLocaleString('id-ID')}`;
                 const badge = p.isFlashSale ?
                     `<span class="badge-promo text-white text-[10px] font-bold px-2 py-0.5 rounded-full">-${disc}%</span>` :
                     p.badge === 'new' ?
@@ -417,13 +413,12 @@
               <div class="flex items-center justify-between">
                 <div>
                   <span class="font-bold text-slate-900 text-lg">${priceLabel}</span>
-                  ${!isPriceRange && p.origPrice > p.price ? `<span class="text-slate-400 text-sm line-through ml-2">Rp ${p.origPrice.toLocaleString('id-ID')}</span>` : ''}
+                  ${p.origPrice > p.price ? `<span class="text-slate-400 text-sm line-through ml-2">Rp ${p.origPrice.toLocaleString('id-ID')}</span>` : ''}
                 </div>
                 <div class="flex items-center gap-2">
                   <button onclick="toggleWishlist(${p.id})" data-wishlist-btn data-product-id="${p.id}" class="w-9 h-9 rounded-full border border-slate-200 text-pink-500 flex items-center justify-center hover:bg-pink-50">
                     <svg class="w-4 h-4" fill="${p.isWishlisted ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
                   </button>
-                  <button onclick="addCart(${p.id})" class="bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors">+ Keranjang</button>
                 </div>
               </div>
             </div>
@@ -448,12 +443,8 @@
             </div>
             <div class="mt-auto">
               <p class="text-xs sm:text-sm font-bold text-slate-900">${priceLabel}</p>
-              ${!isPriceRange && p.origPrice > p.price ? `<p class="text-[10px] text-slate-400 line-through">Rp ${p.origPrice.toLocaleString('id-ID')}</p>` : ''}
+              ${p.origPrice > p.price ? `<p class="text-[10px] text-slate-400 line-through">Rp ${p.origPrice.toLocaleString('id-ID')}</p>` : ''}
             </div>
-            <button onclick="addCart(${p.id})" class="mt-1.5 w-full bg-blue-50 hover:bg-blue-500 text-blue-600 hover:text-white text-[10px] font-semibold py-1.5 rounded-lg transition-all border border-blue-200 hover:border-blue-500 flex items-center justify-center gap-1">
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-              + Keranjang
-            </button>
           </div>
         </div>`;
             }).join('');
@@ -950,6 +941,5 @@
         setMegaCategory('rumah-tangga');
     </script>
 @endsection
-
 
 
