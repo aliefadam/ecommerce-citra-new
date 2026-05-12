@@ -167,6 +167,14 @@
     <!-- NAVBAR -->
     @include('partials.navbar-user')
 
+    @if ($errors->any())
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4">
+            <div class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                {{ $errors->first() }}
+            </div>
+        </div>
+    @endif
+
     <!-- BREADCRUMB -->
     <div class="bg-white border-b border-slate-100">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3">

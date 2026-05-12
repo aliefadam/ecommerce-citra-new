@@ -5,6 +5,14 @@
 @section('content')
     @include('partials.navbar-user')
 
+    @if ($errors->any())
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4">
+            <div class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                {{ $errors->first() }}
+            </div>
+        </div>
+    @endif
+
     <section class="bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.18),_transparent_34%),linear-gradient(180deg,_#eff6ff_0%,_#f8fafc_100%)] border-b border-blue-100">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
             <nav class="flex items-center gap-2 text-sm text-slate-500 mb-4">
