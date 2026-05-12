@@ -149,6 +149,10 @@ class WishlistController extends Controller
             return $image;
         }
 
-        return asset(ltrim($image, '/'));
+        $normalized = str_starts_with($image, 'storage/')
+            ? substr($image, strlen('storage/'))
+            : ltrim($image, '/');
+
+        return asset('storage/' . $normalized);
     }
 }

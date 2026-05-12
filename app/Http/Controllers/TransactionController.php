@@ -23,10 +23,7 @@ class TransactionController extends Controller
         $transactions->transform(function ($tx) {
             $tx->details->transform(function ($d) {
                 $image = (string) ($d->image ?? '');
-                $isAbsolute = str_starts_with($image, 'http://') || str_starts_with($image, 'https://') || str_starts_with($image, '//') || str_starts_with($image, 'data:');
-                if ($image !== '' && !$isAbsolute) {
-                    $image = asset(ltrim($image, '/'));
-                }
+                $image = $this->resolveImageUrl($image);
                 $d->image_url = $image;
                 return $d;
             });
@@ -204,5 +201,28 @@ class TransactionController extends Controller
             'type' => $type,
             'note' => $note,
         ]);
+    }
+
+    private function resolveImageUrl(string $image): string
+    {
+        $image = trim($image);
+        if ($image === '') {
+            return '';
+        }
+
+        if (
+            str_starts_with($image, 'http://') ||
+            str_starts_with($image, 'https://') ||
+            str_starts_with($image, '//') ||
+            str_starts_with($image, 'data:')
+        ) {
+            return $image;
+        }
+
+        $normalized = str_starts_with($image, 'storage/')
+            ? substr($image, strlen('storage/'))
+            : ltrim($image, '/');
+
+        return asset('storage/' . $normalized);
     }
 }

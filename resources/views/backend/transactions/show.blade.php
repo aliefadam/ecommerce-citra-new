@@ -29,7 +29,7 @@
                     <div class="space-y-3">
                         @foreach ($transaction->details as $detail)
                             <div class="flex items-start gap-3">
-                                <img src="{{ $detail->image ? (str_starts_with($detail->image, 'http') ? $detail->image : asset(ltrim($detail->image, '/'))) : 'https://via.placeholder.com/80x80?text=No+Image' }}"
+                                <img src="{{ $detail->image ? ((str_starts_with($detail->image, 'http://') || str_starts_with($detail->image, 'https://') || str_starts_with($detail->image, '//') || str_starts_with($detail->image, 'data:')) ? $detail->image : asset('storage/' . ltrim(str_starts_with($detail->image, 'storage/') ? \Illuminate\Support\Str::after($detail->image, 'storage/') : $detail->image, '/'))) : 'https://via.placeholder.com/80x80?text=No+Image' }}"
                                     class="w-14 h-14 rounded-xl object-cover border border-slate-100" alt="{{ $detail->product_name }}">
                                 <div class="flex-1">
                                     <p class="font-semibold text-slate-800 dark:text-slate-200">{{ $detail->product_name }}</p>
