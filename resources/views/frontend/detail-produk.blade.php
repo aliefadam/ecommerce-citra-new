@@ -22,15 +22,13 @@
             border-color: #2563eb;
         }
 
-        .variant-btn {
-            transition: all 0.2s;
+        .variant-select {
+            transition: all 0.2s ease;
         }
 
-        .variant-btn.active {
-            border-color: #2563eb;
-            color: #1d4ed8;
-            background: #eff6ff;
-            font-weight: 600;
+        .variant-select:focus {
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
         }
 
         .color-swatch.active {
@@ -300,13 +298,12 @@
                                     class="text-blue-600 font-bold">{{ $defaultOther[$group['key']] ?? '-' }}</span>
                             </span>
                         </div>
-                        <div class="flex gap-2 flex-wrap">
-                            @foreach ($group['values'] as $idx => $value)
-                                <button onclick="selectVariantValue(this, '{{ $group['key'] }}', '{{ $value }}')"
-                                    data-group-key="{{ $group['key'] }}" data-value="{{ $value }}"
-                                    class="variant-btn {{ $idx === 0 ? 'active border-blue-400' : 'border-slate-200 text-slate-600' }} border-2 rounded-xl px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium hover:border-blue-300 transition-all">{{ $value }}</button>
+                        <select onchange="selectVariantValue(this, '{{ $group['key'] }}')" data-group-key="{{ $group['key'] }}"
+                            class="variant-select w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none">
+                            @foreach ($group['values'] as $value)
+                                <option value="{{ $value }}" @selected(($defaultOther[$group['key']] ?? null) === $value)>{{ $value }}</option>
                             @endforeach
-                        </div>
+                        </select>
                     </div>
                 @endforeach
                 <!-- Quantity -->
@@ -728,16 +725,8 @@
             }
         }
 
-        function selectVariantValue(btn, groupKey, value) {
-            const wrapper = btn.closest('.mb-5');
-            if (wrapper) {
-                wrapper.querySelectorAll('.variant-btn').forEach(b => {
-                    b.classList.remove('active', 'border-blue-400');
-                    b.classList.add('border-slate-200', 'text-slate-600');
-                });
-            }
-            btn.classList.add('active', 'border-blue-400');
-            btn.classList.remove('border-slate-200', 'text-slate-600');
+        function selectVariantValue(select, groupKey) {
+            const value = String(select?.value || '');
             const label = document.getElementById('selected-' + groupKey);
             if (label) label.textContent = value;
             applySelectedVariantData();
@@ -752,9 +741,9 @@
             const selections = {};
             document.querySelectorAll('[data-variant-group]').forEach((group) => {
                 const key = group.getAttribute('data-variant-group');
-                const active = group.querySelector('.variant-btn.active');
-                if (!key || !active) return;
-                selections[key] = String(active.getAttribute('data-value') || '');
+                const select = group.querySelector('select[data-group-key]');
+                if (!key || !select) return;
+                selections[key] = String(select.value || '');
             });
             return selections;
         }
@@ -775,37 +764,36 @@
                 const groupEl = document.querySelector(`[data-variant-group="${group.key}"]`);
                 if (!groupEl) return;
 
-                const buttons = Array.from(groupEl.querySelectorAll('.variant-btn'));
-                let hasActiveAvailable = false;
+                const select = groupEl.querySelector('select[data-group-key]');
+                if (!select) return;
 
-                buttons.forEach((button) => {
+                const optionsEls = Array.from(select.options);
+                let hasSelectedAvailable = false;
+
+                optionsEls.forEach((optionEl) => {
                     const testSelections = {
                         ...currentSelections,
-                        [group.key]: String(button.getAttribute('data-value') || ''),
+                        [group.key]: String(optionEl.value || ''),
                     };
                     const available = options.some((option) => variantMatchesSelections(option, testSelections));
 
-                    button.disabled = !available;
-                    button.classList.toggle('opacity-40', !available);
-                    button.classList.toggle('cursor-not-allowed', !available);
+                    optionEl.disabled = !available;
+                    optionEl.hidden = !available;
 
-                    if (button.classList.contains('active') && available) {
-                        hasActiveAvailable = true;
+                    if (String(select.value || '') === String(optionEl.value || '') && available) {
+                        hasSelectedAvailable = true;
                     }
                 });
 
-                if (!hasActiveAvailable) {
-                    const firstAvailable = buttons.find((button) => !button.disabled);
-                    if (firstAvailable) {
-                        buttons.forEach((button) => {
-                            button.classList.remove('active', 'border-blue-400');
-                            button.classList.add('border-slate-200', 'text-slate-600');
-                        });
-                        firstAvailable.classList.add('active', 'border-blue-400');
-                        firstAvailable.classList.remove('border-slate-200', 'text-slate-600');
-                        const label = document.getElementById('selected-' + group.key);
-                        if (label) label.textContent = String(firstAvailable.getAttribute('data-value') || '');
-                    }
+                if (!hasSelectedAvailable) {
+                    const firstAvailable = optionsEls.find((optionEl) => !optionEl.disabled);
+                    if (!firstAvailable) return;
+                    select.value = String(firstAvailable.value || '');
+                }
+
+                const label = document.getElementById('selected-' + group.key);
+                if (label) {
+                    label.textContent = String(select.value || '-');
                 }
             });
         }
