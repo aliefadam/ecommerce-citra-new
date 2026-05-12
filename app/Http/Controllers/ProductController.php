@@ -16,9 +16,32 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use App\Exports\ProductImportTemplateExport;
 
 class ProductController extends Controller
 {
+    private const IMPORT_TEMPLATE_COLUMNS = [
+        'product_name',
+        'category_detail',
+        'status',
+        'description',
+        'is_redeem_product',
+        'redeem_points',
+        'price',
+        'stock',
+        'weight_grams',
+        'length_cm',
+        'width_cm',
+        'height_cm',
+        'diameter',
+        'length_mm',
+        'thread_type',
+        'grade',
+        'material',
+    ];
+
     public function index()
     {
         $products = Product::with(['mainCategory', 'categoryDetail', 'productVariants'])->latest()->get();
@@ -128,6 +151,200 @@ class ProductController extends Controller
     public function show()
     {
         abort(404);
+    }
+
+    public function downloadImportTemplate()
+    {
+        return Excel::download(new ProductImportTemplateExport(), 'product-import-template.xlsx');
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'import_file' => ['required', 'file', 'mimes:xlsx,xls'],
+        ], [
+            'import_file.required' => 'File Excel wajib dipilih.',
+            'import_file.mimes' => 'Format file harus .xlsx atau .xls sesuai template.',
+        ]);
+
+        $file = $request->file('import_file');
+        $sheetRows = IOFactory::load($file->getRealPath())
+            ->getActiveSheet()
+            ->toArray(null, true, true, false);
+
+        if (count($sheetRows) < 2) {
+            throw ValidationException::withMessages([
+                'import_file' => 'File Excel kosong. Gunakan template lalu isi minimal 1 baris data.',
+            ]);
+        }
+
+        $header = collect($sheetRows[0] ?? [])->map(fn ($value) => strtolower(trim((string) $value)))->values()->all();
+        $expected = self::IMPORT_TEMPLATE_COLUMNS;
+        if ($header !== $expected) {
+            throw ValidationException::withMessages([
+                'import_file' => 'Format kolom Excel tidak sesuai template. Silakan download ulang template dan jangan ubah nama/urutan kolom.',
+            ]);
+        }
+
+        $attributeDefinitions = AttributeDefinition::query()->get()->keyBy('code');
+        $requiredCodes = ['diameter', 'length_mm', 'thread_type', 'grade', 'material'];
+        foreach ($requiredCodes as $code) {
+            if (!$attributeDefinitions->has($code)) {
+                throw ValidationException::withMessages([
+                    'import_file' => "Attribute definition untuk kode '{$code}' belum tersedia di sistem.",
+                ]);
+            }
+        }
+
+        $normalizedRows = collect($sheetRows)
+            ->slice(1)
+            ->values()
+            ->map(function (array $row, int $index) use ($expected) {
+                $assoc = [];
+                foreach ($expected as $i => $column) {
+                    $assoc[$column] = trim((string) ($row[$i] ?? ''));
+                }
+                $assoc['_row_number'] = $index + 2;
+                return $assoc;
+            })
+            ->filter(function (array $row) {
+                return collect(self::IMPORT_TEMPLATE_COLUMNS)
+                    ->contains(fn ($column) => $row[$column] !== '');
+            })
+            ->values();
+
+        if ($normalizedRows->isEmpty()) {
+            throw ValidationException::withMessages([
+                'import_file' => 'Tidak ada data yang bisa diimport. Pastikan ada baris terisi di bawah header.',
+            ]);
+        }
+
+        $categoryDetails = CategoryDetail::query()->with('mainCategory')->get();
+
+        DB::transaction(function () use ($normalizedRows, $categoryDetails, $attributeDefinitions, $requiredCodes) {
+            $attributeDefinitionsById = $attributeDefinitions->keyBy('id');
+            $grouped = $normalizedRows->groupBy(function (array $row) {
+                return implode('|', [
+                    strtolower($row['product_name']),
+                    strtolower($row['category_detail']),
+                    strtolower($row['status']),
+                    strtolower($row['description']),
+                    strtolower($row['is_redeem_product']),
+                    strtolower($row['redeem_points']),
+                ]);
+            });
+
+            foreach ($grouped as $rows) {
+                $first = $rows->first();
+                $rowNumber = (int) $first['_row_number'];
+
+                $productName = trim($first['product_name']);
+                if ($productName === '') {
+                    throw ValidationException::withMessages([
+                        'import_file' => "Baris {$rowNumber}: product_name wajib diisi.",
+                    ]);
+                }
+
+                $detailName = trim($first['category_detail']);
+                if ($detailName === '') {
+                    throw ValidationException::withMessages([
+                        'import_file' => "Baris {$rowNumber}: category_detail wajib diisi.",
+                    ]);
+                }
+
+                $status = strtolower(trim($first['status']));
+                if (!in_array($status, ['active', 'inactive'], true)) {
+                    throw ValidationException::withMessages([
+                        'import_file' => "Baris {$rowNumber}: status harus active atau inactive.",
+                    ]);
+                }
+
+                $isRedeemProduct = in_array(strtolower($first['is_redeem_product']), ['1', 'true', 'yes', 'ya'], true);
+                $redeemPointsRaw = trim($first['redeem_points']);
+                $redeemPoints = $redeemPointsRaw === '' ? null : (int) preg_replace('/\D+/', '', $redeemPointsRaw);
+                if ($isRedeemProduct && (!$redeemPoints || $redeemPoints < 1)) {
+                    throw ValidationException::withMessages([
+                        'import_file' => "Baris {$rowNumber}: redeem_points wajib diisi >= 1 jika is_redeem_product aktif.",
+                    ]);
+                }
+
+                $detail = $categoryDetails->first(function ($categoryDetail) use ($detailName) {
+                    return strtolower(trim((string) $categoryDetail->name)) === strtolower($detailName)
+                        || strtolower(trim((string) $categoryDetail->getOriginal('name'))) === strtolower($detailName);
+                });
+
+                if (!$detail) {
+                    throw ValidationException::withMessages([
+                        'import_file' => "Baris {$rowNumber}: category_detail '{$detailName}' tidak ditemukan.",
+                    ]);
+                }
+
+                $slug = $this->makeUniqueProductSlug($productName);
+                $product = Product::create([
+                    'name' => $productName,
+                    'slug' => $slug,
+                    'main_category_id' => (int) $detail->main_category_id,
+                    'category_detail_id' => (int) $detail->id,
+                    'category_id' => null,
+                    'status' => $status,
+                    'description' => $first['description'] !== '' ? $first['description'] : null,
+                    'is_redeem_product' => $isRedeemProduct,
+                    'redeem_points' => $isRedeemProduct ? $redeemPoints : null,
+                ]);
+
+                foreach ($rows as $row) {
+                    $line = (int) $row['_row_number'];
+                    $price = $this->normalizeDecimalInput($row['price']);
+                    $stock = preg_replace('/\D+/', '', (string) $row['stock']) ?? '';
+                    $weight = preg_replace('/\D+/', '', (string) $row['weight_grams']) ?? '';
+                    $lengthCm = $this->normalizeDecimalInput($row['length_cm']);
+                    $widthCm = $this->normalizeDecimalInput($row['width_cm']);
+                    $heightCm = $this->normalizeDecimalInput($row['height_cm']);
+
+                    if ($price === null || $stock === '' || $weight === '') {
+                        throw ValidationException::withMessages([
+                            'import_file' => "Baris {$line}: price, stock, dan weight_grams wajib diisi.",
+                        ]);
+                    }
+
+                    $attributes = collect($requiredCodes)
+                        ->map(function ($code) use ($row, $attributeDefinitions) {
+                            $value = trim((string) ($row[$code] ?? ''));
+                            return [
+                                'attribute_definition_id' => (int) $attributeDefinitions->get($code)->id,
+                                'value_text' => $value !== '' ? $value : null,
+                                'value_number' => null,
+                            ];
+                        })
+                        ->filter(fn ($attribute) => $attribute['value_text'] !== null)
+                        ->values()
+                        ->all();
+
+                    if ($attributes === []) {
+                        throw ValidationException::withMessages([
+                            'import_file' => "Baris {$line}: minimal satu atribut teknis (diameter/length_mm/thread_type/grade/material) harus diisi.",
+                        ]);
+                    }
+
+                    $variantMeta = $this->resolveInternalVariant($attributes, $attributeDefinitionsById);
+                    $variant = $product->productVariants()->create([
+                        'variant_id' => $variantMeta['variant_id'],
+                        'sku' => $this->buildVariantSku($productName, $variantMeta['label']),
+                        'image' => null,
+                        'price' => $price,
+                        'stock' => (int) $stock,
+                        'weight_grams' => (int) $weight,
+                        'length_cm' => $lengthCm,
+                        'width_cm' => $widthCm,
+                        'height_cm' => $heightCm,
+                    ]);
+
+                    $this->syncVariantAttributes($variant, $attributes, $attributeDefinitionsById);
+                }
+            }
+        });
+
+        return redirect()->route('products.index')->with('success', 'Import product berhasil diproses.');
     }
 
     public function edit(Product $product)
