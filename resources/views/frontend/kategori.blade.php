@@ -416,6 +416,9 @@
                   ${p.origPrice > p.price ? `<span class="text-slate-400 text-sm line-through ml-2">Rp ${p.origPrice.toLocaleString('id-ID')}</span>` : ''}
                 </div>
                 <div class="flex items-center gap-2">
+                  <a href="{{ url('/detail-produk') }}/${p.slug}" class="inline-flex items-center justify-center rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-semibold text-blue-600 transition-colors hover:border-blue-500 hover:bg-blue-500 hover:text-white">
+                    Detail
+                  </a>
                   <button onclick="toggleWishlist(${p.id})" data-wishlist-btn data-product-id="${p.id}" class="w-9 h-9 rounded-full border border-slate-200 text-pink-500 flex items-center justify-center hover:bg-pink-50">
                     <svg class="w-4 h-4" fill="${p.isWishlisted ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
                   </button>
@@ -444,6 +447,7 @@
             <div class="mt-auto">
               <p class="text-xs sm:text-sm font-bold text-slate-900">${priceLabel}</p>
               ${p.origPrice > p.price ? `<p class="text-[10px] text-slate-400 line-through">Rp ${p.origPrice.toLocaleString('id-ID')}</p>` : ''}
+              <a href="{{ url('/detail-produk') }}/${p.slug}" class="mt-2 inline-flex w-full items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-[11px] sm:text-xs font-semibold text-blue-600 transition-colors hover:border-blue-500 hover:bg-blue-500 hover:text-white">Detail</a>
             </div>
           </div>
         </div>`;
@@ -941,5 +945,4 @@
         setMegaCategory('rumah-tangga');
     </script>
 @endsection
-
 

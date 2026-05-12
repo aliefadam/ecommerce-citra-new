@@ -71,6 +71,7 @@
                         <div class="mt-auto pt-1">
                             <p class="text-xs sm:text-sm font-bold text-slate-900">Rp ${p.price.toLocaleString('id-ID')}</p>
                             ${p.originalPrice > p.price ? `<p class="text-[10px] text-slate-400 line-through">Rp ${p.originalPrice.toLocaleString('id-ID')}</p>` : ''}
+                            <a href="{{ url('/detail-produk') }}/${p.slug}" class="mt-2 inline-flex w-full items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-[11px] sm:text-xs font-semibold text-blue-600 transition-colors hover:border-blue-500 hover:bg-blue-500 hover:text-white">Detail</a>
                         </div>
                     </div>
                 </div>
