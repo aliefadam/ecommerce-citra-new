@@ -63,6 +63,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::post('/change-password', [BackendController::class, 'updatePassword'])->name('pages.change-password.update');
 
         Route::resource('products', ProductController::class)->except(['show'])->middleware('admin.permission:manage_catalog');
+        Route::get('products-import-template', [ProductController::class, 'downloadImportTemplate'])->name('products.import-template')->middleware('admin.permission:manage_catalog');
+        Route::post('products-import', [ProductController::class, 'import'])->name('products.import')->middleware('admin.permission:manage_catalog');
         Route::get('/users', [UserController::class, 'index'])->name('users.index')->middleware('admin.permission:view_customers');
         Route::resource('member-tiers', MemberTierController::class)->parameters(['member-tiers' => 'memberTier'])->except(['show'])->middleware('admin.permission:manage_membership_tiers');
         Route::resource('admin-users', AdminUserController::class)->parameters(['admin-users' => 'adminUser'])->except(['show'])->middleware('admin.permission:manage_admin_users');
