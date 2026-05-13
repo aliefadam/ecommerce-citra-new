@@ -4,6 +4,7 @@
 
 @section('style')
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
     <style>
         * {
             font-family: 'Poppins', sans-serif;
@@ -22,29 +23,79 @@
             border-color: #2563eb;
         }
 
-        .variant-chip {
-            transition: all 0.15s ease;
-            cursor: pointer;
-            user-select: none;
+        .ts-wrapper.single .ts-control {
+            min-height: 44px;
+            border-radius: 0.75rem;
+            border: 1.5px solid #e2e8f0;
+            background: #fff;
+            box-shadow: none;
+            padding: 0.6rem 0.875rem;
+            font-size: 0.875rem;
+            color: #334155;
+            transition: border-color 0.15s, box-shadow 0.15s;
         }
 
-        .variant-chip:hover:not(:disabled) {
-            border-color: #93c5fd;
-            background-color: #eff6ff;
+        .ts-wrapper.single.focus .ts-control {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .ts-wrapper .ts-control input {
+            font-size: 0.875rem;
+            color: #334155;
+        }
+
+        .ts-wrapper .ts-dropdown {
+            border: 1.5px solid #e2e8f0;
+            border-radius: 0.875rem;
+            box-shadow: 0 8px 32px rgba(15, 23, 42, 0.12);
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .ts-wrapper .ts-dropdown .ts-dropdown-content {
+            max-height: 220px;
+        }
+
+        .ts-wrapper .ts-dropdown .option {
+            padding: 0.6rem 0.875rem;
+            font-size: 0.875rem;
+            color: #475569;
+            transition: background 0.1s;
+        }
+
+        .ts-wrapper .ts-dropdown .option:hover,
+        .ts-wrapper .ts-dropdown .option.active {
+            background: #eff6ff;
             color: #1d4ed8;
         }
 
-        .variant-chip.chip-active {
-            border-color: #2563eb;
-            background-color: #eff6ff;
-            color: #1d4ed8;
-            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
-        }
-
-        .variant-chip:disabled {
-            opacity: 0.35;
-            cursor: not-allowed;
+        .ts-wrapper .ts-dropdown .option[data-disabled] {
+            opacity: 0.4;
             text-decoration: line-through;
+            cursor: not-allowed;
+        }
+
+        .ts-wrapper .ts-dropdown input.ts-input-search {
+            margin: 8px;
+            width: calc(100% - 16px);
+            border: 1.5px solid #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 0.4rem 0.75rem;
+            font-size: 0.8125rem;
+            outline: none;
+            color: #334155;
+        }
+
+        .ts-wrapper .ts-dropdown input.ts-input-search:focus {
+            border-color: #3b82f6;
+        }
+
+        .ts-no-results {
+            padding: 0.75rem;
+            font-size: 0.875rem;
+            color: #94a3b8;
+            text-align: center;
         }
 
         .color-swatch.active {
@@ -316,28 +367,18 @@
 
                 @foreach ($otherGroups as $group)
                     <div class="mb-5" data-variant-group="{{ $group['key'] }}">
-                        <div class="flex items-center gap-1.5 mb-3">
-                            <span class="text-xs sm:text-sm font-semibold text-slate-600">{{ $group['label'] }}:</span>
+                        <div class="flex items-center gap-1.5 mb-2">
+                            <span class="text-xs sm:text-sm font-semibold text-slate-700">{{ $group['label'] }}:</span>
                             <span id="selected-{{ $group['key'] }}"
                                 class="text-xs sm:text-sm font-bold text-blue-600">{{ $defaultOther[$group['key']] ?? '-' }}</span>
                         </div>
-                        <select class="hidden" data-group-key="{{ $group['key'] }}">
+                        <select onchange="selectVariantValue(this, '{{ $group['key'] }}')"
+                            data-group-key="{{ $group['key'] }}"
+                            class="w-full">
                             @foreach ($group['values'] as $value)
                                 <option value="{{ $value }}" @selected(($defaultOther[$group['key']] ?? null) === $value)>{{ $value }}</option>
                             @endforeach
                         </select>
-                        <div class="flex flex-wrap gap-2">
-                            @foreach ($group['values'] as $value)
-                                <button type="button"
-                                    onclick="selectChip(this, '{{ $group['key'] }}', '{{ $value }}')"
-                                    data-chip-group="{{ $group['key'] }}"
-                                    data-chip-value="{{ $value }}"
-                                    class="variant-chip px-3.5 py-1.5 rounded-lg border text-sm font-medium
-                                        {{ ($defaultOther[$group['key']] ?? null) === $value ? 'chip-active' : 'border-slate-200 bg-white text-slate-700' }}">
-                                    {{ $value }}
-                                </button>
-                            @endforeach
-                        </div>
                     </div>
                 @endforeach
                 <!-- Quantity -->
@@ -605,6 +646,7 @@
 @endsection
 
 @section('script')
+    <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
     <script>
         const productData = @json($productData);
         const isAuthenticated = @json(auth()->check());
@@ -617,6 +659,7 @@
         let currentImg = 0;
         let qty = 1;
         let isWishlisted = Boolean(productData.isWishlisted);
+        const variantSelectInstances = new Map();
 
         function setImg(i) {
             currentImg = i;
@@ -766,22 +809,6 @@
             applySelectedVariantData();
         }
 
-        function selectChip(btn, groupKey, value) {
-            document.querySelectorAll(`[data-chip-group="${groupKey}"]`).forEach((chip) => {
-                chip.classList.remove('chip-active');
-                chip.classList.add('border-slate-200', 'bg-white', 'text-slate-700');
-            });
-            btn.classList.add('chip-active');
-            btn.classList.remove('border-slate-200', 'bg-white', 'text-slate-700');
-
-            const groupEl = document.querySelector(`[data-variant-group="${groupKey}"]`);
-            const select = groupEl?.querySelector('select[data-group-key]');
-            if (select) {
-                select.value = value;
-                selectVariantValue(select, groupKey);
-            }
-        }
-
         function normalizeVariantAttrValue(groupKey, value) {
             const raw = String(value || '').trim().toLowerCase();
             return groupKey === 'length_mm' ? raw.replace(/mm$/i, '') : raw;
@@ -817,41 +844,79 @@
                 const select = groupEl.querySelector('select[data-group-key]');
                 if (!select) return;
 
-                const chips = Array.from(groupEl.querySelectorAll('[data-chip-value]'));
+                const optionsEls = Array.from(select.options);
                 let hasSelectedAvailable = false;
 
-                chips.forEach((chip) => {
-                    const chipValue = String(chip.getAttribute('data-chip-value') || '');
-                    const testSelections = { ...currentSelections, [group.key]: chipValue };
+                optionsEls.forEach((optionEl) => {
+                    const testSelections = {
+                        ...currentSelections,
+                        [group.key]: String(optionEl.value || ''),
+                    };
                     const available = options.some((option) => variantMatchesSelections(option, testSelections));
 
-                    chip.disabled = !available;
-                    if (String(select.value || '') === chipValue && available) {
+                    optionEl.disabled = !available;
+                    optionEl.hidden = !available;
+
+                    if (String(select.value || '') === String(optionEl.value || '') && available) {
                         hasSelectedAvailable = true;
                     }
                 });
 
                 if (!hasSelectedAvailable) {
-                    const firstAvailable = chips.find((chip) => !chip.disabled);
+                    const firstAvailable = optionsEls.find((optionEl) => !optionEl.disabled);
                     if (!firstAvailable) return;
-                    const newValue = String(firstAvailable.getAttribute('data-chip-value') || '');
-                    select.value = newValue;
-
-                    chips.forEach((chip) => {
-                        const isActive = String(chip.getAttribute('data-chip-value') || '') === newValue;
-                        chip.classList.toggle('chip-active', isActive);
-                        chip.classList.toggle('border-slate-200', !isActive);
-                        chip.classList.toggle('bg-white', !isActive);
-                        chip.classList.toggle('text-slate-700', !isActive);
-                    });
+                    select.value = String(firstAvailable.value || '');
                 }
 
                 const label = document.getElementById('selected-' + group.key);
                 if (label) label.textContent = String(select.value || '-');
+
+                refreshVariantSelectControl(select);
             });
         }
 
-        function initializeVariantSelects() {}
+        function initializeVariantSelects() {
+            document.querySelectorAll('select[data-group-key]').forEach((select) => {
+                const groupKey = select.getAttribute('data-group-key');
+                if (!groupKey) return;
+
+                if (select.tomselect) {
+                    variantSelectInstances.set(groupKey, select.tomselect);
+                    return;
+                }
+
+                const instance = new TomSelect(select, {
+                    create: false,
+                    maxItems: 1,
+                    closeAfterSelect: true,
+                    allowEmptyOption: false,
+                    copyClassesToDropdown: false,
+                    hideSelected: true,
+                    searchField: ['text'],
+                    render: {
+                        no_results(data, escape) {
+                            return `<div class="ts-no-results">Tidak ditemukan: "${escape(data.input)}"</div>`;
+                        },
+                    },
+                    onChange() {
+                        selectVariantValue(select, groupKey);
+                    },
+                });
+
+                variantSelectInstances.set(groupKey, instance);
+            });
+        }
+
+        function refreshVariantSelectControl(select) {
+            const groupKey = select?.getAttribute('data-group-key');
+            const instance = (groupKey && variantSelectInstances.get(groupKey)) || select?.tomselect;
+            if (!instance) return;
+
+            instance.clearCache();
+            instance.sync();
+            instance.refreshOptions(false);
+            instance.inputState();
+        }
 
         async function toggleWishlist() {
             if (!isAuthenticated) {
