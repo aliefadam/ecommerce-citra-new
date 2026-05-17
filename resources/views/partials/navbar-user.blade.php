@@ -198,16 +198,14 @@
 
             {{-- Logo --}}
             <a href="{{ route('frontend.index') }}" class="flex items-center gap-2.5 flex-shrink-0 group">
-                <div
-                    class="w-10 h-10 bg-gradient-to-br from-sky-400 via-blue-500 to-violet-600 rounded-xl flex items-center justify-center shadow-md group-hover:shadow-sky-200 group-hover:scale-105 transition-all duration-200 overflow-hidden">
-                    @if (!empty($appStoreLogoUrl))
-                        <img src="{{ $appStoreLogoUrl }}" alt="{{ $appStoreName }}"
-                            class="w-full h-full object-contain bg-white p-1">
-                    @else
+                @if (!empty($appStoreLogoUrl))
+                    <img src="{{ $appStoreLogoUrl }}" alt="{{ $appStoreName }}"
+                        class="h-10 w-auto max-w-[120px] object-contain transition-transform duration-200 group-hover:scale-105">
+                @else
+                    <div
+                        class="w-10 h-10 bg-gradient-to-br from-sky-400 via-blue-500 to-violet-600 rounded-xl flex items-center justify-center shadow-md group-hover:shadow-sky-200 group-hover:scale-105 transition-all duration-200 overflow-hidden">
                         <i class="fi fi-rr-shopping-cart text-white text-xl leading-none"></i>
-                    @endif
-                </div>
-                @if (empty($appStoreLogoUrl))
+                    </div>
                     <div class="hidden sm:flex flex-col leading-none">
                         <span class="text-[10px] font-medium text-slate-400 tracking-widest uppercase">Official Store</span>
                         <span
