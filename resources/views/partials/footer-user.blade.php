@@ -79,6 +79,11 @@
                     Toko baut, mur, fastener, anchor, dan perkakas teknik untuk kebutuhan bengkel, proyek, dan industri.
                 </p>
 
+                <div class="text-xs leading-relaxed text-slate-500 mb-6 max-w-xs">
+                    <p>By PT CITRA ABADI TEKNIK INDONESIA</p>
+                    <p class="text-slate-400 font-medium">"Professional Partner For Your Professional Results"</p>
+                </div>
+
                 {{-- Social icons --}}
                 @if ($activeSocials->isNotEmpty())
                     <div class="flex flex-wrap gap-2">
@@ -208,8 +213,15 @@
 
         {{-- Bottom bar --}}
         <div class="flex flex-col sm:flex-row items-center justify-between gap-5">
-            <p class="text-xs text-slate-500">© {{ date('Y') }} <span
-                    class="text-slate-400 font-medium">{{ $appStoreName }}</span>. All rights reserved.</p>
+            <div class="text-center sm:text-left">
+                <p class="text-xs text-slate-500">© {{ date('Y') }} <span
+                        class="text-slate-400 font-medium">{{ $appStoreName }}</span>. All rights reserved.</p>
+                <p class="text-xs text-slate-500 mt-1">
+                    Developed with love <span class="text-red-400">&hearts;</span>
+                    <a href="https://wa.me/628989889941" target="_blank" rel="noopener noreferrer"
+                        class="text-slate-400 font-medium hover:text-blue-400 transition-colors">Dokter Koding</a>
+                </p>
+            </div>
 
             {{-- Payment badges --}}
             <div class="flex items-center flex-wrap gap-2 justify-center">
