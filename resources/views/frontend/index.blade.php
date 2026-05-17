@@ -477,7 +477,7 @@
     </section>
 
     @if (session('newsletter_success') || session('newsletter_error') || $errors->has('email'))
-        <div class="fixed top-4 right-4 z-[9999] max-w-sm rounded-xl shadow-2xl px-5 py-3 text-sm font-medium {{ session('newsletter_success') ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white' }}">
+        <div class="fixed top-4 right-4 z-[9999] max-w-sm rounded-xl shadow-2xl px-5 py-3 text-sm font-medium {{ session('newsletter_success') ? 'bg-blue-500 text-white' : 'bg-red-500 text-white' }}">
             {{ session('newsletter_success') ?? session('newsletter_error') ?? $errors->first('email') }}
         </div>
     @endif
