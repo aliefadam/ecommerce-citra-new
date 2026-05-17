@@ -102,6 +102,106 @@
         .qty-btn:hover {
             background: #f1f5f9;
         }
+
+        .checkout-page,
+        .checkout-card,
+        .checkout-card-body,
+        .checkout-page .grid,
+        .checkout-page .grid > *,
+        .address-card > div,
+        .payment-tabs,
+        .payment-card,
+        .shipping-card,
+        .shipping-card > div,
+        .summary-row,
+        .summary-value {
+            min-width: 0;
+        }
+
+        .payment-tabs {
+            max-width: 100%;
+        }
+
+        .summary-value {
+            overflow-wrap: anywhere;
+            text-align: right;
+        }
+
+        @media (max-width: 430px) {
+            .checkout-page {
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+
+            .checkout-card-header,
+            .checkout-card-body {
+                padding: 1rem;
+            }
+
+            .payment-tabs {
+                display: grid;
+                grid-template-columns: 1fr;
+                overflow: visible;
+            }
+
+            .payment-tab {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .payment-panel {
+                grid-template-columns: 1fr !important;
+            }
+
+            .payment-card {
+                gap: 0.625rem;
+            }
+
+            .shipping-card {
+                align-items: flex-start;
+                flex-wrap: wrap;
+                gap: 0.75rem;
+            }
+
+            .shipping-card > div {
+                flex-basis: calc(100% - 2rem);
+            }
+
+            .shipping-card > span:last-child {
+                margin-left: 1.75rem;
+            }
+
+            .payment-logo-box {
+                width: 58px;
+            }
+
+            .summary-row {
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .summary-row.stack-mobile {
+                flex-direction: column;
+            }
+
+            .summary-row.stack-mobile .summary-value {
+                width: 100%;
+                text-align: left;
+            }
+
+            .voucher-actions {
+                flex-direction: column;
+            }
+
+            .voucher-actions button {
+                width: 100%;
+            }
+
+            #grandTotal {
+                font-size: 1.125rem;
+                line-height: 1.5rem;
+            }
+        }
     </style>
 @endsection
 
@@ -112,16 +212,16 @@
     <!-- NAVBAR -->
     @include('partials.navbar-user')
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-5">
+    <div class="checkout-page max-w-7xl mx-auto px-4 sm:px-6 py-5">
         <div class="grid lg:grid-cols-3 gap-8">
 
             <!-- LEFT COL -->
             <div class="lg:col-span-2 space-y-6">
 
                 <!-- CART ITEMS -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                <div class="checkout-card bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                     <div
-                        class="px-6 py-4 border-b border-slate-100 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        class="checkout-card-header px-6 py-4 border-b border-slate-100 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <h2 class="font-bold text-slate-800 flex items-center gap-2">
                             <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -131,7 +231,7 @@
                         </h2>
                         <span class="text-sm text-slate-500" id="itemCountText">3 item</span>
                     </div>
-                    <div id="cartItems" class="divide-y divide-slate-100 p-4 space-y-0"></div>
+                    <div id="cartItems" class="checkout-card-body divide-y divide-slate-100 p-4 space-y-0"></div>
                     <div
                         class="px-6 py-3 bg-slate-50 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <label class="flex items-center gap-2 cursor-pointer">
@@ -143,9 +243,9 @@
                 </div>
 
                 <!-- ALAMAT PENGIRIMAN -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                <div class="checkout-card bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                     <div
-                        class="px-6 py-4 border-b border-slate-100 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        class="checkout-card-header px-6 py-4 border-b border-slate-100 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <h2 class="font-bold text-slate-800 flex items-center gap-2">
                             <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -160,7 +260,7 @@
                             Tambah Alamat
                         </button>
                     </div>
-                    <div class="p-6 space-y-3" id="addressList">
+                    <div class="checkout-card-body p-6 space-y-3" id="addressList">
                         @forelse(($addresses ?? collect()) as $address)
                             <label
                                 class="address-card flex items-start gap-3 p-4 border-2 {{ $address->is_primary ? 'border-blue-400 bg-blue-50' : 'border-slate-200' }} rounded-xl cursor-pointer hover:border-slate-300 transition-colors">
@@ -194,8 +294,8 @@
                 </div>
 
                 <!-- METODE PENGIRIMAN -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                    <div class="px-6 py-4 border-b border-slate-100">
+                <div class="checkout-card bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="checkout-card-header px-6 py-4 border-b border-slate-100">
                         <h2 class="font-bold text-slate-800 flex items-center gap-2">
                             <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -205,7 +305,7 @@
                             Metode Pengiriman
                         </h2>
                     </div>
-                    <div class="p-6 space-y-3">
+                    <div class="checkout-card-body p-6 space-y-3">
                         <div id="shippingOptions" class="space-y-3">
                             <div class="text-sm text-slate-500">Memuat opsi pengiriman...</div>
                         </div>
@@ -213,8 +313,8 @@
                 </div>
 
                 <!-- METODE PEMBAYARAN -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                    <div class="px-6 py-4 border-b border-slate-100">
+                <div class="checkout-card bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="checkout-card-header px-6 py-4 border-b border-slate-100">
                         <h2 class="font-bold text-slate-800 flex items-center gap-2">
                             <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -223,7 +323,7 @@
                             {{ $isRedeemCheckout ? 'Pembayaran Ongkir' : 'Metode Pembayaran' }}
                         </h2>
                     </div>
-                    <div class="p-6">
+                    <div class="checkout-card-body p-6">
                         @if ($isRedeemCheckout)
                             <div class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 mb-5">
                                 <p class="text-sm font-semibold text-amber-800">Produk tetap ditukar dengan point, tetapi ongkir dibayar customer.</p>
@@ -231,18 +331,18 @@
                             </div>
                         @endif
                         <!-- Tabs -->
-                        <div class="flex gap-2 mb-5 overflow-x-auto">
+                        <div class="payment-tabs flex gap-2 mb-5 overflow-x-auto">
                             <button onclick="setPaymentTab('qris')" id="tab-qris"
-                                class="px-4 py-2 rounded-xl text-sm font-semibold bg-blue-500 text-white whitespace-nowrap transition-all">QRIS</button>
+                                class="payment-tab inline-flex px-4 py-2 rounded-xl text-sm font-semibold bg-blue-500 text-white whitespace-nowrap transition-all">QRIS</button>
                             <button onclick="setPaymentTab('bank')" id="tab-bank"
-                                class="px-4 py-2 rounded-xl text-sm font-semibold bg-slate-100 text-slate-600 whitespace-nowrap transition-all">Transfer
+                                class="payment-tab inline-flex px-4 py-2 rounded-xl text-sm font-semibold bg-slate-100 text-slate-600 whitespace-nowrap transition-all">Transfer
                                 Bank</button>
                             <button onclick="setPaymentTab('manual')" id="tab-manual"
-                                class="px-4 py-2 rounded-xl text-sm font-semibold bg-slate-100 text-slate-600 whitespace-nowrap transition-all">Transfer Manual</button>
+                                class="payment-tab inline-flex px-4 py-2 rounded-xl text-sm font-semibold bg-slate-100 text-slate-600 whitespace-nowrap transition-all">Transfer Manual</button>
                         </div>
 
                             <!-- QRIS -->
-                            <div id="panel-qris" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            <div id="panel-qris" class="payment-panel grid grid-cols-2 sm:grid-cols-3 gap-3">
                                 <label onclick="setPayment('qris', 'QRIS')"
                                     class="payment-card active flex items-center gap-3 p-3 border-2 rounded-xl cursor-pointer hover:border-blue-300 transition-all">
                                     <input type="radio" name="payment" value="qris" class="accent-blue-500" checked />
@@ -254,7 +354,7 @@
                             </div>
 
                         <!-- Bank Transfer -->
-                        <div id="panel-bank" class="hidden grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <div id="panel-bank" class="payment-panel hidden grid grid-cols-2 sm:grid-cols-3 gap-3">
                             <label onclick="setPayment('bca', 'BCA Virtual Account')"
                                 class="payment-card flex items-center gap-3 p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-blue-300 transition-all">
                                 <input type="radio" name="payment" value="bca" class="accent-blue-500" />
@@ -298,7 +398,7 @@
                             </label>
                         </div>
 
-                            <div id="panel-manual" class="hidden">
+                            <div id="panel-manual" class="payment-panel hidden">
                                 <label onclick="setPayment('manual_transfer', 'Transfer Manual')"
                                     class="payment-card flex items-center gap-3 p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-blue-300 transition-all">
                                     <input type="radio" name="payment" value="manual_transfer" class="accent-blue-500" />
@@ -329,22 +429,22 @@
 
             <!-- RIGHT: Order Summary -->
             <div class="lg:col-span-1 lg:self-start">
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 sticky top-24">
-                    <div class="px-6 py-4 border-b border-slate-100">
+                <div class="checkout-card bg-white rounded-2xl shadow-sm border border-slate-100 sticky top-24">
+                    <div class="checkout-card-header px-6 py-4 border-b border-slate-100">
                         <h2 class="font-bold text-slate-800">Ringkasan Pesanan</h2>
                     </div>
-                    <div class="p-6 space-y-3">
-                        <div class="flex justify-between text-sm">
+                    <div class="checkout-card-body p-6 space-y-3">
+                        <div class="summary-row flex justify-between text-sm">
                             <span class="text-slate-600">{{ $isRedeemCheckout ? 'Total Point Redeem' : 'Subtotal' }} (<span id="sumItems">3 item</span>)</span>
-                            <span class="font-medium text-slate-800" id="subtotalAmt">Rp 947.000</span>
+                            <span class="summary-value font-medium text-slate-800" id="subtotalAmt">Rp 947.000</span>
                         </div>
-                        <div class="flex justify-between text-sm">
+                        <div class="summary-row stack-mobile flex justify-between text-sm">
                             <span class="text-slate-600">Ongkos Kirim</span>
-                            <span class="font-medium text-slate-800" id="shippingAmt">Menghitung Ongkos Kirim...</span>
+                            <span class="summary-value font-medium text-slate-800" id="shippingAmt">Menghitung Ongkos Kirim...</span>
                         </div>
                         <div class="rounded-xl border border-slate-200 p-3 space-y-2">
                             <label class="text-xs font-semibold text-slate-600">Voucher</label>
-                            <div class="flex gap-2">
+                            <div class="voucher-actions flex gap-2">
                                 <input id="couponCodeInput" type="text" placeholder="Kode voucher"
                                     class="min-w-0 flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400 uppercase {{ $isRedeemCheckout ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : '' }}"
                                     {{ $isRedeemCheckout ? 'disabled' : '' }}>
@@ -353,14 +453,14 @@
                             </div>
                             <div id="couponInfo" class="hidden text-xs"></div>
                         </div>
-                        <div class="flex justify-between text-sm hidden" id="discountRow">
+                        <div class="summary-row flex justify-between text-sm hidden" id="discountRow">
                             <span class="text-slate-600">Diskon Voucher</span>
-                            <span class="font-medium text-emerald-600" id="discountAmt">- Rp 0</span>
+                            <span class="summary-value font-medium text-emerald-600" id="discountAmt">- Rp 0</span>
                         </div>
                         <div class="border-t border-slate-100 pt-3 mt-3">
-                            <div class="flex justify-between">
+                            <div class="summary-row flex justify-between">
                                 <span class="font-bold text-slate-800">{{ $isRedeemCheckout ? 'Total Bayar Ongkir' : 'Grand Total' }}</span>
-                                <span class="font-extrabold text-blue-600 text-xl" id="grandTotal">Rp 888.000</span>
+                                <span class="summary-value font-extrabold text-blue-600 text-xl" id="grandTotal">Rp 888.000</span>
                             </div>
                             <p class="text-xs text-slate-500 mt-1">{{ $isRedeemCheckout ? 'Point digunakan untuk produk, sedangkan ongkir dibayar terpisah oleh customer.' : 'Termasuk pajak dan biaya lainnya' }}</p>
                         </div>
@@ -969,11 +1069,11 @@
             ['qris', 'bank', 'manual'].forEach(t => {
                 document.getElementById('panel-' + t).classList.add('hidden');
                 document.getElementById('tab-' + t).className =
-                    'px-4 py-2 rounded-xl text-sm font-semibold bg-slate-100 text-slate-600 whitespace-nowrap transition-all';
+                    'payment-tab inline-flex px-4 py-2 rounded-xl text-sm font-semibold bg-slate-100 text-slate-600 whitespace-nowrap transition-all';
             });
             document.getElementById('panel-' + tab).classList.remove('hidden');
             document.getElementById('tab-' + tab).className =
-                'px-4 py-2 rounded-xl text-sm font-semibold bg-blue-500 text-white whitespace-nowrap transition-all';
+                'payment-tab inline-flex px-4 py-2 rounded-xl text-sm font-semibold bg-blue-500 text-white whitespace-nowrap transition-all';
         }
 
         function setPayment(method, label) {
