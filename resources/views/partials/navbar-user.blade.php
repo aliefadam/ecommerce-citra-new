@@ -207,11 +207,13 @@
                         <i class="fi fi-rr-shopping-cart text-white text-xl leading-none"></i>
                     @endif
                 </div>
-                <div class="hidden sm:flex flex-col leading-none">
-                    <span class="text-[10px] font-medium text-slate-400 tracking-widest uppercase">Official Store</span>
-                    <span
-                        class="text-lg font-extrabold bg-gradient-to-r from-sky-500 to-violet-600 bg-clip-text text-transparent leading-tight max-w-[180px] truncate">{{ $appStoreName }}</span>
-                </div>
+                @if (empty($appStoreLogoUrl))
+                    <div class="hidden sm:flex flex-col leading-none">
+                        <span class="text-[10px] font-medium text-slate-400 tracking-widest uppercase">Official Store</span>
+                        <span
+                            class="text-lg font-extrabold bg-gradient-to-r from-sky-500 to-violet-600 bg-clip-text text-transparent leading-tight max-w-[180px] truncate">{{ $appStoreName }}</span>
+                    </div>
+                @endif
             </a>
 
             {{-- Search bar (desktop) --}}
