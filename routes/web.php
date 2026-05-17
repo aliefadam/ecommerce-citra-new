@@ -37,6 +37,8 @@ use App\Http\Controllers\MemberTierController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\NewsletterSubscriberController;
 use App\Http\Controllers\PromoPageController;
+use App\Http\Controllers\ContentPageController;
+use App\Http\Controllers\FrontendContentController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -92,6 +94,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::post('newsletter-subscribers/preview', [NewsletterSubscriberController::class, 'preview'])->name('newsletter-subscribers.preview')->middleware('admin.permission:manage_store_settings');
         Route::delete('newsletter-subscribers/{newsletterSubscriber}', [NewsletterSubscriberController::class, 'destroy'])->name('newsletter-subscribers.destroy')->middleware('admin.permission:manage_store_settings');
         Route::resource('promo-pages', PromoPageController::class)->except(['show'])->middleware('admin.permission:manage_store_settings');
+        Route::resource('content-pages', ContentPageController::class)->except(['show'])->middleware('admin.permission:manage_store_settings');
         Route::get('reports/sales', [SalesReportController::class, 'index'])->name('reports.sales')->middleware('admin.permission:view_reports');
         Route::get('store-location', [StoreLocationController::class, 'edit'])->name('store-locations.edit')->middleware('admin.permission:manage_store_settings');
         Route::put('store-location', [StoreLocationController::class, 'update'])->name('store-locations.update')->middleware('admin.permission:manage_store_settings');
@@ -127,6 +130,9 @@ Route::name('frontend.')->group(function () {
     Route::get('/newsletter/unsubscribe/{token}', [NewsletterSubscriberController::class, 'unsubscribe'])->name('newsletter.unsubscribe');
     Route::get('/flash-sale', [FrontendController::class, 'flashSale'])->name('flash-sale');
     Route::get('/promo/{slug?}', [FrontendController::class, 'promo'])->name('promo');
+    Route::get('/pages/{slug}', [FrontendContentController::class, 'page'])->name('pages.show');
+    Route::get('/blog', [FrontendContentController::class, 'blog'])->name('blog.index');
+    Route::get('/blog/{slug}', [FrontendContentController::class, 'post'])->name('blog.show');
     Route::get('/redeem-point', [FrontendController::class, 'redeemPoint'])->name('redeem-point');
     Route::get('/pencarian', [FrontendController::class, 'search'])->name('search');
     Route::get('/kategori', [FrontendController::class, 'kategori'])->name('kategori');

@@ -228,6 +228,13 @@ return [
                 'permission' => 'manage_store_settings',
             ],
             [
+                'name'   => 'Konten Website',
+                'route'  => 'content-pages.index',
+                'active' => 'content-pages.*',
+                'icon'   => 'newspaper',
+                'permission' => 'manage_store_settings',
+            ],
+            [
                 'name'   => 'Admin Users',
                 'route'  => 'admin-users.index',
                 'active' => 'admin-users.*',
