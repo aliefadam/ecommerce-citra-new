@@ -548,12 +548,12 @@
         </div>
     </section>
 
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 pb-12">
-        <div class="rounded-3xl bg-gradient-to-r from-slate-900 via-slate-800 to-emerald-800 px-6 py-8 sm:px-10 sm:py-10 text-white shadow-xl overflow-hidden relative">
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 pb-4">
+        <div class="rounded-3xl bg-gradient-to-r from-slate-900 via-slate-800 to-blue-800 px-6 py-8 sm:px-10 sm:py-10 text-white shadow-xl overflow-hidden relative">
             <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(circle at top right, white 0, transparent 35%), radial-gradient(circle at bottom left, white 0, transparent 30%);"></div>
             <div class="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                 <div class="max-w-2xl">
-                    <p class="text-xs font-semibold tracking-[0.3em] uppercase text-emerald-200 mb-2">Newsletter</p>
+                    <p class="text-xs font-semibold tracking-[0.3em] uppercase text-blue-200 mb-2">Newsletter</p>
                     <h3 class="text-2xl sm:text-3xl font-bold leading-tight mb-2">Dapatkan update promo dan produk terbaru</h3>
                     <p class="text-sm sm:text-base text-slate-200">Masukkan email kamu untuk menerima info diskon, restock, dan penawaran khusus dari {{ $appStoreName ?? 'Ecommerce Citra' }}.</p>
                 </div>
@@ -566,7 +566,7 @@
                                 name="email"
                                 value="{{ old('email') }}"
                                 placeholder="Masukkan email kamu"
-                                class="w-full rounded-2xl border {{ $errors->has('email') || session('newsletter_error') ? 'border-red-300 focus:border-red-400' : 'border-white/20 focus:border-emerald-300' }} bg-white px-4 py-3 text-slate-800 placeholder:text-slate-400 focus:outline-none"
+                                class="w-full rounded-2xl border {{ $errors->has('email') || session('newsletter_error') ? 'border-red-300 focus:border-red-400' : 'border-white/20 focus:border-blue-300' }} bg-white px-4 py-3 text-slate-800 placeholder:text-slate-400 focus:outline-none"
                                 required>
                             @error('email')
                                 <p class="mt-2 text-sm text-red-200">{{ $message }}</p>
@@ -575,7 +575,7 @@
                                 <p class="mt-2 text-sm text-red-200">{{ session('newsletter_error') }}</p>
                             @endif
                         </div>
-                        <button type="submit" class="inline-flex items-center justify-center rounded-2xl bg-emerald-400 px-6 py-3 text-sm font-semibold text-slate-900 hover:bg-emerald-300 transition-colors whitespace-nowrap">
+                        <button type="submit" class="inline-flex items-center justify-center rounded-2xl bg-blue-500 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-400 transition-colors whitespace-nowrap">
                             Subscribe
                         </button>
                     </div>
