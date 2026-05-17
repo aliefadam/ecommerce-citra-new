@@ -547,6 +547,56 @@
         </div>
     </section>
 
+    @if (!empty($latestPosts) && $latestPosts->isNotEmpty())
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between mb-5 sm:mb-6">
+                <div>
+                    <p class="text-xs font-bold tracking-[0.22em] uppercase text-blue-600 mb-2">Insight</p>
+                    <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900">Blog Terbaru</h2>
+                    <p class="mt-1 text-sm text-slate-500">Informasi, tips, dan update untuk kebutuhan teknik kamu.</p>
+                </div>
+                <a href="{{ route('frontend.blog.index') }}"
+                    class="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors">
+                    Lihat Semua
+                    <i class="ri-arrow-right-line text-base"></i>
+                </a>
+            </div>
+
+            <div class="grid gap-4 lg:grid-cols-3">
+                @foreach ($latestPosts as $post)
+                    <a href="{{ route('frontend.blog.show', $post->slug) }}"
+                        class="group overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+                        <div class="relative aspect-[16/10] overflow-hidden bg-slate-100">
+                            @if ($post->hero_image)
+                                <img src="{{ $post->hero_image }}" alt="{{ $post->title }}"
+                                    class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy">
+                            @else
+                                <div class="h-full w-full bg-gradient-to-br from-slate-900 via-blue-900 to-blue-600"></div>
+                            @endif
+                            <div class="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-slate-950/45 to-transparent"></div>
+                            <span class="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-blue-600 shadow-sm">Blog</span>
+                        </div>
+                        <div class="p-5">
+                            <div class="flex items-center gap-2 text-xs text-slate-400 mb-2">
+                                <span>{{ optional($post->published_at)->format('d M Y') ?: 'Artikel' }}</span>
+                                <span class="h-1 w-1 rounded-full bg-slate-300"></span>
+                                <span>{{ max(1, ceil(str_word_count(strip_tags((string) $post->content)) / 180)) }} min read</span>
+                            </div>
+                            <h3 class="text-base sm:text-lg font-extrabold leading-snug text-slate-900 line-clamp-2 group-hover:text-blue-600 transition-colors">{{ $post->title }}</h3>
+                            @if ($post->excerpt)
+                                <p class="mt-2 text-sm leading-6 text-slate-500 line-clamp-3">{{ $post->excerpt }}</p>
+                            @endif
+                            <span class="mt-4 inline-flex items-center gap-2 text-sm font-bold text-blue-600">
+                                Baca Artikel
+                                <i class="ri-arrow-right-up-line"></i>
+                            </span>
+                        </div>
+                    </a>
+                @endforeach
+            </div>
+        </section>
+    @endif
+
     <section class="max-w-7xl mx-auto px-4 sm:px-6 pb-4">
         <div class="rounded-3xl bg-gradient-to-r from-slate-900 via-slate-800 to-blue-800 px-6 py-8 sm:px-10 sm:py-10 text-white shadow-xl overflow-hidden relative">
             <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(circle at top right, white 0, transparent 35%), radial-gradient(circle at bottom left, white 0, transparent 30%);"></div>

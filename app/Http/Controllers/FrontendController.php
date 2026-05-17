@@ -8,6 +8,7 @@ use App\Models\CategoryDetail;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\PromoPage;
+use App\Models\ContentPage;
 use App\Models\TransactionDetail;
 use App\Models\TransactionProductReview;
 use App\Models\Transaction;
@@ -70,6 +71,13 @@ class FrontendController extends Controller
 
         $banners = $allBanners->where('type', 'carousel')->map($normalizeBanner)->values()->all();
         $sideBanners = $allBanners->where('type', 'side')->map($normalizeBanner)->values()->all();
+        $latestPosts = ContentPage::query()
+            ->published()
+            ->where('type', ContentPage::TYPE_POST)
+            ->latest('published_at')
+            ->latest('id')
+            ->take(3)
+            ->get();
 
         return view('frontend.index', [
             'productsJson' => $products['home'],
@@ -78,6 +86,7 @@ class FrontendController extends Controller
             'homeMainCategories' => $mainCategories,
             'bannersJson' => $banners,
             'sideBannersJson' => $sideBanners,
+            'latestPosts' => $latestPosts,
         ]);
     }
 

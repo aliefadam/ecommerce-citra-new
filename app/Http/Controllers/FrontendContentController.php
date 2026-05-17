@@ -35,7 +35,15 @@ class FrontendContentController extends Controller
             ->where('type', ContentPage::TYPE_POST)
             ->where('slug', $slug)
             ->firstOrFail();
+        $relatedPosts = ContentPage::query()
+            ->published()
+            ->where('type', ContentPage::TYPE_POST)
+            ->whereKeyNot($page->id)
+            ->latest('published_at')
+            ->latest('id')
+            ->take(3)
+            ->get();
 
-        return view('frontend.content-page', compact('page'));
+        return view('frontend.content-page', compact('page', 'relatedPosts'));
     }
 }
