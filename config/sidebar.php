@@ -115,7 +115,7 @@ return [
                 'permission' => 'manage_product_reviews',
             ],
             [
-                'name'   => 'Sales Report',
+                'name'   => 'Reports',
                 'route'  => 'reports.sales',
                 'active' => 'reports.*',
                 'icon'   => 'bar-chart-3',

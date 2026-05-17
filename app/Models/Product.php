@@ -42,6 +42,11 @@ class Product extends Model
         return $this->hasMany(Wishlist::class);
     }
 
+    public function transactionDetails()
+    {
+        return $this->hasMany(TransactionDetail::class);
+    }
+
     public function firstAvailableImagePath(): ?string
     {
         if ($this->relationLoaded('productVariants')) {
