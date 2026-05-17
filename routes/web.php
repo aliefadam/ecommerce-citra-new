@@ -95,7 +95,11 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::delete('newsletter-subscribers/{newsletterSubscriber}', [NewsletterSubscriberController::class, 'destroy'])->name('newsletter-subscribers.destroy')->middleware('admin.permission:manage_store_settings');
         Route::resource('promo-pages', PromoPageController::class)->except(['show'])->middleware('admin.permission:manage_store_settings');
         Route::resource('content-pages', ContentPageController::class)->except(['show'])->middleware('admin.permission:manage_store_settings');
+        Route::get('reports', [SalesReportController::class, 'home'])->name('reports.index')->middleware('admin.permission:view_reports');
         Route::get('reports/sales', [SalesReportController::class, 'index'])->name('reports.sales')->middleware('admin.permission:view_reports');
+        Route::get('reports/stock', [SalesReportController::class, 'stock'])->name('reports.stock')->middleware('admin.permission:view_reports');
+        Route::get('reports/products', [SalesReportController::class, 'products'])->name('reports.products')->middleware('admin.permission:view_reports');
+        Route::get('reports/payments', [SalesReportController::class, 'payments'])->name('reports.payments')->middleware('admin.permission:view_reports');
         Route::get('store-location', [StoreLocationController::class, 'edit'])->name('store-locations.edit')->middleware('admin.permission:manage_store_settings');
         Route::put('store-location', [StoreLocationController::class, 'update'])->name('store-locations.update')->middleware('admin.permission:manage_store_settings');
         Route::get('store-location/provinces', [StoreLocationController::class, 'provinces'])->name('store-locations.provinces')->middleware('admin.permission:manage_store_settings');

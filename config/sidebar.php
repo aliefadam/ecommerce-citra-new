@@ -116,7 +116,7 @@ return [
             ],
             [
                 'name'   => 'Reports',
-                'route'  => 'reports.sales',
+                'route'  => 'reports.index',
                 'active' => 'reports.*',
                 'icon'   => 'bar-chart-3',
                 'permission' => 'view_reports',
