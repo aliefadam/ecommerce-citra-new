@@ -214,6 +214,20 @@ return [
                 'permission' => 'manage_banners',
             ],
             [
+                'name'   => 'Newsletter Subscribers',
+                'route'  => 'newsletter-subscribers.index',
+                'active' => 'newsletter-subscribers.*',
+                'icon'   => 'mail',
+                'permission' => 'manage_store_settings',
+            ],
+            [
+                'name'   => 'Promo Pages',
+                'route'  => 'promo-pages.index',
+                'active' => 'promo-pages.*',
+                'icon'   => 'megaphone',
+                'permission' => 'manage_store_settings',
+            ],
+            [
                 'name'   => 'Admin Users',
                 'route'  => 'admin-users.index',
                 'active' => 'admin-users.*',

@@ -536,8 +536,52 @@
             </div>
         `).join('');
 
+        const normalizeSearch = (value) => String(value || '')
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9\s]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+        const compactSearch = (value) => normalizeSearch(value).replace(/\s+/g, '');
+
+        function scoreSearchMatch(product, keyword) {
+            const q = normalizeSearch(keyword);
+            if (!q) return -1;
+
+            const qCompact = compactSearch(q);
+            const name = normalizeSearch(product.name || '');
+            const meta = normalizeSearch(product.meta || '');
+            const haystack = `${name} ${meta}`.trim();
+            const haystackCompact = compactSearch(haystack);
+            const qTokens = q.split(' ').filter(Boolean);
+
+            let score = 0;
+            if (name === q) score += 120;
+            if (name.startsWith(q)) score += 90;
+            if (name.includes(q)) score += 70;
+            if (meta.includes(q)) score += 35;
+            if (haystackCompact.includes(qCompact)) score += 60;
+
+            const tokenHits = qTokens.filter(token => haystack.includes(token) || haystackCompact.includes(token)).length;
+            score += tokenHits * 18;
+
+            if (!score && qCompact.length >= 3) {
+                const chars = qCompact.split('');
+                let pointer = 0;
+                for (const char of haystackCompact) {
+                    if (char === chars[pointer]) pointer++;
+                    if (pointer >= chars.length) break;
+                }
+                if (pointer >= Math.max(3, qCompact.length - 1)) score += 24;
+            }
+
+            return score;
+        }
+
         function renderSearchResults(container, keyword) {
-            const val = keyword.trim().toLowerCase();
+            const val = keyword.trim();
             if (!val) {
                 container.classList.add('hidden');
                 container.innerHTML = '';
@@ -548,19 +592,26 @@
             container.innerHTML = skeletonHtml();
 
             setTimeout(() => {
-                const filtered = products.filter((p) =>
-                    p.name.toLowerCase().includes(val) || p.meta.toLowerCase().includes(val)
-                ).slice(0, 4);
+                const scored = products
+                    .map((p) => ({ ...p, __score: scoreSearchMatch(p, val) }))
+                    .filter((p) => p.__score > 0)
+                    .sort((a, b) => b.__score - a.__score)
+                    .slice(0, 5);
 
-                if (!filtered.length) {
+                if (!scored.length) {
                     container.innerHTML = `
                         <div class="px-4 py-5 text-center text-sm text-slate-500">
-                            Produk tidak ditemukan
+                            Produk tidak ditemukan.<br>
+                            <span class="text-xs text-slate-400">Coba kata yang lebih umum atau ejaan yang lebih singkat.</span>
                         </div>`;
                     return;
                 }
 
-                container.innerHTML = filtered.map((p) => `
+                const suggestion = normalizeSearch(val) !== normalizeSearch(scored[0]?.name || '')
+                    ? `<div class="px-3 py-2 text-[11px] text-slate-400 border-b border-slate-100">Saran terdekat: <span class="font-semibold text-slate-600">${scored[0].name}</span></div>`
+                    : '';
+
+                container.innerHTML = suggestion + scored.map((p) => `
                     <a href="${p.url}" class="flex items-center gap-3 px-3 py-3 border-b border-slate-100 last:border-b-0 hover:bg-slate-50 transition-colors">
                         <img src="${p.image}" alt="${p.name}" class="w-12 h-12 rounded-lg object-cover border border-slate-100" />
                         <div class="flex-1 min-w-0">
@@ -570,7 +621,7 @@
                         <i class="fi fi-rr-angle-small-right text-sm text-slate-400 flex-shrink-0 leading-none"></i>
                     </a>
                 `).join('');
-            }, 320);
+            }, 220);
         }
 
         function bindLiveSearch(inputId, dropdownId) {

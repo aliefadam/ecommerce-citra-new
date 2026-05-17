@@ -34,6 +34,9 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\SalesReportController;
 use App\Http\Controllers\ManualPaymentController;
 use App\Http\Controllers\MemberTierController;
+use App\Http\Controllers\NewsletterController;
+use App\Http\Controllers\NewsletterSubscriberController;
+use App\Http\Controllers\PromoPageController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -82,6 +85,13 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::resource('flash-sales', FlashSaleController::class)->except(['show'])->middleware('admin.permission:manage_catalog');
         Route::resource('coupons', CouponController::class)->except(['show', 'create', 'edit'])->middleware('admin.permission:manage_catalog');
         Route::resource('banners', BannerController::class)->except(['show'])->middleware('admin.permission:manage_banners');
+        Route::get('newsletter-subscribers', [NewsletterSubscriberController::class, 'index'])->name('newsletter-subscribers.index')->middleware('admin.permission:manage_store_settings');
+        Route::get('newsletter-subscribers/export', [NewsletterSubscriberController::class, 'export'])->name('newsletter-subscribers.export')->middleware('admin.permission:manage_store_settings');
+        Route::post('newsletter-subscribers/send', [NewsletterSubscriberController::class, 'send'])->name('newsletter-subscribers.send')->middleware('admin.permission:manage_store_settings');
+        Route::post('newsletter-subscribers/send-test', [NewsletterSubscriberController::class, 'sendTest'])->name('newsletter-subscribers.send-test')->middleware('admin.permission:manage_store_settings');
+        Route::post('newsletter-subscribers/preview', [NewsletterSubscriberController::class, 'preview'])->name('newsletter-subscribers.preview')->middleware('admin.permission:manage_store_settings');
+        Route::delete('newsletter-subscribers/{newsletterSubscriber}', [NewsletterSubscriberController::class, 'destroy'])->name('newsletter-subscribers.destroy')->middleware('admin.permission:manage_store_settings');
+        Route::resource('promo-pages', PromoPageController::class)->except(['show'])->middleware('admin.permission:manage_store_settings');
         Route::get('reports/sales', [SalesReportController::class, 'index'])->name('reports.sales')->middleware('admin.permission:view_reports');
         Route::get('store-location', [StoreLocationController::class, 'edit'])->name('store-locations.edit')->middleware('admin.permission:manage_store_settings');
         Route::put('store-location', [StoreLocationController::class, 'update'])->name('store-locations.update')->middleware('admin.permission:manage_store_settings');
@@ -113,7 +123,10 @@ Route::middleware('auth')->prefix('profil')->name('frontend.profil.')->group(fun
 
 Route::name('frontend.')->group(function () {
     Route::get('/', [FrontendController::class, 'index'])->name('index');
+    Route::post('/newsletter/subscribe', [NewsletterController::class, 'store'])->name('newsletter.subscribe');
+    Route::get('/newsletter/unsubscribe/{token}', [NewsletterSubscriberController::class, 'unsubscribe'])->name('newsletter.unsubscribe');
     Route::get('/flash-sale', [FrontendController::class, 'flashSale'])->name('flash-sale');
+    Route::get('/promo/{slug?}', [FrontendController::class, 'promo'])->name('promo');
     Route::get('/redeem-point', [FrontendController::class, 'redeemPoint'])->name('redeem-point');
     Route::get('/pencarian', [FrontendController::class, 'search'])->name('search');
     Route::get('/kategori', [FrontendController::class, 'kategori'])->name('kategori');

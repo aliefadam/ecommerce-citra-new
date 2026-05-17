@@ -201,6 +201,7 @@
 
     <!-- MAIN CONTENT: SIDEBAR + PRODUCTS -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 pb-10">
+        <div id="activeFilters" class="hidden flex flex-wrap gap-2 mb-4"></div>
         <div class="flex flex-col lg:flex-row gap-8">
             <!-- SIDEBAR -->
             <aside id="filterSidebar" class="hidden lg:block lg:w-64 flex-shrink-0">
@@ -219,6 +220,30 @@
                     <div class="mb-6">
                         <h4 class="text-sm font-semibold text-slate-700 mb-3">Kategori</h4>
                         <div class="space-y-2" id="filterCategoryList"></div>
+                    </div>
+
+                    <div>
+                        <h4 class="text-sm font-semibold text-slate-700 mb-3">Harga</h4>
+                        <div class="grid grid-cols-2 gap-2">
+                            <input id="priceMin" type="number" min="0" placeholder="Min" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:border-blue-400">
+                            <input id="priceMax" type="number" min="0" placeholder="Max" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:border-blue-400">
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="text-sm font-semibold text-slate-700 mb-3">Status Produk</h4>
+                        <label class="flex items-center gap-2 text-sm text-slate-600 mb-2"><input id="filterPromo" type="checkbox" class="accent-blue-500"> Hanya promo / flash sale</label>
+                        <label class="flex items-center gap-2 text-sm text-slate-600"><input id="filterStock" type="checkbox" class="accent-blue-500"> Hanya stok tersedia</label>
+                    </div>
+
+                    <div>
+                        <h4 class="text-sm font-semibold text-slate-700 mb-3">Rating</h4>
+                        <select id="ratingMin" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:border-blue-400 bg-white">
+                            <option value="0">Semua rating</option>
+                            <option value="4">4 ke atas</option>
+                            <option value="4.5">4.5 ke atas</option>
+                            <option value="5">5 saja</option>
+                        </select>
                     </div>
 
                     <div id="filterVariantList" class="space-y-5"></div>
@@ -342,6 +367,11 @@
         function getFiltered() {
             const cats = Array.from(document.querySelectorAll('.filter-cat:checked')).map(c => c.value);
             const activeVariantGroups = Object.entries(selectedVariantFilters).filter(([, values]) => values.size > 0);
+            const priceMin = Number(document.getElementById('priceMin')?.value || 0);
+            const priceMax = Number(document.getElementById('priceMax')?.value || 0);
+            const promoOnly = document.getElementById('filterPromo')?.checked;
+            const stockOnly = document.getElementById('filterStock')?.checked;
+            const ratingMin = Number(document.getElementById('ratingMin')?.value || 0);
             return allProducts.filter((p) => {
                 const catMatch = cats.length === 0 || cats.includes(p.parentCategorySlug);
                 const initialCategoryMatch = activeCategorySlug === '' || p.categorySlug === activeCategorySlug;
@@ -351,7 +381,11 @@
                     )
                 );
                 const searchMatch = !searchQuery || p.name.toLowerCase().includes(searchQuery.toLowerCase());
-                return catMatch && initialCategoryMatch && variantMatch && searchMatch;
+                const priceMatch = (!priceMin || Number(p.price) >= priceMin) && (!priceMax || Number(p.price) <= priceMax);
+                const promoMatch = !promoOnly || !!p.isFlashSale;
+                const stockMatch = !stockOnly || Number(p.stock || 0) > 0;
+                const ratingMatch = Number(p.rating || 0) >= ratingMin;
+                return catMatch && initialCategoryMatch && variantMatch && searchMatch && priceMatch && promoMatch && stockMatch && ratingMatch;
             });
         }
 
@@ -557,8 +591,30 @@
             window.location.href = target;
         }
 
+        function renderActiveChips() {
+            const wrap = document.getElementById('activeFilters');
+            if (!wrap) return;
+            const chips = [];
+            document.querySelectorAll('.filter-cat:checked').forEach((el) => {
+                const text = el.parentElement.querySelector('span')?.textContent || el.value;
+                chips.push(text);
+            });
+            const priceMin = document.getElementById('priceMin')?.value;
+            const priceMax = document.getElementById('priceMax')?.value;
+            if (priceMin) chips.push(`Min Rp ${Number(priceMin).toLocaleString('id-ID')}`);
+            if (priceMax) chips.push(`Max Rp ${Number(priceMax).toLocaleString('id-ID')}`);
+            if (document.getElementById('filterPromo')?.checked) chips.push('Promo');
+            if (document.getElementById('filterStock')?.checked) chips.push('Stok tersedia');
+            const ratingMin = document.getElementById('ratingMin')?.value;
+            if (Number(ratingMin) > 0) chips.push(`Rating ${ratingMin}+`);
+            Object.entries(selectedVariantFilters).forEach(([name, values]) => values.forEach(v => chips.push(`${name}: ${v}`)));
+            wrap.innerHTML = chips.map(chip => `<span class="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700">${escapeHtml(chip)}</span>`).join('');
+            wrap.classList.toggle('hidden', chips.length === 0);
+        }
+
         function applyFilter() {
             filteredProducts = getFiltered();
+            renderActiveChips();
             sortProds();
         }
 
@@ -579,8 +635,19 @@
                 el.value = '';
                 searchVariantOptions(el);
             });
+            const priceMin = document.getElementById('priceMin');
+            const priceMax = document.getElementById('priceMax');
+            const filterPromo = document.getElementById('filterPromo');
+            const filterStock = document.getElementById('filterStock');
+            const ratingMin = document.getElementById('ratingMin');
+            if (priceMin) priceMin.value = '';
+            if (priceMax) priceMax.value = '';
+            if (filterPromo) filterPromo.checked = false;
+            if (filterStock) filterStock.checked = false;
+            if (ratingMin) ratingMin.value = '0';
             activeCategorySlug = '';
             filteredProducts = [...allProducts];
+            renderActiveChips();
             sortProds();
         }
 

@@ -7,6 +7,7 @@ use App\Models\MainCategory;
 use App\Models\CategoryDetail;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\PromoPage;
 use App\Models\TransactionDetail;
 use App\Models\TransactionProductReview;
 use App\Models\Transaction;
@@ -124,6 +125,19 @@ class FrontendController extends Controller
         ]);
     }
 
+    public function promo(?string $slug = null)
+    {
+        $promo = PromoPage::query()
+            ->where('is_active', true)
+            ->when($slug, fn ($q) => $q->where('slug', $slug))
+            ->when(!$slug, fn ($q) => $q->orderByDesc('starts_at')->orderByDesc('id'))
+            ->firstOrFail();
+
+        return view('frontend.promo-page', [
+            'promo' => $promo,
+        ]);
+    }
+
     public function search(Request $request)
     {
         $query = trim((string) $request->query('q', ''));
@@ -203,9 +217,18 @@ class FrontendController extends Controller
                 'name' => (string) $product->name,
                 'category' => (string) ($product->mainCategory?->name ?? '-'),
                 'category_detail' => (string) ($product->categoryDetail?->name ?? ''),
+                'categorySlug' => (string) ($product->categoryDetail?->slug ?? ''),
+                'parentCategorySlug' => (string) ($product->mainCategory?->slug ?? ''),
                 'variant' => $variant->attributeSummary(),
+                'variants' => $product->productVariants
+                    ->flatMap(fn($pv) => $this->buildVariantFilterPairs($pv))
+                    ->unique(fn($item) => strtolower($item['name'] . '|' . $item['value']))
+                    ->values()
+                    ->all(),
                 'price' => $price,
                 'originalPrice' => $basePrice,
+                'stock' => (int) ($variant->stock ?? 0),
+                'isFlashSale' => (bool) $flashItem,
                 'sold' => $sold,
                 'rating' => round($rating, 1),
                 'reviews' => $reviews,
@@ -213,9 +236,24 @@ class FrontendController extends Controller
             ];
         })->filter()->values()->all();
 
+        $searchMainCategories = $products
+            ->pluck('mainCategory')
+            ->filter()
+            ->unique('slug')
+            ->map(function ($category) use ($items) {
+                return [
+                    'slug' => (string) $category->slug,
+                    'name' => (string) $category->name,
+                    'count' => collect($items)->where('parentCategorySlug', (string) $category->slug)->count(),
+                ];
+            })
+            ->values()
+            ->all();
+
         return view('frontend.search-results', [
             'query' => $query,
             'results' => $items,
+            'searchMainCategories' => $searchMainCategories,
         ]);
     }
 
@@ -525,6 +563,7 @@ class FrontendController extends Controller
                 'description' => $product->description,
                 'isFlashSale' => $isFlashSale,
                 'flashSalePrice' => $flashSalePrice,
+                'flashSaleEndAt' => $isFlashSale ? optional($activeFlashSaleItem->flashSale?->end_at)?->toIso8601String() : null,
                 'isRedeemProduct' => (bool) $product->is_redeem_product,
                 'redeemPoints' => (int) ($product->redeem_points ?? 0),
                 'variantName' => $variant->attributeSummary(),
@@ -902,6 +941,7 @@ class FrontendController extends Controller
                 'variants' => $variantFilters,
                 'badge' => $badge,
                 'sold' => $sold,
+                'stock' => (int) ($variant->stock ?? 0),
                 'isNew' => $badge === 'new',
                 'isFlashSale' => $isFlashSale,
                 'isWishlisted' => isset($wishedLookup[(int) $product->id]),

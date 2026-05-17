@@ -8,6 +8,7 @@
         * { font-family: 'Poppins', sans-serif; }
         .card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease; }
         .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12); }
+        .filter-chip { display:inline-flex; align-items:center; gap:8px; border-radius:999px; padding:8px 12px; font-size:12px; font-weight:600; background:#eff6ff; color:#1d4ed8; }
     </style>
 @endsection
 
@@ -24,58 +25,296 @@
         </div>
     </div>
 
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        <div class="mb-5">
-            <h1 class="text-2xl font-bold text-slate-800">Hasil Pencarian</h1>
-            <p id="searchMeta" class="text-slate-500 text-sm mt-1"></p>
+    <section class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6">
+            <h1 class="text-2xl md:text-3xl font-bold mb-2">Hasil Pencarian</h1>
+            <p id="searchMeta" class="text-blue-100 text-sm"></p>
         </div>
+    </section>
 
-        <div id="searchResultGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-4"></div>
-        <div id="emptyState" class="hidden text-center py-16">
-            <div class="text-5xl mb-3">🔎</div>
-            <p class="text-lg font-semibold text-slate-700">Produk tidak ditemukan</p>
-            <p class="text-slate-500 text-sm mt-1">Coba kata kunci lain yang lebih umum.</p>
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        <div id="activeFilters" class="hidden flex flex-wrap gap-2 mb-4"></div>
+
+        <div class="flex flex-col lg:flex-row gap-6">
+            <aside id="filterSidebar" class="hidden lg:block lg:w-72 flex-shrink-0">
+                <div id="filterPanel" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 sticky top-20 space-y-5">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-bold text-slate-800">Filter Pencarian</h3>
+                        <div class="flex items-center gap-3">
+                            <button onclick="resetFilters()" class="text-xs text-blue-600 font-medium">Reset</button>
+                            <button onclick="closeMobileFilter()" class="lg:hidden text-xs text-slate-500 font-medium">Tutup</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="text-sm font-semibold text-slate-700 mb-3">Kategori</h4>
+                        <div id="categoryFilterList" class="space-y-2"></div>
+                    </div>
+
+                    <div>
+                        <h4 class="text-sm font-semibold text-slate-700 mb-3">Harga</h4>
+                        <div class="grid grid-cols-2 gap-2">
+                            <input id="priceMin" type="number" min="0" placeholder="Min" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:border-blue-400">
+                            <input id="priceMax" type="number" min="0" placeholder="Max" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:border-blue-400">
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="text-sm font-semibold text-slate-700 mb-3">Status Produk</h4>
+                        <label class="flex items-center gap-2 text-sm text-slate-600 mb-2"><input id="filterPromo" type="checkbox" class="accent-blue-500"> Hanya promo / flash sale</label>
+                        <label class="flex items-center gap-2 text-sm text-slate-600"><input id="filterStock" type="checkbox" class="accent-blue-500"> Hanya stok tersedia</label>
+                    </div>
+
+                    <div>
+                        <h4 class="text-sm font-semibold text-slate-700 mb-3">Rating</h4>
+                        <select id="ratingMin" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:border-blue-400 bg-white">
+                            <option value="0">Semua rating</option>
+                            <option value="4">4 ke atas</option>
+                            <option value="4.5">4.5 ke atas</option>
+                            <option value="5">5 saja</option>
+                        </select>
+                    </div>
+
+                    <div id="variantFilterList" class="space-y-5"></div>
+
+                    <button onclick="applyFilters()" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 rounded-xl transition-colors text-sm">Terapkan Filter</button>
+                </div>
+            </aside>
+
+            <main class="flex-1">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                    <p class="text-sm text-slate-500" id="resultCount">Menampilkan 0 produk</p>
+                    <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                        <div class="flex items-center gap-2 sm:hidden">
+                            <button type="button" onclick="openMobileFilter()" class="w-9 h-9 rounded-xl border border-slate-200 bg-white text-slate-600 flex items-center justify-center"><i class="ri-filter-3-line"></i></button>
+                        </div>
+                        <select id="sortSel" onchange="applyFilters()" class="border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-blue-400 bg-white">
+                            <option value="relevant">Paling Relevan</option>
+                            <option value="newest">Terbaru</option>
+                            <option value="cheap">Harga Termurah</option>
+                            <option value="expensive">Harga Termahal</option>
+                            <option value="rating">Rating Tertinggi</option>
+                            <option value="sold">Terlaris</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="searchResultGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-4"></div>
+                <div id="emptyState" class="hidden text-center py-16 bg-white rounded-2xl border border-slate-100">
+                    <div class="text-5xl mb-3">🔎</div>
+                    <p class="text-lg font-semibold text-slate-700">Produk tidak ditemukan</p>
+                    <p class="text-slate-500 text-sm mt-1 mb-5">Coba ubah filter atau gunakan kata kunci yang lebih umum.</p>
+                    <button onclick="resetFilters()" class="bg-blue-500 text-white px-6 py-2.5 rounded-xl font-medium hover:bg-blue-600 transition-colors">Reset Filter</button>
+                </div>
+            </main>
         </div>
     </section>
 @endsection
 
 @section('script')
-    <script>
-        const query = @json($query);
-        const allProducts = @json($results ?? []);
+<script>
+    const query = @json($query);
+    const allProducts = @json($results ?? []);
+    const searchMainCategories = @json($searchMainCategories ?? []);
+    let selectedVariantFilters = {};
 
-        const cleanQuery = String(query || '').trim().toLowerCase();
-        const result = allProducts;
-        document.getElementById('searchMeta').textContent = cleanQuery
-            ? `Menampilkan ${result.length} hasil untuk "${query}"`
-            : `Menampilkan ${result.length} produk`;
+    function normalizeFilterValue(value) {
+        return String(value || '').trim().toLowerCase();
+    }
 
+    function escapeHtml(value) {
+        return String(value || '').replace(/[&<>"']/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
+    }
+
+    function renderCategoryFilters() {
+        const container = document.getElementById('categoryFilterList');
+        container.innerHTML = searchMainCategories.map(cat => `
+            <label class="flex items-center gap-2 text-sm text-slate-600">
+                <input type="checkbox" class="filter-cat accent-blue-500" value="${cat.slug}">
+                <span>${cat.name} (${cat.count})</span>
+            </label>
+        `).join('');
+    }
+
+    function renderVariantFilters() {
+        const container = document.getElementById('variantFilterList');
+        const groups = new Map();
+        allProducts.forEach(product => {
+            (Array.isArray(product.variants) ? product.variants : []).forEach(variant => {
+                const name = String(variant.name || '').trim();
+                const value = String(variant.value || '').trim();
+                if (!name || !value) return;
+                if (!groups.has(name)) groups.set(name, new Map());
+                groups.get(name).set(normalizeFilterValue(value), value);
+            });
+        });
+
+        container.innerHTML = Array.from(groups.entries()).map(([name, values]) => {
+            const groupKey = normalizeFilterValue(name);
+            return `<div>
+                <h4 class="text-sm font-semibold text-slate-700 mb-3">${escapeHtml(name)}</h4>
+                <div class="space-y-2">${Array.from(values.entries()).map(([key, label]) => `
+                    <label class="flex items-center gap-2 text-sm text-slate-600">
+                        <input type="checkbox" class="filter-variant accent-blue-500" data-variant-name="${encodeURIComponent(groupKey)}" data-variant-value="${encodeURIComponent(key)}">
+                        <span>${escapeHtml(label)}</span>
+                    </label>`).join('')}
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function collectVariantFilters() {
+        selectedVariantFilters = {};
+        document.querySelectorAll('.filter-variant:checked').forEach(input => {
+            const name = decodeURIComponent(input.dataset.variantName || '');
+            const value = decodeURIComponent(input.dataset.variantValue || '');
+            if (!selectedVariantFilters[name]) selectedVariantFilters[name] = new Set();
+            selectedVariantFilters[name].add(value);
+        });
+    }
+
+    function getFilteredProducts() {
+        collectVariantFilters();
+        const selectedCats = Array.from(document.querySelectorAll('.filter-cat:checked')).map(el => el.value);
+        const priceMin = Number(document.getElementById('priceMin').value || 0);
+        const priceMax = Number(document.getElementById('priceMax').value || 0);
+        const promoOnly = document.getElementById('filterPromo').checked;
+        const stockOnly = document.getElementById('filterStock').checked;
+        const ratingMin = Number(document.getElementById('ratingMin').value || 0);
+        const activeVariantGroups = Object.entries(selectedVariantFilters).filter(([, values]) => values.size > 0);
+
+        let items = allProducts.filter(product => {
+            const categoryMatch = selectedCats.length === 0 || selectedCats.includes(product.parentCategorySlug);
+            const priceMatch = (!priceMin || Number(product.price) >= priceMin) && (!priceMax || Number(product.price) <= priceMax);
+            const promoMatch = !promoOnly || !!product.isFlashSale;
+            const stockMatch = !stockOnly || Number(product.stock || 0) > 0;
+            const ratingMatch = Number(product.rating || 0) >= ratingMin;
+            const variantMatch = activeVariantGroups.length === 0 || activeVariantGroups.every(([name, values]) =>
+                Array.isArray(product.variants) && product.variants.some(variant => normalizeFilterValue(variant.name) === name && values.has(normalizeFilterValue(variant.value)))
+            );
+            return categoryMatch && priceMatch && promoMatch && stockMatch && ratingMatch && variantMatch;
+        });
+
+        const sort = document.getElementById('sortSel').value;
+        if (sort === 'cheap') items.sort((a,b) => a.price - b.price);
+        else if (sort === 'expensive') items.sort((a,b) => b.price - a.price);
+        else if (sort === 'rating') items.sort((a,b) => b.rating - a.rating || b.sold - a.sold);
+        else if (sort === 'sold') items.sort((a,b) => b.sold - a.sold || b.rating - a.rating);
+        else if (sort === 'newest') items.sort((a,b) => b.id - a.id);
+        else items.sort((a,b) => {
+            const aq = String(a.name || '').toLowerCase().includes(String(query || '').toLowerCase()) ? 2 : 0;
+            const bq = String(b.name || '').toLowerCase().includes(String(query || '').toLowerCase()) ? 2 : 0;
+            const ar = Number(a.rating || 0) * 10 + Number(a.sold || 0);
+            const br = Number(b.rating || 0) * 10 + Number(b.sold || 0);
+            return (bq + br) - (aq + ar);
+        });
+
+        return items;
+    }
+
+    function renderActiveChips() {
+        const wrap = document.getElementById('activeFilters');
+        const chips = [];
+        document.querySelectorAll('.filter-cat:checked').forEach(el => {
+            const text = el.parentElement.querySelector('span')?.textContent || el.value;
+            chips.push(text);
+        });
+        const priceMin = document.getElementById('priceMin').value;
+        const priceMax = document.getElementById('priceMax').value;
+        if (priceMin) chips.push(`Min Rp ${Number(priceMin).toLocaleString('id-ID')}`);
+        if (priceMax) chips.push(`Max Rp ${Number(priceMax).toLocaleString('id-ID')}`);
+        if (document.getElementById('filterPromo').checked) chips.push('Promo');
+        if (document.getElementById('filterStock').checked) chips.push('Stok tersedia');
+        const ratingMin = document.getElementById('ratingMin').value;
+        if (Number(ratingMin) > 0) chips.push(`Rating ${ratingMin}+`);
+        Object.entries(selectedVariantFilters).forEach(([name, values]) => values.forEach(v => chips.push(`${name}: ${v}`)));
+
+        wrap.innerHTML = chips.map(chip => `<span class="filter-chip">${escapeHtml(chip)}</span>`).join('');
+        wrap.classList.toggle('hidden', chips.length === 0);
+    }
+
+    function renderProducts(products) {
         const grid = document.getElementById('searchResultGrid');
         const empty = document.getElementById('emptyState');
-        if (!result.length) {
+        document.getElementById('resultCount').textContent = `Menampilkan ${products.length} produk`;
+        document.getElementById('searchMeta').textContent = query ? `Menampilkan ${products.length} hasil untuk "${query}"` : `Menampilkan ${products.length} produk`;
+
+        if (!products.length) {
+            grid.innerHTML = '';
             empty.classList.remove('hidden');
-        } else {
-            grid.innerHTML = result.map((p) => `
-                <div class="bg-white rounded-xl overflow-hidden shadow-sm border border-slate-100 card-hover group flex flex-col">
-                    <a href="{{ url('/detail-produk') }}/${p.slug}" class="relative block overflow-hidden aspect-square">
-                        <img src="${p.image}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="${p.name}" />
-                        ${p.originalPrice > p.price ? `<span class="absolute top-1.5 left-1.5 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">-${Math.round((1 - p.price / p.originalPrice) * 100)}%</span>` : ''}
-                    </a>
-                    <div class="p-2 flex-1 flex flex-col">
-                        <a href="{{ url('/detail-produk') }}/${p.slug}" class="text-[11px] sm:text-xs font-semibold text-slate-800 hover:text-blue-600 line-clamp-2 leading-snug transition-colors">${p.name}</a>
-                        <div class="flex items-center gap-0.5 mt-1">
-                            <span class="text-yellow-400 text-[10px]">★</span>
-                            <span class="text-[10px] font-medium text-slate-600">${Number(p.rating || 0).toFixed(1)}</span>
-                            <span class="text-[10px] text-slate-400 ml-0.5">· ${p.sold.toLocaleString('id-ID')} terjual</span>
-                        </div>
-                        <div class="mt-auto pt-1">
-                            <p class="text-xs sm:text-sm font-bold text-slate-900">Rp ${p.price.toLocaleString('id-ID')}</p>
-                            ${p.originalPrice > p.price ? `<p class="text-[10px] text-slate-400 line-through">Rp ${p.originalPrice.toLocaleString('id-ID')}</p>` : ''}
-                            <a href="{{ url('/detail-produk') }}/${p.slug}" class="mt-2 inline-flex w-full items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-[11px] sm:text-xs font-semibold text-blue-600 transition-colors hover:border-blue-500 hover:bg-blue-500 hover:text-white">Detail</a>
-                        </div>
+            return;
+        }
+        empty.classList.add('hidden');
+
+        grid.innerHTML = products.map((p) => `
+            <div class="bg-white rounded-xl overflow-hidden shadow-sm border border-slate-100 card-hover group flex flex-col">
+                <a href="{{ url('/detail-produk') }}/${p.slug}" class="relative block overflow-hidden aspect-square">
+                    <img src="${p.image}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="${escapeHtml(p.name)}" />
+                    ${p.originalPrice > p.price ? `<span class="absolute top-1.5 left-1.5 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">-${Math.round((1 - p.price / p.originalPrice) * 100)}%</span>` : ''}
+                    ${p.isFlashSale ? `<span class="absolute top-1.5 right-1.5 bg-amber-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">PROMO</span>` : ''}
+                </a>
+                <div class="p-2 flex-1 flex flex-col">
+                    <a href="{{ url('/detail-produk') }}/${p.slug}" class="text-[11px] sm:text-xs font-semibold text-slate-800 hover:text-blue-600 line-clamp-2 leading-snug transition-colors">${escapeHtml(p.name)}</a>
+                    <div class="flex items-center gap-0.5 mt-1">
+                        <span class="text-yellow-400 text-[10px]">★</span>
+                        <span class="text-[10px] font-medium text-slate-600">${Number(p.rating || 0).toFixed(1)}</span>
+                        <span class="text-[10px] text-slate-400 ml-0.5">· ${Number(p.sold || 0).toLocaleString('id-ID')} terjual</span>
+                    </div>
+                    <div class="mt-1 text-[10px] text-slate-400">${Number(p.stock || 0) > 0 ? `Stok ${Number(p.stock).toLocaleString('id-ID')}` : 'Stok habis'}</div>
+                    <div class="mt-auto pt-1">
+                        <p class="text-xs sm:text-sm font-bold text-slate-900">Rp ${Number(p.price).toLocaleString('id-ID')}</p>
+                        ${p.originalPrice > p.price ? `<p class="text-[10px] text-slate-400 line-through">Rp ${Number(p.originalPrice).toLocaleString('id-ID')}</p>` : ''}
+                        <a href="{{ url('/detail-produk') }}/${p.slug}" class="mt-2 inline-flex w-full items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-[11px] sm:text-xs font-semibold text-blue-600 transition-colors hover:border-blue-500 hover:bg-blue-500 hover:text-white">Detail</a>
                     </div>
                 </div>
-            `).join('');
-        }
-    </script>
+            </div>`).join('');
+    }
+
+    function applyFilters() {
+        const products = getFilteredProducts();
+        renderActiveChips();
+        renderProducts(products);
+    }
+
+    function resetFilters() {
+        document.querySelectorAll('.filter-cat, .filter-variant').forEach(el => el.checked = false);
+        document.getElementById('priceMin').value = '';
+        document.getElementById('priceMax').value = '';
+        document.getElementById('filterPromo').checked = false;
+        document.getElementById('filterStock').checked = false;
+        document.getElementById('ratingMin').value = '0';
+        document.getElementById('sortSel').value = 'relevant';
+        selectedVariantFilters = {};
+        applyFilters();
+    }
+
+    function openMobileFilter() {
+        const sidebar = document.getElementById('filterSidebar');
+        const panel = document.getElementById('filterPanel');
+        if (!sidebar || !panel || window.innerWidth >= 1024) return;
+        sidebar.classList.remove('hidden');
+        sidebar.classList.add('fixed', 'inset-0', 'z-[60]', 'bg-black/40', 'flex', 'items-end', 'p-0');
+        panel.classList.remove('rounded-2xl', 'sticky', 'top-20');
+        panel.classList.add('w-full', 'rounded-t-3xl', 'rounded-b-none', 'max-h-[85vh]', 'overflow-y-auto', 'border-0');
+    }
+
+    function closeMobileFilter() {
+        const sidebar = document.getElementById('filterSidebar');
+        const panel = document.getElementById('filterPanel');
+        if (!sidebar || !panel || window.innerWidth >= 1024) return;
+        sidebar.classList.add('hidden');
+        sidebar.classList.remove('fixed', 'inset-0', 'z-[60]', 'bg-black/40', 'flex', 'items-end', 'p-0');
+        panel.classList.add('rounded-2xl', 'sticky', 'top-20');
+        panel.classList.remove('w-full', 'rounded-t-3xl', 'rounded-b-none', 'max-h-[85vh]', 'overflow-y-auto', 'border-0');
+    }
+
+    document.addEventListener('click', function(e) {
+        const sidebar = document.getElementById('filterSidebar');
+        if (sidebar && sidebar.classList.contains('fixed') && e.target === sidebar) closeMobileFilter();
+    });
+
+    renderCategoryFilters();
+    renderVariantFilters();
+    applyFilters();
+</script>
 @endsection

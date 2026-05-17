@@ -295,8 +295,9 @@
                     <span
                         class="text-blue-600 font-semibold text-xs bg-blue-50 px-2.5 py-1 rounded-full">{{ $productData['categoryName'] }}</span>
                     <div class="flex items-center gap-2">
-                        <span class="text-blue-600 text-xs font-medium flex items-center gap-1">
-                            <span class="w-2 h-2 bg-blue-500 rounded-full"></span> Stok Tersedia
+                        <span id="stockStatusBadge" class="text-xs font-medium flex items-center gap-1 rounded-full px-2.5 py-1 {{ ($productData['stock'] ?? 0) <= 0 ? 'bg-red-50 text-red-600' : (($productData['stock'] ?? 0) <= 5 ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-blue-600') }}">
+                            <span id="stockStatusDot" class="w-2 h-2 rounded-full {{ ($productData['stock'] ?? 0) <= 0 ? 'bg-red-500' : (($productData['stock'] ?? 0) <= 5 ? 'bg-amber-500' : 'bg-blue-500') }}"></span>
+                            <span id="stockStatusText">{{ ($productData['stock'] ?? 0) <= 0 ? 'Stok Habis' : (($productData['stock'] ?? 0) <= 5 ? 'Stok Terbatas' : 'Stok Tersedia') }}</span>
                         </span>
                         <button onclick="shareProduct()" title="Bagikan produk"
                             class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-blue-50 hover:text-blue-600 text-slate-500 transition-colors">
@@ -381,6 +382,21 @@
                         </select>
                     </div>
                 @endforeach
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+                    <div class="rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                        <p class="text-[11px] uppercase tracking-[0.18em] text-slate-400 mb-1">Keunggulan</p>
+                        <p class="text-sm font-semibold text-slate-700">Produk aktif & siap dibeli</p>
+                    </div>
+                    <div class="rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                        <p class="text-[11px] uppercase tracking-[0.18em] text-slate-400 mb-1">Pengiriman</p>
+                        <p class="text-sm font-semibold text-slate-700">Cek ongkir saat checkout</p>
+                    </div>
+                    <div class="rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                        <p class="text-[11px] uppercase tracking-[0.18em] text-slate-400 mb-1">Keamanan</p>
+                        <p class="text-sm font-semibold text-slate-700">Checkout aman & cepat</p>
+                    </div>
+                </div>
+
                 <!-- Quantity -->
                 <div class="mb-5">
                     <span class="text-xs sm:text-sm font-semibold text-slate-700 block mb-2">Jumlah</span>
@@ -401,21 +417,21 @@
 
                 <!-- Action Buttons (Desktop) -->
                 <div class="hidden md:flex gap-3 mb-6">
-                    <button onclick="addToCart()"
+                    <button id="addToCartBtn" onclick="addToCart()"
                         class="flex-1 h-11 bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold rounded-xl border border-blue-200 hover:border-blue-400 transition-all flex items-center justify-center gap-2 text-sm">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
-                        Tambah ke Keranjang
+                        <span class="btn-label">Tambah ke Keranjang</span>
                     </button>
-                    <button type="button" onclick="buyNow()"
+                    <button id="buyNowBtn" type="button" onclick="buyNow()"
                         class="flex-1 h-11 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm shadow-blue-100 text-sm">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M13 10V3L4 14h7v7l9-11h-7z" />
                         </svg>
-                        Beli Sekarang
+                        <span class="btn-label">Beli Sekarang</span>
                     </button>
                     @if (!empty($productData['isRedeemProduct']))
                         <button type="button" onclick="redeemNow()"
@@ -595,21 +611,30 @@
 
     <!-- STICKY BOTTOM BAR (Mobile) -->
     <div class="sticky bottom-[76px] md:hidden bg-white border-t border-slate-200 px-3 py-2.5 flex flex-col gap-2">
+        <div class="flex items-center justify-between gap-3 text-xs text-slate-500">
+            <div>
+                <div class="font-semibold text-slate-800" id="mobileStickyPrice">Rp {{ number_format($displayPrice, 0, ',', '.') }}</div>
+                <div id="mobileStickyStock">Stok {{ number_format((int) ($productData['stock'] ?? 0)) }} item</div>
+            </div>
+            <div id="mobileStickyStatus" class="text-right font-semibold {{ ($productData['stock'] ?? 0) <= 0 ? 'text-red-600' : (($productData['stock'] ?? 0) <= 5 ? 'text-amber-600' : 'text-blue-600') }}">
+                {{ ($productData['stock'] ?? 0) <= 0 ? 'Stok habis' : (($productData['stock'] ?? 0) <= 5 ? 'Stok terbatas' : 'Siap dibeli') }}
+            </div>
+        </div>
         <div class="flex gap-2">
-            <button onclick="addToCart()"
+            <button id="mobileAddToCartBtn" onclick="addToCart()"
                 class="flex-1 bg-blue-50 border border-blue-300 text-blue-700 font-semibold py-2.5 rounded-xl text-sm flex items-center justify-center gap-1.5">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
-                Keranjang
+                <span class="btn-label">Keranjang</span>
             </button>
-            <button type="button" onclick="buyNow()"
+            <button id="mobileBuyNowBtn" type="button" onclick="buyNow()"
                 class="flex-1 bg-blue-600 text-white font-semibold py-2.5 rounded-xl text-sm flex items-center justify-center gap-1.5 shadow-sm shadow-blue-100">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
-                Beli Sekarang
+                <span class="btn-label">Beli Sekarang</span>
             </button>
         </div>
         @if (!empty($productData['isRedeemProduct']))
@@ -688,6 +713,60 @@
         function changeQty(d) {
             qty = Math.max(1, Math.min(productData.stock || 1, qty + d));
             document.getElementById('qtyDisplay').textContent = qty;
+        }
+
+        function updateStockUI() {
+            const stock = Number(productData.stock || 0);
+            const statusText = document.getElementById('stockStatusText');
+            const statusDot = document.getElementById('stockStatusDot');
+            const statusBadge = document.getElementById('stockStatusBadge');
+            const stockEl = document.getElementById('productStock');
+            const mobileStock = document.getElementById('mobileStickyStock');
+            const mobileStatus = document.getElementById('mobileStickyStatus');
+            const addToCartBtn = document.getElementById('addToCartBtn');
+            const buyNowBtn = document.getElementById('buyNowBtn');
+            const mobileAddToCartBtn = document.getElementById('mobileAddToCartBtn');
+            const mobileBuyNowBtn = document.getElementById('mobileBuyNowBtn');
+
+            let label = 'Stok Tersedia';
+            let badgeClass = ['bg-blue-50', 'text-blue-600'];
+            let dotClass = 'bg-blue-500';
+
+            if (stock <= 0) {
+                label = 'Stok Habis';
+                badgeClass = ['bg-red-50', 'text-red-600'];
+                dotClass = 'bg-red-500';
+            } else if (stock <= 5) {
+                label = 'Stok Terbatas';
+                badgeClass = ['bg-amber-50', 'text-amber-600'];
+                dotClass = 'bg-amber-500';
+            }
+
+            if (statusText) statusText.textContent = label;
+            if (statusDot) statusDot.className = `w-2 h-2 rounded-full ${dotClass}`;
+            if (statusBadge) statusBadge.className = `text-xs font-medium flex items-center gap-1 rounded-full px-2.5 py-1 ${badgeClass.join(' ')}`;
+            if (stockEl) stockEl.textContent = `${stock} item`;
+            if (mobileStock) mobileStock.textContent = `Stok ${stock} item`;
+            if (mobileStatus) {
+                mobileStatus.textContent = stock <= 0 ? 'Stok habis' : (stock <= 5 ? 'Stok terbatas' : 'Siap dibeli');
+                mobileStatus.className = `text-right font-semibold ${stock <= 0 ? 'text-red-600' : (stock <= 5 ? 'text-amber-600' : 'text-blue-600')}`;
+            }
+
+            [addToCartBtn, buyNowBtn, mobileAddToCartBtn, mobileBuyNowBtn].forEach((btn) => {
+                if (!btn) return;
+                btn.disabled = stock <= 0;
+                btn.classList.toggle('opacity-50', stock <= 0);
+                btn.classList.toggle('cursor-not-allowed', stock <= 0);
+            });
+
+            const desktopCartLabel = addToCartBtn?.querySelector('.btn-label');
+            const desktopBuyLabel = buyNowBtn?.querySelector('.btn-label');
+            const mobileCartLabel = mobileAddToCartBtn?.querySelector('.btn-label');
+            const mobileBuyLabel = mobileBuyNowBtn?.querySelector('.btn-label');
+            if (desktopCartLabel) desktopCartLabel.textContent = stock <= 0 ? 'Stok Habis' : 'Tambah ke Keranjang';
+            if (desktopBuyLabel) desktopBuyLabel.textContent = stock <= 0 ? 'Pilih Produk Lain' : 'Beli Sekarang';
+            if (mobileCartLabel) mobileCartLabel.textContent = stock <= 0 ? 'Stok Habis' : 'Keranjang';
+            if (mobileBuyLabel) mobileBuyLabel.textContent = stock <= 0 ? 'Pilih Produk Lain' : 'Beli Sekarang';
         }
 
         function formatRupiah(value) {
@@ -786,6 +865,8 @@
             const displayPrice = Number(selectedVariant.displayPrice || selectedVariant.price || 0);
             const priceEl = document.getElementById('productPrice');
             if (priceEl) priceEl.textContent = formatRupiah(displayPrice);
+            const mobileStickyPrice = document.getElementById('mobileStickyPrice');
+            if (mobileStickyPrice) mobileStickyPrice.textContent = formatRupiah(displayPrice);
 
             const origPriceEl = document.getElementById('productOrigPrice');
             if (origPriceEl) origPriceEl.textContent = formatRupiah(selectedVariant.price || 0);
@@ -968,6 +1049,10 @@
 
         async function addToCart() {
             const variantId = resolveSelectedVariantId();
+            if (Number(productData.stock || 0) <= 0) {
+                showToast('Stok produk ini sedang habis.');
+                return;
+            }
             if (!isAuthenticated) {
                 savePendingAuthAction({
                     type: 'add_to_cart',
@@ -1005,6 +1090,10 @@
 
         function buyNow() {
             const variantId = resolveSelectedVariantId();
+            if (Number(productData.stock || 0) <= 0) {
+                showToast('Stok produk ini sedang habis.');
+                return false;
+            }
             if (!isAuthenticated) {
                 savePendingAuthAction({
                     type: 'buy_now',
@@ -1026,6 +1115,10 @@
 
         function redeemNow() {
             const variantId = resolveSelectedVariantId();
+            if (Number(productData.stock || 0) <= 0) {
+                showToast('Stok produk ini sedang habis.');
+                return false;
+            }
             if (!isAuthenticated) {
                 savePendingAuthAction({
                     type: 'redeem_now',
@@ -1054,6 +1147,7 @@
 
         initializeVariantSelects();
         applySelectedVariantData();
+        updateStockUI();
         syncWishIcon();
         resumePendingAuthActionIfAny();
 
@@ -1114,15 +1208,20 @@
 
         // Sale Timer
         function updateSaleTimer() {
+            const el = document.getElementById('saleTimer');
+            if (!el) return;
+            const endRaw = productData.flashSaleEndAt;
+            if (!endRaw) {
+                el.textContent = '--:--:--';
+                return;
+            }
             const now = new Date();
-            const end = new Date();
-            end.setHours(23, 59, 59, 0);
-            const diff = end - now;
+            const end = new Date(endRaw);
+            const diff = Math.max(end - now, 0);
             const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
             const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
             const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
-            const el = document.getElementById('saleTimer');
-            if (el) el.textContent = `${h}:${m}:${s}`;
+            el.textContent = `${h}:${m}:${s}`;
         }
         if (document.getElementById('saleTimer')) {
             setInterval(updateSaleTimer, 1000);
