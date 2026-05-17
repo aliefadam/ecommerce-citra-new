@@ -51,6 +51,11 @@
             box-shadow: 0 8px 32px rgba(15, 23, 42, 0.12);
             overflow: hidden;
             margin-top: 4px;
+            z-index: 80;
+        }
+
+        .ts-wrapper.dropdown-active {
+            z-index: 80;
         }
 
         .ts-wrapper .ts-dropdown .ts-dropdown-content {
@@ -191,6 +196,19 @@
         .search-wrapper:focus-within .search-dropdown {
             display: block;
         }
+
+        .mobile-sticky-actions {
+            transition: transform 0.2s ease, opacity 0.2s ease;
+            z-index: 30;
+        }
+
+        @media (max-width: 767px) {
+            body.variant-select-open .mobile-sticky-actions {
+                opacity: 0;
+                pointer-events: none;
+                transform: translateY(calc(100% + 84px));
+            }
+        }
     </style>
 @endsection
 
@@ -206,7 +224,7 @@
         $reviewDistribution = collect($productData['reviewDistribution'] ?? []);
     @endphp
     <!-- Toast -->
-    <div id="toast" class="fixed bottom-6 right-6 z-50 hidden">
+    <div id="toast" class="fixed top-4 left-4 right-4 md:top-auto md:left-auto md:bottom-6 md:right-6 z-50 hidden">
         <div class="flex items-center gap-3 bg-slate-800 text-white px-5 py-3 rounded-xl shadow-xl text-sm font-semibold">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="20 6 9 17 4 12" />
@@ -423,7 +441,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
-                        <span class="btn-label">Tambah ke Keranjang</span>
+                        <span class="btn-label">Keranjang</span>
                     </button>
                     <button id="buyNowBtn" type="button" onclick="buyNow()"
                         class="flex-1 h-11 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm shadow-blue-100 text-sm">
@@ -610,7 +628,7 @@
     </div>
 
     <!-- STICKY BOTTOM BAR (Mobile) -->
-    <div class="sticky bottom-[76px] md:hidden bg-white border-t border-slate-200 px-3 py-2.5 flex flex-col gap-2">
+    <div id="mobileStickyActions" class="mobile-sticky-actions sticky bottom-[76px] md:hidden bg-white border-t border-slate-200 px-3 py-2.5 flex flex-col gap-2">
         <div class="flex items-center justify-between gap-3 text-xs text-slate-500">
             <div>
                 <div class="font-semibold text-slate-800" id="mobileStickyPrice">Rp {{ number_format($displayPrice, 0, ',', '.') }}</div>
@@ -763,7 +781,7 @@
             const desktopBuyLabel = buyNowBtn?.querySelector('.btn-label');
             const mobileCartLabel = mobileAddToCartBtn?.querySelector('.btn-label');
             const mobileBuyLabel = mobileBuyNowBtn?.querySelector('.btn-label');
-            if (desktopCartLabel) desktopCartLabel.textContent = stock <= 0 ? 'Stok Habis' : 'Tambah ke Keranjang';
+            if (desktopCartLabel) desktopCartLabel.textContent = stock <= 0 ? 'Stok Habis' : 'Keranjang';
             if (desktopBuyLabel) desktopBuyLabel.textContent = stock <= 0 ? 'Pilih Produk Lain' : 'Beli Sekarang';
             if (mobileCartLabel) mobileCartLabel.textContent = stock <= 0 ? 'Stok Habis' : 'Keranjang';
             if (mobileBuyLabel) mobileBuyLabel.textContent = stock <= 0 ? 'Pilih Produk Lain' : 'Beli Sekarang';
@@ -981,6 +999,12 @@
                     },
                     onChange() {
                         selectVariantValue(select, groupKey);
+                    },
+                    onDropdownOpen() {
+                        document.body.classList.add('variant-select-open');
+                    },
+                    onDropdownClose() {
+                        document.body.classList.remove('variant-select-open');
                     },
                 });
 
