@@ -6,7 +6,7 @@
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
     <style>
         * {
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
         .nav-link {
@@ -180,7 +180,6 @@
         }
     </style>
 @endsection
-
 @section('content')
     @php
         $fullName = trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? ''));
@@ -2685,3 +2684,4 @@
         });
     </script>
 @endsection
+

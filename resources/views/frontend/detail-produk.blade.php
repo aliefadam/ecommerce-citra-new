@@ -7,7 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
     <style>
         * {
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
         .card-hover {
@@ -211,7 +211,6 @@
         }
     </style>
 @endsection
-
 @section('content')
     @php
         $displayPrice = $productData['isFlashSale'] ? $productData['flashSalePrice'] : $productData['price'];
@@ -1449,3 +1448,4 @@
         setMegaCategory('rumah-tangga');
     </script>
 @endsection
+

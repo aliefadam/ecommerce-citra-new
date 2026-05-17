@@ -6,7 +6,7 @@
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
     <style>
         * {
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
         .hero-gradient {
@@ -137,7 +137,6 @@
         }
     </style>
 @endsection
-
 @section('content')
     <!-- Toast Notification -->
     <div id="toast" class="fixed bottom-6 right-6 z-50 hidden">
@@ -1261,3 +1260,4 @@
         initWishlistStatus();
     </script>
 @endsection
+

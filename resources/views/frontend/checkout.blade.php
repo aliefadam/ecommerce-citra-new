@@ -6,7 +6,7 @@
 @section('style')
     <style>
         * {
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
         html,
@@ -204,7 +204,6 @@
         }
     </style>
 @endsection
-
 @section('content')
     @php
         $isRedeemCheckout = ($checkoutSource ?? 'cart_all') === 'redeem_point';
@@ -1536,3 +1535,4 @@
         loadShippingOptions();
     </script>
 @endsection
+
