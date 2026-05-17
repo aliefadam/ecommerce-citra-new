@@ -96,10 +96,14 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::resource('promo-pages', PromoPageController::class)->except(['show'])->middleware('admin.permission:manage_store_settings');
         Route::resource('content-pages', ContentPageController::class)->except(['show'])->middleware('admin.permission:manage_store_settings');
         Route::get('reports', [SalesReportController::class, 'home'])->name('reports.index')->middleware('admin.permission:view_reports');
+        Route::get('reports/owner', [SalesReportController::class, 'owner'])->name('reports.owner')->middleware('admin.permission:view_reports');
         Route::get('reports/sales', [SalesReportController::class, 'index'])->name('reports.sales')->middleware('admin.permission:view_reports');
         Route::get('reports/stock', [SalesReportController::class, 'stock'])->name('reports.stock')->middleware('admin.permission:view_reports');
         Route::get('reports/products', [SalesReportController::class, 'products'])->name('reports.products')->middleware('admin.permission:view_reports');
         Route::get('reports/payments', [SalesReportController::class, 'payments'])->name('reports.payments')->middleware('admin.permission:view_reports');
+        Route::get('reports/customers', [SalesReportController::class, 'customers'])->name('reports.customers')->middleware('admin.permission:view_reports');
+        Route::get('reports/promos', [SalesReportController::class, 'promos'])->name('reports.promos')->middleware('admin.permission:view_reports');
+        Route::get('reports/returns', [SalesReportController::class, 'returns'])->name('reports.returns')->middleware('admin.permission:view_reports');
         Route::get('store-location', [StoreLocationController::class, 'edit'])->name('store-locations.edit')->middleware('admin.permission:manage_store_settings');
         Route::put('store-location', [StoreLocationController::class, 'update'])->name('store-locations.update')->middleware('admin.permission:manage_store_settings');
         Route::get('store-location/provinces', [StoreLocationController::class, 'provinces'])->name('store-locations.provinces')->middleware('admin.permission:manage_store_settings');

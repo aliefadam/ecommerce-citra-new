@@ -8,6 +8,12 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\StockMovement;
 use App\Models\TransactionProductReview;
+use App\Models\Cart;
+use App\Models\Coupon;
+use App\Models\NewsletterSubscriber;
+use App\Models\ReturnRequest;
+use App\Models\User;
+use App\Models\Wishlist;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -23,6 +29,13 @@ class SalesReportController extends Controller
                 'tone' => 'blue',
                 'items' => [
                     [
+                        'title' => 'Owner Overview',
+                        'description' => 'Ringkasan omzet, order, customer, stok, promo, return, dan pekerjaan aktif.',
+                        'route' => route('reports.owner'),
+                        'icon' => 'layout-dashboard',
+                        'tone' => 'blue',
+                    ],
+                    [
                         'title' => 'Sales Report',
                         'description' => 'Periode, omzet, transaksi, status, top produk, dan export CSV.',
                         'route' => route('reports.sales'),
@@ -35,6 +48,13 @@ class SalesReportController extends Controller
                         'route' => route('reports.payments'),
                         'icon' => 'credit-card',
                         'tone' => 'emerald',
+                    ],
+                    [
+                        'title' => 'Customer Report',
+                        'description' => 'Customer baru, pembeli aktif, repeat buyer, cart, wishlist, dan newsletter.',
+                        'route' => route('reports.customers'),
+                        'icon' => 'users',
+                        'tone' => 'cyan',
                     ],
                 ],
             ],
@@ -68,9 +88,100 @@ class SalesReportController extends Controller
                     ],
                 ],
             ],
+            [
+                'title' => 'Laporan Operasional',
+                'description' => 'Pantau promosi, kupon, retur, refund, dan kualitas operasional harian.',
+                'icon' => 'clipboard-list',
+                'tone' => 'rose',
+                'items' => [
+                    [
+                        'title' => 'Promo dan Coupon',
+                        'description' => 'Kupon aktif, pemakaian promo, nilai diskon, dan transaksi berkode kupon.',
+                        'route' => route('reports.promos'),
+                        'icon' => 'badge-percent',
+                        'tone' => 'amber',
+                    ],
+                    [
+                        'title' => 'Return dan Refund',
+                        'description' => 'Pengajuan retur, refund, status penyelesaian, dan return rate.',
+                        'route' => route('reports.returns'),
+                        'icon' => 'rotate-ccw',
+                        'tone' => 'rose',
+                    ],
+                ],
+            ],
         ];
 
         return view('backend.reports.index', compact('groups'));
+    }
+
+    public function owner(Request $request)
+    {
+        $start = $request->date('start_date')?->startOfDay() ?? now()->startOfMonth();
+        $end = $request->date('end_date')?->endOfDay() ?? now()->endOfDay();
+        $paidStatuses = $this->paidStatuses();
+        $periodBase = Transaction::query()->whereBetween('created_at', [$start, $end]);
+        $paidBase = (clone $periodBase)->whereIn(DB::raw('LOWER(status)'), $paidStatuses);
+
+        $orders = (clone $paidBase)->count();
+        $revenue = (clone $paidBase)->sum('grand_total');
+        $periodDays = max(1, $start->diffInDays($end) + 1);
+        $previousEnd = $start->copy()->subSecond();
+        $previousStart = $previousEnd->copy()->subDays($periodDays - 1)->startOfDay();
+        $previousPaid = Transaction::query()
+            ->whereBetween('created_at', [$previousStart, $previousEnd])
+            ->whereIn(DB::raw('LOWER(status)'), $paidStatuses);
+        $previousRevenue = (clone $previousPaid)->sum('grand_total');
+        $previousOrders = (clone $previousPaid)->count();
+
+        $overview = [
+            'revenue' => $revenue,
+            'orders' => $orders,
+            'aov' => $orders > 0 ? round($revenue / $orders) : 0,
+            'items_sold' => TransactionDetail::query()
+                ->whereHas('transaction', fn($q) => $q->whereBetween('created_at', [$start, $end])->whereIn(DB::raw('LOWER(status)'), $paidStatuses))
+                ->sum('quantity'),
+            'revenue_growth' => $this->percentageChange($revenue, $previousRevenue),
+            'order_growth' => $this->percentageChange($orders, $previousOrders),
+            'new_customers' => User::query()->where('role', 'user')->whereBetween('created_at', [$start, $end])->count(),
+            'active_customers' => (clone $paidBase)->distinct('user_id')->whereNotNull('user_id')->count('user_id'),
+            'inventory_value' => ProductVariant::query()->selectRaw('COALESCE(SUM(stock * price), 0) as total')->value('total') ?? 0,
+            'low_stock' => ProductVariant::query()->whereRaw('stock > 0 AND stock <= COALESCE(low_stock_threshold, 5)')->count(),
+            'pending_payment' => Transaction::query()->whereIn(DB::raw('LOWER(status)'), ['pending', 'menunggu_verifikasi'])->count(),
+            'fulfillment_queue' => Transaction::query()->whereIn(DB::raw('LOWER(status)'), ['paid', 'settlement', 'capture', 'process', 'processing', 'kirim', 'shipping', 'shipped'])->count(),
+            'return_open' => ReturnRequest::query()->whereNotIn('status', ['selesai', 'completed', 'ditolak', 'rejected'])->count(),
+            'discount' => (clone $paidBase)->sum('discount_amount'),
+        ];
+
+        $dailyRevenue = (clone $paidBase)
+            ->selectRaw('DATE(created_at) as sales_date, COUNT(*) as total_orders, SUM(grand_total) as total_revenue')
+            ->groupBy('sales_date')
+            ->orderBy('sales_date')
+            ->get();
+
+        $topProducts = TransactionDetail::query()
+            ->selectRaw('product_id, product_name, SUM(quantity) as total_qty, SUM(subtotal) as total_revenue')
+            ->whereHas('transaction', fn($q) => $q->whereBetween('created_at', [$start, $end])->whereIn(DB::raw('LOWER(status)'), $paidStatuses))
+            ->groupBy('product_id', 'product_name')
+            ->orderByDesc('total_revenue')
+            ->take(8)
+            ->get();
+
+        $statusBreakdown = (clone $periodBase)
+            ->selectRaw('LOWER(status) as status_key, COUNT(*) as total_orders')
+            ->groupBy('status_key')
+            ->orderByDesc('total_orders')
+            ->take(8)
+            ->get();
+
+        $workQueue = Transaction::query()
+            ->with('user')
+            ->whereIn(DB::raw('LOWER(status)'), ['pending', 'menunggu_verifikasi', 'paid', 'settlement', 'capture', 'process', 'processing', 'kirim', 'shipping', 'shipped'])
+            ->latest()
+            ->take(8)
+            ->get();
+
+        return view('backend.reports.owner', compact('start', 'end', 'overview', 'dailyRevenue', 'topProducts', 'statusBreakdown', 'workQueue'));
     }
 
     public function index(Request $request)
@@ -335,6 +446,131 @@ class SalesReportController extends Controller
             ->withQueryString();
 
         return view('backend.reports.payments', compact('start', 'end', 'paymentSummary', 'fulfillmentSummary', 'paymentMethods', 'operationQueue'));
+    }
+
+    public function customers(Request $request)
+    {
+        $start = $request->date('start_date')?->startOfDay() ?? now()->startOfMonth();
+        $end = $request->date('end_date')?->endOfDay() ?? now()->endOfDay();
+        $paidStatuses = $this->paidStatuses();
+
+        $paidInPeriod = Transaction::query()
+            ->whereBetween('created_at', [$start, $end])
+            ->whereIn(DB::raw('LOWER(status)'), $paidStatuses);
+
+        $summary = [
+            'new_customers' => User::query()->where('role', 'user')->whereBetween('created_at', [$start, $end])->count(),
+            'active_buyers' => (clone $paidInPeriod)->distinct('user_id')->whereNotNull('user_id')->count('user_id'),
+            'repeat_buyers' => User::query()
+                ->where('role', 'user')
+                ->whereHas('transactions', fn($q) => $q->whereBetween('created_at', [$start, $end])->whereIn(DB::raw('LOWER(status)'), $paidStatuses), '>=', 2)
+                ->count(),
+            'cart_users' => Cart::query()->distinct('user_id')->count('user_id'),
+            'wishlist_users' => Wishlist::query()->distinct('user_id')->count('user_id'),
+            'newsletter' => NewsletterSubscriber::query()->where('is_subscribed', true)->count(),
+        ];
+
+        $topCustomers = User::query()
+            ->where('role', 'user')
+            ->withCount(['transactions as paid_orders_count' => fn($q) => $q->whereBetween('created_at', [$start, $end])->whereIn(DB::raw('LOWER(status)'), $paidStatuses)])
+            ->withSum(['transactions as paid_revenue_sum' => fn($q) => $q->whereBetween('created_at', [$start, $end])->whereIn(DB::raw('LOWER(status)'), $paidStatuses)], 'grand_total')
+            ->having('paid_orders_count', '>', 0)
+            ->orderByDesc('paid_revenue_sum')
+            ->take(20)
+            ->get();
+
+        $recentCustomers = User::query()
+            ->where('role', 'user')
+            ->latest()
+            ->take(20)
+            ->get();
+
+        return view('backend.reports.customers', compact('start', 'end', 'summary', 'topCustomers', 'recentCustomers'));
+    }
+
+    public function promos(Request $request)
+    {
+        $start = $request->date('start_date')?->startOfDay() ?? now()->startOfMonth();
+        $end = $request->date('end_date')?->endOfDay() ?? now()->endOfDay();
+        $paidStatuses = $this->paidStatuses();
+
+        $couponTransactions = Transaction::query()
+            ->with('user')
+            ->whereBetween('created_at', [$start, $end])
+            ->whereIn(DB::raw('LOWER(status)'), $paidStatuses)
+            ->whereNotNull('coupon_code')
+            ->where('coupon_code', '!=', '');
+
+        $summary = [
+            'active_coupons' => Coupon::query()->where('is_active', true)->count(),
+            'coupon_orders' => (clone $couponTransactions)->count(),
+            'discount_total' => (clone $couponTransactions)->sum('discount_amount'),
+            'redeemed_points' => Transaction::query()->whereBetween('created_at', [$start, $end])->whereIn(DB::raw('LOWER(status)'), $paidStatuses)->sum('redeem_points_reserved'),
+        ];
+
+        $topCoupons = (clone $couponTransactions)
+            ->selectRaw('coupon_code, COUNT(*) as total_orders, SUM(discount_amount) as total_discount, SUM(grand_total) as total_revenue')
+            ->groupBy('coupon_code')
+            ->orderByDesc('total_orders')
+            ->take(20)
+            ->get();
+
+        $coupons = Coupon::query()
+            ->latest()
+            ->take(20)
+            ->get();
+
+        $transactions = (clone $couponTransactions)->latest()->take(20)->get();
+
+        return view('backend.reports.promos', compact('start', 'end', 'summary', 'topCoupons', 'coupons', 'transactions'));
+    }
+
+    public function returns(Request $request)
+    {
+        $start = $request->date('start_date')?->startOfDay() ?? now()->startOfMonth();
+        $end = $request->date('end_date')?->endOfDay() ?? now()->endOfDay();
+        $paidOrders = Transaction::query()
+            ->whereBetween('created_at', [$start, $end])
+            ->whereIn(DB::raw('LOWER(status)'), $this->paidStatuses())
+            ->count();
+
+        $returnBase = ReturnRequest::query()->whereBetween('created_at', [$start, $end]);
+        $returnsCount = (clone $returnBase)->count();
+
+        $summary = [
+            'total_requests' => $returnsCount,
+            'open_requests' => (clone $returnBase)->whereNotIn('status', ['selesai', 'completed', 'ditolak', 'rejected'])->count(),
+            'refund_total' => (clone $returnBase)->sum('refund_amount'),
+            'return_rate' => $paidOrders > 0 ? round(($returnsCount / $paidOrders) * 100, 1) : 0,
+        ];
+
+        $statusBreakdown = (clone $returnBase)
+            ->selectRaw('LOWER(status) as status_key, COUNT(*) as total_requests, SUM(refund_amount) as refund_total')
+            ->groupBy('status_key')
+            ->orderByDesc('total_requests')
+            ->get();
+
+        $recentReturns = (clone $returnBase)
+            ->with(['user', 'transaction'])
+            ->latest()
+            ->take(20)
+            ->get();
+
+        return view('backend.reports.returns', compact('start', 'end', 'summary', 'statusBreakdown', 'recentReturns'));
+    }
+
+    private function paidStatuses(): array
+    {
+        return ['paid', 'settlement', 'capture', 'process', 'processing', 'kirim', 'shipping', 'shipped', 'selesai', 'completed', 'delivered'];
+    }
+
+    private function percentageChange(float|int $current, float|int $previous): ?float
+    {
+        if ((float) $previous === 0.0) {
+            return (float) $current === 0.0 ? 0.0 : null;
+        }
+
+        return round((($current - $previous) / $previous) * 100, 1);
     }
 
     private function exportTransactions($transactions, $start, $end)
