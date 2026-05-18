@@ -6,7 +6,7 @@ return [
             'label' => 'Dashboard & Reports',
             'permissions' => [
                 'view_dashboard' => 'View dashboard',
-                'view_reports' => 'View sales reports',
+                'view_reports' => 'View report center and all report details',
             ],
         ],
         'orders' => [
