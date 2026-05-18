@@ -57,66 +57,116 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::prefix('admin')->group(function () {
-        Route::get('/', [BackendController::class, 'index'])->name('pages.index')->middleware('admin.permission:view_dashboard');
-        Route::get('/dashboard2', [BackendController::class, 'dashboard2'])->name('pages.dashboard2')->middleware('admin.permission:view_dashboard');
-        Route::get('/charts', [BackendController::class, 'charts'])->name('pages.charts')->middleware('admin.permission:view_dashboard');
-        Route::get('/components', [BackendController::class, 'components'])->name('pages.components')->middleware('admin.permission:view_dashboard');
-        Route::get('/datatables', [BackendController::class, 'datatables'])->name('pages.datatables')->middleware('admin.permission:view_dashboard');
-        Route::get('/settings', [BackendController::class, 'settings'])->name('pages.settings')->middleware('admin.permission:manage_store_settings');
-        Route::post('/settings', [BackendController::class, 'updateSettings'])->name('pages.settings.update')->middleware('admin.permission:manage_store_settings');
+        Route::get('/', [BackendController::class, 'index'])->name('pages.index')->middleware('admin.permission:dashboard.index');
+        Route::get('/dashboard2', [BackendController::class, 'dashboard2'])->name('pages.dashboard2')->middleware('admin.permission:dashboard.index');
+        Route::get('/charts', [BackendController::class, 'charts'])->name('pages.charts')->middleware('admin.permission:dashboard.index');
+        Route::get('/components', [BackendController::class, 'components'])->name('pages.components')->middleware('admin.permission:dashboard.index');
+        Route::get('/datatables', [BackendController::class, 'datatables'])->name('pages.datatables')->middleware('admin.permission:dashboard.index');
+        Route::get('/settings', [BackendController::class, 'settings'])->name('pages.settings')->middleware('admin.permission:store_settings.index,store_settings.edit');
+        Route::post('/settings', [BackendController::class, 'updateSettings'])->name('pages.settings.update')->middleware('admin.permission:store_settings.edit');
         Route::get('/change-password', [BackendController::class, 'changePassword'])->name('pages.change-password');
         Route::post('/change-password', [BackendController::class, 'updatePassword'])->name('pages.change-password.update');
 
-        Route::resource('products', ProductController::class)->except(['show'])->middleware('admin.permission:manage_catalog');
-        Route::get('products-import-template', [ProductController::class, 'downloadImportTemplate'])->name('products.import-template')->middleware('admin.permission:manage_catalog');
-        Route::post('products-import', [ProductController::class, 'import'])->name('products.import')->middleware('admin.permission:manage_catalog');
-        Route::get('/users', [UserController::class, 'index'])->name('users.index')->middleware('admin.permission:view_customers');
-        Route::resource('member-tiers', MemberTierController::class)->parameters(['member-tiers' => 'memberTier'])->except(['show'])->middleware('admin.permission:manage_membership_tiers');
-        Route::resource('admin-users', AdminUserController::class)->parameters(['admin-users' => 'adminUser'])->except(['show'])->middleware('admin.permission:manage_admin_users');
-        Route::resource('admin-roles', AdminRoleController::class)->parameters(['admin-roles' => 'adminRole'])->except(['show'])->middleware('admin.permission:manage_roles_permissions');
+        Route::resource('products', ProductController::class)->except(['show'])
+            ->middlewareFor(['index'], 'admin.permission:products.index')
+            ->middlewareFor(['create', 'store'], 'admin.permission:products.create')
+            ->middlewareFor(['edit', 'update'], 'admin.permission:products.edit')
+            ->middlewareFor(['destroy'], 'admin.permission:products.delete');
+        Route::get('products-import-template', [ProductController::class, 'downloadImportTemplate'])->name('products.import-template')->middleware('admin.permission:products.import');
+        Route::post('products-import', [ProductController::class, 'import'])->name('products.import')->middleware('admin.permission:products.import');
+        Route::get('/users', [UserController::class, 'index'])->name('users.index')->middleware('admin.permission:customers.index');
+        Route::resource('member-tiers', MemberTierController::class)->parameters(['member-tiers' => 'memberTier'])->except(['show'])
+            ->middlewareFor(['index'], 'admin.permission:member_tiers.index')
+            ->middlewareFor(['create', 'store'], 'admin.permission:member_tiers.create')
+            ->middlewareFor(['edit', 'update'], 'admin.permission:member_tiers.edit')
+            ->middlewareFor(['destroy'], 'admin.permission:member_tiers.delete');
+        Route::resource('admin-users', AdminUserController::class)->parameters(['admin-users' => 'adminUser'])->except(['show'])
+            ->middlewareFor(['index'], 'admin.permission:admin_users.index')
+            ->middlewareFor(['create', 'store'], 'admin.permission:admin_users.create')
+            ->middlewareFor(['edit', 'update'], 'admin.permission:admin_users.edit')
+            ->middlewareFor(['destroy'], 'admin.permission:admin_users.delete');
+        Route::resource('admin-roles', AdminRoleController::class)->parameters(['admin-roles' => 'adminRole'])->except(['show'])
+            ->middlewareFor(['index'], 'admin.permission:admin_roles.index')
+            ->middlewareFor(['create', 'store'], 'admin.permission:admin_roles.create')
+            ->middlewareFor(['edit', 'update'], 'admin.permission:admin_roles.edit')
+            ->middlewareFor(['destroy'], 'admin.permission:admin_roles.delete');
 
-        Route::resource('main-categories', MainCategoryController::class)->except(['show'])->middleware('admin.permission:manage_catalog');
-        Route::post('categories/quick-add', [CategoryDetailController::class, 'quickStore'])->name('categories.quick-add')->middleware('admin.permission:manage_catalog');
-        Route::resource('category-details', CategoryDetailController::class)->except(['show'])->middleware('admin.permission:manage_catalog');
+        Route::resource('main-categories', MainCategoryController::class)->except(['show'])
+            ->middlewareFor(['index'], 'admin.permission:categories.index')
+            ->middlewareFor(['create', 'store'], 'admin.permission:categories.create')
+            ->middlewareFor(['edit', 'update'], 'admin.permission:categories.edit')
+            ->middlewareFor(['destroy'], 'admin.permission:categories.delete');
+        Route::post('categories/quick-add', [CategoryDetailController::class, 'quickStore'])->name('categories.quick-add')->middleware('admin.permission:categories.create');
+        Route::resource('category-details', CategoryDetailController::class)->except(['show'])
+            ->middlewareFor(['index'], 'admin.permission:categories.index')
+            ->middlewareFor(['create', 'store'], 'admin.permission:categories.create')
+            ->middlewareFor(['edit', 'update'], 'admin.permission:categories.edit')
+            ->middlewareFor(['destroy'], 'admin.permission:categories.delete');
 
-        Route::post('variants/quick-add', [VariantController::class, 'quickStore'])->name('variants.quick-add')->middleware('admin.permission:manage_catalog');
-        Route::resource('variants', VariantController::class)->except(['show'])->middleware('admin.permission:manage_catalog');
-        Route::get('stocks', [StockController::class, 'index'])->name('stocks.index')->middleware('admin.permission:manage_catalog');
-        Route::post('stocks', [StockController::class, 'store'])->name('stocks.store')->middleware('admin.permission:manage_catalog');
-        Route::patch('stocks/{productVariant}/threshold', [StockController::class, 'updateThreshold'])->name('stocks.threshold')->middleware('admin.permission:manage_catalog');
-        Route::resource('flash-sales', FlashSaleController::class)->except(['show'])->middleware('admin.permission:manage_catalog');
-        Route::resource('coupons', CouponController::class)->except(['show', 'create', 'edit'])->middleware('admin.permission:manage_catalog');
-        Route::resource('banners', BannerController::class)->except(['show'])->middleware('admin.permission:manage_banners');
-        Route::get('newsletter-subscribers', [NewsletterSubscriberController::class, 'index'])->name('newsletter-subscribers.index')->middleware('admin.permission:manage_store_settings');
-        Route::get('newsletter-subscribers/export', [NewsletterSubscriberController::class, 'export'])->name('newsletter-subscribers.export')->middleware('admin.permission:manage_store_settings');
-        Route::post('newsletter-subscribers/send', [NewsletterSubscriberController::class, 'send'])->name('newsletter-subscribers.send')->middleware('admin.permission:manage_store_settings');
-        Route::post('newsletter-subscribers/send-test', [NewsletterSubscriberController::class, 'sendTest'])->name('newsletter-subscribers.send-test')->middleware('admin.permission:manage_store_settings');
-        Route::post('newsletter-subscribers/preview', [NewsletterSubscriberController::class, 'preview'])->name('newsletter-subscribers.preview')->middleware('admin.permission:manage_store_settings');
-        Route::delete('newsletter-subscribers/{newsletterSubscriber}', [NewsletterSubscriberController::class, 'destroy'])->name('newsletter-subscribers.destroy')->middleware('admin.permission:manage_store_settings');
-        Route::resource('promo-pages', PromoPageController::class)->except(['show'])->middleware('admin.permission:manage_store_settings');
-        Route::resource('content-pages', ContentPageController::class)->except(['show'])->middleware('admin.permission:manage_store_settings');
-        Route::get('reports', [SalesReportController::class, 'home'])->name('reports.index')->middleware('admin.permission:view_reports');
-        Route::get('reports/owner', [SalesReportController::class, 'owner'])->name('reports.owner')->middleware('admin.permission:view_reports');
-        Route::get('reports/sales', [SalesReportController::class, 'index'])->name('reports.sales')->middleware('admin.permission:view_reports');
-        Route::get('reports/stock', [SalesReportController::class, 'stock'])->name('reports.stock')->middleware('admin.permission:view_reports');
-        Route::get('reports/products', [SalesReportController::class, 'products'])->name('reports.products')->middleware('admin.permission:view_reports');
-        Route::get('reports/payments', [SalesReportController::class, 'payments'])->name('reports.payments')->middleware('admin.permission:view_reports');
-        Route::get('reports/customers', [SalesReportController::class, 'customers'])->name('reports.customers')->middleware('admin.permission:view_reports');
-        Route::get('reports/promos', [SalesReportController::class, 'promos'])->name('reports.promos')->middleware('admin.permission:view_reports');
-        Route::get('reports/returns', [SalesReportController::class, 'returns'])->name('reports.returns')->middleware('admin.permission:view_reports');
-        Route::get('store-location', [StoreLocationController::class, 'edit'])->name('store-locations.edit')->middleware('admin.permission:manage_store_settings');
-        Route::put('store-location', [StoreLocationController::class, 'update'])->name('store-locations.update')->middleware('admin.permission:manage_store_settings');
-        Route::get('store-location/provinces', [StoreLocationController::class, 'provinces'])->name('store-locations.provinces')->middleware('admin.permission:manage_store_settings');
-        Route::get('store-location/cities', [StoreLocationController::class, 'cities'])->name('store-locations.cities')->middleware('admin.permission:manage_store_settings');
-        Route::resource('transactions', TransactionController::class)->only(['index', 'show'])->middleware('admin.permission:manage_orders');
-        Route::patch('transactions/{transaction}/process', [TransactionController::class, 'process'])->name('transactions.process')->middleware('admin.permission:manage_orders');
-        Route::patch('transactions/{transaction}/ship', [TransactionController::class, 'ship'])->name('transactions.ship')->middleware('admin.permission:manage_orders');
-        Route::patch('transactions/{transaction}/verify-payment', [TransactionController::class, 'verifyPayment'])->name('transactions.verify-payment')->middleware('admin.permission:manage_orders');
-        Route::get('return-requests', [AdminReturnRequestController::class, 'index'])->name('return-requests.index')->middleware('admin.permission:manage_orders');
-        Route::patch('return-requests/{returnRequest}', [AdminReturnRequestController::class, 'update'])->name('return-requests.update')->middleware('admin.permission:manage_orders');
-        Route::get('product-reviews', [AdminProductReviewController::class, 'index'])->name('product-reviews.index')->middleware('admin.permission:manage_product_reviews');
-        Route::patch('product-reviews/{review}/toggle', [AdminProductReviewController::class, 'toggle'])->name('product-reviews.toggle')->middleware('admin.permission:manage_product_reviews');
-        Route::delete('product-reviews/{review}', [AdminProductReviewController::class, 'destroy'])->name('product-reviews.destroy')->middleware('admin.permission:manage_product_reviews');
+        Route::post('variants/quick-add', [VariantController::class, 'quickStore'])->name('variants.quick-add')->middleware('admin.permission:variants.create');
+        Route::resource('variants', VariantController::class)->except(['show'])
+            ->middlewareFor(['index'], 'admin.permission:variants.index')
+            ->middlewareFor(['create', 'store'], 'admin.permission:variants.create')
+            ->middlewareFor(['edit', 'update'], 'admin.permission:variants.edit')
+            ->middlewareFor(['destroy'], 'admin.permission:variants.delete');
+        Route::get('stocks', [StockController::class, 'index'])->name('stocks.index')->middleware('admin.permission:stock.index');
+        Route::post('stocks', [StockController::class, 'store'])->name('stocks.store')->middleware('admin.permission:stock.edit');
+        Route::patch('stocks/{productVariant}/threshold', [StockController::class, 'updateThreshold'])->name('stocks.threshold')->middleware('admin.permission:stock.edit');
+        Route::resource('flash-sales', FlashSaleController::class)->except(['show'])
+            ->middlewareFor(['index'], 'admin.permission:flash_sales.index')
+            ->middlewareFor(['create', 'store'], 'admin.permission:flash_sales.create')
+            ->middlewareFor(['edit', 'update'], 'admin.permission:flash_sales.edit')
+            ->middlewareFor(['destroy'], 'admin.permission:flash_sales.delete');
+        Route::resource('coupons', CouponController::class)->except(['show', 'create', 'edit'])
+            ->middlewareFor(['index'], 'admin.permission:coupons.index')
+            ->middlewareFor(['store'], 'admin.permission:coupons.create')
+            ->middlewareFor(['update'], 'admin.permission:coupons.edit')
+            ->middlewareFor(['destroy'], 'admin.permission:coupons.delete');
+        Route::resource('banners', BannerController::class)->except(['show'])
+            ->middlewareFor(['index'], 'admin.permission:banners.index')
+            ->middlewareFor(['create', 'store'], 'admin.permission:banners.create')
+            ->middlewareFor(['edit', 'update'], 'admin.permission:banners.edit')
+            ->middlewareFor(['destroy'], 'admin.permission:banners.delete');
+        Route::get('newsletter-subscribers', [NewsletterSubscriberController::class, 'index'])->name('newsletter-subscribers.index')->middleware('admin.permission:newsletter.index');
+        Route::get('newsletter-subscribers/export', [NewsletterSubscriberController::class, 'export'])->name('newsletter-subscribers.export')->middleware('admin.permission:newsletter.send');
+        Route::post('newsletter-subscribers/send', [NewsletterSubscriberController::class, 'send'])->name('newsletter-subscribers.send')->middleware('admin.permission:newsletter.send');
+        Route::post('newsletter-subscribers/send-test', [NewsletterSubscriberController::class, 'sendTest'])->name('newsletter-subscribers.send-test')->middleware('admin.permission:newsletter.send');
+        Route::post('newsletter-subscribers/preview', [NewsletterSubscriberController::class, 'preview'])->name('newsletter-subscribers.preview')->middleware('admin.permission:newsletter.send');
+        Route::delete('newsletter-subscribers/{newsletterSubscriber}', [NewsletterSubscriberController::class, 'destroy'])->name('newsletter-subscribers.destroy')->middleware('admin.permission:newsletter.delete');
+        Route::resource('promo-pages', PromoPageController::class)->except(['show'])
+            ->middlewareFor(['index'], 'admin.permission:promo_pages.index')
+            ->middlewareFor(['create', 'store'], 'admin.permission:promo_pages.create')
+            ->middlewareFor(['edit', 'update'], 'admin.permission:promo_pages.edit')
+            ->middlewareFor(['destroy'], 'admin.permission:promo_pages.delete');
+        Route::resource('content-pages', ContentPageController::class)->except(['show'])
+            ->middlewareFor(['index'], 'admin.permission:content_pages.index')
+            ->middlewareFor(['create', 'store'], 'admin.permission:content_pages.create')
+            ->middlewareFor(['edit', 'update'], 'admin.permission:content_pages.edit')
+            ->middlewareFor(['destroy'], 'admin.permission:content_pages.delete');
+        Route::get('reports', [SalesReportController::class, 'home'])->name('reports.index')->middleware('admin.permission:reports.index');
+        Route::get('reports/owner', [SalesReportController::class, 'owner'])->name('reports.owner')->middleware('admin.permission:reports.owner');
+        Route::get('reports/sales', [SalesReportController::class, 'index'])->name('reports.sales')->middleware('admin.permission:reports.sales');
+        Route::get('reports/stock', [SalesReportController::class, 'stock'])->name('reports.stock')->middleware('admin.permission:reports.stock');
+        Route::get('reports/products', [SalesReportController::class, 'products'])->name('reports.products')->middleware('admin.permission:reports.products');
+        Route::get('reports/payments', [SalesReportController::class, 'payments'])->name('reports.payments')->middleware('admin.permission:reports.payments');
+        Route::get('reports/customers', [SalesReportController::class, 'customers'])->name('reports.customers')->middleware('admin.permission:reports.customers');
+        Route::get('reports/promos', [SalesReportController::class, 'promos'])->name('reports.promos')->middleware('admin.permission:reports.promos');
+        Route::get('reports/returns', [SalesReportController::class, 'returns'])->name('reports.returns')->middleware('admin.permission:reports.returns');
+        Route::get('store-location', [StoreLocationController::class, 'edit'])->name('store-locations.edit')->middleware('admin.permission:store_settings.index,store_settings.edit');
+        Route::put('store-location', [StoreLocationController::class, 'update'])->name('store-locations.update')->middleware('admin.permission:store_settings.edit');
+        Route::get('store-location/provinces', [StoreLocationController::class, 'provinces'])->name('store-locations.provinces')->middleware('admin.permission:store_settings.edit');
+        Route::get('store-location/cities', [StoreLocationController::class, 'cities'])->name('store-locations.cities')->middleware('admin.permission:store_settings.edit');
+        Route::resource('transactions', TransactionController::class)->only(['index', 'show'])
+            ->middlewareFor(['index'], 'admin.permission:transactions.index')
+            ->middlewareFor(['show'], 'admin.permission:transactions.show');
+        Route::patch('transactions/{transaction}/process', [TransactionController::class, 'process'])->name('transactions.process')->middleware('admin.permission:transactions.edit');
+        Route::patch('transactions/{transaction}/ship', [TransactionController::class, 'ship'])->name('transactions.ship')->middleware('admin.permission:transactions.edit');
+        Route::patch('transactions/{transaction}/verify-payment', [TransactionController::class, 'verifyPayment'])->name('transactions.verify-payment')->middleware('admin.permission:transactions.verify_payment');
+        Route::get('return-requests', [AdminReturnRequestController::class, 'index'])->name('return-requests.index')->middleware('admin.permission:return_requests.index');
+        Route::patch('return-requests/{returnRequest}', [AdminReturnRequestController::class, 'update'])->name('return-requests.update')->middleware('admin.permission:return_requests.edit');
+        Route::get('product-reviews', [AdminProductReviewController::class, 'index'])->name('product-reviews.index')->middleware('admin.permission:product_reviews.index');
+        Route::patch('product-reviews/{review}/toggle', [AdminProductReviewController::class, 'toggle'])->name('product-reviews.toggle')->middleware('admin.permission:product_reviews.edit');
+        Route::delete('product-reviews/{review}', [AdminProductReviewController::class, 'destroy'])->name('product-reviews.destroy')->middleware('admin.permission:product_reviews.delete');
     });
 
 });

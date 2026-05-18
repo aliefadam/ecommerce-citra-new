@@ -30,7 +30,9 @@
                 <input type="date" name="start_date" value="{{ $start->toDateString() }}" class="rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm dark:text-slate-200">
                 <input type="date" name="end_date" value="{{ $end->toDateString() }}" class="rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm dark:text-slate-200">
                 <button class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Filter</button>
-                <a href="{{ route('reports.sales', ['start_date' => $start->toDateString(), 'end_date' => $end->toDateString(), 'export' => 'csv']) }}" class="rounded-xl border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-100">Export CSV</a>
+                @if (auth()->user()?->hasAdminPermission('reports.sales.export'))
+                    <a href="{{ route('reports.sales', ['start_date' => $start->toDateString(), 'end_date' => $end->toDateString(), 'export' => 'csv']) }}" class="rounded-xl border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-100">Export CSV</a>
+                @endif
             </form>
         </div>
 

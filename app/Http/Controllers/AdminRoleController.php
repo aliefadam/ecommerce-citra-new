@@ -104,8 +104,9 @@ class AdminRoleController extends Controller
     private function permissionKeys(): array
     {
         return collect(config('admin_permissions.groups', []))
-            ->pluck('permissions')
-            ->map(fn ($items) => array_keys($items))
+            ->pluck('modules')
+            ->flatMap(fn ($modules) => collect($modules)->pluck('permissions'))
+            ->flatMap(fn ($permissions) => collect($permissions)->pluck('key'))
             ->flatten()
             ->values()
             ->all();

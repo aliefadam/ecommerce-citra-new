@@ -32,6 +32,7 @@ class SalesReportController extends Controller
                         'title' => 'Owner Overview',
                         'description' => 'Ringkasan omzet, order, customer, stok, promo, return, dan pekerjaan aktif.',
                         'route' => route('reports.owner'),
+                        'permission' => 'reports.owner',
                         'icon' => 'layout-dashboard',
                         'tone' => 'blue',
                     ],
@@ -39,6 +40,7 @@ class SalesReportController extends Controller
                         'title' => 'Sales Report',
                         'description' => 'Periode, omzet, transaksi, status, top produk, dan export CSV.',
                         'route' => route('reports.sales'),
+                        'permission' => 'reports.sales',
                         'icon' => 'bar-chart-3',
                         'tone' => 'blue',
                     ],
@@ -46,6 +48,7 @@ class SalesReportController extends Controller
                         'title' => 'Payment dan Fulfillment',
                         'description' => 'Metode pembayaran, pending payment, verifikasi manual, dan queue pesanan.',
                         'route' => route('reports.payments'),
+                        'permission' => 'reports.payments',
                         'icon' => 'credit-card',
                         'tone' => 'emerald',
                     ],
@@ -53,6 +56,7 @@ class SalesReportController extends Controller
                         'title' => 'Customer Report',
                         'description' => 'Customer baru, pembeli aktif, repeat buyer, cart, wishlist, dan newsletter.',
                         'route' => route('reports.customers'),
+                        'permission' => 'reports.customers',
                         'icon' => 'users',
                         'tone' => 'cyan',
                     ],
@@ -68,6 +72,7 @@ class SalesReportController extends Controller
                         'title' => 'Stock Report',
                         'description' => 'Low stock, out of stock, mutasi stok, dan estimasi nilai stok.',
                         'route' => route('reports.stock'),
+                        'permission' => 'reports.stock',
                         'icon' => 'boxes',
                         'tone' => 'orange',
                     ],
@@ -83,6 +88,7 @@ class SalesReportController extends Controller
                         'title' => 'Product Performance',
                         'description' => 'Produk terlaris, wishlist tertinggi, rating terbaik, dan produk lambat.',
                         'route' => route('reports.products'),
+                        'permission' => 'reports.products',
                         'icon' => 'trending-up',
                         'tone' => 'violet',
                     ],
@@ -98,6 +104,7 @@ class SalesReportController extends Controller
                         'title' => 'Promo dan Coupon',
                         'description' => 'Kupon aktif, pemakaian promo, nilai diskon, dan transaksi berkode kupon.',
                         'route' => route('reports.promos'),
+                        'permission' => 'reports.promos',
                         'icon' => 'badge-percent',
                         'tone' => 'amber',
                     ],
@@ -105,12 +112,27 @@ class SalesReportController extends Controller
                         'title' => 'Return dan Refund',
                         'description' => 'Pengajuan retur, refund, status penyelesaian, dan return rate.',
                         'route' => route('reports.returns'),
+                        'permission' => 'reports.returns',
                         'icon' => 'rotate-ccw',
                         'tone' => 'rose',
                     ],
                 ],
             ],
         ];
+
+        $user = request()->user();
+        $groups = collect($groups)
+            ->map(function ($group) use ($user) {
+                $group['items'] = collect($group['items'])
+                    ->filter(fn($item) => empty($item['permission']) || $user?->hasAdminPermission($item['permission']))
+                    ->values()
+                    ->all();
+
+                return $group;
+            })
+            ->filter(fn($group) => !empty($group['items']))
+            ->values()
+            ->all();
 
         return view('backend.reports.index', compact('groups'));
     }
@@ -217,6 +239,8 @@ class SalesReportController extends Controller
         $transactions = (clone $base)->with('user')->latest()->take(12)->get();
 
         if ($request->query('export') === 'csv') {
+            abort_unless($request->user()?->hasAdminPermission('reports.sales.export'), 403);
+
             return $this->exportTransactions((clone $base)->with('user')->latest()->get(), $start, $end);
         }
 

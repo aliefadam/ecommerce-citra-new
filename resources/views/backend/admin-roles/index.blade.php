@@ -74,9 +74,16 @@
                     @foreach ($permissionGroups as $group)
                         <div class="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
                             <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200">{{ $group['label'] }}</h3>
-                            <div class="mt-3 space-y-2">
-                                @foreach ($group['permissions'] as $permissionLabel)
-                                    <div class="text-sm text-slate-500 dark:text-slate-400">{{ $permissionLabel }}</div>
+                            <div class="mt-3 space-y-3">
+                                @foreach (($group['modules'] ?? []) as $module)
+                                    <div>
+                                        <p class="text-sm font-semibold text-slate-600 dark:text-slate-300">{{ $module['label'] }}</p>
+                                        <div class="mt-1 flex flex-wrap gap-1.5">
+                                            @foreach (($module['permissions'] ?? []) as $permission)
+                                                <span class="rounded-full bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-500 dark:bg-slate-700 dark:text-slate-300">{{ $permission['label'] }}</span>
+                                            @endforeach
+                                        </div>
+                                    </div>
                                 @endforeach
                             </div>
                         </div>
