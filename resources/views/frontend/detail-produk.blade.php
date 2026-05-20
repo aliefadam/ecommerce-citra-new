@@ -916,6 +916,7 @@
             const overlay = document.getElementById('variantDrawerOverlay');
 
             drawer.classList.remove('active');
+            drawer.style.transform = '';
             overlay.classList.remove('active');
             document.body.style.overflow = '';
 
@@ -1329,6 +1330,14 @@
             const label = document.getElementById('selected-' + groupKey);
             if (label) label.textContent = value;
             applySelectedVariantData();
+
+            // Open variant drawer on mobile when variant is selected
+            if (window.innerWidth < 768 && drawerAction) {
+                syncDesktopToDrawer();
+                document.getElementById('variantDrawer').classList.add('active');
+                document.getElementById('variantDrawerOverlay').classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
         }
 
         function normalizeVariantAttrValue(groupKey, value) {
