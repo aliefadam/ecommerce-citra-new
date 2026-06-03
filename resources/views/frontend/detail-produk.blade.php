@@ -209,6 +209,67 @@
                 transform: translateY(calc(100% + 84px));
             }
         }
+
+        /* Mobile Variant Drawer */
+        .variant-drawer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 24px 24px 0 0;
+            box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 50;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .variant-drawer.active {
+            transform: translateY(0);
+        }
+
+        .variant-drawer-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 49;
+        }
+
+        .variant-drawer-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .drawer-handle {
+            width: 40px;
+            height: 4px;
+            background: #cbd5e1;
+            border-radius: 2px;
+            margin: 12px auto 8px;
+            cursor: grab;
+        }
+
+        .drawer-handle:active {
+            cursor: grabbing;
+        }
+
+        .variant-drawer-content {
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        @media (min-width: 768px) {
+            .variant-drawer,
+            .variant-drawer-overlay {
+                display: none !important;
+            }
+        }
     </style>
 @endsection
 @section('content')
@@ -384,7 +445,7 @@
                 </div>
 
                 @foreach ($otherGroups as $group)
-                    <div class="mb-5" data-variant-group="{{ $group['key'] }}">
+                    <div class="mb-5 hidden md:block" data-variant-group="{{ $group['key'] }}">
                         <div class="flex items-center gap-1.5 mb-2">
                             <span class="text-xs sm:text-sm font-semibold text-slate-700">{{ $group['label'] }}:</span>
                             <span id="selected-{{ $group['key'] }}"
@@ -638,7 +699,7 @@
             </div>
         </div>
         <div class="flex gap-2">
-            <button id="mobileAddToCartBtn" onclick="addToCart()"
+            <button id="mobileAddToCartBtn" onclick="openVariantDrawer('cart')"
                 class="flex-1 bg-blue-50 border border-blue-300 text-blue-700 font-semibold py-2.5 rounded-xl text-sm flex items-center justify-center gap-1.5">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -646,7 +707,7 @@
                 </svg>
                 <span class="btn-label">Keranjang</span>
             </button>
-            <button id="mobileBuyNowBtn" type="button" onclick="buyNow()"
+            <button id="mobileBuyNowBtn" type="button" onclick="openVariantDrawer('buy')"
                 class="flex-1 bg-blue-600 text-white font-semibold py-2.5 rounded-xl text-sm flex items-center justify-center gap-1.5 shadow-sm shadow-blue-100">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -655,7 +716,7 @@
             </button>
         </div>
         @if (!empty($productData['isRedeemProduct']))
-            <button type="button" onclick="redeemNow()"
+            <button type="button" onclick="openVariantDrawer('redeem')"
                 class="w-full bg-amber-500 text-white font-semibold py-2.5 rounded-xl text-sm flex items-center justify-center gap-2 shadow-sm shadow-amber-100">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-10V6m0 12v2m9-8a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -663,6 +724,77 @@
                 Redeem dengan Poin
             </button>
         @endif
+    </div>
+
+    <!-- Mobile Variant Drawer Overlay -->
+    <div id="variantDrawerOverlay" class="variant-drawer-overlay" onclick="closeVariantDrawer()"></div>
+
+    <!-- Mobile Variant Drawer -->
+    <div id="variantDrawer" class="variant-drawer">
+        <div class="drawer-handle" id="drawerHandle"></div>
+        <div class="px-4 pb-3 border-b border-slate-100">
+            <div class="flex items-center justify-between">
+                <h3 class="text-base font-bold text-slate-800">Pilih Varian</h3>
+                <button onclick="closeVariantDrawer()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-500">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="variant-drawer-content px-4 py-4">
+            <!-- Product Info -->
+            <div class="flex gap-3 mb-4 pb-4 border-b border-slate-100">
+                <img id="drawerProductImage" src="{{ $productData['image'] }}" alt="{{ $productData['name'] }}" class="w-20 h-20 rounded-xl object-cover border border-slate-200">
+                <div class="flex-1">
+                    <div id="drawerProductPrice" class="text-xl font-bold text-blue-600 mb-1">Rp {{ number_format($displayPrice, 0, ',', '.') }}</div>
+                    <div id="drawerProductStock" class="text-xs text-slate-500">Stok: {{ number_format((int) ($productData['stock'] ?? 0)) }} item</div>
+                </div>
+            </div>
+
+            <!-- Variants -->
+            @foreach ($otherGroups as $group)
+                <div class="mb-5" data-variant-group-drawer="{{ $group['key'] }}">
+                    <div class="flex items-center gap-1.5 mb-2">
+                        <span class="text-sm font-semibold text-slate-700">{{ $group['label'] }}:</span>
+                        <span id="selected-drawer-{{ $group['key'] }}"
+                            class="text-sm font-bold text-blue-600">{{ $defaultOther[$group['key']] ?? '-' }}</span>
+                    </div>
+                    <select onchange="selectVariantValueDrawer(this, '{{ $group['key'] }}')"
+                        data-group-key-drawer="{{ $group['key'] }}"
+                        class="w-full drawer-variant-select">
+                        @foreach ($group['values'] as $value)
+                            <option value="{{ $value }}" @selected(($defaultOther[$group['key']] ?? null) === $value)>{{ $value }}</option>
+                        @endforeach
+                  </select>
+                </div>
+            @endforeach
+
+            <!-- Quantity -->
+            <div class="mb-5">
+                <span class="text-sm font-semibold text-slate-700 block mb-2">Jumlah</span>
+                <div class="flex items-center border-2 border-slate-200 rounded-xl overflow-hidden w-32">
+                    <button onclick="changeQtyDrawer(-1)"
+                        class="px-3 py-2 text-slate-600 hover:bg-slate-50 font-bold text-sm transition-colors">−</button>
+                    <span id="qtyDisplayDrawer"
+                        class="px-4 py-2 font-bold text-slate-800 min-w-[44px] text-center border-x-2 border-slate-200 text-sm">1</span>
+                    <button onclick="changeQtyDrawer(1)"
+                        class="px-3 py-2 text-slate-600 hover:bg-slate-50 font-bold text-sm transition-colors">+</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Drawer Actions -->
+        <div class="px-4 py-3 pb-20 border-t border-slate-100 bg-white">
+            <button id="drawerActionBtn" onclick="executeDrawerAction()"
+                class="w-full bg-blue-600 text-white font-semibold py-3 rounded-xl text-sm flex items-center justify-center gap-2 shadow-sm shadow-blue-100">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                <span id="drawerActionLabel">Beli Sekarang</span>
+            </button>
+        </div>
     </div>
 
     <form id="buyNowForm" method="POST" action="{{ route('frontend.checkout.buy-now') }}" class="hidden">
@@ -700,8 +832,14 @@
         const images = (productData.images && productData.images.length ? productData.images : [productData.image]);
         let currentImg = 0;
         let qty = 1;
+        let qtyDrawer = 1;
         let isWishlisted = Boolean(productData.isWishlisted);
         const variantSelectInstances = new Map();
+        const variantSelectDrawerInstances = new Map();
+        let drawerAction = 'buy'; // 'buy', 'cart', or 'redeem'
+        let touchStartY = 0;
+        let touchCurrentY = 0;
+        let isDragging = false;
 
         function setImg(i) {
             currentImg = i;
@@ -730,6 +868,293 @@
         function changeQty(d) {
             qty = Math.max(1, Math.min(productData.stock || 1, qty + d));
             document.getElementById('qtyDisplay').textContent = qty;
+        }
+
+        function changeQtyDrawer(d) {
+            qtyDrawer = Math.max(1, Math.min(productData.stock || 1, qtyDrawer + d));
+            document.getElementById('qtyDisplayDrawer').textContent = qtyDrawer;
+        }
+
+        function openVariantDrawer(action) {
+            if (Number(productData.stock || 0) <= 0) {
+                showToast('Stok produk ini sedang habis.');
+                return;
+            }
+
+            drawerAction = action;
+            const drawer = document.getElementById('variantDrawer');
+            const overlay = document.getElementById('variantDrawerOverlay');
+            const actionBtn = document.getElementById('drawerActionBtn');
+            const actionLabel = document.getElementById('drawerActionLabel');
+
+            // Sync drawer quantity with main quantity
+            qtyDrawer = qty;
+            document.getElementById('qtyDisplayDrawer').textContent = qtyDrawer;
+
+            // Sync variant selections from desktop to drawer
+            syncDesktopToDrawer();
+
+            // Update button label based on action
+            if (action === 'cart') {
+                actionLabel.textContent = 'Tambah ke Keranjang';
+                actionBtn.className = 'w-full bg-blue-50 border-2 border-blue-300 text-blue-700 font-semibold py-3 rounded-xl text-sm flex items-center justify-center gap-2';
+            } else if (action === 'redeem') {
+                actionLabel.textContent = 'Redeem dengan Poin';
+                actionBtn.className = 'w-full bg-amber-500 text-white font-semibold py-3 rounded-xl text-sm flex items-center justify-center gap-2 shadow-sm shadow-amber-100';
+            } else {
+                actionLabel.textContent = 'Beli Sekarang';
+                actionBtn.className = 'w-full bg-blue-600 text-white font-semibold py-3 rounded-xl text-sm flex items-center justify-center gap-2 shadow-sm shadow-blue-100';
+            }
+
+            drawer.classList.add('active');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeVariantDrawer() {
+            const drawer = document.getElementById('variantDrawer');
+            const overlay = document.getElementById('variantDrawerOverlay');
+
+            drawer.classList.remove('active');
+            drawer.style.transform = '';
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+
+            // Sync drawer selections back to desktop
+            syncDrawerToDesktop();
+        }
+
+        function syncDesktopToDrawer() {
+            document.querySelectorAll('[data-variant-group]').forEach((group) => {
+                const key = group.getAttribute('data-variant-group');
+                const desktopSelect = group.querySelector('select[data-group-key]');
+                const drawerGroup = document.querySelector(`[data-variant-group-drawer="${key}"]`);
+
+                if (desktopSelect && drawerGroup) {
+                    const drawerSelect = drawerGroup.querySelector('select[data-group-key-drawer]');
+                    if (drawerSelect) {
+                        drawerSelect.value = desktopSelect.value;
+                        const label = document.getElementById('selected-drawer-' + key);
+                        if (label) label.textContent = desktopSelect.value;
+                        refreshVariantSelectDrawerControl(drawerSelect);
+                    }
+                }
+            });
+            applySelectedVariantDataDrawer();
+        }
+
+        function syncDrawerToDesktop() {
+            document.querySelectorAll('[data-variant-group-drawer]').forEach((group) => {
+                const key = group.getAttribute('data-variant-group-drawer');
+                const drawerSelect = group.querySelector('select[data-group-key-drawer]');
+                const desktopGroup = document.querySelector(`[data-variant-group="${key}"]`);
+
+                if (drawerSelect && desktopGroup) {
+                    const desktopSelect = desktopGroup.querySelector('select[data-group-key]');
+                    if (desktopSelect) {
+                        desktopSelect.value = drawerSelect.value;
+                        const label = document.getElementById('selected-' + key);
+                        if (label) label.textContent = drawerSelect.value;
+                        refreshVariantSelectControl(desktopSelect);
+                    }
+                }
+            });
+
+            // Sync quantity back
+            qty = qtyDrawer;
+            document.getElementById('qtyDisplay').textContent = qty;
+
+            applySelectedVariantData();
+        }
+
+        function executeDrawerAction() {
+            closeVariantDrawer();
+
+            if (drawerAction === 'cart') {
+                addToCart();
+            } else if (drawerAction === 'redeem') {
+                redeemNow();
+            } else {
+                buyNow();
+            }
+        }
+
+        function selectVariantValueDrawer(select, groupKey) {
+            const value = String(select?.value || '');
+            const label = document.getElementById('selected-drawer-' + groupKey);
+            if (label) label.textContent = value;
+            applySelectedVariantDataDrawer();
+        }
+
+        function applySelectedVariantDataDrawer() {
+            const options = Array.isArray(productData.variantOptions) ? productData.variantOptions : [];
+            if (!options.length) return;
+
+            syncVariantAvailabilityDrawer();
+            const selections = getSelectedVariantSelectionsDrawer();
+            let selectedVariant = options.find((opt) => variantMatchesSelections(opt, selections));
+            if (!selectedVariant) selectedVariant = options[0];
+            if (!selectedVariant) return;
+
+            const displayPrice = Number(selectedVariant.displayPrice || selectedVariant.price || 0);
+            const drawerPrice = document.getElementById('drawerProductPrice');
+            if (drawerPrice) drawerPrice.textContent = formatRupiah(displayPrice);
+
+            const drawerStock = document.getElementById('drawerProductStock');
+            if (drawerStock) drawerStock.textContent = `Stok: ${Number(selectedVariant.stock || 0)} item`;
+
+            const drawerImage = document.getElementById('drawerProductImage');
+            if (drawerImage && selectedVariant.image) drawerImage.src = selectedVariant.image;
+
+            qtyDrawer = Math.min(qtyDrawer, Math.max(1, Number(selectedVariant.stock || 0)));
+            document.getElementById('qtyDisplayDrawer').textContent = qtyDrawer;
+        }
+
+        function getSelectedVariantSelectionsDrawer() {
+            const selections = {};
+            document.querySelectorAll('[data-variant-group-drawer]').forEach((group) => {
+                const key = group.getAttribute('data-variant-group-drawer');
+                const select = group.querySelector('select[data-group-key-drawer]');
+                if (!key || !select) return;
+                selections[key] = String(select.value || '');
+            });
+            return selections;
+        }
+
+        function syncVariantAvailabilityDrawer() {
+            const options = Array.isArray(productData.variantOptions) ? productData.variantOptions : [];
+            const groups = Array.isArray(productData.variantGroups) ? productData.variantGroups : [];
+            const currentSelections = getSelectedVariantSelectionsDrawer();
+
+            groups.forEach((group) => {
+                const groupEl = document.querySelector(`[data-variant-group-drawer="${group.key}"]`);
+                if (!groupEl) return;
+
+                const select = groupEl.querySelector('select[data-group-key-drawer]');
+                if (!select) return;
+
+                const optionsEls = Array.from(select.options);
+                let hasSelectedAvailable = false;
+
+                optionsEls.forEach((optionEl) => {
+                    const testSelections = {
+                        ...currentSelections,
+                        [group.key]: String(optionEl.value || ''),
+                    };
+                    const available = options.some((option) => variantMatchesSelections(option, testSelections));
+
+                    optionEl.disabled = !available;
+                    optionEl.hidden = !available;
+
+                    if (String(select.value || '') === String(optionEl.value || '') && available) {
+                        hasSelectedAvailable = true;
+                    }
+                });
+
+                if (!hasSelectedAvailable) {
+                    const firstAvailable = optionsEls.find((optionEl) => !optionEl.disabled);
+                    if (!firstAvailable) return;
+                    select.value = String(firstAvailable.value || '');
+                }
+
+                const label = document.getElementById('selected-drawer-' + group.key);
+                if (label) label.textContent = String(select.value || '-');
+
+                refreshVariantSelectDrawerControl(select);
+            });
+        }
+
+        function initializeVariantSelectsDrawer() {
+            document.querySelectorAll('select[data-group-key-drawer]').forEach((select) => {
+                const groupKey = select.getAttribute('data-group-key-drawer');
+                if (!groupKey) return;
+
+                if (select.tomselect) {
+                    variantSelectDrawerInstances.set(groupKey, select.tomselect);
+                    return;
+                }
+
+                const instance = new TomSelect(select, {
+                    create: false,
+                    maxItems: 1,
+                    closeAfterSelect: true,
+                    allowEmptyOption: false,
+                    copyClassesToDropdown: false,
+                    hideSelected: true,
+                    searchField: ['text'],
+                    render: {
+                        no_results(data, escape) {
+                            return `<div class="ts-no-results">Tidak ditemukan: "${escape(data.input)}"</div>`;
+                        },
+                    },
+                    onChange() {
+                        selectVariantValueDrawer(select, groupKey);
+                    },
+                });
+
+                variantSelectDrawerInstances.set(groupKey, instance);
+            });
+        }
+
+        function refreshVariantSelectDrawerControl(select) {
+            const groupKey = select?.getAttribute('data-group-key-drawer');
+            const instance = (groupKey && variantSelectDrawerInstances.get(groupKey)) || select?.tomselect;
+            if (!instance) return;
+
+            instance.clearCache();
+            instance.sync();
+            instance.refreshOptions(false);
+            instance.inputState();
+        }
+
+        // Touch/Drag handlers for drawer
+        function initDrawerDragHandlers() {
+            const drawer = document.getElementById('variantDrawer');
+            const handle = document.getElementById('drawerHandle');
+
+            if (!drawer || !handle) return;
+
+            const startDrag = (e) => {
+                isDragging = true;
+                touchStartY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+                touchCurrentY = touchStartY;
+                drawer.style.transition = 'none';
+            };
+
+            const onDrag = (e) => {
+                if (!isDragging) return;
+
+                touchCurrentY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+                const deltaY = touchCurrentY - touchStartY;
+                if (deltaY > 0) {
+                    drawer.style.transform = `translateY(${deltaY}px)`;
+                }
+            };
+
+            const endDrag = () => {
+                if (!isDragging) return;
+
+                isDragging = false;
+                drawer.style.transition = '';
+
+                const deltaY = touchCurrentY - touchStartY;
+
+                if (deltaY > 100) {
+                    closeVariantDrawer();
+                } else {
+                    drawer.style.transform = 'translateY(0)';
+                }
+            };
+
+            // Mouse events
+            handle.addEventListener('mousedown', startDrag);
+            document.addEventListener('mousemove', onDrag);
+            document.addEventListener('mouseup', endDrag);
+
+            // Touch events
+            handle.addEventListener('touchstart', startDrag, { passive: true });
+            document.addEventListener('touchmove', onDrag, { passive: true });
+            document.addEventListener('touchend', endDrag);
         }
 
         function updateStockUI() {
@@ -905,6 +1330,14 @@
             const label = document.getElementById('selected-' + groupKey);
             if (label) label.textContent = value;
             applySelectedVariantData();
+
+            // Open variant drawer on mobile when variant is selected
+            if (window.innerWidth < 768 && drawerAction) {
+                syncDesktopToDrawer();
+                document.getElementById('variantDrawer').classList.add('active');
+                document.getElementById('variantDrawerOverlay').classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
         }
 
         function normalizeVariantAttrValue(groupKey, value) {
@@ -1169,6 +1602,8 @@
         }
 
         initializeVariantSelects();
+        initializeVariantSelectsDrawer();
+        initDrawerDragHandlers();
         applySelectedVariantData();
         updateStockUI();
         syncWishIcon();
