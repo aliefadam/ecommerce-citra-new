@@ -624,7 +624,7 @@
 
         function resetFilter() {
             document.querySelectorAll('.filter-cat').forEach((el) => {
-                el.checked = true;
+                el.checked = false;
             });
             selectedVariantFilters = {};
             document.querySelectorAll('.filter-variant').forEach((el) => {

@@ -482,8 +482,9 @@
                         <div class="flex items-center border-2 border-slate-200 rounded-xl overflow-hidden">
                             <button onclick="changeQty(-1)"
                                 class="px-2.5 py-1.5 text-slate-600 hover:bg-slate-50 font-bold text-sm transition-colors">−</button>
-                            <span id="qtyDisplay"
-                                class="px-3 py-1.5 font-bold text-slate-800 min-w-[36px] sm:min-w-[44px] text-center border-x-2 border-slate-200 text-sm">1</span>
+                            <input id="qtyDisplay" type="number" min="1" max="{{ max(1, (int) ($productData['stock'] ?? 1)) }}" value="1"
+                                inputmode="numeric" oninput="handleQtyInput(this)" onblur="commitQtyInput(this)"
+                                class="w-12 sm:w-16 px-2 py-1.5 font-bold text-slate-800 text-center border-x-2 border-slate-200 text-sm focus:outline-none focus:bg-blue-50" />
                             <button onclick="changeQty(1)"
                                 class="px-2.5 py-1.5 text-slate-600 hover:bg-slate-50 font-bold text-sm transition-colors">+</button>
                         </div>
@@ -777,8 +778,9 @@
                 <div class="flex items-center border-2 border-slate-200 rounded-xl overflow-hidden w-32">
                     <button onclick="changeQtyDrawer(-1)"
                         class="px-3 py-2 text-slate-600 hover:bg-slate-50 font-bold text-sm transition-colors">−</button>
-                    <span id="qtyDisplayDrawer"
-                        class="px-4 py-2 font-bold text-slate-800 min-w-[44px] text-center border-x-2 border-slate-200 text-sm">1</span>
+                    <input id="qtyDisplayDrawer" type="number" min="1" max="{{ max(1, (int) ($productData['stock'] ?? 1)) }}" value="1"
+                        inputmode="numeric" oninput="handleQtyInput(this, true)" onblur="commitQtyInput(this, true)"
+                        class="w-14 px-2 py-2 font-bold text-slate-800 text-center border-x-2 border-slate-200 text-sm focus:outline-none focus:bg-blue-50" />
                     <button onclick="changeQtyDrawer(1)"
                         class="px-3 py-2 text-slate-600 hover:bg-slate-50 font-bold text-sm transition-colors">+</button>
                 </div>
@@ -833,6 +835,7 @@
         let currentImg = 0;
         let qty = 1;
         let qtyDrawer = 1;
+        let drawerStock = Number(productData.stock || 0);
         let isWishlisted = Boolean(productData.isWishlisted);
         const variantSelectInstances = new Map();
         const variantSelectDrawerInstances = new Map();
@@ -865,14 +868,52 @@
             setImg((currentImg + 1) % images.length);
         }
 
+        function getMaxQty(isDrawer = false) {
+            return Math.max(1, Number((isDrawer ? drawerStock : productData.stock) || 1));
+        }
+
+        function clampQty(value, isDrawer = false) {
+            const parsed = parseInt(value, 10);
+            if (!Number.isFinite(parsed)) return 1;
+            return Math.max(1, Math.min(getMaxQty(isDrawer), parsed));
+        }
+
+        function updateQtyInput(isDrawer = false) {
+            const input = document.getElementById(isDrawer ? 'qtyDisplayDrawer' : 'qtyDisplay');
+            if (!input) return;
+            input.max = String(getMaxQty(isDrawer));
+            input.value = String(isDrawer ? qtyDrawer : qty);
+        }
+
+        function setQtyValue(value, isDrawer = false) {
+            if (isDrawer) {
+                qtyDrawer = clampQty(value, true);
+            } else {
+                qty = clampQty(value);
+            }
+            updateQtyInput(isDrawer);
+        }
+
+        function handleQtyInput(input, isDrawer = false) {
+            if (!input.value) return;
+            setQtyValue(input.value, isDrawer);
+        }
+
+        function commitQtyInput(input, isDrawer = false) {
+            setQtyValue(input.value, isDrawer);
+        }
+
+        function syncMainQtyInput() {
+            const input = document.getElementById('qtyDisplay');
+            setQtyValue(input?.value || qty);
+        }
+
         function changeQty(d) {
-            qty = Math.max(1, Math.min(productData.stock || 1, qty + d));
-            document.getElementById('qtyDisplay').textContent = qty;
+            setQtyValue(qty + d);
         }
 
         function changeQtyDrawer(d) {
-            qtyDrawer = Math.max(1, Math.min(productData.stock || 1, qtyDrawer + d));
-            document.getElementById('qtyDisplayDrawer').textContent = qtyDrawer;
+            setQtyValue(qtyDrawer + d, true);
         }
 
         function openVariantDrawer(action) {
@@ -888,8 +929,9 @@
             const actionLabel = document.getElementById('drawerActionLabel');
 
             // Sync drawer quantity with main quantity
+            drawerStock = Number(productData.stock || 0);
             qtyDrawer = qty;
-            document.getElementById('qtyDisplayDrawer').textContent = qtyDrawer;
+            updateQtyInput(true);
 
             // Sync variant selections from desktop to drawer
             syncDesktopToDrawer();
@@ -962,7 +1004,7 @@
 
             // Sync quantity back
             qty = qtyDrawer;
-            document.getElementById('qtyDisplay').textContent = qty;
+            updateQtyInput();
 
             applySelectedVariantData();
         }
@@ -1006,8 +1048,9 @@
             const drawerImage = document.getElementById('drawerProductImage');
             if (drawerImage && selectedVariant.image) drawerImage.src = selectedVariant.image;
 
-            qtyDrawer = Math.min(qtyDrawer, Math.max(1, Number(selectedVariant.stock || 0)));
-            document.getElementById('qtyDisplayDrawer').textContent = qtyDrawer;
+            drawerStock = Number(selectedVariant.stock || 0);
+            qtyDrawer = clampQty(qtyDrawer, true);
+            updateQtyInput(true);
         }
 
         function getSelectedVariantSelectionsDrawer() {
@@ -1316,8 +1359,8 @@
             const stockEl = document.getElementById('productStock');
             if (stockEl) stockEl.textContent = `${productData.stock} item`;
 
-            qty = Math.min(qty, Math.max(1, productData.stock || 1));
-            document.getElementById('qtyDisplay').textContent = qty;
+            qty = clampQty(qty);
+            updateQtyInput();
 
             if (selectedVariant.image) {
                 const mainImg = document.getElementById('mainImg');
@@ -1504,6 +1547,7 @@
         }
 
         async function addToCart() {
+            syncMainQtyInput();
             const variantId = resolveSelectedVariantId();
             if (Number(productData.stock || 0) <= 0) {
                 showToast('Stok produk ini sedang habis.');
@@ -1545,6 +1589,7 @@
         }
 
         function buyNow() {
+            syncMainQtyInput();
             const variantId = resolveSelectedVariantId();
             if (Number(productData.stock || 0) <= 0) {
                 showToast('Stok produk ini sedang habis.');
@@ -1570,6 +1615,7 @@
         }
 
         function redeemNow() {
+            syncMainQtyInput();
             const variantId = resolveSelectedVariantId();
             if (Number(productData.stock || 0) <= 0) {
                 showToast('Stok produk ini sedang habis.');
@@ -1883,4 +1929,3 @@
         setMegaCategory('rumah-tangga');
     </script>
 @endsection
-
