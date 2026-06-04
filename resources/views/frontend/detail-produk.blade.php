@@ -264,6 +264,16 @@
             flex: 1;
         }
 
+        .drawer-variant-select-wrap {
+            width: min(52%, 180px);
+            min-width: 140px;
+        }
+
+        .drawer-variant-select-wrap .ts-wrapper,
+        .drawer-variant-select-wrap .ts-control {
+            width: 100%;
+        }
+
         @media (min-width: 768px) {
             .variant-drawer,
             .variant-drawer-overlay {
@@ -762,27 +772,29 @@
                         <span id="selected-drawer-{{ $group['key'] }}"
                             class="text-sm font-bold text-blue-600">{{ $defaultOther[$group['key']] ?? '-' }}</span>
                     </div>
-                    <select onchange="selectVariantValueDrawer(this, '{{ $group['key'] }}')"
-                        data-group-key-drawer="{{ $group['key'] }}"
-                        class="w-full drawer-variant-select">
-                        @foreach ($group['values'] as $value)
-                            <option value="{{ $value }}" @selected(($defaultOther[$group['key']] ?? null) === $value)>{{ $value }}</option>
-                        @endforeach
-                  </select>
+                    <div class="drawer-variant-select-wrap">
+                        <select onchange="selectVariantValueDrawer(this, '{{ $group['key'] }}')"
+                            data-group-key-drawer="{{ $group['key'] }}"
+                            class="w-full drawer-variant-select">
+                            @foreach ($group['values'] as $value)
+                                <option value="{{ $value }}" @selected(($defaultOther[$group['key']] ?? null) === $value)>{{ $value }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
             @endforeach
 
             <!-- Quantity -->
             <div class="mb-5">
                 <span class="text-sm font-semibold text-slate-700 block mb-2">Jumlah</span>
-                <div class="flex items-center border-2 border-slate-200 rounded-xl overflow-hidden w-32">
+                <div class="flex items-center border-2 border-slate-200 rounded-xl overflow-hidden w-40">
                     <button onclick="changeQtyDrawer(-1)"
-                        class="px-3 py-2 text-slate-600 hover:bg-slate-50 font-bold text-sm transition-colors">−</button>
+                        class="w-10 py-2 text-slate-600 hover:bg-slate-50 font-bold text-sm transition-colors">−</button>
                     <input id="qtyDisplayDrawer" type="number" min="1" max="{{ max(1, (int) ($productData['stock'] ?? 1)) }}" value="1"
                         inputmode="numeric" oninput="handleQtyInput(this, true)" onblur="commitQtyInput(this, true)"
-                        class="w-14 px-2 py-2 font-bold text-slate-800 text-center border-x-2 border-slate-200 text-sm focus:outline-none focus:bg-blue-50" />
+                        class="w-20 px-3 py-2 font-bold text-slate-800 text-center border-x-2 border-slate-200 text-sm focus:outline-none focus:bg-blue-50" />
                     <button onclick="changeQtyDrawer(1)"
-                        class="px-3 py-2 text-slate-600 hover:bg-slate-50 font-bold text-sm transition-colors">+</button>
+                        class="w-10 py-2 text-slate-600 hover:bg-slate-50 font-bold text-sm transition-colors">+</button>
                 </div>
             </div>
         </div>
