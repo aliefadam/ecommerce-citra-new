@@ -9,6 +9,15 @@
         .card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease; }
         .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12); }
         .filter-chip { display:inline-flex; align-items:center; gap:8px; border-radius:999px; padding:8px 12px; font-size:12px; font-weight:600; background:#eff6ff; color:#1d4ed8; }
+        .filter-drawer-handle { width:40px; height:5px; background:#cbd5e1; border-radius:9999px; margin:0 auto 16px; cursor:grab; touch-action:none; }
+        .filter-drawer-handle:active { cursor:grabbing; }
+        @media (max-width: 1023px) {
+            #filterSidebar.mobile-filter-drawer { position:fixed; inset:0; z-index:60; display:flex; align-items:flex-end; background:rgba(15, 23, 42, 0); opacity:0; transition:background 0.28s ease, opacity 0.28s ease; }
+            #filterSidebar.mobile-filter-drawer:not(.mobile-filter-open) { pointer-events:none; }
+            #filterSidebar.mobile-filter-drawer.mobile-filter-open { background:rgba(15, 23, 42, 0.4); opacity:1; pointer-events:auto; }
+            #filterPanel.mobile-filter-panel { width:100%; max-height:85vh; overflow-y:auto; overscroll-behavior:contain; border:0; border-radius:24px 24px 0 0; position:relative; top:auto; transform:translateY(calc(100% + 24px)); transition:transform 0.32s cubic-bezier(0.22, 1, 0.36, 1); will-change:transform; }
+            #filterSidebar.mobile-filter-open #filterPanel.mobile-filter-panel { transform:translateY(0); }
+        }
     </style>
 @endsection
 @section('content')
@@ -37,6 +46,7 @@
         <div class="flex flex-col lg:flex-row gap-6">
             <aside id="filterSidebar" class="hidden lg:block lg:w-72 flex-shrink-0">
                 <div id="filterPanel" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 sticky top-20 space-y-5">
+                    <div id="filterDrawerHandle" class="filter-drawer-handle lg:hidden"></div>
                     <div class="flex items-center justify-between">
                         <h3 class="font-bold text-slate-800">Filter Pencarian</h3>
                         <div class="flex items-center gap-3">
@@ -287,34 +297,154 @@
         applyFilters();
     }
 
-    function openMobileFilter() {
+    const mobileFilterDrawer = {
+        closeTimer: null,
+        isDragging: false,
+        startY: 0,
+        currentY: 0,
+        initialized: false,
+    };
+
+    function getMobileFilterElements() {
         const sidebar = document.getElementById('filterSidebar');
         const panel = document.getElementById('filterPanel');
-        if (!sidebar || !panel || window.innerWidth >= 1024) return;
-        sidebar.classList.remove('hidden');
-        sidebar.classList.add('fixed', 'inset-0', 'z-[60]', 'bg-black/40', 'flex', 'items-end', 'p-0');
-        panel.classList.remove('rounded-2xl', 'sticky', 'top-20');
-        panel.classList.add('w-full', 'rounded-t-3xl', 'rounded-b-none', 'max-h-[85vh]', 'overflow-y-auto', 'border-0');
+        const handle = document.getElementById('filterDrawerHandle');
+        return { sidebar, panel, handle };
     }
 
-    function closeMobileFilter() {
+    function syncMobileFilterDrawerMode() {
+        const { sidebar, panel } = getMobileFilterElements();
+        if (!sidebar || !panel) return;
+
+        if (window.innerWidth < 1024) {
+            sidebar.classList.add('mobile-filter-drawer');
+            panel.classList.add('mobile-filter-panel');
+            panel.classList.remove('rounded-2xl', 'sticky', 'top-20');
+            if (!sidebar.classList.contains('mobile-filter-open')) {
+                sidebar.classList.add('hidden');
+            }
+        } else {
+            clearTimeout(mobileFilterDrawer.closeTimer);
+            sidebar.classList.remove('hidden', 'mobile-filter-drawer', 'mobile-filter-open');
+            panel.classList.remove('mobile-filter-panel');
+            panel.style.transform = '';
+            panel.style.transition = '';
+            panel.classList.add('rounded-2xl', 'sticky', 'top-20');
+            document.body.classList.remove('overflow-hidden');
+        }
+    }
+
+    function openMobileFilter() {
+        const { sidebar, panel } = getMobileFilterElements();
+        if (!sidebar || !panel || window.innerWidth >= 1024) return;
+
+        syncMobileFilterDrawerMode();
+        clearTimeout(mobileFilterDrawer.closeTimer);
+        sidebar.classList.remove('hidden');
+        panel.style.transform = '';
+        panel.style.transition = '';
+        document.body.classList.add('overflow-hidden');
+
+        requestAnimationFrame(() => {
+            sidebar.classList.add('mobile-filter-open');
+        });
+    }
+
+    function closeMobileFilter(immediate = false) {
         const sidebar = document.getElementById('filterSidebar');
         const panel = document.getElementById('filterPanel');
         if (!sidebar || !panel || window.innerWidth >= 1024) return;
-        sidebar.classList.add('hidden');
-        sidebar.classList.remove('fixed', 'inset-0', 'z-[60]', 'bg-black/40', 'flex', 'items-end', 'p-0');
-        panel.classList.add('rounded-2xl', 'sticky', 'top-20');
-        panel.classList.remove('w-full', 'rounded-t-3xl', 'rounded-b-none', 'max-h-[85vh]', 'overflow-y-auto', 'border-0');
+
+        clearTimeout(mobileFilterDrawer.closeTimer);
+        mobileFilterDrawer.isDragging = false;
+        panel.style.transform = '';
+        panel.style.transition = '';
+        sidebar.classList.remove('mobile-filter-open');
+        document.body.classList.remove('overflow-hidden');
+
+        if (immediate) {
+            sidebar.classList.add('hidden');
+            return;
+        }
+
+        mobileFilterDrawer.closeTimer = setTimeout(() => {
+            if (!sidebar.classList.contains('mobile-filter-open')) {
+                sidebar.classList.add('hidden');
+            }
+        }, 320);
+    }
+
+    function initMobileFilterDrawer() {
+        if (mobileFilterDrawer.initialized) return;
+
+        const { panel, handle } = getMobileFilterElements();
+        if (!panel || !handle) return;
+
+        const getPointY = (event) => event.touches ? event.touches[0].clientY : event.clientY;
+
+        const startDrag = (event) => {
+            if (window.innerWidth >= 1024) return;
+            if (!document.getElementById('filterSidebar')?.classList.contains('mobile-filter-open')) return;
+
+            mobileFilterDrawer.isDragging = true;
+            mobileFilterDrawer.startY = getPointY(event);
+            mobileFilterDrawer.currentY = mobileFilterDrawer.startY;
+            clearTimeout(mobileFilterDrawer.closeTimer);
+            panel.style.transition = 'none';
+        };
+
+        const onDrag = (event) => {
+            if (!mobileFilterDrawer.isDragging) return;
+
+            mobileFilterDrawer.currentY = getPointY(event);
+            const deltaY = Math.max(0, mobileFilterDrawer.currentY - mobileFilterDrawer.startY);
+
+            if (deltaY > 0) {
+                panel.style.transform = `translateY(${deltaY}px)`;
+                if (event.cancelable) event.preventDefault();
+            }
+        };
+
+        const endDrag = () => {
+            if (!mobileFilterDrawer.isDragging) return;
+
+            mobileFilterDrawer.isDragging = false;
+            panel.style.transition = '';
+            const deltaY = Math.max(0, mobileFilterDrawer.currentY - mobileFilterDrawer.startY);
+
+            if (deltaY > 110) {
+                closeMobileFilter();
+                return;
+            }
+
+            panel.style.transform = '';
+        };
+
+        handle.addEventListener('touchstart', startDrag, { passive: true });
+        window.addEventListener('touchmove', onDrag, { passive: false });
+        window.addEventListener('touchend', endDrag);
+        handle.addEventListener('mousedown', startDrag);
+        window.addEventListener('mousemove', onDrag);
+        window.addEventListener('mouseup', endDrag);
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 1024) {
+                closeMobileFilter(true);
+                syncMobileFilterDrawerMode();
+            }
+        });
+
+        mobileFilterDrawer.initialized = true;
     }
 
     document.addEventListener('click', function(e) {
         const sidebar = document.getElementById('filterSidebar');
-        if (sidebar && sidebar.classList.contains('fixed') && e.target === sidebar) closeMobileFilter();
+        if (sidebar && sidebar.classList.contains('mobile-filter-open') && e.target === sidebar) closeMobileFilter();
     });
 
+    initMobileFilterDrawer();
+    syncMobileFilterDrawerMode();
     renderCategoryFilters();
     renderVariantFilters();
     applyFilters();
 </script>
 @endsection
-
