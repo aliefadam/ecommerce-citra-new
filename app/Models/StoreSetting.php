@@ -20,6 +20,9 @@ class StoreSetting extends Model
             'manual_payment_account_number' => '1234567890',
             'manual_payment_account_name' => 'Ecommerce Citra',
             'manual_payment_instruction' => 'Transfer sesuai nominal pesanan, lalu upload bukti pembayaran agar admin bisa memverifikasi.',
+            'tax_enabled' => '1',
+            'tax_name' => 'PPN',
+            'tax_rate' => '11.00',
             'social_instagram' => '',
             'social_tiktok' => '',
             'social_facebook' => '',
@@ -59,6 +62,17 @@ class StoreSetting extends Model
             'account_number' => (string) $settings['manual_payment_account_number'],
             'account_name' => (string) $settings['manual_payment_account_name'],
             'instruction' => (string) $settings['manual_payment_instruction'],
+        ];
+    }
+
+    public static function taxSettings(): array
+    {
+        $settings = static::values();
+
+        return [
+            'enabled' => filter_var($settings['tax_enabled'] ?? true, FILTER_VALIDATE_BOOLEAN),
+            'name' => (string) ($settings['tax_name'] ?? 'PPN'),
+            'rate' => (float) ($settings['tax_rate'] ?? 11),
         ];
     }
 }

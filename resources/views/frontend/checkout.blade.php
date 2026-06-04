@@ -456,12 +456,16 @@
                             <span class="text-slate-600">Diskon Voucher</span>
                             <span class="summary-value font-medium text-emerald-600" id="discountAmt">- Rp 0</span>
                         </div>
+                        <div class="summary-row flex justify-between text-sm hidden" id="taxRow">
+                            <span class="text-slate-600" id="taxLabel">PPN 11%</span>
+                            <span class="summary-value font-medium text-slate-800" id="taxAmt">Rp 0</span>
+                        </div>
                         <div class="border-t border-slate-100 pt-3 mt-3">
                             <div class="summary-row flex justify-between">
                                 <span class="font-bold text-slate-800">{{ $isRedeemCheckout ? 'Total Bayar Ongkir' : 'Grand Total' }}</span>
                                 <span class="summary-value font-extrabold text-blue-600 text-xl" id="grandTotal">Rp 888.000</span>
                             </div>
-                            <p class="text-xs text-slate-500 mt-1">{{ $isRedeemCheckout ? 'Point digunakan untuk produk, sedangkan ongkir dibayar terpisah oleh customer.' : 'Termasuk pajak dan biaya lainnya' }}</p>
+                            <p class="text-xs text-slate-500 mt-1">{{ $isRedeemCheckout ? 'Point digunakan untuk produk, sedangkan ongkir dibayar terpisah oleh customer.' : 'PPN dihitung dari subtotal produk setelah diskon. Ongkir tidak dikenakan PPN.' }}</p>
                         </div>
 
                         <!-- Info -->
@@ -753,6 +757,7 @@
         let cartItems = @json($checkoutItems ?? []);
         const checkoutSource = @json($checkoutSource ?? 'cart_all');
         const isRedeemCheckout = checkoutSource === 'redeem_point';
+        const taxSettings = @json($taxSettings ?? ['enabled' => true, 'name' => 'PPN', 'rate' => 11]);
         let shippingCost = null;
         let shippingLabel = 'Reguler';
         let couponCode = '';
@@ -881,7 +886,11 @@
             const totalRedeemPoints = cartItems.reduce((s, i) => s + (Number(i.redeemPoints || 0) * Number(i.qty || 0)), 0);
             const shippingValue = typeof shippingCost === 'number' ? shippingCost : 0;
             if (discountAmount > subtotal) discountAmount = subtotal;
-            const grandTotal = Math.max(0, subtotal + shippingValue - discountAmount);
+            const taxableAmount = isRedeemCheckout ? 0 : Math.max(0, subtotal - discountAmount);
+            const taxEnabled = !isRedeemCheckout && Boolean(taxSettings?.enabled);
+            const taxRate = taxEnabled ? Math.max(0, Math.min(100, Number(taxSettings?.rate || 0))) : 0;
+            const taxAmount = taxEnabled ? Math.round(taxableAmount * taxRate / 100) : 0;
+            const grandTotal = taxableAmount + taxAmount + shippingValue;
             const totalItems = cartItems.reduce((s, i) => s + i.qty, 0);
             const hasSelectedAddress = !!document.querySelector('input[name="address"]:checked');
             document.getElementById('itemCountText').textContent = totalItems + ' item';
@@ -891,6 +900,9 @@
                 : 'Rp ' + subtotal.toLocaleString('id-ID');
             document.getElementById('discountRow').classList.toggle('hidden', discountAmount <= 0 || isRedeemCheckout);
             document.getElementById('discountAmt').textContent = '- Rp ' + discountAmount.toLocaleString('id-ID');
+            document.getElementById('taxRow').classList.toggle('hidden', !taxEnabled || taxAmount <= 0);
+            document.getElementById('taxLabel').textContent = `${taxSettings?.name || 'PPN'} ${taxRate.toLocaleString('id-ID')}%`;
+            document.getElementById('taxAmt').textContent = 'Rp ' + taxAmount.toLocaleString('id-ID');
             if (!hasSelectedAddress) {
                 document.getElementById('shippingAmt').textContent = 'Pilih/Tambahkan alamat dulu';
             } else if (typeof shippingCost !== 'number') {

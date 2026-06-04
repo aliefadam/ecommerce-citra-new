@@ -280,6 +280,22 @@ class BackendController extends Controller
             return redirect()->route('pages.settings', ['tab' => 'payment'])->with('success', 'Setting pembayaran manual berhasil disimpan.');
         }
 
+        if ($section === 'tax') {
+            $validated = $request->validate([
+                'tax_enabled' => ['nullable', 'boolean'],
+                'tax_name' => ['required_if:tax_enabled,1', 'nullable', 'string', 'max:30'],
+                'tax_rate' => ['required', 'numeric', 'min:0', 'max:100', 'regex:/^\d+(\.\d{1,2})?$/'],
+            ]);
+
+            StoreSetting::setMany([
+                'tax_enabled' => $request->boolean('tax_enabled') ? '1' : '0',
+                'tax_name' => trim((string) ($validated['tax_name'] ?? 'PPN')),
+                'tax_rate' => number_format((float) $validated['tax_rate'], 2, '.', ''),
+            ]);
+
+            return redirect()->route('pages.settings', ['tab' => 'tax'])->with('success', 'Setting Pajak / PPN berhasil disimpan.');
+        }
+
         if ($section === 'social_media') {
             $validated = $request->validate([
                 'social_instagram' => ['nullable', 'url', 'max:255'],

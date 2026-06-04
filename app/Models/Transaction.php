@@ -28,6 +28,10 @@ class Transaction extends Model
         'shipping_cost',
         'coupon_code',
         'discount_amount',
+        'tax_name',
+        'tax_rate',
+        'taxable_amount',
+        'tax_amount',
         'redeem_points_reserved',
         'redeem_points_reserved_at',
         'redeem_points_finalized_at',
@@ -64,6 +68,7 @@ class Transaction extends Model
         'redeem_points_reserved_at' => 'datetime',
         'redeem_points_finalized_at' => 'datetime',
         'redeem_points_released_at' => 'datetime',
+        'tax_rate' => 'decimal:2',
     ];
 
     public function user(): BelongsTo

@@ -10,6 +10,7 @@ use App\Models\TransactionDetail;
 use App\Models\TransactionStatusHistory;
 use App\Models\StoreSetting;
 use App\Models\UserNotification;
+use App\Services\CheckoutTaxCalculator;
 use App\Services\LoyaltyPointService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -23,7 +24,7 @@ use Throwable;
 
 class MidtransController extends Controller
 {
-    public function createCharge(Request $request)
+    public function createCharge(Request $request, CheckoutTaxCalculator $taxCalculator)
     {
         $validated = $request->validate([
             'items' => ['required', 'array', 'min:1'],
@@ -63,13 +64,13 @@ class MidtransController extends Controller
             })->values()->all();
 
             $shippingCost = (int) round((float) $validated['shipping_cost']);
+            $subtotal = collect($validated['items'])->sum(fn($item) => ((int) round((float) $item['price'])) * ((int) $item['qty']));
             $couponData = session('checkout_coupon', []);
             $couponCode = (string) ($couponData['code'] ?? '');
             $discountAmount = 0;
 
             if ($couponCode !== '') {
                 $coupon = Coupon::query()->where('code', $couponCode)->first();
-                $subtotal = collect($validated['items'])->sum(fn($item) => ((int) round((float) $item['price'])) * ((int) $item['qty']));
                 if ($coupon && $coupon->isUsableFor((int) $subtotal)) {
                     $discountAmount = $coupon->discountFor((int) $subtotal);
                 } else {
@@ -86,16 +87,26 @@ class MidtransController extends Controller
                     'name' => mb_substr('Ongkos Kirim - ' . (string) ($validated['shipping_label'] ?? 'Reguler'), 0, 50),
                 ];
             }
-            if ($discountAmount > 0) {
+            $discountLineAmount = min((int) $subtotal, $discountAmount);
+            if ($discountLineAmount > 0) {
                 $itemDetails[] = [
                     'id' => 'DISCOUNT',
-                    'price' => -$discountAmount,
+                    'price' => -$discountLineAmount,
                     'quantity' => 1,
                     'name' => mb_substr('Voucher ' . $couponCode, 0, 50),
                 ];
             }
+            $tax = $taxCalculator->calculate((int) $subtotal, $discountAmount, $shippingCost);
+            if ((int) $tax['tax_amount'] > 0) {
+                $itemDetails[] = [
+                    'id' => 'TAX',
+                    'price' => (int) $tax['tax_amount'],
+                    'quantity' => 1,
+                    'name' => mb_substr((string) $tax['tax_name'] . ' ' . number_format((float) $tax['tax_rate'], 2, '.', '') . '%', 0, 50),
+                ];
+            }
 
-            $grossAmount = collect($itemDetails)->sum(fn($i) => ((int) $i['price']) * ((int) $i['quantity']));
+            $grossAmount = (int) $tax['grand_total'];
             $orderId = 'ORD-' . now()->format('YmdHis') . '-' . random_int(1000, 9999);
 
             $customer = $request->user();
@@ -227,6 +238,10 @@ class MidtransController extends Controller
                 'shipping_cost' => $shippingCost,
                 'coupon_code' => $couponCode,
                 'discount_amount' => $discountAmount,
+                'tax_name' => $tax['tax_name'],
+                'tax_rate' => $tax['tax_rate'],
+                'taxable_amount' => $tax['taxable_amount'],
+                'tax_amount' => $tax['tax_amount'],
                 'shipping_label' => (string) ($validated['shipping_label'] ?? 'Reguler'),
                 'items' => $displayItems,
                 'method_label' => strtoupper($validated['payment_method']),
@@ -279,6 +294,10 @@ class MidtransController extends Controller
                 'shipping_cost'      => (int) $tx->shipping_cost,
                 'discount_amount'    => (int) ($tx->discount_amount ?? 0),
                 'coupon_code'         => (string) ($tx->coupon_code ?? ''),
+                'tax_name'           => $tx->tax_name,
+                'tax_rate'           => (float) ($tx->tax_rate ?? 0),
+                'taxable_amount'     => (int) ($tx->taxable_amount ?? 0),
+                'tax_amount'         => (int) ($tx->tax_amount ?? 0),
                 'shipping_label'     => (string) ($tx->shipping_label ?? ''),
                 'payment_proof_path'  => (string) ($tx->payment_proof_path ?? ''),
                 'payment_admin_note'  => (string) ($tx->payment_admin_note ?? ''),
@@ -773,7 +792,9 @@ class MidtransController extends Controller
             });
             $shippingCost = (int) ($payment['shipping_cost'] ?? 0);
             $discountAmount = min($subtotal, max(0, (int) ($payment['discount_amount'] ?? 0)));
-            $grandTotal = max(0, $subtotal + $shippingCost - $discountAmount);
+            $taxableAmount = max(0, (int) ($payment['taxable_amount'] ?? ($subtotal - $discountAmount)));
+            $taxAmount = max(0, (int) ($payment['tax_amount'] ?? 0));
+            $grandTotal = max(0, $taxableAmount + $taxAmount + $shippingCost);
 
             $transaction = Transaction::query()->firstOrNew(['order_id' => $orderId]);
             $isNew = !$transaction->exists;
@@ -795,6 +816,10 @@ class MidtransController extends Controller
                 'shipping_cost' => $shippingCost,
                 'coupon_code' => (string) ($payment['coupon_code'] ?? ''),
                 'discount_amount' => $discountAmount,
+                'tax_name' => $payment['tax_name'] ?? null,
+                'tax_rate' => (float) ($payment['tax_rate'] ?? 0),
+                'taxable_amount' => $taxableAmount,
+                'tax_amount' => $taxAmount,
                 'grand_total' => $grandTotal,
                 'shipping_label' => (string) ($payment['shipping_label'] ?? ''),
                 'shipping_recipient_name' => (string) ($snapshot['shipping_recipient_name'] ?? ''),

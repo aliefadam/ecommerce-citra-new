@@ -211,6 +211,30 @@
                             </table>
                         </td>
                     </tr>
+                    @if ((int) $transaction->discount_amount > 0)
+                    <tr>
+                        <td style="padding:13px 20px;border-bottom:1px solid #e2e8f0;background:#ffffff;">
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                                <tr>
+                                    <td style="font-size:14px;color:#16a34a;">Voucher {{ $transaction->coupon_code }}</td>
+                                    <td style="font-size:14px;font-weight:500;color:#16a34a;text-align:right;white-space:nowrap;">- Rp {{ number_format($transaction->discount_amount, 0, ',', '.') }}</td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    @endif
+                    @if ((int) $transaction->tax_amount > 0)
+                    <tr>
+                        <td style="padding:13px 20px;border-bottom:1px solid #e2e8f0;background:#ffffff;">
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                                <tr>
+                                    <td style="font-size:14px;color:#64748b;">{{ $transaction->tax_name ?: 'PPN' }} {{ number_format((float) $transaction->tax_rate, 2, ',', '.') }}%</td>
+                                    <td style="font-size:14px;font-weight:500;color:#1e293b;text-align:right;white-space:nowrap;">Rp {{ number_format($transaction->tax_amount, 0, ',', '.') }}</td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    @endif
                     <tr>
                         <td style="padding:13px 20px;border-bottom:1px solid #e2e8f0;background:#ffffff;">
                             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">

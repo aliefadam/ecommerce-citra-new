@@ -1248,6 +1248,10 @@
                         'shipping_cost' => (int) $tx->shipping_cost,
                         'discount_amount' => (int) ($tx->discount_amount ?? 0),
                         'coupon_code' => (string) ($tx->coupon_code ?? ''),
+                        'tax_name' => (string) ($tx->tax_name ?? ''),
+                        'tax_rate' => (float) ($tx->tax_rate ?? 0),
+                        'taxable_amount' => (int) ($tx->taxable_amount ?? 0),
+                        'tax_amount' => (int) ($tx->tax_amount ?? 0),
                         'shipping_label' => (string) ($tx->shipping_label ?? ''),
                         'shipping_recipient_name' => (string) ($tx->shipping_recipient_name ?? ''),
                         'shipping_phone' => (string) ($tx->shipping_phone ?? ''),
@@ -1904,6 +1908,10 @@
                     ${Number(o.discount_amount || 0) > 0 ? `<div class="flex justify-between text-emerald-600">
                         <span>Voucher ${o.coupon_code || ''}</span>
                         <span>- Rp ${Number(o.discount_amount || 0).toLocaleString('id-ID')}</span>
+                    </div>` : ''}
+                    ${Number(o.tax_amount || 0) > 0 ? `<div class="flex justify-between text-slate-500">
+                        <span>${o.tax_name || 'PPN'} ${Number(o.tax_rate || 0).toLocaleString('id-ID')}%</span>
+                        <span>Rp ${Number(o.tax_amount || 0).toLocaleString('id-ID')}</span>
                     </div>` : ''}
                     <div class="flex justify-between items-center pt-2 border-t border-slate-200">
                         <span class="font-bold text-slate-800">Grand Total</span>

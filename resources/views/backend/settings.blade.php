@@ -4,7 +4,7 @@
 
 @section('content')
     @php
-        $activeTab = in_array(request('tab', 'store'), ['store', 'location', 'payment', 'social'], true) ? request('tab', 'store') : 'store';
+        $activeTab = in_array(request('tab', 'store'), ['store', 'location', 'payment', 'tax', 'social'], true) ? request('tab', 'store') : 'store';
         $logoPath = (string) ($storeSettings['store_logo_path'] ?? '');
         $logoUrl = $logoPath !== '' ? asset('storage/' . ltrim($logoPath, '/')) : null;
     @endphp
@@ -45,6 +45,11 @@
                             class="settings-tab {{ $activeTab === 'payment' ? 'active' : '' }} w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white transition-all text-left">
                             <i data-lucide="credit-card" class="w-[17px] h-[17px]"></i>
                             Manual Payment
+                        </button>
+                        <button type="button" onclick="showTab('tax')" id="nav-tax"
+                            class="settings-tab {{ $activeTab === 'tax' ? 'active' : '' }} w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white transition-all text-left">
+                            <i data-lucide="percent" class="w-[17px] h-[17px]"></i>
+                            Pajak / PPN
                         </button>
                         <button type="button" onclick="showTab('social')" id="nav-social"
                             class="settings-tab {{ $activeTab === 'social' ? 'active' : '' }} w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white transition-all text-left">
@@ -235,6 +240,47 @@
 
                         <div class="flex justify-end mt-5">
                             <button type="submit" class="px-5 py-2.5 text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors">Simpan Pembayaran</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="tab-tax" class="settings-content {{ $activeTab === 'tax' ? '' : 'hidden' }}">
+                    <form method="POST" action="{{ route('pages.settings.update') }}"
+                        class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
+                        @csrf
+                        <input type="hidden" name="section" value="tax">
+
+                        <h2 class="font-bold text-slate-800 dark:text-white mb-1">Pajak / PPN</h2>
+                        <p class="text-xs text-slate-400 mb-6">PPN dihitung dari subtotal produk setelah diskon. Ongkir tidak dikenakan PPN.</p>
+
+                        <div class="space-y-4">
+                            <label class="flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 px-4 py-3">
+                                <input type="hidden" name="tax_enabled" value="0">
+                                <input type="checkbox" name="tax_enabled" value="1"
+                                    class="accent-blue-600"
+                                    {{ filter_var(old('tax_enabled', $storeSettings['tax_enabled'] ?? '1'), FILTER_VALIDATE_BOOLEAN) ? 'checked' : '' }}>
+                                <span>
+                                    <span class="block text-sm font-semibold text-slate-700 dark:text-slate-200">Aktifkan PPN</span>
+                                    <span class="block text-xs text-slate-400">Nonaktifkan jika checkout tidak perlu menambahkan pajak.</span>
+                                </span>
+                            </label>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Nama Pajak</label>
+                                    <input type="text" name="tax_name" maxlength="30" value="{{ old('tax_name', $storeSettings['tax_name'] ?? 'PPN') }}"
+                                        class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Persentase</label>
+                                    <input type="number" name="tax_rate" min="0" max="100" step="0.01" value="{{ old('tax_rate', $storeSettings['tax_rate'] ?? '11.00') }}"
+                                        class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end mt-5">
+                            <button type="submit" class="px-5 py-2.5 text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors">Simpan Pajak</button>
                         </div>
                     </form>
                 </div>

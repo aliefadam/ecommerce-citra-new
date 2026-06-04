@@ -275,6 +275,12 @@
                                     <span>- Rp {{ number_format((int) ($payment['discount_amount'] ?? 0), 0, ',', '.') }}</span>
                                 </div>
                             @endif
+                            @if ((int) ($payment['tax_amount'] ?? 0) > 0)
+                                <div class="flex justify-between text-sm text-slate-500">
+                                    <span>{{ $payment['tax_name'] ?? 'PPN' }} {{ number_format((float) ($payment['tax_rate'] ?? 0), 2, ',', '.') }}%</span>
+                                    <span>Rp {{ number_format((int) ($payment['tax_amount'] ?? 0), 0, ',', '.') }}</span>
+                                </div>
+                            @endif
                             <div class="flex justify-between items-center pt-3 border-t border-slate-100">
                                 <span class="font-bold text-slate-800">Grand Total</span>
                                 <span class="text-xl font-extrabold text-indigo-600">Rp

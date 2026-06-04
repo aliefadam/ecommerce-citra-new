@@ -10,6 +10,7 @@ use App\Models\TransactionDetail;
 use App\Models\TransactionStatusHistory;
 use App\Models\UserNotification;
 use App\Models\Cart;
+use App\Services\CheckoutTaxCalculator;
 use App\Services\LoyaltyPointService;
 use App\Services\ImageOptimizer;
 use Illuminate\Http\Request;
@@ -19,7 +20,7 @@ use Illuminate\Support\Facades\Mail;
 
 class ManualPaymentController extends Controller
 {
-    public function checkout(Request $request, LoyaltyPointService $loyaltyPointService)
+    public function checkout(Request $request, LoyaltyPointService $loyaltyPointService, CheckoutTaxCalculator $taxCalculator)
     {
         $validated = $request->validate([
             'items' => ['required', 'array', 'min:1'],
@@ -39,7 +40,7 @@ class ManualPaymentController extends Controller
 
         $orderId = 'MAN-' . now()->format('YmdHis') . '-' . random_int(1000, 9999);
 
-        $transaction = DB::transaction(function () use ($request, $validated, $orderId, $loyaltyPointService) {
+        $transaction = DB::transaction(function () use ($request, $validated, $orderId, $loyaltyPointService, $taxCalculator) {
             $items = collect($validated['items'])->values();
             $subtotal = (int) $items->sum(fn($item) => ((int) round((float) $item['price'])) * ((int) $item['qty']));
             $shippingCost = (int) round((float) $validated['shipping_cost']);
@@ -54,6 +55,7 @@ class ManualPaymentController extends Controller
                 }
                 $discountAmount = $coupon->discountFor($subtotal);
             }
+            $tax = $taxCalculator->calculate($subtotal, $discountAmount, $shippingCost);
 
             $snapshot = [];
             if (!empty($validated['address_id'])) {
@@ -84,7 +86,11 @@ class ManualPaymentController extends Controller
                 'shipping_cost' => $shippingCost,
                 'coupon_code' => $couponCode,
                 'discount_amount' => $discountAmount,
-                'grand_total' => max(0, $subtotal + $shippingCost - $discountAmount),
+                'tax_name' => $tax['tax_name'],
+                'tax_rate' => $tax['tax_rate'],
+                'taxable_amount' => $tax['taxable_amount'],
+                'tax_amount' => $tax['tax_amount'],
+                'grand_total' => $tax['grand_total'],
                 'shipping_label' => (string) ($validated['shipping_label'] ?? 'Reguler'),
                 'shipping_recipient_name' => (string) ($snapshot['shipping_recipient_name'] ?? ''),
                 'shipping_phone' => (string) ($snapshot['shipping_phone'] ?? ''),

@@ -103,6 +103,12 @@
                     <td class="right">- Rp {{ number_format($transaction->discount_amount, 0, ',', '.') }}</td>
                 </tr>
             @endif
+            @if ((int) $transaction->tax_amount > 0)
+                <tr>
+                    <td>{{ $transaction->tax_name ?: 'PPN' }} {{ number_format((float) $transaction->tax_rate, 2, ',', '.') }}%</td>
+                    <td class="right">Rp {{ number_format($transaction->tax_amount, 0, ',', '.') }}</td>
+                </tr>
+            @endif
             <tr>
                 <td><strong>Grand Total</strong></td>
                 <td class="right total">Rp {{ number_format($transaction->grand_total, 0, ',', '.') }}</td>

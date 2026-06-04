@@ -106,10 +106,12 @@
                     <h2 class="font-bold text-slate-800 dark:text-white mb-4">Total</h2>
                     <div class="space-y-2 text-sm">
                         <div class="flex justify-between"><span>Subtotal</span><span>Rp {{ number_format($transaction->subtotal_amount, 0, ',', '.') }}</span></div>
-                        <div class="flex justify-between"><span>Ongkir</span><span>Rp {{ number_format($transaction->shipping_cost, 0, ',', '.') }}</span></div>
                         @if ($transaction->discount_amount > 0)
                             <div class="flex justify-between text-emerald-600"><span>Voucher {{ $transaction->coupon_code }}</span><span>- Rp {{ number_format($transaction->discount_amount, 0, ',', '.') }}</span></div>
                         @endif
+                        <div class="flex justify-between"><span>Taxable Amount</span><span>Rp {{ number_format($transaction->taxable_amount, 0, ',', '.') }}</span></div>
+                        <div class="flex justify-between"><span>{{ $transaction->tax_name ?: 'PPN' }} {{ number_format((float) $transaction->tax_rate, 2, ',', '.') }}%</span><span>Rp {{ number_format($transaction->tax_amount, 0, ',', '.') }}</span></div>
+                        <div class="flex justify-between"><span>Ongkir</span><span>Rp {{ number_format($transaction->shipping_cost, 0, ',', '.') }}</span></div>
                         <div class="flex justify-between border-t border-slate-100 pt-2 text-base font-bold text-blue-600"><span>Grand Total</span><span>Rp {{ number_format($transaction->grand_total, 0, ',', '.') }}</span></div>
                     </div>
                 </div>

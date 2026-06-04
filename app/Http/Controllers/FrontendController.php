@@ -12,6 +12,7 @@ use App\Models\ContentPage;
 use App\Models\TransactionDetail;
 use App\Models\TransactionProductReview;
 use App\Models\Transaction;
+use App\Models\StoreSetting;
 use App\Models\UserNotification;
 use App\Models\Wishlist;
 use App\Models\Banner;
@@ -750,6 +751,7 @@ class FrontendController extends Controller
             'addresses' => $addresses,
             'checkoutItems' => $checkoutItems,
             'checkoutSource' => $source ?: 'cart_all',
+            'taxSettings' => StoreSetting::taxSettings(),
         ]);
     }
 
