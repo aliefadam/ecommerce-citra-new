@@ -835,7 +835,7 @@
         let currentImg = 0;
         let qty = 1;
         let qtyDrawer = 1;
-        let drawerStock = Number(productData.stock || 0);
+        let drawerAvailableStock = Number(productData.stock || 0);
         let isWishlisted = Boolean(productData.isWishlisted);
         const variantSelectInstances = new Map();
         const variantSelectDrawerInstances = new Map();
@@ -869,7 +869,7 @@
         }
 
         function getMaxQty(isDrawer = false) {
-            return Math.max(1, Number((isDrawer ? drawerStock : productData.stock) || 1));
+            return Math.max(1, Number((isDrawer ? drawerAvailableStock : productData.stock) || 1));
         }
 
         function clampQty(value, isDrawer = false) {
@@ -929,7 +929,7 @@
             const actionLabel = document.getElementById('drawerActionLabel');
 
             // Sync drawer quantity with main quantity
-            drawerStock = Number(productData.stock || 0);
+            drawerAvailableStock = Number(productData.stock || 0);
             qtyDrawer = qty;
             updateQtyInput(true);
 
@@ -1042,13 +1042,13 @@
             const drawerPrice = document.getElementById('drawerProductPrice');
             if (drawerPrice) drawerPrice.textContent = formatRupiah(displayPrice);
 
-            const drawerStock = document.getElementById('drawerProductStock');
-            if (drawerStock) drawerStock.textContent = `Stok: ${Number(selectedVariant.stock || 0)} item`;
+            const drawerStockEl = document.getElementById('drawerProductStock');
+            if (drawerStockEl) drawerStockEl.textContent = `Stok: ${Number(selectedVariant.stock || 0)} item`;
 
             const drawerImage = document.getElementById('drawerProductImage');
             if (drawerImage && selectedVariant.image) drawerImage.src = selectedVariant.image;
 
-            drawerStock = Number(selectedVariant.stock || 0);
+            drawerAvailableStock = Number(selectedVariant.stock || 0);
             qtyDrawer = clampQty(qtyDrawer, true);
             updateQtyInput(true);
         }
