@@ -900,9 +900,10 @@
 
         function applyFilter() {
             const cats = Array.from(document.querySelectorAll('.filter-cat:checked')).map(c => c.value);
+            const hasCategoryFilters = document.querySelectorAll('.filter-cat').length > 0;
             const activeVariantGroups = Object.entries(selectedVariantFilters).filter(([, values]) => values.size > 0);
             filteredProducts = products.filter(p => {
-                const catMatch = cats.length === 0 || cats.includes(p.parentCategorySlug);
+                const catMatch = !hasCategoryFilters || cats.includes(p.parentCategorySlug);
                 const variantMatch = activeVariantGroups.length === 0 || activeVariantGroups.every(([name, values]) =>
                     Array.isArray(p.variants) && p.variants.some((variant) =>
                         normalizeFilterValue(variant.name) === name && values.has(normalizeFilterValue(variant.value))
@@ -923,8 +924,7 @@
                 el.value = '';
                 searchVariantOptions(el);
             });
-            filteredProducts = [...products];
-            renderProducts(filteredProducts);
+            applyFilter();
         }
 
         function sortProducts() {

@@ -365,6 +365,7 @@
 
         function getFiltered() {
             const cats = Array.from(document.querySelectorAll('.filter-cat:checked')).map(c => c.value);
+            const hasCategoryFilters = document.querySelectorAll('.filter-cat').length > 0;
             const activeVariantGroups = Object.entries(selectedVariantFilters).filter(([, values]) => values.size > 0);
             const priceMin = Number(document.getElementById('priceMin')?.value || 0);
             const priceMax = Number(document.getElementById('priceMax')?.value || 0);
@@ -372,7 +373,7 @@
             const stockOnly = document.getElementById('filterStock')?.checked;
             const ratingMin = Number(document.getElementById('ratingMin')?.value || 0);
             return allProducts.filter((p) => {
-                const catMatch = cats.length === 0 || cats.includes(p.parentCategorySlug);
+                const catMatch = !hasCategoryFilters || cats.includes(p.parentCategorySlug);
                 const initialCategoryMatch = activeCategorySlug === '' || p.categorySlug === activeCategorySlug;
                 const variantMatch = activeVariantGroups.length === 0 || activeVariantGroups.every(([name, values]) =>
                     Array.isArray(p.variants) && p.variants.some((variant) =>
@@ -645,9 +646,7 @@
             if (filterStock) filterStock.checked = false;
             if (ratingMin) ratingMin.value = '0';
             activeCategorySlug = '';
-            filteredProducts = [...allProducts];
-            renderActiveChips();
-            sortProds();
+            applyFilter();
         }
 
         function sortProds() {
