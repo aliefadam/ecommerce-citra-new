@@ -15,6 +15,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -842,7 +843,15 @@ class MidtransController extends Controller
                 $userEmail = $request->user()?->email;
                 if ($userEmail) {
                     $transaction->load('details', 'user');
-                    Mail::to($userEmail)->send(new InvoiceOrder($transaction));
+                    try {
+                        Mail::to($userEmail)->send(new InvoiceOrder($transaction));
+                    } catch (\Throwable $e) {
+                        Log::warning('Invoice email failed after Midtrans checkout.', [
+                            'transaction_id' => $transaction->id,
+                            'order_id' => $transaction->order_id,
+                            'message' => $e->getMessage(),
+                        ]);
+                    }
                 }
                 if ($userId) {
                     UserNotification::create([

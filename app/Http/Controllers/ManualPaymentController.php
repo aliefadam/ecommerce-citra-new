@@ -14,6 +14,7 @@ use App\Services\LoyaltyPointService;
 use App\Services\ImageOptimizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class ManualPaymentController extends Controller
@@ -148,7 +149,15 @@ class ManualPaymentController extends Controller
         session()->forget(['checkout', 'checkout_coupon']);
 
         if ($request->user()?->email) {
-            Mail::to($request->user()->email)->send(new InvoiceOrder($transaction->load('details', 'user')));
+            try {
+                Mail::to($request->user()->email)->send(new InvoiceOrder($transaction->load('details', 'user')));
+            } catch (\Throwable $e) {
+                Log::warning('Invoice email failed after manual checkout.', [
+                    'transaction_id' => $transaction->id,
+                    'order_id' => $transaction->order_id,
+                    'message' => $e->getMessage(),
+                ]);
+            }
         }
 
         UserNotification::create([
