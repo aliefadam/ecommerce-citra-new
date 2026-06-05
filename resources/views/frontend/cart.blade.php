@@ -138,11 +138,23 @@
             }
         }
 
-        async function changeQty(idx, delta) {
+        function normalizeCartQty(value, item = null) {
+            const parsed = parseInt(value, 10);
+            if (!Number.isFinite(parsed)) return 1;
+            const stock = Number(item?.stock || 0);
+            const maxQty = stock > 0 ? stock : parsed;
+
+            return Math.max(1, Math.min(maxQty, parsed));
+        }
+
+        async function persistCartQty(idx, nextQty, options = {}) {
             const item = cartItems[idx];
             if (!item || pendingCartIds.has(Number(item.cartId))) return;
-            const nextQty = Math.max(1, Number(item.qty || 1) + delta);
-            if (nextQty === Number(item.qty || 1)) return;
+            nextQty = normalizeCartQty(nextQty, item);
+            if (!options.force && nextQty === Number(item.qty || 1)) {
+                renderCart();
+                return;
+            }
             const url = cartUpdateUrlTemplate.replace('__ID__', String(item.cartId));
             pendingCartIds.add(Number(item.cartId));
             renderCart();
@@ -166,7 +178,9 @@
 
                 cartItems[idx].qty = nextQty;
                 renderCart();
-                showToast(data?.message || 'Jumlah item berhasil diperbarui.');
+                if (!options.silent) {
+                    showToast(data?.message || 'Jumlah item berhasil diperbarui.');
+                }
                 window.dispatchEvent(new Event('cart:updated'));
             } catch (error) {
                 showToast(getErrorMessage(error, 'Gagal memperbarui jumlah item.'));
@@ -174,6 +188,28 @@
                 pendingCartIds.delete(Number(item.cartId));
                 renderCart();
             }
+        }
+
+        async function changeQty(idx, delta) {
+            const item = cartItems[idx];
+            if (!item) return;
+            await persistCartQty(idx, Number(item.qty || 1) + delta);
+        }
+
+        function handleCartQtyInput(idx, input) {
+            const item = cartItems[idx];
+            if (!item || !input.value) return;
+            item.qty = normalizeCartQty(input.value, item);
+            input.value = String(item.qty);
+            updateSummary();
+        }
+
+        async function commitCartQtyInput(idx, input) {
+            const item = cartItems[idx];
+            if (!item) return;
+            const nextQty = normalizeCartQty(input.value, item);
+            input.value = String(nextQty);
+            await persistCartQty(idx, nextQty, { silent: true, force: true });
         }
 
         async function removeItem(idx) {
@@ -332,9 +368,25 @@
             decreaseBtn.setAttribute('aria-label', `Kurangi jumlah ${item.name}`);
             decreaseBtn.addEventListener('click', () => changeQty(idx, -1));
 
-            const qtyText = document.createElement('span');
-            qtyText.className = 'px-3 py-1 text-sm font-semibold border-x border-slate-200';
-            qtyText.textContent = String(item.qty || 1);
+            const qtyInput = document.createElement('input');
+            qtyInput.type = 'number';
+            qtyInput.min = '1';
+            if (Number(item.stock || 0) > 0) {
+                qtyInput.max = String(Number(item.stock || 0));
+            }
+            qtyInput.inputMode = 'numeric';
+            qtyInput.value = String(item.qty || 1);
+            qtyInput.disabled = pendingCartIds.has(Number(item.cartId));
+            qtyInput.className = 'w-12 px-2 py-1 text-sm font-semibold text-center border-x border-slate-200 focus:outline-none focus:bg-blue-50 disabled:bg-slate-50 disabled:text-slate-400';
+            qtyInput.setAttribute('aria-label', `Jumlah ${item.name}`);
+            qtyInput.addEventListener('input', () => handleCartQtyInput(idx, qtyInput));
+            qtyInput.addEventListener('blur', () => commitCartQtyInput(idx, qtyInput));
+            qtyInput.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    qtyInput.blur();
+                }
+            });
 
             const increaseBtn = document.createElement('button');
             increaseBtn.type = 'button';
@@ -344,7 +396,7 @@
             increaseBtn.setAttribute('aria-label', `Tambah jumlah ${item.name}`);
             increaseBtn.addEventListener('click', () => changeQty(idx, 1));
 
-            qtyControl.append(decreaseBtn, qtyText, increaseBtn);
+            qtyControl.append(decreaseBtn, qtyInput, increaseBtn);
 
             meta.append(priceWrap, qtyControl);
             content.append(title, variant, meta);
