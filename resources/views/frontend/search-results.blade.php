@@ -161,25 +161,54 @@
 
         container.innerHTML = Array.from(groups.entries()).map(([name, values]) => {
             const groupKey = normalizeFilterValue(name);
-            return `<div>
-                <h4 class="text-sm font-semibold text-slate-700 mb-3">${escapeHtml(name)}</h4>
-                <div class="filter-variant-options space-y-2" data-variant-group="${encodeURIComponent(groupKey)}">${Array.from(values.entries()).map(([key, label]) => `
-                    <label class="filter-variant-option flex items-center gap-2 text-sm text-slate-600">
-                        <input type="checkbox" class="filter-variant accent-blue-500" data-variant-name="${encodeURIComponent(groupKey)}" data-variant-value="${encodeURIComponent(key)}" onchange="updateVariantOptionVisibility('${encodeURIComponent(groupKey)}')">
-                        <span>${escapeHtml(label)}</span>
-                    </label>`).join('')}
-                </div>
+            return `<div class="filter-variant-group border-t border-slate-100 pt-3" data-variant-group="${encodeURIComponent(groupKey)}">
                 <button type="button"
-                    class="filter-variant-toggle mt-3 text-xs font-semibold text-blue-600 hover:text-blue-700 ${values.size <= filterOptionPreviewLimit ? 'hidden' : ''}"
+                    class="filter-variant-group-toggle flex w-full items-center justify-between gap-3 text-left"
                     data-variant-group="${encodeURIComponent(groupKey)}"
-                    data-expanded="false"
-                    onclick="toggleVariantOptions(this)">
-                    Lihat semua
+                    aria-expanded="false"
+                    onclick="toggleVariantGroup(this)">
+                    <span class="text-sm font-semibold text-slate-700">${escapeHtml(name)}</span>
+                    <i class="ri-arrow-down-s-line text-lg text-slate-400 transition-transform"></i>
                 </button>
+                <div class="filter-variant-panel hidden pt-3" data-variant-group="${encodeURIComponent(groupKey)}">
+                    <div class="filter-variant-options space-y-2" data-variant-group="${encodeURIComponent(groupKey)}">${Array.from(values.entries()).map(([key, label]) => `
+                        <label class="filter-variant-option flex items-center gap-2 text-sm text-slate-600">
+                            <input type="checkbox" class="filter-variant accent-blue-500" data-variant-name="${encodeURIComponent(groupKey)}" data-variant-value="${encodeURIComponent(key)}" onchange="updateVariantOptionVisibility(this.dataset.variantName || ''); openCheckedVariantGroups();">
+                            <span>${escapeHtml(label)}</span>
+                        </label>`).join('')}
+                    </div>
+                    <button type="button"
+                        class="filter-variant-toggle mt-3 text-xs font-semibold text-blue-600 hover:text-blue-700 ${values.size <= filterOptionPreviewLimit ? 'hidden' : ''}"
+                        data-variant-group="${encodeURIComponent(groupKey)}"
+                        data-expanded="false"
+                        onclick="toggleVariantOptions(this)">
+                        Lihat semua
+                    </button>
+                </div>
             </div>`;
         }).join('');
 
         document.querySelectorAll('.filter-variant-options').forEach((group) => updateVariantOptionVisibility(group.dataset.variantGroup || ''));
+    }
+
+    function toggleVariantGroup(button) {
+        setVariantGroupExpanded(button.dataset.variantGroup || '', button.getAttribute('aria-expanded') !== 'true');
+    }
+
+    function setVariantGroupExpanded(group, expanded) {
+        const button = document.querySelector(`.filter-variant-group-toggle[data-variant-group="${group}"]`);
+        const panel = document.querySelector(`.filter-variant-panel[data-variant-group="${group}"]`);
+        if (!button || !panel) return;
+
+        button.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        panel.classList.toggle('hidden', !expanded);
+        button.querySelector('i')?.classList.toggle('rotate-180', expanded);
+    }
+
+    function openCheckedVariantGroups() {
+        document.querySelectorAll('.filter-variant:checked').forEach((input) => {
+            setVariantGroupExpanded(input.dataset.variantName || '', true);
+        });
     }
 
     function toggleVariantOptions(button) {
@@ -330,6 +359,7 @@
             el.dataset.expanded = 'false';
         });
         document.querySelectorAll('.filter-variant-options').forEach((group) => updateVariantOptionVisibility(group.dataset.variantGroup || ''));
+        document.querySelectorAll('.filter-variant-group-toggle').forEach((el) => setVariantGroupExpanded(el.dataset.variantGroup || '', false));
         applyFilters();
     }
 

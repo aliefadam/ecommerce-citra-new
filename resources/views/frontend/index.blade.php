@@ -911,28 +911,57 @@
                     </label>
                 `).join('');
 
-                return `<div>
-                    <h4 class="text-sm font-semibold text-slate-700 mb-3">${escapeHtml(name)}</h4>
-                    <div class="relative mb-3">
-                        <i class="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-                        <input type="search" placeholder="Cari ${escapeHtml(name)}..."
-                            class="filter-variant-search w-full border border-slate-200 rounded-lg pl-8 pr-3 py-2 text-sm focus:outline-none focus:border-blue-400"
-                            data-variant-group="${encodeURIComponent(groupKey)}"
-                            oninput="searchVariantOptions(this)" />
-                    </div>
-                    <div class="filter-variant-options space-y-2" data-variant-group="${encodeURIComponent(groupKey)}">${valueItems}</div>
+                return `<div class="filter-variant-group border-t border-slate-100 pt-3" data-variant-group="${encodeURIComponent(groupKey)}">
                     <button type="button"
-                        class="filter-variant-toggle mt-3 text-xs font-semibold text-blue-600 hover:text-blue-700 ${values.size <= filterOptionPreviewLimit ? 'hidden' : ''}"
+                        class="filter-variant-group-toggle flex w-full items-center justify-between gap-3 text-left"
                         data-variant-group="${encodeURIComponent(groupKey)}"
-                        data-expanded="false"
-                        onclick="toggleVariantOptions(this)">
-                        Lihat semua
+                        aria-expanded="false"
+                        onclick="toggleVariantGroup(this)">
+                        <span class="text-sm font-semibold text-slate-700">${escapeHtml(name)}</span>
+                        <i class="ri-arrow-down-s-line text-lg text-slate-400 transition-transform"></i>
                     </button>
-                    <p class="filter-variant-empty hidden text-xs text-slate-400" data-variant-group="${encodeURIComponent(groupKey)}">Tidak ada varian yang cocok.</p>
+                    <div class="filter-variant-panel hidden pt-3" data-variant-group="${encodeURIComponent(groupKey)}">
+                        <div class="relative mb-3">
+                            <i class="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                            <input type="search" placeholder="Cari ${escapeHtml(name)}..."
+                                class="filter-variant-search w-full border border-slate-200 rounded-lg pl-8 pr-3 py-2 text-sm focus:outline-none focus:border-blue-400"
+                                data-variant-group="${encodeURIComponent(groupKey)}"
+                                oninput="searchVariantOptions(this)" />
+                        </div>
+                        <div class="filter-variant-options space-y-2" data-variant-group="${encodeURIComponent(groupKey)}">${valueItems}</div>
+                        <button type="button"
+                            class="filter-variant-toggle mt-3 text-xs font-semibold text-blue-600 hover:text-blue-700 ${values.size <= filterOptionPreviewLimit ? 'hidden' : ''}"
+                            data-variant-group="${encodeURIComponent(groupKey)}"
+                            data-expanded="false"
+                            onclick="toggleVariantOptions(this)">
+                            Lihat semua
+                        </button>
+                        <p class="filter-variant-empty hidden text-xs text-slate-400" data-variant-group="${encodeURIComponent(groupKey)}">Tidak ada varian yang cocok.</p>
+                    </div>
                 </div>`;
             }).join('');
 
             document.querySelectorAll('.filter-variant-options').forEach((group) => updateVariantOptionVisibility(group.dataset.variantGroup || ''));
+        }
+
+        function toggleVariantGroup(button) {
+            setVariantGroupExpanded(button.dataset.variantGroup || '', button.getAttribute('aria-expanded') !== 'true');
+        }
+
+        function setVariantGroupExpanded(group, expanded) {
+            const button = document.querySelector(`.filter-variant-group-toggle[data-variant-group="${group}"]`);
+            const panel = document.querySelector(`.filter-variant-panel[data-variant-group="${group}"]`);
+            if (!button || !panel) return;
+
+            button.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+            panel.classList.toggle('hidden', !expanded);
+            button.querySelector('i')?.classList.toggle('rotate-180', expanded);
+        }
+
+        function openCheckedVariantGroups() {
+            document.querySelectorAll('.filter-variant:checked').forEach((input) => {
+                setVariantGroupExpanded(input.dataset.variantName || '', true);
+            });
         }
 
         function searchVariantOptions(input) {
@@ -981,6 +1010,7 @@
                 selectedVariantFilters[name].add(value);
             });
             document.querySelectorAll('.filter-variant-options').forEach((group) => updateVariantOptionVisibility(group.dataset.variantGroup || ''));
+            openCheckedVariantGroups();
             applyFilter();
         }
 
@@ -1013,6 +1043,7 @@
                 el.dataset.expanded = 'false';
             });
             document.querySelectorAll('.filter-variant-options').forEach((group) => updateVariantOptionVisibility(group.dataset.variantGroup || ''));
+            document.querySelectorAll('.filter-variant-group-toggle').forEach((el) => setVariantGroupExpanded(el.dataset.variantGroup || '', false));
             applyFilter();
         }
 
