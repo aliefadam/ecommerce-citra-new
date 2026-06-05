@@ -215,68 +215,74 @@
                     </div>
                 </div>
 
-                {{-- Diskon, Ongkir, PPN --}}
-                <div class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800">
-                    <h2 class="mb-4 font-bold text-slate-800 dark:text-white">Diskon, Ongkir & PPN</h2>
-                    <div class="grid gap-4 md:grid-cols-3">
-                        <div>
-                            <label class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-300">Diskon Total (Rp)</label>
-                            <input id="discount_amount" name="discount_amount" type="number" min="0" step="1" value="{{ old('discount_amount', 0) }}" oninput="recalculateManualOrder()"
-                                class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200">
-                        </div>
-                        <div>
-                            <label class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-300">Ongkir Manual (Rp)</label>
-                            <input id="shipping_cost" name="shipping_cost" type="number" min="0" step="1" value="{{ old('shipping_cost', 0) }}" oninput="recalculateManualOrder()"
-                                class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200">
-                        </div>
-                        <div>
-                            <label class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-300">
-                                PPN (%)
-                                <span class="ml-1 text-xs font-normal text-slate-400">0 = tidak kena PPN</span>
-                            </label>
-                            <input id="ppn_rate" name="ppn_rate" type="number" min="0" max="100" step="0.01" value="{{ old('ppn_rate', 0) }}" oninput="recalculateManualOrder()"
-                                class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
-                                placeholder="mis. 11">
-                        </div>
-                    </div>
-                </div>
             </section>
 
             {{-- Sidebar total --}}
             <aside class="xl:sticky xl:top-24 xl:h-fit">
-                <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
-                    <h2 class="font-bold text-slate-800 dark:text-white">Total Transaksi</h2>
-                    <div class="mt-4 space-y-3 text-sm">
-                        <div class="flex justify-between gap-3 text-slate-500 dark:text-slate-400">
-                            <span>Subtotal Produk</span>
+                <div class="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800 overflow-hidden">
+                    <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-700">
+                        <h2 class="font-bold text-slate-800 dark:text-white">Ringkasan</h2>
+                    </div>
+
+                    <div class="divide-y divide-slate-100 dark:divide-slate-700/60 text-sm">
+                        {{-- Subtotal (read-only) --}}
+                        <div class="flex items-center justify-between gap-3 px-5 py-3">
+                            <span class="text-slate-500 dark:text-slate-400 shrink-0">Subtotal</span>
                             <span id="summarySubtotal" class="font-semibold text-slate-700 dark:text-slate-200">Rp 0</span>
                         </div>
-                        <div class="flex justify-between gap-3 text-slate-500 dark:text-slate-400">
-                            <span>Diskon Total</span>
-                            <span id="summaryDiscount" class="font-semibold text-emerald-600">- Rp 0</span>
-                        </div>
-                        <div class="flex justify-between gap-3 text-slate-500 dark:text-slate-400">
-                            <span>Ongkir</span>
-                            <span id="summaryShipping" class="font-semibold text-slate-700 dark:text-slate-200">Rp 0</span>
-                        </div>
-                        <div id="summaryPpnRow" class="hidden flex justify-between gap-3 text-slate-500 dark:text-slate-400">
-                            <span id="summaryPpnLabel">PPN (11%)</span>
-                            <span id="summaryPpn" class="font-semibold text-slate-700 dark:text-slate-200">Rp 0</span>
-                        </div>
-                        <div class="border-t border-slate-100 pt-4 dark:border-slate-700">
-                            <div class="flex justify-between gap-3 text-base font-bold text-blue-600">
-                                <span>Grand Total</span>
-                                <span id="summaryGrandTotal">Rp 0</span>
+
+                        {{-- Diskon --}}
+                        <div class="flex items-center gap-3 px-5 py-3">
+                            <label for="discount_amount" class="shrink-0 text-slate-500 dark:text-slate-400 w-20">Diskon</label>
+                            <div class="relative flex-1">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">Rp</span>
+                                <input id="discount_amount" name="discount_amount" type="number" min="0" step="1"
+                                    value="{{ old('discount_amount', 0) }}" oninput="recalculateManualOrder()"
+                                    class="w-full rounded-lg border border-slate-200 bg-slate-50 pl-8 pr-3 py-1.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200">
                             </div>
+                            <span id="summaryDiscount" class="shrink-0 w-24 text-right font-semibold text-emerald-600">- Rp 0</span>
+                        </div>
+
+                        {{-- Ongkir --}}
+                        <div class="flex items-center gap-3 px-5 py-3">
+                            <label for="shipping_cost" class="shrink-0 text-slate-500 dark:text-slate-400 w-20">Ongkir</label>
+                            <div class="relative flex-1">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">Rp</span>
+                                <input id="shipping_cost" name="shipping_cost" type="number" min="0" step="1"
+                                    value="{{ old('shipping_cost', 0) }}" oninput="recalculateManualOrder()"
+                                    class="w-full rounded-lg border border-slate-200 bg-slate-50 pl-8 pr-3 py-1.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200">
+                            </div>
+                            <span id="summaryShipping" class="shrink-0 w-24 text-right font-semibold text-slate-700 dark:text-slate-200">Rp 0</span>
+                        </div>
+
+                        {{-- PPN --}}
+                        <div class="flex items-center gap-3 px-5 py-3">
+                            <label for="ppn_rate" class="shrink-0 text-slate-500 dark:text-slate-400 w-20">PPN</label>
+                            <div class="relative flex-1">
+                                <input id="ppn_rate" name="ppn_rate" type="number" min="0" max="100" step="0.01"
+                                    value="{{ old('ppn_rate', 0) }}" oninput="recalculateManualOrder()"
+                                    placeholder="0"
+                                    class="w-full rounded-lg border border-slate-200 bg-slate-50 pl-3 pr-8 py-1.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200">
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">%</span>
+                            </div>
+                            <span id="summaryPpn" class="shrink-0 w-24 text-right font-semibold text-slate-700 dark:text-slate-200">Rp 0</span>
+                        </div>
+
+                        {{-- Grand Total --}}
+                        <div class="flex items-center justify-between gap-3 px-5 py-4 bg-blue-50 dark:bg-blue-900/20">
+                            <span class="font-bold text-blue-700 dark:text-blue-400">Grand Total</span>
+                            <span id="summaryGrandTotal" class="text-lg font-bold text-blue-600 dark:text-blue-400">Rp 0</span>
                         </div>
                     </div>
 
-                    <button type="submit"
-                        class="mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition-colors hover:bg-blue-700">
-                        <i data-lucide="save" class="h-4 w-4"></i>
-                        Simpan Transaksi
-                    </button>
-                    <p class="mt-3 text-xs text-slate-400 dark:text-slate-500">Backend akan menghitung ulang total dan mengurangi stok saat transaksi disimpan.</p>
+                    <div class="px-5 py-4">
+                        <button type="submit"
+                            class="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition-colors hover:bg-blue-700">
+                            <i data-lucide="save" class="h-4 w-4"></i>
+                            Simpan Transaksi
+                        </button>
+                        <p class="mt-3 text-xs text-center text-slate-400 dark:text-slate-500">Stok akan dikurangi saat transaksi disimpan.</p>
+                    </div>
                 </div>
             </aside>
         </form>
@@ -456,23 +462,11 @@
             const ppnAmount      = Math.round(taxableAmount * ppnRate / 100);
             const grandTotal     = taxableAmount + shippingCost + ppnAmount;
 
-            document.getElementById('summarySubtotal').textContent  = formatRupiah(subtotal);
-            document.getElementById('summaryDiscount').textContent  = '- ' + formatRupiah(discountAmount);
-            document.getElementById('summaryShipping').textContent  = formatRupiah(shippingCost);
+            document.getElementById('summarySubtotal').textContent   = formatRupiah(subtotal);
+            document.getElementById('summaryDiscount').textContent   = discountAmount > 0 ? '- ' + formatRupiah(discountAmount) : 'Rp 0';
+            document.getElementById('summaryShipping').textContent   = formatRupiah(shippingCost);
+            document.getElementById('summaryPpn').textContent        = formatRupiah(ppnAmount);
             document.getElementById('summaryGrandTotal').textContent = formatRupiah(grandTotal);
-
-            const ppnRow   = document.getElementById('summaryPpnRow');
-            const ppnLabel = document.getElementById('summaryPpnLabel');
-            const ppnEl    = document.getElementById('summaryPpn');
-            if (ppnRate > 0) {
-                ppnRow.classList.remove('hidden');
-                ppnRow.classList.add('flex');
-                ppnLabel.textContent = `PPN (${ppnRate}%)`;
-                ppnEl.textContent    = formatRupiah(ppnAmount);
-            } else {
-                ppnRow.classList.add('hidden');
-                ppnRow.classList.remove('flex');
-            }
         }
 
         addManualItem();
