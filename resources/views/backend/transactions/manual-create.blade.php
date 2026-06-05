@@ -5,24 +5,48 @@
 @section('style')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
     <style>
+        /* ── Select2 base ────────────────────────────────────────────── */
         .select2-container--default .select2-selection--single {
             height: 42px;
             border-radius: 0.75rem;
             border: 1px solid #e2e8f0;
             background: white;
-            display: flex;
-            align-items: center;
+            position: relative;
         }
         .select2-container--default .select2-selection--single .select2-selection__rendered {
             color: #1e293b;
             font-size: 0.875rem;
+            line-height: 42px;
             padding-left: 1rem;
-            padding-right: 2rem;
-            line-height: 40px;
+            padding-right: 3rem;
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .select2-container--default .select2-selection--single .select2-selection__arrow {
-            height: 40px;
-            right: 8px;
+            height: 42px;
+            width: 28px;
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
+        /* × clear button: posisi kanan sebelum arrow */
+        .select2-container--default .select2-selection--single .select2-selection__clear {
+            position: absolute;
+            top: 50%;
+            right: 28px;
+            transform: translateY(-50%);
+            float: none;
+            margin: 0;
+            font-size: 16px;
+            line-height: 1;
+            color: #94a3b8;
+            padding: 0 4px;
+            font-weight: bold;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__clear:hover {
+            color: #ef4444;
         }
         .select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
             background-color: #3b82f6;
@@ -43,12 +67,19 @@
             font-size: 0.875rem;
             padding: 8px 12px;
         }
+        /* ── Dark mode ───────────────────────────────────────────────── */
         .dark .select2-container--default .select2-selection--single {
             background: #334155;
             border-color: #475569;
         }
         .dark .select2-container--default .select2-selection--single .select2-selection__rendered {
             color: #e2e8f0;
+        }
+        .dark .select2-container--default .select2-selection--single .select2-selection__clear {
+            color: #64748b;
+        }
+        .dark .select2-container--default .select2-selection--single .select2-selection__clear:hover {
+            color: #f87171;
         }
         .dark .select2-dropdown {
             background: #1e293b;
@@ -61,17 +92,18 @@
         }
         .dark .select2-results__option {
             color: #e2e8f0;
+            background-color: #1e293b;
+        }
+        .dark .select2-results__option:hover {
+            background-color: #334155;
         }
         .dark .select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
             background-color: #3b82f6;
             color: white;
         }
-        .dark .select2-container--default .select2-results__option {
-            background-color: #1e293b;
-        }
-        .dark .select2-container--default .select2-results__option:hover {
-            background-color: #334155;
-        }
+        /* ── Produk column: lebar fixed agar tidak mendorong kolom lain */
+        .product-col { width: 300px; min-width: 300px; max-width: 300px; }
+        .product-col .select2-container { width: 100% !important; }
     </style>
 @endsection
 
@@ -169,13 +201,13 @@
                         <table class="w-full min-w-[58rem] text-sm">
                             <thead class="bg-slate-50 text-left text-xs font-semibold uppercase text-slate-400 dark:bg-slate-700/50 dark:text-slate-500">
                                 <tr>
-                                    <th class="px-3 py-3">Produk</th>
-                                    <th class="w-24 px-3 py-3">Qty</th>
-                                    <th class="w-36 px-3 py-3">Harga</th>
-                                    <th class="w-36 px-3 py-3">Diskon</th>
+                                    <th class="product-col px-3 py-3">Produk</th>
+                                    <th class="w-20 px-3 py-3">Qty</th>
+                                    <th class="w-32 px-3 py-3">Harga</th>
+                                    <th class="w-32 px-3 py-3">Diskon</th>
                                     <th class="px-3 py-3">Catatan</th>
-                                    <th class="w-36 px-3 py-3 text-right">Subtotal</th>
-                                    <th class="w-12 px-3 py-3"></th>
+                                    <th class="w-32 px-3 py-3 text-right">Subtotal</th>
+                                    <th class="w-10 px-3 py-3"></th>
                                 </tr>
                             </thead>
                             <tbody id="manualItemsBody" class="divide-y divide-slate-100 dark:divide-slate-700/60"></tbody>
@@ -324,8 +356,8 @@
             const row   = document.createElement('tr');
             row.dataset.itemRow = String(index);
             row.innerHTML = `
-                <td class="px-3 py-3 align-top" style="min-width:220px">
-                    <select id="product_select_${index}" name="items[${index}][product_variant_id]" class="w-full product-select2"></select>
+                <td class="product-col px-3 py-3 align-top">
+                    <select id="product_select_${index}" name="items[${index}][product_variant_id]" class="product-select2" style="width:100%"></select>
                     <p data-stock-hint class="mt-1 text-xs text-slate-400"></p>
                 </td>
                 <td class="px-3 py-3 align-top">
@@ -356,7 +388,7 @@
 
             // init Select2 AJAX for this product row
             $(`#product_select_${index}`).select2({
-                width: '100%',
+                width: 'resolve',
                 placeholder: 'Cari produk atau SKU...',
                 allowClear: true,
                 minimumInputLength: 0,
