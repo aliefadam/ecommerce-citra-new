@@ -844,7 +844,15 @@
               </div>
               <div class="inline-flex items-center border border-slate-200 rounded-lg overflow-hidden self-start sm:self-auto">
                 <button class="qty-btn px-2.5 py-1 text-slate-500 hover:bg-slate-50 transition-colors text-sm" onclick="changeQty(${i}, -1)">−</button>
-                <span class="px-3 py-1 text-sm font-semibold border-x border-slate-200">${item.qty}</span>
+                <input
+                  type="number"
+                  min="1"
+                  value="${item.qty}"
+                  inputmode="numeric"
+                  oninput="handleCheckoutQtyInput(${i}, this)"
+                  onblur="commitCheckoutQtyInput(${i}, this)"
+                  class="w-12 px-2 py-1 text-sm font-semibold text-center border-x border-slate-200 focus:outline-none focus:bg-blue-50"
+                />
                 <button class="qty-btn px-2.5 py-1 text-slate-500 hover:bg-slate-50 transition-colors text-sm" onclick="changeQty(${i}, 1)">+</button>
               </div>
             </div>
@@ -869,6 +877,28 @@
         function changeQty(idx, d) {
             cartItems[idx].qty = Math.max(1, cartItems[idx].qty + d);
             renderCart();
+            loadShippingOptions();
+        }
+
+        function normalizeCheckoutQty(value) {
+            const parsed = parseInt(value, 10);
+            if (!Number.isFinite(parsed)) return 1;
+            return Math.max(1, parsed);
+        }
+
+        function handleCheckoutQtyInput(idx, input) {
+            if (!cartItems[idx] || !input.value) return;
+            cartItems[idx].qty = normalizeCheckoutQty(input.value);
+            input.value = String(cartItems[idx].qty);
+            updateSummary();
+        }
+
+        function commitCheckoutQtyInput(idx, input) {
+            if (!cartItems[idx]) return;
+            cartItems[idx].qty = normalizeCheckoutQty(input.value);
+            input.value = String(cartItems[idx].qty);
+            renderCart();
+            loadShippingOptions();
         }
 
         function removeItem(idx) {
