@@ -168,6 +168,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::post('tax-invoices/{taxInvoice}/send', [AdminTaxInvoiceController::class, 'send'])->name('tax-invoices.send')->middleware('admin.permission:tax_invoices.send');
         Route::get('transactions/create-manual', [AdminManualTransactionController::class, 'create'])->name('transactions.create-manual')->middleware('admin.permission:transactions.create');
         Route::post('transactions/create-manual', [AdminManualTransactionController::class, 'store'])->name('transactions.store-manual')->middleware('admin.permission:transactions.create');
+        Route::get('transactions/create-manual/search-customers', [AdminManualTransactionController::class, 'searchCustomers'])->name('transactions.create-manual.search-customers')->middleware('admin.permission:transactions.create');
+        Route::get('transactions/create-manual/search-products', [AdminManualTransactionController::class, 'searchProducts'])->name('transactions.create-manual.search-products')->middleware('admin.permission:transactions.create');
         Route::patch('transactions/{transaction}/manual-payment', [AdminManualTransactionController::class, 'updatePayment'])->name('transactions.manual-payment.update')->middleware('admin.permission:transactions.verify_payment');
         Route::patch('transactions/{transaction}/manual-shipping', [AdminManualTransactionController::class, 'updateShipping'])->name('transactions.manual-shipping.update')->middleware('admin.permission:transactions.edit');
         Route::resource('transactions', TransactionController::class)->only(['index', 'show'])

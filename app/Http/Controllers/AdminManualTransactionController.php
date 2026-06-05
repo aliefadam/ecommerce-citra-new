@@ -16,58 +16,87 @@ use Illuminate\Validation\ValidationException;
 
 class AdminManualTransactionController extends Controller
 {
-    public function create()
+    public function searchCustomers(Request $request): \Illuminate\Http\JsonResponse
     {
-        $customers = User::query()
-            ->with(['addresses' => fn ($query) => $query->orderByDesc('is_primary')->latest('id')])
-            ->where(function ($query) {
-                $query->whereNull('role')->orWhere('role', '!=', 'admin');
+        $term = trim((string) ($request->query('q', '')));
+        $query = User::query()
+            ->with(['addresses' => fn ($q) => $q->orderByDesc('is_primary')->latest('id')])
+            ->where(function ($q) {
+                $q->whereNull('role')->orWhere('role', '!=', 'admin');
             })
             ->whereNull('admin_role_id')
-            ->orderBy('name')
-            ->get()
-            ->map(function (User $user) {
-                $address = $user->addresses->first();
+            ->orderBy('name');
 
-                return [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'phone' => trim((string) ($user->phone_country_code ?? '') . (string) ($user->phone_number ?? '')),
-                    'address' => $address ? [
-                        'recipient_name' => $address->recipient_name,
-                        'phone' => trim((string) ($address->phone_country_code ?? '') . (string) ($address->phone_number ?? '')),
-                        'address_line' => $address->address_line,
-                        'province' => $address->province,
-                        'city' => $address->city,
-                        'district' => $address->district,
-                        'postal_code' => $address->postal_code,
-                    ] : null,
-                ];
-            })
-            ->values();
+        if ($term !== '') {
+            $query->where(function ($q) use ($term) {
+                $q->where('name', 'like', '%' . $term . '%')
+                  ->orWhere('email', 'like', '%' . $term . '%');
+            });
+        }
 
-        $products = ProductVariant::query()
-            ->with(['product', 'variant', 'attributeValues.definition'])
+        $results = $query->limit(20)->get()->map(function (User $user) {
+            $address = $user->addresses->first();
+            return [
+                'id'      => $user->id,
+                'text'    => $user->name . ' — ' . $user->email,
+                'name'    => $user->name,
+                'email'   => $user->email,
+                'phone'   => trim((string) ($user->phone_country_code ?? '') . (string) ($user->phone_number ?? '')),
+                'address' => $address ? [
+                    'recipient_name' => $address->recipient_name,
+                    'phone'          => trim((string) ($address->phone_country_code ?? '') . (string) ($address->phone_number ?? '')),
+                    'address_line'   => $address->address_line,
+                    'province'       => $address->province,
+                    'city'           => $address->city,
+                    'district'       => $address->district,
+                    'postal_code'    => $address->postal_code,
+                ] : null,
+            ];
+        });
+
+        return response()->json(['results' => $results]);
+    }
+
+    public function searchProducts(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $term = trim((string) ($request->query('q', '')));
+        $query = ProductVariant::query()
+            ->with(['product', 'attributeValues.definition'])
             ->whereHas('product')
             ->orderBy('product_id')
-            ->orderBy('id')
-            ->get()
-            ->map(function (ProductVariant $variant) {
-                return [
-                    'id' => $variant->id,
-                    'product_id' => $variant->product_id,
-                    'product_name' => $variant->product?->name ?? 'Produk',
-                    'variant_name' => $variant->skuLabel(),
-                    'sku' => (string) ($variant->sku ?? ''),
-                    'price' => (int) round((float) $variant->price),
-                    'stock' => (int) $variant->stock,
-                    'status' => (string) ($variant->product?->status ?? 'inactive'),
-                ];
-            })
-            ->values();
+            ->orderBy('id');
 
-        return view('backend.transactions.manual-create', compact('customers', 'products'));
+        if ($term !== '') {
+            $query->where(function ($q) use ($term) {
+                $q->whereHas('product', fn ($pq) => $pq->where('name', 'like', '%' . $term . '%'))
+                  ->orWhere('sku', 'like', '%' . $term . '%');
+            });
+        }
+
+        $results = $query->limit(30)->get()->map(function (ProductVariant $variant) {
+            $flags = array_filter([
+                $variant->sku ? 'SKU ' . $variant->sku : '',
+                'Stok ' . (int) $variant->stock,
+                $variant->product?->status !== 'active' ? 'Nonaktif' : '',
+            ]);
+            return [
+                'id'           => $variant->id,
+                'text'         => ($variant->product?->name ?? 'Produk') . ' - ' . $variant->skuLabel() . ' (' . implode(' | ', $flags) . ')',
+                'product_name' => $variant->product?->name ?? 'Produk',
+                'variant_name' => $variant->skuLabel(),
+                'sku'          => (string) ($variant->sku ?? ''),
+                'price'        => (int) round((float) $variant->price),
+                'stock'        => (int) $variant->stock,
+                'status'       => (string) ($variant->product?->status ?? 'inactive'),
+            ];
+        });
+
+        return response()->json(['results' => $results]);
+    }
+
+    public function create()
+    {
+        return view('backend.transactions.manual-create');
     }
 
     public function store(Request $request)
@@ -86,6 +115,7 @@ class AdminManualTransactionController extends Controller
             'items.*.note' => ['nullable', 'string', 'max:500'],
             'discount_amount' => ['nullable', 'integer', 'min:0'],
             'shipping_cost' => ['nullable', 'integer', 'min:0'],
+            'ppn_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
         ]);
 
         $transaction = DB::transaction(function () use ($request, $validated) {
@@ -135,7 +165,10 @@ class AdminManualTransactionController extends Controller
 
             $discountAmount = min($subtotal, max(0, (int) ($validated['discount_amount'] ?? 0)));
             $shippingCost = max(0, (int) ($validated['shipping_cost'] ?? 0));
-            $grandTotal = max(0, $subtotal - $discountAmount) + $shippingCost;
+            $ppnRate = max(0, min(100, (float) ($validated['ppn_rate'] ?? 0)));
+            $taxableAmount = max(0, $subtotal - $discountAmount);
+            $taxAmount = (int) round($taxableAmount * $ppnRate / 100);
+            $grandTotal = $taxableAmount + $shippingCost + $taxAmount;
             $customerMode = (string) $validated['customer_mode'];
 
             $transaction = Transaction::create([
@@ -155,10 +188,10 @@ class AdminManualTransactionController extends Controller
                 'subtotal_amount' => $subtotal,
                 'shipping_cost' => $shippingCost,
                 'discount_amount' => $discountAmount,
-                'tax_name' => null,
-                'tax_rate' => 0,
-                'taxable_amount' => max(0, $subtotal - $discountAmount),
-                'tax_amount' => 0,
+                'tax_name' => $ppnRate > 0 ? 'PPN' : null,
+                'tax_rate' => $ppnRate,
+                'taxable_amount' => $taxableAmount,
+                'tax_amount' => $taxAmount,
                 'grand_total' => $grandTotal,
                 'shipping_type' => 'belum_ditentukan',
                 'shipping_label' => 'Belum ditentukan',
