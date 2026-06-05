@@ -411,6 +411,7 @@
         let viewMode = 'grid';
         let searchQuery = '';
         const productPageSize = 12;
+        const filterOptionPreviewLimit = 4;
         let visibleProductCount = productPageSize;
         let currentRenderedProducts = [...allProducts];
 
@@ -608,22 +609,51 @@
                             oninput="searchVariantOptions(this)" />
                     </div>
                     <div class="filter-variant-options space-y-2" data-variant-group="${encodeURIComponent(groupKey)}">${valueItems}</div>
+                    <button type="button"
+                        class="filter-variant-toggle mt-3 text-xs font-semibold text-blue-600 hover:text-blue-700 ${values.size <= filterOptionPreviewLimit ? 'hidden' : ''}"
+                        data-variant-group="${encodeURIComponent(groupKey)}"
+                        data-expanded="false"
+                        onclick="toggleVariantOptions(this)">
+                        Lihat semua
+                    </button>
                     <p class="filter-variant-empty hidden text-xs text-slate-400" data-variant-group="${encodeURIComponent(groupKey)}">Tidak ada varian yang cocok.</p>
                 </div>`;
             }).join('');
+
+            document.querySelectorAll('.filter-variant-options').forEach((group) => updateVariantOptionVisibility(group.dataset.variantGroup || ''));
         }
 
         function searchVariantOptions(input) {
-            const group = input.dataset.variantGroup || '';
-            const query = normalizeFilterValue(input.value);
-            const options = document.querySelectorAll(`.filter-variant-options[data-variant-group="${group}"] .filter-variant-option`);
+            updateVariantOptionVisibility(input.dataset.variantGroup || '');
+        }
+
+        function toggleVariantOptions(button) {
+            button.dataset.expanded = button.dataset.expanded === 'true' ? 'false' : 'true';
+            updateVariantOptionVisibility(button.dataset.variantGroup || '');
+        }
+
+        function updateVariantOptionVisibility(group) {
+            const searchInput = document.querySelector(`.filter-variant-search[data-variant-group="${group}"]`);
+            const toggle = document.querySelector(`.filter-variant-toggle[data-variant-group="${group}"]`);
+            const query = normalizeFilterValue(searchInput?.value || '');
+            const options = Array.from(document.querySelectorAll(`.filter-variant-options[data-variant-group="${group}"] .filter-variant-option`));
+            const matchingOptions = options.filter((option) => !query || String(option.dataset.searchValue || '').includes(query));
+            const isExpanded = toggle?.dataset.expanded === 'true';
             let visibleCount = 0;
 
             options.forEach((option) => {
-                const isVisible = !query || String(option.dataset.searchValue || '').includes(query);
+                const matchesSearch = !query || String(option.dataset.searchValue || '').includes(query);
+                const isChecked = option.querySelector('.filter-variant')?.checked;
+                const previewIndex = matchingOptions.indexOf(option);
+                const isVisible = matchesSearch && (query || isExpanded || previewIndex < filterOptionPreviewLimit || isChecked);
                 option.classList.toggle('hidden', !isVisible);
                 if (isVisible) visibleCount++;
             });
+
+            if (toggle) {
+                toggle.classList.toggle('hidden', query || matchingOptions.length <= filterOptionPreviewLimit);
+                toggle.textContent = isExpanded ? 'Ringkas' : `Lihat semua (${matchingOptions.length})`;
+            }
 
             const empty = document.querySelector(`.filter-variant-empty[data-variant-group="${group}"]`);
             if (empty) empty.classList.toggle('hidden', visibleCount > 0);
@@ -638,6 +668,7 @@
                 if (!selectedVariantFilters[name]) selectedVariantFilters[name] = new Set();
                 selectedVariantFilters[name].add(value);
             });
+            document.querySelectorAll('.filter-variant-options').forEach((group) => updateVariantOptionVisibility(group.dataset.variantGroup || ''));
             applyFilter();
         }
 
@@ -688,8 +719,11 @@
             });
             document.querySelectorAll('.filter-variant-search').forEach((el) => {
                 el.value = '';
-                searchVariantOptions(el);
             });
+            document.querySelectorAll('.filter-variant-toggle').forEach((el) => {
+                el.dataset.expanded = 'false';
+            });
+            document.querySelectorAll('.filter-variant-options').forEach((group) => updateVariantOptionVisibility(group.dataset.variantGroup || ''));
             const priceMin = document.getElementById('priceMin');
             const priceMax = document.getElementById('priceMax');
             const filterPromo = document.getElementById('filterPromo');

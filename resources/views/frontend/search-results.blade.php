@@ -125,6 +125,7 @@
     const query = @json($query);
     const allProducts = @json($results ?? []);
     const searchMainCategories = @json($searchMainCategories ?? []);
+    const filterOptionPreviewLimit = 4;
     let selectedVariantFilters = {};
 
     function normalizeFilterValue(value) {
@@ -162,14 +163,45 @@
             const groupKey = normalizeFilterValue(name);
             return `<div>
                 <h4 class="text-sm font-semibold text-slate-700 mb-3">${escapeHtml(name)}</h4>
-                <div class="space-y-2">${Array.from(values.entries()).map(([key, label]) => `
-                    <label class="flex items-center gap-2 text-sm text-slate-600">
-                        <input type="checkbox" class="filter-variant accent-blue-500" data-variant-name="${encodeURIComponent(groupKey)}" data-variant-value="${encodeURIComponent(key)}">
+                <div class="filter-variant-options space-y-2" data-variant-group="${encodeURIComponent(groupKey)}">${Array.from(values.entries()).map(([key, label]) => `
+                    <label class="filter-variant-option flex items-center gap-2 text-sm text-slate-600">
+                        <input type="checkbox" class="filter-variant accent-blue-500" data-variant-name="${encodeURIComponent(groupKey)}" data-variant-value="${encodeURIComponent(key)}" onchange="updateVariantOptionVisibility('${encodeURIComponent(groupKey)}')">
                         <span>${escapeHtml(label)}</span>
                     </label>`).join('')}
                 </div>
+                <button type="button"
+                    class="filter-variant-toggle mt-3 text-xs font-semibold text-blue-600 hover:text-blue-700 ${values.size <= filterOptionPreviewLimit ? 'hidden' : ''}"
+                    data-variant-group="${encodeURIComponent(groupKey)}"
+                    data-expanded="false"
+                    onclick="toggleVariantOptions(this)">
+                    Lihat semua
+                </button>
             </div>`;
         }).join('');
+
+        document.querySelectorAll('.filter-variant-options').forEach((group) => updateVariantOptionVisibility(group.dataset.variantGroup || ''));
+    }
+
+    function toggleVariantOptions(button) {
+        button.dataset.expanded = button.dataset.expanded === 'true' ? 'false' : 'true';
+        updateVariantOptionVisibility(button.dataset.variantGroup || '');
+    }
+
+    function updateVariantOptionVisibility(group) {
+        const toggle = document.querySelector(`.filter-variant-toggle[data-variant-group="${group}"]`);
+        const options = Array.from(document.querySelectorAll(`.filter-variant-options[data-variant-group="${group}"] .filter-variant-option`));
+        const isExpanded = toggle?.dataset.expanded === 'true';
+
+        options.forEach((option, index) => {
+            const isChecked = option.querySelector('.filter-variant')?.checked;
+            const isVisible = isExpanded || index < filterOptionPreviewLimit || isChecked;
+            option.classList.toggle('hidden', !isVisible);
+        });
+
+        if (toggle) {
+            toggle.classList.toggle('hidden', options.length <= filterOptionPreviewLimit);
+            toggle.textContent = isExpanded ? 'Ringkas' : `Lihat semua (${options.length})`;
+        }
     }
 
     function collectVariantFilters() {
@@ -294,6 +326,10 @@
         document.getElementById('ratingMin').value = '0';
         document.getElementById('sortSel').value = 'relevant';
         selectedVariantFilters = {};
+        document.querySelectorAll('.filter-variant-toggle').forEach((el) => {
+            el.dataset.expanded = 'false';
+        });
+        document.querySelectorAll('.filter-variant-options').forEach((group) => updateVariantOptionVisibility(group.dataset.variantGroup || ''));
         applyFilters();
     }
 
