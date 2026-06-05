@@ -24,69 +24,6 @@
             </div>
         </div>
 
-        {{-- ============ ACTION CARDS ============ --}}
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            @foreach ($actionCards as $actionCard)
-                @php
-                    $actionColor = $actionCard['color'] ?? 'slate';
-                    $actionStyle = match ($actionColor) {
-                        'amber'
-                            => [
-                                'iconBg' => 'bg-amber-100 dark:bg-amber-900/40',
-                                'iconText' => 'text-amber-600 dark:text-amber-400',
-                                'link' => 'text-amber-700 dark:text-amber-400',
-                            ],
-                        'red'
-                            => [
-                                'iconBg' => 'bg-red-100 dark:bg-red-900/40',
-                                'iconText' => 'text-red-600 dark:text-red-400',
-                                'link' => 'text-red-700 dark:text-red-400',
-                            ],
-                        default
-                            => [
-                                'iconBg' => 'bg-slate-100 dark:bg-slate-700',
-                                'iconText' => 'text-slate-600 dark:text-slate-300',
-                                'link' => 'text-slate-700 dark:text-slate-300',
-                            ],
-                    };
-                @endphp
-
-                <a href="{{ $actionCard['url'] }}"
-                    class="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-slate-700 hover:-translate-y-0.5 hover:shadow-md transition-all">
-                    <div class="flex items-start justify-between gap-3">
-                        <div>
-                            <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
-                                {{ $actionCard['label'] }}</p>
-                            <p class="text-xs text-slate-400 mt-1">{{ $actionCard['description'] }}</p>
-                        </div>
-                        <span class="w-9 h-9 rounded-xl {{ $actionStyle['iconBg'] }} flex items-center justify-center">
-                            <i data-lucide="{{ $actionCard['icon'] }}" class="w-4 h-4 {{ $actionStyle['iconText'] }}"></i>
-                        </span>
-                    </div>
-                    <div class="mt-4 flex items-end justify-between gap-3">
-                        <div>
-                            <div class="text-2xl font-bold text-slate-800 dark:text-white">
-                                {{ number_format($actionCard['count'], 0, ',', '.') }}
-                            </div>
-                            <div class="text-xs text-slate-400 mt-1">
-                                {{ $actionCard['amount'] === null ? 'item' : 'transaksi' }}
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            @if ($actionCard['amount'] !== null)
-                                <div class="text-xs text-slate-400 mb-1">Nominal</div>
-                                <div class="text-sm font-bold text-slate-800 dark:text-white">
-                                    Rp {{ number_format($actionCard['amount'], 0, ',', '.') }}
-                                </div>
-                            @else
-                                <div class="text-xs font-semibold {{ $actionStyle['link'] }}">Cek stok</div>
-                            @endif
-                        </div>
-                    </div>
-                </a>
-            @endforeach
-        </div>
-
         {{-- ============ STAT CARDS ============ --}}
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
 
