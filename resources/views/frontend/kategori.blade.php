@@ -106,6 +106,14 @@
             cursor: grabbing;
         }
 
+        @media (min-width: 1024px) {
+            #filterPanel {
+                max-height: calc(100vh - 6rem);
+                overflow-y: auto;
+                overscroll-behavior: contain;
+            }
+        }
+
         @media (max-width: 1023px) {
             #filterSidebar.mobile-filter-drawer {
                 position: fixed;
