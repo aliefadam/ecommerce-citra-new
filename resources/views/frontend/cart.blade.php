@@ -377,7 +377,7 @@
             qtyInput.inputMode = 'numeric';
             qtyInput.value = String(item.qty || 1);
             qtyInput.disabled = pendingCartIds.has(Number(item.cartId));
-            qtyInput.className = 'w-16 px-2 py-1 text-sm font-semibold text-center border-x border-slate-200 focus:outline-none focus:bg-blue-50 disabled:bg-slate-50 disabled:text-slate-400';
+            qtyInput.className = 'w-20 px-2 py-1 text-sm font-semibold text-center border-x border-slate-200 focus:outline-none focus:bg-blue-50 disabled:bg-slate-50 disabled:text-slate-400';
             qtyInput.setAttribute('aria-label', `Jumlah ${item.name}`);
             qtyInput.addEventListener('input', () => handleCartQtyInput(idx, qtyInput));
             qtyInput.addEventListener('blur', () => commitCartQtyInput(idx, qtyInput));
