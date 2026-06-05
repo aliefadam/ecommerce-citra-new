@@ -161,6 +161,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
             ->middlewareFor(['show'], 'admin.permission:transactions.show');
         Route::patch('transactions/{transaction}/process', [TransactionController::class, 'process'])->name('transactions.process')->middleware('admin.permission:transactions.edit');
         Route::patch('transactions/{transaction}/ship', [TransactionController::class, 'ship'])->name('transactions.ship')->middleware('admin.permission:transactions.edit');
+        Route::get('transactions/{transaction}/shipping-label', [TransactionController::class, 'shippingLabel'])->name('transactions.shipping-label')->middleware('admin.permission:transactions.show');
         Route::patch('transactions/{transaction}/verify-payment', [TransactionController::class, 'verifyPayment'])->name('transactions.verify-payment')->middleware('admin.permission:transactions.verify_payment');
         Route::get('return-requests', [AdminReturnRequestController::class, 'index'])->name('return-requests.index')->middleware('admin.permission:return_requests.index');
         Route::patch('return-requests/{returnRequest}', [AdminReturnRequestController::class, 'update'])->name('return-requests.update')->middleware('admin.permission:return_requests.edit');

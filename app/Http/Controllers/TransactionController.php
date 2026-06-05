@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ProductVariant;
 use App\Models\StockMovement;
+use App\Models\StoreLocation;
 use App\Models\Transaction;
 use App\Models\TransactionStatusHistory;
 use App\Models\UserNotification;
@@ -189,6 +190,17 @@ class TransactionController extends Controller
         $transaction->load(['user', 'details', 'statusHistories.user', 'returnRequests.items']);
 
         return view('backend.transactions.show', compact('transaction'));
+    }
+
+    public function shippingLabel(Transaction $transaction)
+    {
+        $transaction->load(['user', 'details']);
+        $storeLocation = StoreLocation::query()
+            ->where('is_active', true)
+            ->latest('id')
+            ->first();
+
+        return view('invoices.shipping-label', compact('transaction', 'storeLocation'));
     }
 
     private function recordHistory(Transaction $transaction, ?string $from, string $to, string $type, ?string $note = null, ?int $userId = null): void

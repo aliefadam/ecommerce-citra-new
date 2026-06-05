@@ -11,6 +11,7 @@
                 <p class="text-sm text-slate-500 dark:text-slate-400">{{ $transaction->order_id }}</p>
             </div>
             <div class="flex flex-wrap gap-2">
+                <a href="{{ route('transactions.shipping-label', $transaction) }}" target="_blank" class="rounded-xl border border-blue-200 px-4 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-50">Print Resi</a>
                 <a href="{{ route('invoice.show', $transaction) }}" target="_blank" class="rounded-xl border border-indigo-200 px-4 py-2 text-sm font-semibold text-indigo-600 hover:bg-indigo-50">Print Invoice</a>
             </div>
         </div>

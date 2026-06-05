@@ -173,6 +173,7 @@
                     'shipping_note' => (string) ($tx->shipping_note ?? ''),
                     'grand_total' => (int) $tx->grand_total,
                     'invoice_url' => route('invoice.show', ['transaction' => $tx->id]),
+                    'shipping_label_url' => route('transactions.shipping-label', ['transaction' => $tx->id]),
                     'detail_url' => route('transactions.show', ['transaction' => $tx->id]),
                     'payment_type_raw' => (string) ($tx->payment_type ?? ''),
                     'payment_proof_url' => $tx->payment_proof_path ? asset(ltrim((string) $tx->payment_proof_path, '/')) : '',
@@ -270,6 +271,10 @@
             html += `<a href="${tx.invoice_url}" target="_blank" class="w-full text-left px-4 py-2.5 text-sm text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 flex items-center gap-2.5 transition-colors">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                 Print Invoice
+            </a>`;
+            html += `<a href="${tx.shipping_label_url}" target="_blank" class="w-full text-left px-4 py-2.5 text-sm text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 flex items-center gap-2.5 transition-colors">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0"><path d="M21 16V8a2 2 0 0 0-1-1.73L13 2.27a2 2 0 0 0-2 0L4 6.27A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/></svg>
+                Print Resi
             </a>`;
             if (['paid', 'settlement', 'capture'].includes(s)) {
                 html += `<button type="button" onclick="processTransaction(${tx.id}); closeFloatingMenu()" class="w-full text-left px-4 py-2.5 text-sm text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 flex items-center gap-2.5 transition-colors">
