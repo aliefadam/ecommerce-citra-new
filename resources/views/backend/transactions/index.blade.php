@@ -4,9 +4,16 @@
 
 @section('content')
     <main class="flex-1 p-4 sm:p-6 mt-6">
-        <div class="mb-6">
-            <h1 class="text-2xl font-bold text-slate-800 dark:text-white">Transactions</h1>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Daftar transaksi checkout ecommerce dan manual admin.</p>
+        <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800 dark:text-white">Transactions</h1>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Daftar transaksi checkout ecommerce dan manual admin.</p>
+            </div>
+            <a href="{{ route('transactions.create-manual') }}"
+               class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-blue-500/20 hover:bg-blue-700 transition-colors shrink-0">
+                <i data-lucide="plus" class="h-4 w-4"></i>
+                Buat Transaksi
+            </a>
         </div>
 
         <div id="txSummaryCards" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-4"></div>
