@@ -115,6 +115,45 @@
             </div>
         </div>
 
+        {{-- Payment Verification Modal --}}
+        <div id="verifyPaymentModal" class="fixed inset-0 z-[99998] hidden items-center justify-center p-4">
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeVerifyPaymentModal()"></div>
+            <div
+                class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md border border-slate-200 dark:border-slate-700 p-6">
+                <div class="flex items-center justify-between mb-5">
+                    <div>
+                        <h3 class="font-bold text-lg text-slate-800 dark:text-white">Verifikasi Pembayaran</h3>
+                        <p id="verifyPaymentInvoice" class="text-xs text-slate-400 dark:text-slate-500 mt-0.5"></p>
+                    </div>
+                    <button type="button" onclick="closeVerifyPaymentModal()"
+                        class="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5">
+                            <line x1="18" y1="6" x2="6" y2="18" />
+                            <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="space-y-4">
+                    <a id="verifyPaymentProofLink" href="#" target="_blank"
+                        class="hidden block rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700">
+                        <img id="verifyPaymentProofImage" src="" class="w-full max-h-72 object-cover" alt="Bukti transfer">
+                    </a>
+                    <p id="verifyPaymentNoProof" class="hidden text-sm text-slate-400">Customer belum upload bukti transfer.</p>
+                    <textarea id="verifyPaymentNote" rows="4" placeholder="Catatan admin"
+                        class="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-3 text-sm dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
+                    <p id="verifyPaymentError" class="text-xs text-red-500 hidden"></p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button type="button" onclick="submitVerifyPayment('reject')"
+                            class="rounded-xl border border-red-200 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors">Tolak</button>
+                        <button type="button" onclick="submitVerifyPayment('approve')"
+                            class="rounded-xl bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition-colors">Setujui</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         {{-- Tracking Modal --}}
         <div id="trackingModal" class="fixed inset-0 z-[99999] hidden items-center justify-center p-4">
             <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeTrackingModal()"></div>
@@ -175,8 +214,10 @@
                     'invoice_url' => route('invoice.show', ['transaction' => $tx->id]),
                     'shipping_label_url' => route('transactions.shipping-label', ['transaction' => $tx->id]),
                     'detail_url' => route('transactions.show', ['transaction' => $tx->id]),
+                    'verify_payment_url' => route('transactions.verify-payment', ['transaction' => $tx->id]),
                     'payment_type_raw' => (string) ($tx->payment_type ?? ''),
                     'payment_proof_url' => $tx->payment_proof_path ? asset(ltrim((string) $tx->payment_proof_path, '/')) : '',
+                    'payment_admin_note' => (string) ($tx->payment_admin_note ?? ''),
                     'tracking_number' => $tx->tracking_number,
                     'shipping_recipient_name' => $tx->shipping_recipient_name ?? '',
                     'shipping_phone' => $tx->shipping_phone ?? '',
@@ -211,6 +252,7 @@
         const csrfToken = @json(csrf_token());
         let txTableApi = null;
         let activeShipTxId = null;
+        let activeVerifyTxId = null;
         let activeMenuTxId = null;
 
         function txStatusBadge(status) {
@@ -276,6 +318,12 @@
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0"><path d="M21 16V8a2 2 0 0 0-1-1.73L13 2.27a2 2 0 0 0-2 0L4 6.27A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/></svg>
                 Print Resi
             </a>`;
+            if (String(tx.payment_type_raw || '').toLowerCase() === 'manual_transfer' && s === 'menunggu_verifikasi') {
+                html += `<button type="button" onclick="openVerifyPaymentModal(${tx.id}); closeFloatingMenu()" class="w-full text-left px-4 py-2.5 text-sm text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 flex items-center gap-2.5 transition-colors">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M7 15h4"/></svg>
+                    Verifikasi Pembayaran
+                </button>`;
+            }
             if (['paid', 'settlement', 'capture'].includes(s)) {
                 html += `<button type="button" onclick="processTransaction(${tx.id}); closeFloatingMenu()" class="w-full text-left px-4 py-2.5 text-sm text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 flex items-center gap-2.5 transition-colors">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
@@ -315,7 +363,7 @@
             let left = rect.right - menuWidth;
             let top = rect.bottom + 4;
             if (left < 8) left = 8;
-            if (top + 160 > window.innerHeight) top = rect.top - 4 - 160;
+            if (top + 260 > window.innerHeight) top = rect.top - 4 - 260;
 
             menu.style.left = left + 'px';
             menu.style.top = top + 'px';
@@ -466,6 +514,79 @@
             modal.classList.add('hidden');
             modal.classList.remove('flex');
             activeShipTxId = null;
+        }
+
+        function openVerifyPaymentModal(id) {
+            activeVerifyTxId = id;
+            const tx = txItems.find((item) => Number(item.id) === Number(id));
+            if (!tx) return;
+
+            const modal = document.getElementById('verifyPaymentModal');
+            const proofLink = document.getElementById('verifyPaymentProofLink');
+            const proofImage = document.getElementById('verifyPaymentProofImage');
+            const noProof = document.getElementById('verifyPaymentNoProof');
+            const note = document.getElementById('verifyPaymentNote');
+            const error = document.getElementById('verifyPaymentError');
+
+            document.getElementById('verifyPaymentInvoice').textContent = tx.invoice_no;
+            note.value = tx.payment_admin_note || '';
+            error.textContent = '';
+            error.classList.add('hidden');
+
+            if (tx.payment_proof_url) {
+                proofLink.href = tx.payment_proof_url;
+                proofImage.src = tx.payment_proof_url;
+                proofLink.classList.remove('hidden');
+                noProof.classList.add('hidden');
+            } else {
+                proofLink.href = '#';
+                proofImage.src = '';
+                proofLink.classList.add('hidden');
+                noProof.classList.remove('hidden');
+            }
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeVerifyPaymentModal() {
+            const modal = document.getElementById('verifyPaymentModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            activeVerifyTxId = null;
+        }
+
+        async function submitVerifyPayment(action) {
+            const id = activeVerifyTxId;
+            if (!id) return;
+            const tx = txItems.find((item) => Number(item.id) === Number(id));
+            if (!tx) return;
+            const error = document.getElementById('verifyPaymentError');
+            error.textContent = '';
+            error.classList.add('hidden');
+
+            const res = await fetch(tx.verify_payment_url, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({
+                    action,
+                    payment_admin_note: document.getElementById('verifyPaymentNote')?.value || '',
+                }),
+            });
+
+            if (!res.ok) {
+                const json = await res.json().catch(() => ({}));
+                error.textContent = json?.message || 'Gagal memverifikasi pembayaran.';
+                error.classList.remove('hidden');
+                return;
+            }
+
+            closeVerifyPaymentModal();
+            window.location.reload();
         }
 
         async function submitShip() {

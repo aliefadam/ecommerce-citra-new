@@ -83,7 +83,7 @@
 
                 @if ($transaction->payment_type === 'manual_transfer')
                     <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
-                        <h2 class="font-bold text-slate-800 dark:text-white mb-4">Verifikasi Pembayaran</h2>
+                        <h2 class="font-bold text-slate-800 dark:text-white mb-4">Bukti Transfer</h2>
                         @if ($transaction->payment_proof_path)
                             <a href="{{ asset(ltrim($transaction->payment_proof_path, '/')) }}" target="_blank" class="block mb-3 rounded-xl overflow-hidden border border-slate-200">
                                 <img src="{{ asset(ltrim($transaction->payment_proof_path, '/')) }}" class="w-full max-h-56 object-cover" alt="Bukti transfer">
@@ -91,15 +91,9 @@
                         @else
                             <p class="text-sm text-slate-400 mb-3">Customer belum upload bukti transfer.</p>
                         @endif
-                        <form method="POST" action="{{ route('transactions.verify-payment', $transaction) }}" class="space-y-3">
-                            @csrf
-                            @method('PATCH')
-                            <textarea name="payment_admin_note" rows="3" placeholder="Catatan admin" class="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-3 text-sm dark:text-slate-200">{{ $transaction->payment_admin_note }}</textarea>
-                            <div class="grid grid-cols-2 gap-2">
-                                <button name="action" value="reject" class="rounded-xl border border-red-200 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50">Tolak</button>
-                                <button name="action" value="approve" class="rounded-xl bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">Setujui</button>
-                            </div>
-                        </form>
+                        @if ($transaction->payment_admin_note)
+                            <p class="text-xs text-slate-500 mt-2">Catatan admin: {{ $transaction->payment_admin_note }}</p>
+                        @endif
                     </div>
                 @endif
 
