@@ -194,7 +194,7 @@ class TransactionController extends Controller
 
     public function shippingLabel(Transaction $transaction)
     {
-        $transaction->load(['user', 'details']);
+        $transaction->load(['user', 'details.productVariant']);
         $storeLocation = StoreLocation::query()
             ->where('is_active', true)
             ->latest('id')
