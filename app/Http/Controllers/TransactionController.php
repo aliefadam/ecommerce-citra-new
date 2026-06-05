@@ -110,7 +110,7 @@ class TransactionController extends Controller
             'shipping_note' => ['nullable', 'string', 'max:500'],
         ]);
 
-        if (!in_array(strtolower((string) $transaction->status), ['process', 'kirim'], true)) {
+        if (!in_array(strtolower((string) $transaction->status), ['process', 'processing', 'kirim'], true)) {
             return response()->json(['message' => 'Transaksi belum bisa dikirim.'], 422);
         }
 
@@ -203,6 +203,43 @@ class TransactionController extends Controller
         return view('invoices.shipping-label', compact('transaction', 'storeLocation'));
     }
 
+    public function bulkShippingLabels(Request $request)
+    {
+        $ids = collect(explode(',', (string) $request->query('ids', '')))
+            ->map(fn ($id) => (int) trim($id))
+            ->filter(fn ($id) => $id > 0)
+            ->unique()
+            ->values();
+
+        $transactions = Transaction::query()
+            ->with(['user', 'details.productVariant'])
+            ->whereIn('id', $ids)
+            ->get()
+            ->sortBy(fn (Transaction $transaction) => $ids->search((int) $transaction->id))
+            ->values();
+
+        $invalidTransactions = $transactions
+            ->map(function (Transaction $transaction) {
+                return [
+                    'transaction' => $transaction,
+                    'issues' => $this->shippingLabelIssues($transaction),
+                ];
+            })
+            ->filter(fn (array $item) => count($item['issues']) > 0)
+            ->values();
+
+        $validTransactions = $transactions
+            ->reject(fn (Transaction $transaction) => count($this->shippingLabelIssues($transaction)) > 0)
+            ->values();
+
+        $storeLocation = StoreLocation::query()
+            ->where('is_active', true)
+            ->latest('id')
+            ->first();
+
+        return view('invoices.shipping-label-bulk', compact('transactions', 'validTransactions', 'invalidTransactions', 'storeLocation'));
+    }
+
     private function recordHistory(Transaction $transaction, ?string $from, string $to, string $type, ?string $note = null, ?int $userId = null): void
     {
         TransactionStatusHistory::create([
@@ -236,5 +273,26 @@ class TransactionController extends Controller
             : ltrim($image, '/');
 
         return asset('storage/' . $normalized);
+    }
+
+    private function shippingLabelIssues(Transaction $transaction): array
+    {
+        $issues = [];
+        if (
+            trim((string) $transaction->shipping_recipient_name) === '' ||
+            trim((string) $transaction->shipping_phone) === '' ||
+            trim((string) $transaction->shipping_address_line) === ''
+        ) {
+            $issues[] = 'Alamat pengiriman belum lengkap.';
+        }
+
+        if (
+            in_array(strtolower((string) $transaction->status), ['kirim', 'shipping', 'shipped'], true) &&
+            trim((string) $transaction->tracking_number) === ''
+        ) {
+            $issues[] = 'Nomor resi belum ada.';
+        }
+
+        return $issues;
     }
 }

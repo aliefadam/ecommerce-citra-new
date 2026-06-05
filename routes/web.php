@@ -156,6 +156,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::put('store-location', [StoreLocationController::class, 'update'])->name('store-locations.update')->middleware('admin.permission:store_settings.edit');
         Route::get('store-location/provinces', [StoreLocationController::class, 'provinces'])->name('store-locations.provinces')->middleware('admin.permission:store_settings.edit');
         Route::get('store-location/cities', [StoreLocationController::class, 'cities'])->name('store-locations.cities')->middleware('admin.permission:store_settings.edit');
+        Route::get('transactions/shipping-labels/bulk', [TransactionController::class, 'bulkShippingLabels'])->name('transactions.bulk-shipping-label')->middleware('admin.permission:transactions.show');
         Route::resource('transactions', TransactionController::class)->only(['index', 'show'])
             ->middlewareFor(['index'], 'admin.permission:transactions.index')
             ->middlewareFor(['show'], 'admin.permission:transactions.show');

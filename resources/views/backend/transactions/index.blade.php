@@ -9,16 +9,49 @@
             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Daftar transaksi checkout dari frontend.</p>
         </div>
 
+        <div id="txSummaryCards" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-4"></div>
+
         <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-            <div class="flex flex-col sm:flex-row gap-3 p-4 border-b border-slate-200 dark:border-slate-700">
-                <div class="relative flex-1">
-                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" width="16" height="16"
-                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="11" cy="11" r="8" />
-                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                    </svg>
-                    <input id="txSearch" type="text" placeholder="Cari invoice / customer / email..."
-                        class="pl-9 pr-4 py-2 text-sm w-full bg-slate-50 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200 placeholder-slate-400" />
+            <div class="p-4 border-b border-slate-200 dark:border-slate-700 space-y-4">
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <div class="relative flex-1">
+                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" width="16" height="16"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8" />
+                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                        </svg>
+                        <input id="txSearch" type="text" placeholder="Cari invoice / customer / email..."
+                            class="pl-9 pr-4 py-2 text-sm w-full bg-slate-50 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200 placeholder-slate-400" />
+                    </div>
+                </div>
+
+                <input id="txStatusFilter" type="hidden" value="">
+                <div id="txStatusFilters" class="flex flex-wrap gap-2"></div>
+            </div>
+
+            <div id="txBulkToolbar"
+                class="hidden items-center justify-between gap-3 border-b border-slate-200 bg-blue-50/70 px-4 py-3 dark:border-slate-700 dark:bg-blue-900/15">
+                <div class="min-w-0">
+                    <p class="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                        <span id="txSelectedCount">0</span> transaksi dipilih
+                    </p>
+                    <p id="txBulkMessage" class="mt-0.5 text-xs text-slate-500 dark:text-slate-400"></p>
+                </div>
+                <div class="flex shrink-0 items-center gap-2">
+                    <button type="button" onclick="clearTxSelection()"
+                        class="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
+                        Batal
+                    </button>
+                    <button type="button" onclick="printSelectedShippingLabels()"
+                        class="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-blue-600 px-3.5 text-xs font-semibold text-white shadow-sm shadow-blue-500/20 transition-colors hover:bg-blue-700">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M6 9V2h12v7" />
+                            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                            <rect x="6" y="14" width="12" height="8" />
+                        </svg>
+                        Print Resi Terpilih
+                    </button>
                 </div>
             </div>
 
@@ -26,10 +59,15 @@
                 <table class="w-full text-sm" style="overflow: visible;">
                     <thead class="bg-slate-50 dark:bg-slate-700/50">
                         <tr>
+                            <th class="w-10 px-4 py-3">
+                                <input id="txSelectAllPage" type="checkbox" onchange="toggleSelectAllVisible(this.checked)"
+                                    class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700">
+                            </th>
                             <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">#</th>
                             <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Invoice</th>
                             <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Customer</th>
-                            <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Email</th>
+                            <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Tanggal</th>
+                            <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Pembayaran</th>
                             <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Status</th>
                             <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Grand Total
                             </th>
@@ -205,12 +243,19 @@
                     'status' => $tx->status,
                     'payment_type' => $tx->payment_type ?? '-',
                     'payment_method' => $tx->payment_method ?? '-',
+                    'payment_va_bank' => (string) ($tx->payment_va_bank ?? ''),
+                    'payment_va_number' => (string) ($tx->payment_va_number ?? ''),
+                    'payment_qr_url' => (string) ($tx->payment_qr_url ?? ''),
                     'shipping_cost' => (int) $tx->shipping_cost,
                     'discount_amount' => (int) ($tx->discount_amount ?? 0),
                     'coupon_code' => (string) ($tx->coupon_code ?? ''),
                     'shipping_label' => $tx->shipping_label ?? '-',
                     'shipping_note' => (string) ($tx->shipping_note ?? ''),
                     'grand_total' => (int) $tx->grand_total,
+                    'created_at_date' => $tx->created_at ? $tx->created_at->timezone(config('app.timezone'))->toDateString() : '',
+                    'created_at_iso' => $tx->created_at ? $tx->created_at->timezone(config('app.timezone'))->toIso8601String() : '',
+                    'created_at_display' => $tx->created_at ? $tx->created_at->timezone(config('app.timezone'))->format('d M Y H:i') : '-',
+                    'expires_at_iso' => $tx->expires_at ? $tx->expires_at->timezone(config('app.timezone'))->toIso8601String() : '',
                     'invoice_url' => route('invoice.show', ['transaction' => $tx->id]),
                     'shipping_label_url' => route('transactions.shipping-label', ['transaction' => $tx->id]),
                     'detail_url' => route('transactions.show', ['transaction' => $tx->id]),
@@ -244,16 +289,123 @@
             })
             ->values()
             ->all();
+        $txPermissions = [
+            'can_show' => auth()->user()?->hasAdminPermission('transactions.show') ?? false,
+            'can_edit' => auth()->user()?->hasAdminPermission('transactions.edit') ?? false,
+            'can_verify_payment' => auth()->user()?->hasAdminPermission('transactions.verify_payment') ?? false,
+        ];
     @endphp
     <script>
         const txItems = @json($txItems);
+        const txPermissions = @json($txPermissions);
         const processUrlTemplate = @json(route('transactions.process', ['transaction' => '__ID__']));
         const shipUrlTemplate = @json(route('transactions.ship', ['transaction' => '__ID__']));
+        const bulkShippingLabelUrl = @json(route('transactions.bulk-shipping-label'));
         const csrfToken = @json(csrf_token());
+        const txTodayDate = @json(now()->timezone(config('app.timezone'))->toDateString());
         let txTableApi = null;
         let activeShipTxId = null;
         let activeVerifyTxId = null;
         let activeMenuTxId = null;
+        let activeTxStatusFilter = '';
+        let visibleTxPageItems = [];
+        const selectedTxIds = new Set();
+
+        const txStatusGroups = {
+            waiting_payment: ['pending', 'menunggu'],
+            waiting_verification: ['menunggu_verifikasi'],
+            paid: ['paid', 'settlement', 'capture'],
+            processing: ['process', 'processing'],
+            shipping: ['kirim', 'shipping', 'shipped'],
+            cancelled: ['cancel', 'expire', 'deny', 'failed', 'dibatalkan'],
+        };
+
+        const txStatusFilterItems = [
+            { key: '', label: 'Semua' },
+            { key: 'waiting_payment', label: 'Menunggu Bayar' },
+            { key: 'waiting_verification', label: 'Menunggu Verifikasi' },
+            { key: 'paid', label: 'Dibayar' },
+            { key: 'processing', label: 'Diproses' },
+            { key: 'shipping', label: 'Dikirim' },
+            { key: 'cancelled', label: 'Dibatalkan' },
+        ];
+
+        function normalizeTxStatus(status) {
+            return String(status || '').toLowerCase().trim();
+        }
+
+        function txStatusFilterKey(tx) {
+            const status = normalizeTxStatus(tx.status);
+            const group = Object.entries(txStatusGroups).find(([, statuses]) => statuses.includes(status));
+            return group ? group[0] : '__other';
+        }
+
+        function txCountForFilter(key) {
+            if (!key) return txItems.length;
+            return txItems.filter((tx) => txStatusFilterKey(tx) === key).length;
+        }
+
+        function txSummaryStats() {
+            const todayItems = txItems.filter((tx) => String(tx.created_at_date || '') === txTodayDate);
+            return {
+                waitingVerification: txItems.filter((tx) => String(tx.payment_type_raw || '').toLowerCase() === 'manual_transfer' && normalizeTxStatus(tx.status) === 'menunggu_verifikasi').length,
+                needsProcessing: txCountForFilter('paid'),
+                needsShipping: txCountForFilter('processing'),
+                todayCount: todayItems.length,
+                todayTotal: todayItems.reduce((sum, tx) => sum + Number(tx.grand_total || 0), 0),
+            };
+        }
+
+        function renderTxSummaryCards() {
+            const wrap = document.getElementById('txSummaryCards');
+            if (!wrap) return;
+            const stats = txSummaryStats();
+            const cards = [
+                { label: 'Menunggu Verifikasi', value: stats.waitingVerification, note: 'Transfer manual', filter: 'waiting_verification', accent: 'border-amber-300 dark:border-amber-700' },
+                { label: 'Perlu Diproses', value: stats.needsProcessing, note: 'Pembayaran diterima', filter: 'paid', accent: 'border-emerald-300 dark:border-emerald-700' },
+                { label: 'Perlu Dikirim', value: stats.needsShipping, note: 'Order siap resi', filter: 'processing', accent: 'border-blue-300 dark:border-blue-700' },
+                { label: 'Transaksi Hari Ini', value: stats.todayCount, note: `Rp ${Number(stats.todayTotal || 0).toLocaleString('id-ID')}`, filter: '', accent: 'border-slate-300 dark:border-slate-600' },
+            ];
+
+            wrap.innerHTML = cards.map((card) => {
+                const isActive = activeTxStatusFilter === card.filter && card.filter !== '';
+                return `
+                    <button type="button" onclick="setTxStatusFilter('${card.filter}')" class="text-left rounded-2xl border ${card.accent} ${isActive ? 'bg-blue-50 dark:bg-blue-900/20 ring-2 ring-blue-500/30' : 'bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50'} px-4 py-3 transition-colors">
+                        <div class="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">${card.label}</div>
+                        <div class="mt-2 flex items-end justify-between gap-3">
+                            <span class="text-2xl font-bold text-slate-800 dark:text-white">${card.value}</span>
+                            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">${card.note}</span>
+                        </div>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function renderTxStatusFilters() {
+            const wrap = document.getElementById('txStatusFilters');
+            if (!wrap) return;
+            wrap.innerHTML = txStatusFilterItems.map((item) => {
+                const isActive = activeTxStatusFilter === item.key;
+                return `
+                    <button type="button" onclick="setTxStatusFilter('${item.key}')" class="inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-xs font-semibold transition-colors ${isActive ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/20' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700/70 dark:text-slate-300 dark:hover:bg-slate-700'}">
+                        <span>${item.label}</span>
+                        <span class="rounded-full px-2 py-0.5 ${isActive ? 'bg-white/20 text-white' : 'bg-white text-slate-500 dark:bg-slate-800 dark:text-slate-300'}">${txCountForFilter(item.key)}</span>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function setTxStatusFilter(key) {
+            activeTxStatusFilter = key || '';
+            const input = document.getElementById('txStatusFilter');
+            if (input) {
+                input.value = activeTxStatusFilter;
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            closeFloatingMenu();
+            renderTxStatusFilters();
+            renderTxSummaryCards();
+        }
 
         function txStatusBadge(status) {
             const s = String(status || '').toLowerCase();
@@ -263,10 +415,10 @@
             if (s === 'menunggu_verifikasi') {
                 return '<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">Menunggu Verifikasi</span>';
             }
-            if (['process'].includes(s)) {
+            if (['process', 'processing'].includes(s)) {
                 return '<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400">Diproses</span>';
             }
-            if (['kirim'].includes(s)) {
+            if (['kirim', 'shipping', 'shipped'].includes(s)) {
                 return '<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">Dikirim</span>';
             }
             if (['cancel', 'expire', 'deny', 'failed', 'dibatalkan'].includes(s)) {
@@ -275,9 +427,329 @@
             return '<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">Pending</span>';
         }
 
-        function renderTxRow(tx, visibleIndex) {
+        function txActionAccentClass(tx) {
+            const s = normalizeTxStatus(tx.status);
+            if (s === 'menunggu_verifikasi') {
+                return 'border-l-4 border-amber-400 bg-amber-50/45 dark:bg-amber-900/10';
+            }
+            if (['paid', 'settlement', 'capture'].includes(s)) {
+                return 'border-l-4 border-emerald-400 bg-emerald-50/40 dark:bg-emerald-900/10';
+            }
+            if (['process', 'processing'].includes(s)) {
+                return 'border-l-4 border-blue-400 bg-blue-50/40 dark:bg-blue-900/10';
+            }
+            if (['kirim', 'shipping', 'shipped'].includes(s)) {
+                return 'border-l-4 border-slate-300 bg-slate-50/40 dark:bg-slate-700/15';
+            }
+            if (['cancel', 'expire', 'deny', 'failed', 'dibatalkan'].includes(s)) {
+                return 'border-l-4 border-red-300 bg-red-50/30 opacity-75 dark:bg-red-900/10';
+            }
+            return 'border-l-4 border-transparent';
+        }
+
+        function txPaymentInfo(tx) {
+            const type = String(tx.payment_type_raw || tx.payment_type || '').toLowerCase();
+            const method = String(tx.payment_method || '').trim();
+            const bank = String(tx.payment_va_bank || '').toUpperCase().trim();
+
+            if (type === 'manual_transfer') {
+                return {
+                    label: method && method !== '-' ? method : 'Transfer Manual',
+                    meta: 'Manual',
+                    badgeClass: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+                };
+            }
+
+            if (type === 'qris' || method.toLowerCase() === 'qris') {
+                return {
+                    label: 'QRIS',
+                    meta: 'QRIS',
+                    badgeClass: 'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300',
+                };
+            }
+
+            if (type === 'bank_transfer' || bank) {
+                const labelBank = bank || method.toUpperCase();
+                return {
+                    label: labelBank ? `${labelBank} Virtual Account` : 'Virtual Account',
+                    meta: 'VA',
+                    badgeClass: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+                };
+            }
+
+            return {
+                label: method && method !== '-' ? method : '-',
+                meta: '',
+                badgeClass: 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300',
+            };
+        }
+
+        function txPaymentCell(tx) {
+            const info = txPaymentInfo(tx);
+            if (!info.label || info.label === '-') {
+                return '<span class="text-slate-400 dark:text-slate-500">-</span>';
+            }
             return `
-                <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                <div class="min-w-[9rem]">
+                    <div class="font-medium text-slate-700 dark:text-slate-200">${info.label}</div>
+                    ${info.meta ? `<span class="mt-1 inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ${info.badgeClass}">${info.meta}</span>` : ''}
+                </div>
+            `;
+        }
+
+        function txRelativeOrderTime(tx) {
+            if (!tx.created_at_iso) return '-';
+            const createdAt = new Date(tx.created_at_iso);
+            if (Number.isNaN(createdAt.getTime())) return tx.created_at_display || '-';
+            const diffMs = Date.now() - createdAt.getTime();
+            const diffMinutes = Math.max(0, Math.floor(diffMs / 60000));
+            if (diffMinutes < 60) return diffMinutes <= 1 ? 'Baru saja' : `${diffMinutes} menit lalu`;
+            const diffHours = Math.floor(diffMinutes / 60);
+            if (diffHours < 24) return `${diffHours} jam lalu`;
+            if (diffHours < 48) return 'Kemarin';
+            return tx.created_at_display || createdAt.toLocaleString('id-ID', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+            });
+        }
+
+        function txExpiryWarning(tx) {
+            const s = normalizeTxStatus(tx.status);
+            const type = String(tx.payment_type_raw || tx.payment_type || '').toLowerCase();
+            if (!tx.expires_at_iso || !['pending', 'menunggu', 'menunggu_verifikasi'].includes(s)) return '';
+            const expiresAt = new Date(tx.expires_at_iso);
+            if (Number.isNaN(expiresAt.getTime())) return '';
+            const diffMinutes = Math.floor((expiresAt.getTime() - Date.now()) / 60000);
+            if (diffMinutes < 0) return 'Expired';
+            if (diffMinutes <= (type === 'manual_transfer' ? 180 : 15)) return 'Segera expired';
+            return '';
+        }
+
+        function txDateCell(tx) {
+            const warning = txExpiryWarning(tx);
+            return `
+                <div class="min-w-[8rem]">
+                    <div class="font-medium text-slate-700 dark:text-slate-200">${txRelativeOrderTime(tx)}</div>
+                    <div class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">${tx.created_at_display || '-'}</div>
+                    ${warning ? `<div class="mt-1 text-xs font-semibold text-amber-600 dark:text-amber-400">${warning}</div>` : ''}
+                </div>
+            `;
+        }
+
+        function txBulkPrintIssues(tx) {
+            const issues = [];
+            const status = normalizeTxStatus(tx.status);
+            const hasAddress = Boolean(
+                String(tx.shipping_recipient_name || '').trim() &&
+                String(tx.shipping_phone || '').trim() &&
+                String(tx.shipping_address_line || '').trim()
+            );
+            if (!hasAddress) {
+                issues.push('alamat pengiriman belum lengkap');
+            }
+            if (['kirim', 'shipping', 'shipped'].includes(status) && !String(tx.tracking_number || '').trim()) {
+                issues.push('nomor resi belum ada');
+            }
+            return issues;
+        }
+
+        function isTxBulkPrintable(tx) {
+            return txBulkPrintIssues(tx).length === 0;
+        }
+
+        function selectedTxItems() {
+            return txItems.filter((tx) => selectedTxIds.has(Number(tx.id)));
+        }
+
+        function syncTxSelectionUi() {
+            document.querySelectorAll('.tx-row-check').forEach((check) => {
+                check.checked = selectedTxIds.has(Number(check.value));
+            });
+
+            const selectAll = document.getElementById('txSelectAllPage');
+            if (selectAll) {
+                const selectableIds = visibleTxPageItems.map((tx) => Number(tx.id));
+                const checkedCount = selectableIds.filter((id) => selectedTxIds.has(id)).length;
+                selectAll.checked = selectableIds.length > 0 && checkedCount === selectableIds.length;
+                selectAll.indeterminate = checkedCount > 0 && checkedCount < selectableIds.length;
+                selectAll.disabled = !txPermissions.can_show || selectableIds.length === 0;
+            }
+
+            renderTxBulkToolbar();
+        }
+
+        function renderTxBulkToolbar() {
+            const toolbar = document.getElementById('txBulkToolbar');
+            const count = document.getElementById('txSelectedCount');
+            const message = document.getElementById('txBulkMessage');
+            if (!toolbar || !count || !message) return;
+
+            const selected = selectedTxItems();
+            const invalid = selected
+                .map((tx) => ({ tx, issues: txBulkPrintIssues(tx) }))
+                .filter((item) => item.issues.length > 0);
+
+            count.textContent = selected.length;
+            if (selected.length === 0) {
+                toolbar.classList.add('hidden');
+                toolbar.classList.remove('flex');
+                message.textContent = '';
+                return;
+            }
+
+            toolbar.classList.remove('hidden');
+            toolbar.classList.add('flex');
+            message.textContent = invalid.length
+                ? `${invalid.length} transaksi belum bisa dicetak: ${invalid[0].tx.invoice_no} ${invalid[0].issues.join(', ')}.`
+                : 'Semua pilihan siap dicetak sebagai resi.';
+            message.className = invalid.length
+                ? 'mt-0.5 text-xs font-medium text-amber-600 dark:text-amber-400'
+                : 'mt-0.5 text-xs text-slate-500 dark:text-slate-400';
+        }
+
+        function toggleTxSelection(id, checked) {
+            const numericId = Number(id);
+            if (checked) {
+                selectedTxIds.add(numericId);
+            } else {
+                selectedTxIds.delete(numericId);
+            }
+            syncTxSelectionUi();
+        }
+
+        function toggleSelectAllVisible(checked) {
+            if (!txPermissions.can_show) return;
+            visibleTxPageItems.forEach((tx) => {
+                const id = Number(tx.id);
+                if (checked) selectedTxIds.add(id);
+                else selectedTxIds.delete(id);
+            });
+            syncTxSelectionUi();
+        }
+
+        function clearTxSelection() {
+            selectedTxIds.clear();
+            syncTxSelectionUi();
+        }
+
+        function printSelectedShippingLabels() {
+            if (!txPermissions.can_show) {
+                alert('Anda tidak punya permission untuk print resi.');
+                return;
+            }
+
+            const selected = selectedTxItems();
+            if (!selected.length) return;
+
+            const invalid = selected
+                .map((tx) => ({ tx, issues: txBulkPrintIssues(tx) }))
+                .filter((item) => item.issues.length > 0);
+
+            if (invalid.length) {
+                alert(`Belum bisa print resi.\n${invalid.map((item) => `${item.tx.invoice_no}: ${item.issues.join(', ')}`).join('\n')}`);
+                renderTxBulkToolbar();
+                return;
+            }
+
+            const params = new URLSearchParams({ ids: selected.map((tx) => tx.id).join(',') });
+            window.open(`${bulkShippingLabelUrl}?${params.toString()}`, '_blank');
+        }
+
+        function getTxPrimaryAction(tx) {
+            const s = normalizeTxStatus(tx.status);
+            const paymentType = String(tx.payment_type_raw || tx.payment_type || '').toLowerCase();
+
+            if (paymentType === 'manual_transfer' && s === 'menunggu_verifikasi' && txPermissions.can_verify_payment) {
+                return {
+                    label: 'Verifikasi',
+                    title: 'Verifikasi pembayaran manual',
+                    className: 'bg-amber-100 text-amber-700 hover:bg-amber-200 dark:bg-amber-900/35 dark:text-amber-300 dark:hover:bg-amber-900/55',
+                    icon: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M7 15h4"/>',
+                    onclick: `openVerifyPaymentModal(${tx.id})`,
+                };
+            }
+
+            if (['paid', 'settlement', 'capture'].includes(s) && txPermissions.can_edit) {
+                return {
+                    label: 'Proses',
+                    title: 'Proses transaksi',
+                    className: 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/35 dark:text-emerald-300 dark:hover:bg-emerald-900/55',
+                    icon: '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',
+                    onclick: `processTransaction(${tx.id})`,
+                };
+            }
+
+            if (['process', 'processing'].includes(s) && txPermissions.can_edit) {
+                return {
+                    label: 'Kirim',
+                    title: 'Isi resi dan kirim pesanan',
+                    className: 'bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/35 dark:text-blue-300 dark:hover:bg-blue-900/55',
+                    icon: '<rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>',
+                    onclick: `openShipModal(${tx.id})`,
+                };
+            }
+
+            if (['kirim', 'shipping', 'shipped'].includes(s) && tx.tracking_number) {
+                if (txPermissions.can_show) {
+                    return {
+                        label: 'Print Resi',
+                        title: 'Print resi pengiriman',
+                        className: 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900/35 dark:text-indigo-300 dark:hover:bg-indigo-900/55',
+                        icon: '<path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>',
+                        href: tx.shipping_label_url,
+                    };
+                }
+
+                return {
+                    label: 'Lacak',
+                    title: 'Lacak pesanan',
+                    className: 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900/35 dark:text-indigo-300 dark:hover:bg-indigo-900/55',
+                    icon: '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+                    onclick: `openTrackingModal(${tx.id})`,
+                };
+            }
+
+            if (['pending', 'menunggu', 'cancel', 'expire', 'deny', 'failed', 'dibatalkan'].includes(s)) {
+                return {
+                    label: 'Detail',
+                    title: 'Lihat detail transaksi',
+                    className: 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600',
+                    icon: '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
+                    onclick: `openTxDetailModal(${tx.id})`,
+                };
+            }
+
+            return null;
+        }
+
+        function txPrimaryActionButton(tx) {
+            const action = getTxPrimaryAction(tx);
+            if (!action) return '';
+            const svg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0">${action.icon}</svg>`;
+            const baseClass = `inline-flex h-8 items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-semibold whitespace-nowrap transition-colors ${action.className}`;
+
+            if (action.href) {
+                return `<a href="${action.href}" target="_blank" title="${action.title}" class="${baseClass}">${svg}<span>${action.label}</span></a>`;
+            }
+
+            return `<button type="button" onclick="${action.onclick}; closeFloatingMenu()" title="${action.title}" class="${baseClass}">${svg}<span>${action.label}</span></button>`;
+        }
+
+        function renderTxRow(tx, visibleIndex) {
+            const rowAccent = txActionAccentClass(tx);
+            const bulkIssues = txBulkPrintIssues(tx);
+            const bulkHint = !txPermissions.can_show
+                ? 'Tidak punya permission print resi'
+                : (bulkIssues.length ? `Belum siap print: ${bulkIssues.join(', ')}` : 'Pilih untuk print resi bulk');
+            return `
+                <tr class="${rowAccent} hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                    <td class="px-4 py-3.5">
+                        <input type="checkbox" value="${tx.id}" onchange="toggleTxSelection(${tx.id}, this.checked)" title="${bulkHint}"
+                            ${txPermissions.can_show ? '' : 'disabled'} class="tx-row-check h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-600 dark:bg-slate-700">
+                    </td>
                     <td class="px-4 py-3.5 text-slate-500 dark:text-slate-400">${visibleIndex + 1}</td>
                     <td class="px-4 py-3.5 font-medium text-slate-800 dark:text-slate-200">
                         <div>${tx.invoice_no}</div>
@@ -286,15 +758,17 @@
                     <td class="px-4 py-3.5 text-slate-500 dark:text-slate-400">
                         <div>${tx.customer}</div>
                     </td>
-                    <td class="px-4 py-3.5 text-slate-500 dark:text-slate-400">
-                        <div>${tx.customer_email || '-'}</div>
-                    </td>
+                    <td class="px-4 py-3.5">${txDateCell(tx)}</td>
+                    <td class="px-4 py-3.5">${txPaymentCell(tx)}</td>
                     <td class="px-4 py-3.5">${txStatusBadge(tx.status)}</td>
                     <td class="px-4 py-3.5 font-semibold text-slate-800 dark:text-slate-200">Rp ${Number(tx.grand_total || 0).toLocaleString('id-ID')}</td>
                     <td class="px-4 py-3.5">
-                        <button type="button" data-tx-id="${tx.id}" onclick="toggleActionMenu(${tx.id}, this)" class="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
-                        </button>
+                        <div class="flex items-center gap-1.5">
+                            ${txPrimaryActionButton(tx)}
+                            <button type="button" data-tx-id="${tx.id}" onclick="toggleActionMenu(${tx.id}, this)" class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" title="Aksi lainnya">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
+                            </button>
+                        </div>
                     </td>
                 </tr>
             `;
@@ -306,37 +780,23 @@
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0 text-slate-400"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 Show Detail
             </button>`;
-            html += `<a href="${tx.detail_url}" class="w-full text-left px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 flex items-center gap-2.5 transition-colors">
+            if (txPermissions.can_show) {
+                html += `<a href="${tx.detail_url}" class="w-full text-left px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 flex items-center gap-2.5 transition-colors">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0"><path d="M9 18l6-6-6-6"/></svg>
                 Halaman Detail
             </a>`;
+            }
             html += `<a href="${tx.invoice_url}" target="_blank" class="w-full text-left px-4 py-2.5 text-sm text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 flex items-center gap-2.5 transition-colors">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                 Print Invoice
             </a>`;
-            html += `<a href="${tx.shipping_label_url}" target="_blank" class="w-full text-left px-4 py-2.5 text-sm text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 flex items-center gap-2.5 transition-colors">
+            if (txPermissions.can_show) {
+                html += `<a href="${tx.shipping_label_url}" target="_blank" class="w-full text-left px-4 py-2.5 text-sm text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 flex items-center gap-2.5 transition-colors">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0"><path d="M21 16V8a2 2 0 0 0-1-1.73L13 2.27a2 2 0 0 0-2 0L4 6.27A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/></svg>
                 Print Resi
             </a>`;
-            if (String(tx.payment_type_raw || '').toLowerCase() === 'manual_transfer' && s === 'menunggu_verifikasi') {
-                html += `<button type="button" onclick="openVerifyPaymentModal(${tx.id}); closeFloatingMenu()" class="w-full text-left px-4 py-2.5 text-sm text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 flex items-center gap-2.5 transition-colors">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M7 15h4"/></svg>
-                    Verifikasi Pembayaran
-                </button>`;
             }
-            if (['paid', 'settlement', 'capture'].includes(s)) {
-                html += `<button type="button" onclick="processTransaction(${tx.id}); closeFloatingMenu()" class="w-full text-left px-4 py-2.5 text-sm text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 flex items-center gap-2.5 transition-colors">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                    Proses Transaksi
-                </button>`;
-            }
-            if (s === 'process') {
-                html += `<button type="button" onclick="openShipModal(${tx.id}); closeFloatingMenu()" class="w-full text-left px-4 py-2.5 text-sm text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 flex items-center gap-2.5 transition-colors">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-                    Kirim Pesanan
-                </button>`;
-            }
-            if (s === 'kirim' && tx.tracking_number) {
+            if (['kirim', 'shipping', 'shipped'].includes(s) && tx.tracking_number) {
                 html += `<button type="button" onclick="openTrackingModal(${tx.id}); closeFloatingMenu()" class="w-full text-left px-4 py-2.5 text-sm text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 flex items-center gap-2.5 transition-colors">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                     Lacak Pesanan
@@ -626,6 +1086,9 @@
             window.location.reload();
         }
 
+        renderTxStatusFilters();
+        renderTxSummaryCards();
+
         txTableApi = initAdminDataTable({
             data: txItems,
             perPage: 10,
@@ -635,8 +1098,16 @@
             paginationInfoId: 'txPaginationInfo',
             paginationButtonsId: 'txPaginationButtons',
             searchFields: ['invoice_no', 'customer', 'customer_email'],
+            filters: [{
+                elementId: 'txStatusFilter',
+                accessor: txStatusFilterKey,
+            }],
             renderRow: (tx, index) => renderTxRow(tx, index),
-            emptyRowHtml: '<tr><td colspan="7" class="text-center py-12 text-slate-400 dark:text-slate-500">No transactions found</td></tr>',
+            emptyRowHtml: '<tr><td colspan="9" class="text-center py-12 text-slate-400 dark:text-slate-500">No transactions found</td></tr>',
+            onAfterRender: (pageData) => {
+                visibleTxPageItems = Array.isArray(pageData) ? pageData : [];
+                syncTxSelectionUi();
+            },
         });
 
         document.getElementById('shipSubmitBtn')?.addEventListener('click', submitShip);

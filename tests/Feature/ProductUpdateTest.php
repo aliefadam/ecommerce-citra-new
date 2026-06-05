@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Cart;
+use App\Models\AttributeDefinition;
 use App\Models\CategoryDetail;
 use App\Models\MainCategory;
 use App\Models\Product;
@@ -39,12 +40,26 @@ class ProductUpdateTest extends TestCase
                     'existing_image' => '',
                     'price' => '15000',
                     'stock' => '7',
+                    'weight_grams' => '1000',
+                    'attributes' => [
+                        $this->diameterAttribute()->id => [
+                            'attribute_definition_id' => $this->diameterAttribute()->id,
+                            'value_text' => 'M8',
+                        ],
+                    ],
                 ],
                 [
                     'variant_id' => $secondVariant->id,
                     'existing_image' => '',
                     'price' => '17000',
                     'stock' => '3',
+                    'weight_grams' => '1200',
+                    'attributes' => [
+                        $this->diameterAttribute()->id => [
+                            'attribute_definition_id' => $this->diameterAttribute()->id,
+                            'value_text' => 'M10',
+                        ],
+                    ],
                 ],
             ],
         ]);
@@ -59,11 +74,16 @@ class ProductUpdateTest extends TestCase
         $this->assertSame(7, $existingProductVariant->stock);
         $this->assertSame($existingProductVariant->id, $cart->product_variant_id);
         $this->assertCount(2, $product->fresh()->productVariants);
-        $this->assertDatabaseHas('product_variants', [
-            'product_id' => $product->id,
-            'variant_id' => $secondVariant->id,
-            'price' => 17000,
-            'stock' => 3,
+        $newProductVariant = $product->fresh()->productVariants()
+            ->where('price', 17000)
+            ->where('stock', 3)
+            ->first();
+
+        $this->assertNotNull($newProductVariant);
+        $this->assertDatabaseHas('variants', [
+            'id' => $newProductVariant->variant_id,
+            'name' => 'Varian SKU',
+            'value' => 'M10',
         ]);
     }
 
@@ -85,11 +105,17 @@ class ProductUpdateTest extends TestCase
                 'status' => 'active',
                 'variants' => [
                     [
-                        'product_variant_id' => $existingProductVariant->id,
                         'variant_id' => $secondVariant->id,
                         'existing_image' => '',
                         'price' => '17000',
                         'stock' => '3',
+                        'weight_grams' => '1200',
+                        'attributes' => [
+                            $this->diameterAttribute()->id => [
+                                'attribute_definition_id' => $this->diameterAttribute()->id,
+                                'value_text' => 'M10',
+                            ],
+                        ],
                     ],
                 ],
             ]);
@@ -145,6 +171,7 @@ class ProductUpdateTest extends TestCase
             'sku' => 'PRODUK-LAMA-DIAMETER-M8',
             'price' => 10000,
             'stock' => 5,
+            'weight_grams' => 1000,
         ]);
 
         return [$product, $detail, $firstVariant, $secondVariant, $productVariant];
@@ -155,5 +182,17 @@ class ProductUpdateTest extends TestCase
         return User::factory()->create([
             'role' => 'admin',
         ]);
+    }
+
+    private function diameterAttribute(): AttributeDefinition
+    {
+        return AttributeDefinition::query()->firstOrCreate(
+            ['code' => 'diameter'],
+            [
+                'name' => 'Diameter',
+                'data_type' => 'text',
+                'sort_order' => 10,
+            ]
+        );
     }
 }

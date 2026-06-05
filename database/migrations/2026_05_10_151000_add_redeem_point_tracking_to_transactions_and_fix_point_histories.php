@@ -16,7 +16,9 @@ return new class extends Migration
             $table->timestamp('redeem_points_released_at')->nullable()->after('redeem_points_finalized_at');
         });
 
-        DB::statement('ALTER TABLE point_histories MODIFY points INT NOT NULL');
+        if (DB::connection()->getDriverName() !== 'sqlite') {
+            DB::statement('ALTER TABLE point_histories MODIFY points INT NOT NULL');
+        }
     }
 
     public function down(): void
@@ -30,6 +32,8 @@ return new class extends Migration
             ]);
         });
 
-        DB::statement('ALTER TABLE point_histories MODIFY points INT UNSIGNED NOT NULL');
+        if (DB::connection()->getDriverName() !== 'sqlite') {
+            DB::statement('ALTER TABLE point_histories MODIFY points INT UNSIGNED NOT NULL');
+        }
     }
 };
