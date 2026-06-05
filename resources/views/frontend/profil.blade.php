@@ -980,6 +980,79 @@
             <div id="orderDetailContent" class="overflow-y-auto flex-1 px-6 py-4 space-y-5"></div>
         </div>
     </div>
+
+    <div id="taxInvoiceModal" class="fixed inset-0 z-[99999] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-xl border border-slate-100 flex flex-col max-h-[90vh]">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 shrink-0">
+                <div>
+                    <h3 class="font-bold text-lg text-slate-800">Minta Faktur Pajak</h3>
+                    <p id="taxInvoiceModalInvoice" class="text-xs text-slate-400 mt-0.5"></p>
+                </div>
+                <button type="button" onclick="closeTaxInvoiceModal()"
+                    class="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+                    <i class="fi fi-rr-cross-small text-sm leading-none"></i>
+                </button>
+            </div>
+            <form id="taxInvoiceRequestForm" method="POST" class="overflow-y-auto flex-1 px-6 py-5 space-y-4">
+                @csrf
+                @if (($taxProfiles ?? collect())->isNotEmpty())
+                    <div>
+                        <label class="mb-2 block text-xs font-semibold text-slate-600">Pakai profil wajib pajak</label>
+                        <select name="profile_id" id="profileTaxInvoiceProfileId" onchange="applyProfileTaxInvoiceProfile()"
+                            class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none">
+                            <option value="">Isi manual</option>
+                            @foreach ($taxProfiles as $profile)
+                                <option value="{{ $profile->id }}">{{ $profile->taxpayer_name }} - {{ $profile->masked_taxpayer_number }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endif
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <label class="mb-2 block text-xs font-semibold text-slate-600">Nama NPWP</label>
+                        <input id="profileTaxpayerName" name="taxpayer_name" type="text" required
+                            class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="mb-2 block text-xs font-semibold text-slate-600">Nomor NPWP</label>
+                        <input id="profileTaxpayerNumber" name="taxpayer_number" type="text" required
+                            class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none">
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label class="mb-2 block text-xs font-semibold text-slate-600">Alamat NPWP</label>
+                        <textarea id="profileTaxpayerAddress" name="taxpayer_address" rows="3" required
+                            class="w-full resize-none rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none"></textarea>
+                    </div>
+                    <div>
+                        <label class="mb-2 block text-xs font-semibold text-slate-600">Email Penerima</label>
+                        <input id="profileTaxpayerEmail" name="taxpayer_email" type="email" required
+                            class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="mb-2 block text-xs font-semibold text-slate-600">Catatan</label>
+                        <input id="profileTaxInvoiceNote" name="customer_note" type="text"
+                            class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none">
+                    </div>
+                </div>
+                <div class="flex flex-col gap-2 rounded-xl bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between">
+                    <label class="inline-flex items-center gap-2 text-sm text-slate-600">
+                        <input name="save_profile" value="1" type="checkbox" class="accent-blue-500">
+                        Simpan sebagai profil
+                    </label>
+                    <label class="inline-flex items-center gap-2 text-sm text-slate-600">
+                        <input name="set_default_profile" value="1" type="checkbox" class="accent-blue-500">
+                        Jadikan default
+                    </label>
+                </div>
+                <div class="flex gap-3 border-t border-slate-100 pt-4">
+                    <button type="button" onclick="closeTaxInvoiceModal()"
+                        class="flex-1 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50">Batal</button>
+                    <button type="submit"
+                        class="flex-1 rounded-xl bg-blue-500 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-600">Kirim Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
     <!-- Modal Batalkan Pesanan -->
     <div id="orderCancelModal" class="fixed inset-0 z-[99999] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-slate-100">
@@ -1266,6 +1339,23 @@
                         'payment_proof_url' => $tx->payment_proof_path ? asset(ltrim((string) $tx->payment_proof_path, '/')) : '',
                         'payment_admin_note' => (string) ($tx->payment_admin_note ?? ''),
                         'payment_proof_upload_url' => route('manual-payment.proof', ['transaction' => $tx->id]),
+                        'tax_invoice_request_url' => route('frontend.profil.orders.tax-invoice.store', ['transaction' => $tx->id]),
+                        'tax_invoice' => $tx->taxInvoice ? [
+                            'status' => (string) $tx->taxInvoice->status,
+                            'taxpayer_name' => (string) $tx->taxInvoice->taxpayer_name,
+                            'masked_taxpayer_number' => (string) $tx->taxInvoice->masked_taxpayer_number,
+                            'taxpayer_email' => (string) $tx->taxInvoice->taxpayer_email,
+                            'requested_at' => optional($tx->taxInvoice->requested_at)->translatedFormat('d M Y H:i'),
+                            'issued_at' => optional($tx->taxInvoice->issued_at)->translatedFormat('d M Y H:i'),
+                            'sent_at' => optional($tx->taxInvoice->sent_at)->translatedFormat('d M Y H:i'),
+                            'rejected_reason' => (string) ($tx->taxInvoice->rejected_reason ?? ''),
+                            'tax_invoice_number' => (string) ($tx->taxInvoice->tax_invoice_number ?? ''),
+                            'tax_invoice_date' => optional($tx->taxInvoice->tax_invoice_date)->translatedFormat('d M Y'),
+                            'file_available' => filled($tx->taxInvoice->tax_invoice_file_path),
+                            'download_url' => filled($tx->taxInvoice->tax_invoice_file_path)
+                                ? route('frontend.profil.orders.tax-invoice.download', ['transaction' => $tx->id])
+                                : '',
+                        ] : null,
                         'status_histories' => $tx->statusHistories
                             ->sortBy('created_at')
                             ->map(fn($h) => [
@@ -1352,6 +1442,19 @@
                 ->filter()
                 ->values()
             : collect();
+        $profileTaxProfilesPayload = isset($taxProfiles)
+            ? $taxProfiles
+                ->map(fn($profile) => [
+                    'id' => (int) $profile->id,
+                    'taxpayer_name' => (string) $profile->taxpayer_name,
+                    'taxpayer_number' => (string) $profile->taxpayer_number,
+                    'taxpayer_address' => (string) $profile->taxpayer_address,
+                    'taxpayer_email' => (string) $profile->taxpayer_email,
+                    'masked_taxpayer_number' => (string) $profile->masked_taxpayer_number,
+                    'is_default' => (bool) $profile->is_default,
+                ])
+                ->values()
+            : collect();
     @endphp
     <script>
         const profileUser = @json($profileUserPayload);
@@ -1366,6 +1469,7 @@
         const initialProfileTab = @json(request()->query('tab', 'biodata'));
         const wishlistToggleUrl = @json(route('frontend.wishlist.toggle'));
         const wishlistItemsData = @json($profileWishlistsPayload);
+        const profileTaxProfiles = @json($profileTaxProfilesPayload);
 
         let roProvinces = [];
         let roCities = [];
@@ -1629,6 +1733,24 @@
             }
         };
 
+        const taxInvoiceStatusMap = {
+            requested: { label: 'Diminta', className: 'bg-blue-50 text-blue-700 border-blue-100' },
+            processing: { label: 'Diproses', className: 'bg-amber-50 text-amber-700 border-amber-100' },
+            issued: { label: 'Tersedia', className: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
+            sent: { label: 'Terkirim', className: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
+            rejected: { label: 'Ditolak', className: 'bg-red-50 text-red-600 border-red-100' },
+            cancelled: { label: 'Dibatalkan', className: 'bg-slate-50 text-slate-600 border-slate-100' },
+        };
+
+        function renderTaxInvoiceBadge(taxInvoice) {
+            if (!taxInvoice) return '';
+            const config = taxInvoiceStatusMap[taxInvoice.status] || { label: taxInvoice.status || 'Faktur pajak', className: 'bg-slate-50 text-slate-600 border-slate-100' };
+            return `<div class="mt-2 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold ${config.className}">
+                <span>Faktur Pajak: ${config.label}</span>
+                ${taxInvoice.masked_taxpayer_number ? `<span class="font-mono">${taxInvoice.masked_taxpayer_number}</span>` : ''}
+            </div>`;
+        }
+
         function renderOrders(filter = 'semua') {
             const list = document.getElementById('orderList');
             const filtered = filter === 'semua' ? orders : orders.filter(o => o.status === filter);
@@ -1643,6 +1765,7 @@
                     class: 'badge-menunggu'
                 };
                 const items = Array.isArray(o.items) ? o.items : [];
+                const taxInvoice = o.tax_invoice || null;
                 const itemsHtml = items.map(item => `
                     <div class="flex items-center gap-3">
                         <img src="${item.image}" alt="${item.name}" class="w-12 h-12 rounded-xl object-cover flex-shrink-0 border border-slate-100"
@@ -1685,6 +1808,8 @@
               <span class="font-bold text-slate-800">Rp ${o.total.toLocaleString('id-ID')}</span>
               ${o.status === 'kirim' && o.tracking_number ? `<p class="text-xs text-slate-500 mt-1">No. Resi: <span class="font-semibold text-slate-700">${o.tracking_number}</span></p>` : ''}
               ${o.can_return && o.return_deadline ? `<p class="text-xs text-blue-600 mt-1">Batas return/refund: ${o.return_deadline}</p>` : ''}
+              ${renderTaxInvoiceBadge(taxInvoice)}
+              ${taxInvoice?.rejected_reason ? `<p class="mt-1 text-xs text-red-500">Alasan: ${taxInvoice.rejected_reason}</p>` : ''}
             </div>
             <div class="flex flex-wrap gap-2">
               ${o.status === 'menunggu' ? `<a href="${waitingUrlTemplate.replace('__ORDER_ID__', o.order_id)}" class="text-xs border border-orange-300 text-orange-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-orange-50 transition-colors flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>Bayar Sekarang</a>` : ''}
@@ -1694,6 +1819,9 @@
               ${o.status === 'kirim' ? `<button onclick="openTrackingModal('${o.id}')" class="text-xs border border-blue-300 text-blue-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors">Lacak Pesanan</button>` : ''}
               ${o.status === 'kirim' ? `<form method="POST" action="${o.complete_url}" onsubmit="return confirm('Tandai pesanan ini sudah diterima?')" class="inline"><input type="hidden" name="_token" value="${csrfToken}"><input type="hidden" name="_method" value="PATCH"><button type="submit" class="text-xs border border-emerald-300 text-emerald-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-emerald-50 transition-colors">Pesanan Diterima</button></form>` : ''}
               ${o.can_return && items.some((it) => Number(it.returnable_qty || 0) > 0) ? `<button onclick="openReturnRequestModal('${o.id}')" class="text-xs border border-emerald-300 text-emerald-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-emerald-50 transition-colors">Return / Refund</button>` : ''}
+              ${!taxInvoice ? `<button type="button" onclick="openTaxInvoiceModal('${o.id}')" class="text-xs border border-blue-300 text-blue-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors">Minta Faktur Pajak</button>` : ''}
+              ${taxInvoice?.status === 'rejected' ? `<button type="button" onclick="openTaxInvoiceModal('${o.id}')" class="text-xs border border-red-300 text-red-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors">Ajukan Ulang Faktur</button>` : ''}
+              ${taxInvoice?.file_available && taxInvoice?.download_url ? `<a href="${taxInvoice.download_url}" class="text-xs border border-emerald-300 text-emerald-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-emerald-50 transition-colors">Download Faktur</a>` : ''}
               ${o.invoice_url ? `<a href="${o.invoice_url}" target="_blank" class="text-xs border border-indigo-300 text-indigo-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-indigo-50 transition-colors">Invoice</a>` : ''}
               <button type="button" onclick="openOrderDetailModal('${o.id}')" class="text-xs border border-slate-300 text-slate-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors">Lihat Detail</button>
             </div>
@@ -1930,6 +2058,36 @@
                 </div>
             ` : '';
 
+            const taxInvoice = o.tax_invoice || null;
+            const taxInvoiceConfig = taxInvoice ? (taxInvoiceStatusMap[taxInvoice.status] || { label: taxInvoice.status, className: 'bg-slate-50 text-slate-600 border-slate-100' }) : null;
+            const taxInvoiceHtml = `
+                <div>
+                    <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Faktur Pajak</h4>
+                    ${taxInvoice ? `
+                        <div class="rounded-xl border ${taxInvoiceConfig.className} p-4 text-sm">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="font-bold">${taxInvoiceConfig.label}</span>
+                                ${taxInvoice.requested_at ? `<span class="text-xs opacity-80">${taxInvoice.requested_at}</span>` : ''}
+                            </div>
+                            <p class="mt-2 font-semibold">${taxInvoice.taxpayer_name || '-'}</p>
+                            <p class="mt-0.5 font-mono text-xs">${taxInvoice.masked_taxpayer_number || '-'}</p>
+                            ${taxInvoice.taxpayer_email ? `<p class="mt-1 text-xs opacity-80">${taxInvoice.taxpayer_email}</p>` : ''}
+                            ${taxInvoice.tax_invoice_number ? `<p class="mt-2 text-xs">Nomor faktur: <span class="font-semibold">${taxInvoice.tax_invoice_number}</span></p>` : ''}
+                            ${taxInvoice.tax_invoice_date ? `<p class="mt-0.5 text-xs">Tanggal faktur: <span class="font-semibold">${taxInvoice.tax_invoice_date}</span></p>` : ''}
+                            ${taxInvoice.sent_at ? `<p class="mt-0.5 text-xs">Email terkirim: <span class="font-semibold">${taxInvoice.sent_at}</span></p>` : ''}
+                            ${taxInvoice.rejected_reason ? `<p class="mt-2 text-xs text-red-600">Alasan ditolak: ${taxInvoice.rejected_reason}</p>` : ''}
+                            ${taxInvoice.file_available && taxInvoice.download_url ? `<a href="${taxInvoice.download_url}" class="mt-3 inline-flex rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white">Download Faktur Pajak</a>` : ''}
+                            ${taxInvoice.status === 'rejected' ? `<button type="button" onclick="closeOrderDetailModal(); openTaxInvoiceModal('${o.id}')" class="mt-3 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-red-600 border border-red-200">Ajukan Ulang</button>` : ''}
+                        </div>
+                    ` : `
+                        <div class="rounded-xl border border-slate-100 bg-slate-50 p-4 text-sm text-slate-600">
+                            <p>Belum ada permintaan faktur pajak untuk transaksi ini.</p>
+                            <button type="button" onclick="closeOrderDetailModal(); openTaxInvoiceModal('${o.id}')" class="mt-3 rounded-lg bg-blue-500 px-3 py-1.5 text-xs font-semibold text-white">Minta Faktur Pajak</button>
+                        </div>
+                    `}
+                </div>
+            `;
+
             const histories = Array.isArray(o.status_histories) ? o.status_histories : [];
             const historyHtml = histories.length ? `
                 <div>
@@ -1948,7 +2106,7 @@
                 </div>
             ` : '';
 
-            document.getElementById('orderDetailContent').innerHTML = infoHtml + addressHtml + productsHtml + paymentProofHtml + historyHtml + summaryHtml;
+            document.getElementById('orderDetailContent').innerHTML = infoHtml + addressHtml + productsHtml + taxInvoiceHtml + paymentProofHtml + historyHtml + summaryHtml;
             const modal = document.getElementById('orderDetailModal');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
@@ -1969,9 +2127,51 @@
         document.getElementById('returnRequestModal')?.addEventListener('click', function(e) {
             if (e.target === this) closeReturnRequestModal();
         });
+        document.getElementById('taxInvoiceModal')?.addEventListener('click', function(e) {
+            if (e.target === this) closeTaxInvoiceModal();
+        });
         document.getElementById('reviewPhotosInput')?.addEventListener('change', function(e) {
             renderReviewPhotoPreview(e?.target?.files || []);
         });
+
+        function openTaxInvoiceModal(invoiceNo) {
+            const order = orders.find((item) => item.id === invoiceNo);
+            if (!order) return;
+            const form = document.getElementById('taxInvoiceRequestForm');
+            form.action = order.tax_invoice_request_url;
+            form.reset();
+            document.getElementById('taxInvoiceModalInvoice').textContent = order.id;
+
+            const defaultProfile = profileTaxProfiles.find((profile) => profile.is_default) || profileTaxProfiles[0] || null;
+            if (defaultProfile) {
+                const select = document.getElementById('profileTaxInvoiceProfileId');
+                if (select) select.value = String(defaultProfile.id);
+                fillProfileTaxInvoiceForm(defaultProfile);
+            }
+
+            const modal = document.getElementById('taxInvoiceModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeTaxInvoiceModal() {
+            const modal = document.getElementById('taxInvoiceModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function fillProfileTaxInvoiceForm(profile) {
+            document.getElementById('profileTaxpayerName').value = profile?.taxpayer_name || '';
+            document.getElementById('profileTaxpayerNumber').value = profile?.taxpayer_number || '';
+            document.getElementById('profileTaxpayerAddress').value = profile?.taxpayer_address || '';
+            document.getElementById('profileTaxpayerEmail').value = profile?.taxpayer_email || '';
+        }
+
+        function applyProfileTaxInvoiceProfile() {
+            const profileId = Number(document.getElementById('profileTaxInvoiceProfileId')?.value || 0);
+            const profile = profileTaxProfiles.find((item) => Number(item.id) === profileId);
+            if (profile) fillProfileTaxInvoiceForm(profile);
+        }
 
 
 

@@ -17,7 +17,7 @@ class TransactionController extends Controller
     public function index()
     {
         $transactions = Transaction::query()
-            ->with(['user', 'details', 'statusHistories.user'])
+            ->with(['user', 'createdByAdmin', 'details', 'statusHistories.user'])
             ->latest()
             ->get();
 
@@ -45,38 +45,40 @@ class TransactionController extends Controller
                 $transaction->loadMissing('details');
                 $oldStatus = (string) $transaction->status;
 
-                foreach ($transaction->details as $detail) {
-                    $variantId = (int) ($detail->product_variant_id ?? 0);
-                    $qty = (int) ($detail->quantity ?? 0);
-                    if ($variantId <= 0 || $qty <= 0) {
-                        continue;
+                if ($transaction->normalizedSource() !== Transaction::SOURCE_MANUAL) {
+                    foreach ($transaction->details as $detail) {
+                        $variantId = (int) ($detail->product_variant_id ?? 0);
+                        $qty = (int) ($detail->quantity ?? 0);
+                        if ($variantId <= 0 || $qty <= 0) {
+                            continue;
+                        }
+
+                        $variant = ProductVariant::query()->lockForUpdate()->find($variantId);
+                        if (!$variant) {
+                            continue;
+                        }
+
+                        $before = (int) $variant->stock;
+                        if ($before < $qty) {
+                            throw new \RuntimeException('Stok varian "' . ($detail->variant_name ?: $detail->product_name) . '" tidak mencukupi.');
+                        }
+
+                        $after = $before - $qty;
+                        $variant->stock = $after;
+                        $variant->save();
+
+                        StockMovement::create([
+                            'product_variant_id' => $variant->id,
+                            'transaction_detail_id' => $detail->id,
+                            'admin_user_id' => $request->user()?->id,
+                            'type' => 'out',
+                            'quantity' => $qty,
+                            'stock_before' => $before,
+                            'stock_after' => $after,
+                            'source' => 'sales',
+                            'description' => 'Penjualan produk',
+                        ]);
                     }
-
-                    $variant = ProductVariant::query()->lockForUpdate()->find($variantId);
-                    if (!$variant) {
-                        continue;
-                    }
-
-                    $before = (int) $variant->stock;
-                    if ($before < $qty) {
-                        throw new \RuntimeException('Stok varian "' . ($detail->variant_name ?: $detail->product_name) . '" tidak mencukupi.');
-                    }
-
-                    $after = $before - $qty;
-                    $variant->stock = $after;
-                    $variant->save();
-
-                    StockMovement::create([
-                        'product_variant_id' => $variant->id,
-                        'transaction_detail_id' => $detail->id,
-                        'admin_user_id' => $request->user()?->id,
-                        'type' => 'out',
-                        'quantity' => $qty,
-                        'stock_before' => $before,
-                        'stock_after' => $after,
-                        'source' => 'sales',
-                        'description' => 'Penjualan produk',
-                    ]);
                 }
 
                 $transaction->status = 'process';
@@ -187,7 +189,7 @@ class TransactionController extends Controller
 
     public function show(Transaction $transaction)
     {
-        $transaction->load(['user', 'details', 'statusHistories.user', 'returnRequests.items']);
+        $transaction->load(['user', 'createdByAdmin', 'details', 'statusHistories.user', 'returnRequests.items']);
 
         return view('backend.transactions.show', compact('transaction'));
     }

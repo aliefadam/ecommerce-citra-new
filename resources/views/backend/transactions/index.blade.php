@@ -6,7 +6,7 @@
     <main class="flex-1 p-4 sm:p-6 mt-6">
         <div class="mb-6">
             <h1 class="text-2xl font-bold text-slate-800 dark:text-white">Transactions</h1>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Daftar transaksi checkout dari frontend.</p>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Daftar transaksi checkout ecommerce dan manual admin.</p>
         </div>
 
         <div id="txSummaryCards" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-4"></div>
@@ -27,6 +27,8 @@
 
                 <input id="txStatusFilter" type="hidden" value="">
                 <div id="txStatusFilters" class="flex flex-wrap gap-2"></div>
+                <input id="txSourceFilter" type="hidden" value="">
+                <div id="txSourceFilters" class="flex flex-wrap gap-2"></div>
             </div>
 
             <div id="txBulkToolbar"
@@ -65,6 +67,7 @@
                             </th>
                             <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">#</th>
                             <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Invoice</th>
+                            <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Source</th>
                             <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Customer</th>
                             <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Tanggal</th>
                             <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Pembayaran</th>
@@ -238,8 +241,11 @@
                     'id' => $tx->id,
                     'invoice_no' => $tx->invoice_no,
                     'order_id' => $tx->order_id,
-                    'customer' => $tx->user?->name ?? '-',
-                    'customer_email' => $tx->user?->email ?? '-',
+                    'source' => $tx->normalizedSource(),
+                    'source_label' => $tx->source_label,
+                    'created_by_admin' => $tx->createdByAdmin?->name ?? '',
+                    'customer' => $tx->customerDisplayName(),
+                    'customer_email' => $tx->customerDisplayEmail(),
                     'status' => $tx->status,
                     'payment_type' => $tx->payment_type ?? '-',
                     'payment_method' => $tx->payment_method ?? '-',
@@ -279,6 +285,7 @@
                                 'image' => $d->image_url ?? '',
                                 'quantity' => (int) $d->quantity,
                                 'price' => (int) $d->price,
+                                'discount_amount' => (int) ($d->discount_amount ?? 0),
                                 'subtotal' => (int) $d->subtotal,
                                 'item_note' => $d->item_note,
                             ],
@@ -330,6 +337,12 @@
             { key: 'cancelled', label: 'Dibatalkan' },
         ];
 
+        const txSourceFilterItems = [
+            { key: '', label: 'Semua Source' },
+            { key: 'checkout', label: 'Checkout Ecommerce' },
+            { key: 'manual', label: 'Manual Admin' },
+        ];
+
         function normalizeTxStatus(status) {
             return String(status || '').toLowerCase().trim();
         }
@@ -343,6 +356,24 @@
         function txCountForFilter(key) {
             if (!key) return txItems.length;
             return txItems.filter((tx) => txStatusFilterKey(tx) === key).length;
+        }
+
+        function normalizeTxSource(source) {
+            const value = String(source || 'checkout').toLowerCase().trim();
+            if (value === 'manual' || value === 'admin') return 'manual';
+            return 'checkout';
+        }
+
+        function txSourceFilterKey(tx) {
+            return normalizeTxSource(tx.source);
+        }
+
+        function txSourceBadge(tx) {
+            const source = txSourceFilterKey(tx);
+            const cls = source === 'manual'
+                ? 'bg-violet-100 text-violet-700 dark:bg-violet-900/35 dark:text-violet-300'
+                : 'bg-sky-100 text-sky-700 dark:bg-sky-900/35 dark:text-sky-300';
+            return `<span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${cls}">${tx.source_label || (source === 'manual' ? 'Manual Admin' : 'Checkout Ecommerce')}</span>`;
         }
 
         function txSummaryStats() {
@@ -393,6 +424,29 @@
                     </button>
                 `;
             }).join('');
+        }
+
+        function renderTxSourceFilters() {
+            const wrap = document.getElementById('txSourceFilters');
+            const input = document.getElementById('txSourceFilter');
+            if (!wrap || !input) return;
+
+            wrap.innerHTML = txSourceFilterItems.map((item) => {
+                const count = item.key
+                    ? txItems.filter((tx) => txSourceFilterKey(tx) === item.key).length
+                    : txItems.length;
+                return `<button type="button" data-source-filter="${item.key}" onclick="setTxSourceFilter('${item.key}')"
+                    class="rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors ${input.value === item.key ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'}">
+                    ${item.label} <span class="ml-1 text-slate-400">${count}</span>
+                </button>`;
+            }).join('');
+        }
+
+        function setTxSourceFilter(key) {
+            const input = document.getElementById('txSourceFilter');
+            input.value = key || '';
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+            renderTxSourceFilters();
         }
 
         function setTxStatusFilter(key) {
@@ -755,6 +809,7 @@
                         <div>${tx.invoice_no}</div>
                         ${tx.tracking_number ? `<div class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Resi: ${tx.tracking_number}</div>` : ''}
                     </td>
+                    <td class="px-4 py-3.5">${txSourceBadge(tx)}</td>
                     <td class="px-4 py-3.5 text-slate-500 dark:text-slate-400">
                         <div>${tx.customer}</div>
                     </td>
@@ -857,6 +912,11 @@
                 <div>
                     <h4 class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">Informasi Transaksi</h4>
                     <div class="grid grid-cols-2 gap-x-4 gap-y-2.5 text-sm">
+                        <div>
+                            <p class="text-xs text-slate-400 dark:text-slate-500 mb-1.5">Source</p>
+                            <div>${txSourceBadge(tx)}</div>
+                            ${tx.created_by_admin ? `<p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Dibuat oleh ${tx.created_by_admin}</p>` : ''}
+                        </div>
                         <div>
                             <p class="text-xs text-slate-400 dark:text-slate-500 mb-1.5">Customer</p>
                             <p class="font-medium text-slate-800 dark:text-slate-200">${tx.customer}</p>
@@ -1087,6 +1147,7 @@
         }
 
         renderTxStatusFilters();
+        renderTxSourceFilters();
         renderTxSummaryCards();
 
         txTableApi = initAdminDataTable({
@@ -1097,13 +1158,16 @@
             tbodyId: 'txTableBody',
             paginationInfoId: 'txPaginationInfo',
             paginationButtonsId: 'txPaginationButtons',
-            searchFields: ['invoice_no', 'customer', 'customer_email'],
+            searchFields: ['invoice_no', 'customer', 'customer_email', 'source_label'],
             filters: [{
                 elementId: 'txStatusFilter',
                 accessor: txStatusFilterKey,
+            }, {
+                elementId: 'txSourceFilter',
+                accessor: txSourceFilterKey,
             }],
             renderRow: (tx, index) => renderTxRow(tx, index),
-            emptyRowHtml: '<tr><td colspan="9" class="text-center py-12 text-slate-400 dark:text-slate-500">No transactions found</td></tr>',
+            emptyRowHtml: '<tr><td colspan="10" class="text-center py-12 text-slate-400 dark:text-slate-500">No transactions found</td></tr>',
             onAfterRender: (pageData) => {
                 visibleTxPageItems = Array.isArray(pageData) ? pageData : [];
                 syncTxSelectionUi();

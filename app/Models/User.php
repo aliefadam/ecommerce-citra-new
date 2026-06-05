@@ -8,9 +8,9 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'name',
@@ -72,6 +72,21 @@ class User extends Authenticatable
         return $this->hasMany(Transaction::class);
     }
 
+    public function taxProfiles(): HasMany
+    {
+        return $this->hasMany(UserTaxProfile::class);
+    }
+
+    public function requestedTaxInvoices(): HasMany
+    {
+        return $this->hasMany(TransactionTaxInvoice::class, 'requested_by_user_id');
+    }
+
+    public function uploadedTaxInvoices(): HasMany
+    {
+        return $this->hasMany(TransactionTaxInvoice::class, 'uploaded_by_admin_id');
+    }
+
     public function adminRole(): BelongsTo
     {
         return $this->belongsTo(AdminRole::class);
@@ -84,7 +99,7 @@ class User extends Authenticatable
 
     public function canAccessAdminPanel(): bool
     {
-        return strtolower((string) $this->role) === 'admin' || !is_null($this->admin_role_id);
+        return strtolower((string) $this->role) === 'admin' || ! is_null($this->admin_role_id);
     }
 
     public function hasAdminPermission(string $permission): bool
@@ -126,9 +141,16 @@ class User extends Authenticatable
             ],
             'manage_orders' => [
                 'transactions.index',
+                'transactions.create',
                 'transactions.show',
                 'transactions.edit',
                 'transactions.verify_payment',
+                'tax_invoices.index',
+                'tax_invoices.show',
+                'tax_invoices.process',
+                'tax_invoices.reject',
+                'tax_invoices.upload',
+                'tax_invoices.send',
                 'return_requests.index',
                 'return_requests.edit',
             ],

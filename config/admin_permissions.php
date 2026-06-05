@@ -7,6 +7,11 @@ return [
         'create' => 'Create',
         'edit' => 'Edit',
         'delete' => 'Delete',
+        'process' => 'Process',
+        'reject' => 'Reject',
+        'upload' => 'Upload',
+        'send' => 'Send',
+        'view_sensitive' => 'Sensitive',
         'override' => 'Override',
     ],
 
@@ -94,6 +99,7 @@ return [
                     'label' => 'Transactions',
                     'permissions' => [
                         'index' => ['key' => 'transactions.index', 'label' => 'List transactions'],
+                        'create' => ['key' => 'transactions.create', 'label' => 'Create manual transactions'],
                         'show' => ['key' => 'transactions.show', 'label' => 'View transaction detail'],
                         'edit' => ['key' => 'transactions.edit', 'label' => 'Process and ship orders'],
                         'override' => ['key' => 'transactions.verify_payment', 'label' => 'Verify manual payment'],
@@ -104,6 +110,18 @@ return [
                     'permissions' => [
                         'index' => ['key' => 'return_requests.index', 'label' => 'List return requests'],
                         'edit' => ['key' => 'return_requests.edit', 'label' => 'Approve or reject return requests'],
+                    ],
+                ],
+                'tax_invoices' => [
+                    'label' => 'Faktur Pajak',
+                    'permissions' => [
+                        'index' => ['key' => 'tax_invoices.index', 'label' => 'List tax invoice requests'],
+                        'show' => ['key' => 'tax_invoices.show', 'label' => 'View tax invoice detail'],
+                        'process' => ['key' => 'tax_invoices.process', 'label' => 'Mark tax invoices as processing'],
+                        'reject' => ['key' => 'tax_invoices.reject', 'label' => 'Reject tax invoice requests'],
+                        'upload' => ['key' => 'tax_invoices.upload', 'label' => 'Upload tax invoice PDFs'],
+                        'send' => ['key' => 'tax_invoices.send', 'label' => 'Send tax invoice emails'],
+                        'view_sensitive' => ['key' => 'tax_invoices.view_sensitive', 'label' => 'View full NPWP numbers'],
                     ],
                 ],
                 'product_reviews' => [

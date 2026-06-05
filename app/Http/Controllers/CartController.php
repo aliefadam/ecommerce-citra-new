@@ -362,6 +362,7 @@ class CartController extends Controller
 
             $transaction = Transaction::query()->create([
                 'user_id' => auth()->id(),
+                'source' => Transaction::SOURCE_CHECKOUT,
                 'invoice_no' => $this->generateDailyInvoiceNo(),
                 'order_id' => $orderId,
                 'midtrans_transaction_id' => (string) ($payment['transaction_id'] ?? ''),

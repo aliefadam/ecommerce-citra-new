@@ -4,15 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Mail\InvoiceOrder;
 use App\Models\Address;
+use App\Models\Cart;
 use App\Models\Coupon;
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
 use App\Models\TransactionStatusHistory;
 use App\Models\UserNotification;
-use App\Models\Cart;
 use App\Services\CheckoutTaxCalculator;
-use App\Services\LoyaltyPointService;
 use App\Services\ImageOptimizer;
+use App\Services\LoyaltyPointService;
+use App\Services\TaxInvoiceRequestService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -20,7 +21,7 @@ use Illuminate\Support\Facades\Mail;
 
 class ManualPaymentController extends Controller
 {
-    public function checkout(Request $request, LoyaltyPointService $loyaltyPointService, CheckoutTaxCalculator $taxCalculator)
+    public function checkout(Request $request, LoyaltyPointService $loyaltyPointService, CheckoutTaxCalculator $taxCalculator, TaxInvoiceRequestService $taxInvoiceService)
     {
         $validated = $request->validate([
             'items' => ['required', 'array', 'min:1'],
@@ -36,20 +37,30 @@ class ManualPaymentController extends Controller
             'shipping_cost' => ['required', 'numeric', 'min:0'],
             'shipping_label' => ['nullable', 'string', 'max:100'],
             'address_id' => ['nullable', 'integer'],
+            'tax_invoice' => ['nullable', 'array'],
+            'tax_invoice.requested' => ['nullable', 'boolean'],
+            'tax_invoice.profile_id' => ['nullable', 'integer'],
+            'tax_invoice.taxpayer_name' => ['nullable', 'string', 'max:255'],
+            'tax_invoice.taxpayer_number' => ['nullable', 'string', 'max:32'],
+            'tax_invoice.taxpayer_address' => ['nullable', 'string', 'max:2000'],
+            'tax_invoice.taxpayer_email' => ['nullable', 'string', 'max:255'],
+            'tax_invoice.customer_note' => ['nullable', 'string', 'max:1000'],
+            'tax_invoice.save_profile' => ['nullable', 'boolean'],
+            'tax_invoice.set_default_profile' => ['nullable', 'boolean'],
         ]);
 
-        $orderId = 'MAN-' . now()->format('YmdHis') . '-' . random_int(1000, 9999);
+        $orderId = 'MAN-'.now()->format('YmdHis').'-'.random_int(1000, 9999);
 
-        $transaction = DB::transaction(function () use ($request, $validated, $orderId, $loyaltyPointService, $taxCalculator) {
+        $transaction = DB::transaction(function () use ($request, $validated, $orderId, $loyaltyPointService, $taxCalculator, $taxInvoiceService) {
             $items = collect($validated['items'])->values();
-            $subtotal = (int) $items->sum(fn($item) => ((int) round((float) $item['price'])) * ((int) $item['qty']));
+            $subtotal = (int) $items->sum(fn ($item) => ((int) round((float) $item['price'])) * ((int) $item['qty']));
             $shippingCost = (int) round((float) $validated['shipping_cost']);
             $discountAmount = 0;
             $couponCode = (string) (session('checkout_coupon.code') ?? '');
 
             if ($couponCode !== '') {
                 $coupon = Coupon::query()->where('code', $couponCode)->first();
-                if (!$coupon || !$coupon->isUsableFor($subtotal)) {
+                if (! $coupon || ! $coupon->isUsableFor($subtotal)) {
                     session()->forget('checkout_coupon');
                     abort(422, 'Voucher tidak valid atau sudah tidak bisa digunakan.');
                 }
@@ -58,7 +69,7 @@ class ManualPaymentController extends Controller
             $tax = $taxCalculator->calculate($subtotal, $discountAmount, $shippingCost);
 
             $snapshot = [];
-            if (!empty($validated['address_id'])) {
+            if (! empty($validated['address_id'])) {
                 $addr = Address::query()
                     ->where('id', $validated['address_id'])
                     ->where('user_id', $request->user()?->id)
@@ -66,7 +77,7 @@ class ManualPaymentController extends Controller
                 if ($addr) {
                     $snapshot = [
                         'shipping_recipient_name' => $addr->recipient_name,
-                        'shipping_phone' => trim(($addr->phone_country_code ?? '') . $addr->phone_number),
+                        'shipping_phone' => trim(($addr->phone_country_code ?? '').$addr->phone_number),
                         'shipping_address_line' => $addr->address_line,
                         'shipping_city' => $addr->city,
                         'shipping_province' => $addr->province,
@@ -77,6 +88,7 @@ class ManualPaymentController extends Controller
 
             $transaction = Transaction::create([
                 'user_id' => $request->user()?->id,
+                'source' => Transaction::SOURCE_CHECKOUT,
                 'invoice_no' => $this->generateDailyInvoiceNo(),
                 'order_id' => $orderId,
                 'payment_type' => 'manual_transfer',
@@ -104,6 +116,7 @@ class ManualPaymentController extends Controller
             $detailRows = $items->map(function ($item) use ($transaction) {
                 $qty = max(1, (int) ($item['qty'] ?? 1));
                 $price = (int) round((float) ($item['price'] ?? 0));
+
                 return [
                     'transaction_id' => $transaction->id,
                     'product_id' => isset($item['id']) ? (int) $item['id'] : null,
@@ -114,7 +127,7 @@ class ManualPaymentController extends Controller
                     'price' => $price,
                     'quantity' => $qty,
                     'subtotal' => $qty * $price,
-                    'item_note' => !empty($item['redeemPoints'])
+                    'item_note' => ! empty($item['redeemPoints'])
                         ? LoyaltyPointService::buildRedeemItemNote((int) $item['redeemPoints'], (string) ($item['note'] ?? ''))
                         : (string) ($item['note'] ?? ''),
                     'created_at' => now(),
@@ -139,16 +152,18 @@ class ManualPaymentController extends Controller
 
             $loyaltyPointService->reserveRedeemPoints($transaction);
 
+            $taxInvoiceService->requestForTransaction($transaction, $request->user(), $validated['tax_invoice'] ?? []);
+
             return $transaction;
         });
 
         $checkout = session('checkout', []);
         if (($checkout['source'] ?? '') === 'cart_selected') {
-            $ids = collect($checkout['cart_ids'] ?? [])->map(fn($id) => (int) $id)->filter()->values()->all();
-            if (!empty($ids)) {
+            $ids = collect($checkout['cart_ids'] ?? [])->map(fn ($id) => (int) $id)->filter()->values()->all();
+            if (! empty($ids)) {
                 Cart::query()->where('user_id', $request->user()->id)->whereIn('id', $ids)->delete();
             }
-        } elseif (!in_array(($checkout['source'] ?? ''), ['buy_now', 'redeem_point'], true)) {
+        } elseif (! in_array(($checkout['source'] ?? ''), ['buy_now', 'redeem_point'], true)) {
             Cart::query()->where('user_id', $request->user()->id)->delete();
         }
 
@@ -170,7 +185,7 @@ class ManualPaymentController extends Controller
             'user_id' => $request->user()->id,
             'type' => 'transaction_created',
             'title' => 'Pesanan Berhasil Dibuat',
-            'body' => 'Upload bukti transfer untuk pesanan ' . $transaction->invoice_no . ' agar pembayaran bisa diverifikasi.',
+            'body' => 'Upload bukti transfer untuk pesanan '.$transaction->invoice_no.' agar pembayaran bisa diverifikasi.',
             'url' => route('frontend.checkout.waiting', ['orderId' => $transaction->order_id]),
         ]);
 
@@ -217,12 +232,12 @@ class ManualPaymentController extends Controller
 
     private function generateDailyInvoiceNo(): string
     {
-        $prefix = 'INV-' . now()->format('YmdHis') . '-';
+        $prefix = 'INV-'.now()->format('YmdHis').'-';
         $sequence = ((int) Transaction::query()
             ->whereBetween('created_at', [now()->startOfDay(), now()->endOfDay()])
             ->lockForUpdate()
             ->count()) + 1;
 
-        return $prefix . str_pad((string) $sequence, 4, '0', STR_PAD_LEFT);
+        return $prefix.str_pad((string) $sequence, 4, '0', STR_PAD_LEFT);
     }
 }

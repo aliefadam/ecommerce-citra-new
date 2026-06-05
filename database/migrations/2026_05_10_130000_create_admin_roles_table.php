@@ -43,6 +43,7 @@ return new class extends Migration
                     'reports.promos',
                     'reports.returns',
                     'transactions.index',
+                    'transactions.create',
                     'transactions.show',
                     'transactions.edit',
                     'transactions.verify_payment',
@@ -116,6 +117,7 @@ return new class extends Migration
                 'permissions' => json_encode([
                     'dashboard.index',
                     'transactions.index',
+                    'transactions.create',
                     'transactions.show',
                     'transactions.edit',
                     'transactions.verify_payment',

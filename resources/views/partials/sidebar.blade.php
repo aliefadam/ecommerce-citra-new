@@ -192,7 +192,7 @@
                             {{-- Single menu item --}}
                             <a href="{{ !empty($item['route']) ? route($item['route']) : '#' }}"
                                 class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all duration-200
-                            {{ !empty($item['active']) && request()->routeIs($item['active'])
+                            {{ !empty($item['active']) && request()->routeIs(...array_map('trim', explode(',', $item['active'])))
                                 ? 'font-semibold bg-blue-600 text-white shadow-lg shadow-blue-200 dark:shadow-blue-900/40'
                                 : 'font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60 hover:text-blue-600 dark:hover:text-blue-400' }}">
                                 @php $icon = $item['icon'] ?? ''; @endphp

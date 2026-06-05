@@ -207,6 +207,15 @@
 @section('content')
     @php
         $isRedeemCheckout = ($checkoutSource ?? 'cart_all') === 'redeem_point';
+        $checkoutTaxProfilesPayload = ($taxProfiles ?? collect())
+            ->map(fn($profile) => [
+                'id' => (int) $profile->id,
+                'taxpayer_name' => (string) $profile->taxpayer_name,
+                'taxpayer_number' => (string) $profile->taxpayer_number,
+                'taxpayer_address' => (string) $profile->taxpayer_address,
+                'taxpayer_email' => (string) $profile->taxpayer_email,
+            ])
+            ->values();
     @endphp
     <!-- NAVBAR -->
     @include('partials.navbar-user')
@@ -410,6 +419,71 @@
                                     </span>
                                 </label>
                             </div>
+                    </div>
+                </div>
+
+                <!-- FAKTUR PAJAK -->
+                <div class="checkout-card bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="checkout-card-header px-6 py-4 border-b border-slate-100">
+                        <label class="flex cursor-pointer items-start gap-3">
+                            <input id="taxInvoiceRequested" type="checkbox" class="mt-1 accent-blue-500"
+                                onchange="toggleTaxInvoiceForm()" />
+                            <span class="min-w-0">
+                                <span class="block font-bold text-slate-800">Saya membutuhkan faktur pajak</span>
+                                <span class="mt-0.5 block text-xs text-slate-500">Data NPWP disimpan sebagai snapshot transaksi dan diproses admin setelah checkout.</span>
+                            </span>
+                        </label>
+                    </div>
+                    <div id="taxInvoiceForm" class="checkout-card-body hidden p-6 space-y-4">
+                        @if (($taxProfiles ?? collect())->isNotEmpty())
+                            <div>
+                                <label class="mb-2 block text-xs font-semibold text-slate-600">Pakai profil wajib pajak</label>
+                                <select id="taxInvoiceProfileId" onchange="applyTaxInvoiceProfile()"
+                                    class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700 focus:border-blue-400 focus:outline-none">
+                                    <option value="">Isi manual</option>
+                                    @foreach ($taxProfiles as $profile)
+                                        <option value="{{ $profile->id }}">{{ $profile->taxpayer_name }} - {{ $profile->masked_taxpayer_number }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
+                        <div class="grid gap-4 md:grid-cols-2">
+                            <div>
+                                <label class="mb-2 block text-xs font-semibold text-slate-600">Nama NPWP</label>
+                                <input id="taxpayerName" type="text" placeholder="Nama sesuai NPWP"
+                                    class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="mb-2 block text-xs font-semibold text-slate-600">Nomor NPWP</label>
+                                <input id="taxpayerNumber" type="text" placeholder="15/16 digit atau format NPWP"
+                                    class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="mb-2 block text-xs font-semibold text-slate-600">Alamat NPWP</label>
+                                <textarea id="taxpayerAddress" rows="3" placeholder="Alamat lengkap sesuai NPWP"
+                                    class="w-full resize-none rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none"></textarea>
+                            </div>
+                            <div>
+                                <label class="mb-2 block text-xs font-semibold text-slate-600">Email Penerima</label>
+                                <input id="taxpayerEmail" type="email" placeholder="finance@example.com"
+                                    class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="mb-2 block text-xs font-semibold text-slate-600">Catatan</label>
+                                <input id="taxInvoiceNote" type="text" placeholder="Opsional"
+                                    class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none">
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-2 rounded-xl bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between">
+                            <label class="inline-flex items-center gap-2 text-sm text-slate-600">
+                                <input id="saveTaxProfile" type="checkbox" class="accent-blue-500">
+                                Simpan sebagai profil wajib pajak
+                            </label>
+                            <label class="inline-flex items-center gap-2 text-sm text-slate-600">
+                                <input id="setDefaultTaxProfile" type="checkbox" class="accent-blue-500">
+                                Jadikan default
+                            </label>
+                        </div>
                     </div>
                 </div>
 
@@ -771,6 +845,7 @@
         const manualPaymentUrl = @json(route('frontend.checkout.manual-payment'));
         const couponApplyUrl = @json(route('frontend.checkout.coupon.apply'));
         const couponRemoveUrl = @json(route('frontend.checkout.coupon.remove'));
+        const taxProfiles = @json($checkoutTaxProfilesPayload);
         const roProvincesUrl = @json(route('frontend.rajaongkir.provinces'));
         const roCitiesUrl = @json(route('frontend.rajaongkir.cities'));
         const roDistrictsUrl = @json(route('frontend.rajaongkir.districts'));
@@ -1466,6 +1541,44 @@
             return '#TK-2025-' + result;
         }
 
+        function toggleTaxInvoiceForm() {
+            const checked = Boolean(document.getElementById('taxInvoiceRequested')?.checked);
+            document.getElementById('taxInvoiceForm')?.classList.toggle('hidden', !checked);
+        }
+
+        function applyTaxInvoiceProfile() {
+            const profileId = Number(document.getElementById('taxInvoiceProfileId')?.value || 0);
+            const profile = taxProfiles.find((item) => Number(item.id) === profileId);
+            if (!profile) return;
+            document.getElementById('taxpayerName').value = profile.taxpayer_name || '';
+            document.getElementById('taxpayerNumber').value = profile.taxpayer_number || '';
+            document.getElementById('taxpayerAddress').value = profile.taxpayer_address || '';
+            document.getElementById('taxpayerEmail').value = profile.taxpayer_email || '';
+        }
+
+        function buildTaxInvoicePayload() {
+            const requested = Boolean(document.getElementById('taxInvoiceRequested')?.checked);
+            if (!requested) return { requested: false };
+
+            const payload = {
+                requested: true,
+                profile_id: Number(document.getElementById('taxInvoiceProfileId')?.value || 0) || null,
+                taxpayer_name: document.getElementById('taxpayerName')?.value.trim() || '',
+                taxpayer_number: document.getElementById('taxpayerNumber')?.value.trim() || '',
+                taxpayer_address: document.getElementById('taxpayerAddress')?.value.trim() || '',
+                taxpayer_email: document.getElementById('taxpayerEmail')?.value.trim() || '',
+                customer_note: document.getElementById('taxInvoiceNote')?.value.trim() || '',
+                save_profile: Boolean(document.getElementById('saveTaxProfile')?.checked),
+                set_default_profile: Boolean(document.getElementById('setDefaultTaxProfile')?.checked),
+            };
+
+            if (!payload.taxpayer_name || !payload.taxpayer_number || !payload.taxpayer_address || !payload.taxpayer_email) {
+                throw new Error('Lengkapi nama NPWP, nomor NPWP, alamat NPWP, dan email penerima faktur pajak.');
+            }
+
+            return payload;
+        }
+
         async function processPayment() {
             if (!cartItems.length) {
                 alert('Keranjang masih kosong. Silakan pilih produk terlebih dahulu.');
@@ -1473,6 +1586,13 @@
             }
             if (typeof shippingCost !== 'number') {
                 alert('Ongkos kirim masih dihitung. Silakan tunggu sebentar.');
+                return;
+            }
+            let taxInvoicePayload = { requested: false };
+            try {
+                taxInvoicePayload = buildTaxInvoicePayload();
+            } catch (error) {
+                alert(error?.message || 'Data faktur pajak belum lengkap.');
                 return;
             }
 
@@ -1502,6 +1622,7 @@
                     shipping_label: String(shippingLabel || 'Reguler'),
                     address_id: selectedAddressId || null,
                     payment_method: selectedPayment,
+                    tax_invoice: taxInvoicePayload,
                 };
 
                 const checkoutUrl = selectedPayment === 'manual_transfer' ? manualPaymentUrl : midtransChargeUrl;

@@ -2,20 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Banner;
+use App\Models\Cart;
+use App\Models\CategoryDetail;
+use App\Models\ContentPage;
 use App\Models\FlashSaleItem;
 use App\Models\MainCategory;
-use App\Models\CategoryDetail;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\PromoPage;
-use App\Models\ContentPage;
+use App\Models\StoreSetting;
+use App\Models\Transaction;
 use App\Models\TransactionDetail;
 use App\Models\TransactionProductReview;
-use App\Models\Transaction;
-use App\Models\StoreSetting;
 use App\Models\UserNotification;
 use App\Models\Wishlist;
-use App\Models\Banner;
 use App\Services\MembershipTierService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -29,7 +30,7 @@ class FrontendController extends Controller
         $mainCategories = MainCategory::query()
             ->orderBy('name')
             ->get()
-            ->map(fn($c) => [
+            ->map(fn ($c) => [
                 'slug' => (string) $c->slug,
                 'name' => (string) $c->name,
                 'icon' => $this->homeCategoryIcon((string) $c->name),
@@ -40,6 +41,7 @@ class FrontendController extends Controller
         $homeCategories = collect($mainCategories)
             ->map(function ($cat) use ($products) {
                 $count = collect($products['home'])->where('parentCategorySlug', $cat['slug'])->count();
+
                 return [
                     'slug' => (string) $cat['slug'],
                     'name' => (string) $cat['name'],
@@ -61,7 +63,7 @@ class FrontendController extends Controller
                 str_starts_with($image, 'https://') ||
                 str_starts_with($image, '//') ||
                 str_starts_with($image, 'data:')
-            ) ? $image : asset('storage/' . ltrim($image, '/'));
+            ) ? $image : asset('storage/'.ltrim($image, '/'));
 
             return [
                 'image' => $imageUrl,
@@ -95,7 +97,7 @@ class FrontendController extends Controller
     {
         $products = $this->buildFrontendProducts();
         $categoryTree = MainCategory::query()
-            ->with(['categoryDetails' => fn($q) => $q->orderBy('name')])
+            ->with(['categoryDetails' => fn ($q) => $q->orderBy('name')])
             ->orderBy('name')
             ->get();
         $selectedParentSlug = (string) request()->query('parent', '');
@@ -140,7 +142,7 @@ class FrontendController extends Controller
         $promo = PromoPage::query()
             ->where('is_active', true)
             ->when($slug, fn ($q) => $q->where('slug', $slug))
-            ->when(!$slug, fn ($q) => $q->orderByDesc('starts_at')->orderByDesc('id'))
+            ->when(! $slug, fn ($q) => $q->orderByDesc('starts_at')->orderByDesc('id'))
             ->firstOrFail();
 
         return view('frontend.promo-page', [
@@ -166,18 +168,18 @@ class FrontendController extends Controller
             $q = strtolower($query);
             $productsQuery->where(function ($builder) use ($q) {
                 $builder
-                    ->whereRaw('LOWER(name) like ?', ['%' . $q . '%'])
-                    ->orWhereRaw('LOWER(description) like ?', ['%' . $q . '%'])
-                    ->orWhereHas('mainCategory', fn($mq) => $mq->whereRaw('LOWER(name) like ?', ['%' . $q . '%']))
-                    ->orWhereHas('categoryDetail', fn($cq) => $cq->whereRaw('LOWER(name) like ?', ['%' . $q . '%']))
+                    ->whereRaw('LOWER(name) like ?', ['%'.$q.'%'])
+                    ->orWhereRaw('LOWER(description) like ?', ['%'.$q.'%'])
+                    ->orWhereHas('mainCategory', fn ($mq) => $mq->whereRaw('LOWER(name) like ?', ['%'.$q.'%']))
+                    ->orWhereHas('categoryDetail', fn ($cq) => $cq->whereRaw('LOWER(name) like ?', ['%'.$q.'%']))
                     ->orWhereHas('productVariants.variant', function ($vq) use ($q) {
-                        $vq->whereRaw('LOWER(name) like ?', ['%' . $q . '%'])
-                            ->orWhereRaw('LOWER(value) like ?', ['%' . $q . '%']);
+                        $vq->whereRaw('LOWER(name) like ?', ['%'.$q.'%'])
+                            ->orWhereRaw('LOWER(value) like ?', ['%'.$q.'%']);
                     })
                     ->orWhereHas('productVariants.attributeValues', function ($aq) use ($q) {
-                        $aq->whereRaw('LOWER(COALESCE(value_text, "")) like ?', ['%' . $q . '%'])
-                            ->orWhereRaw('CAST(value_number as CHAR) like ?', ['%' . $q . '%'])
-                            ->orWhereHas('definition', fn($dq) => $dq->whereRaw('LOWER(name) like ?', ['%' . $q . '%']));
+                        $aq->whereRaw('LOWER(COALESCE(value_text, "")) like ?', ['%'.$q.'%'])
+                            ->orWhereRaw('CAST(value_number as CHAR) like ?', ['%'.$q.'%'])
+                            ->orWhereHas('definition', fn ($dq) => $dq->whereRaw('LOWER(name) like ?', ['%'.$q.'%']));
                     });
             });
         }
@@ -201,17 +203,18 @@ class FrontendController extends Controller
 
         $items = $products->map(function ($product) use ($soldByProduct, $reviewsByProduct) {
             $variant = $product->productVariants->first();
-            if (!$variant) {
+            if (! $variant) {
                 return null;
             }
 
             $basePrice = (int) $variant->price;
             $flashItem = $product->flashSaleItems->first(function ($item) {
                 $sale = $item->flashSale;
-                if (!$sale || !$item->is_active || $sale->status !== 'active') {
+                if (! $sale || ! $item->is_active || $sale->status !== 'active') {
                     return false;
                 }
                 $now = now();
+
                 return $sale->start_at && $sale->end_at && $now->between($sale->start_at, $sale->end_at);
             });
 
@@ -231,8 +234,8 @@ class FrontendController extends Controller
                 'parentCategorySlug' => (string) ($product->mainCategory?->slug ?? ''),
                 'variant' => $variant->attributeSummary(),
                 'variants' => $product->productVariants
-                    ->flatMap(fn($pv) => $this->buildVariantFilterPairs($pv))
-                    ->unique(fn($item) => strtolower($item['name'] . '|' . $item['value']))
+                    ->flatMap(fn ($pv) => $this->buildVariantFilterPairs($pv))
+                    ->unique(fn ($item) => strtolower($item['name'].'|'.$item['value']))
                     ->values()
                     ->all(),
                 'price' => $price,
@@ -269,14 +272,14 @@ class FrontendController extends Controller
 
     public function detailProduk(?string $slug = null)
     {
-        if (!$slug) {
+        if (! $slug) {
             $firstProduct = Product::query()
                 ->where('status', 'active')
                 ->whereNotNull('slug')
                 ->orderByDesc('id')
                 ->first();
 
-            abort_if(!$firstProduct, 404);
+            abort_if(! $firstProduct, 404);
 
             return redirect()->route('frontend.detail-produk', ['slug' => $firstProduct->slug]);
         }
@@ -293,14 +296,14 @@ class FrontendController extends Controller
             ->firstOrFail();
 
         $variant = $product->productVariants->first();
-        abort_if(!$variant, 404);
+        abort_if(! $variant, 404);
 
         $variantGroups = $this->buildAttributeVariantGroups($product->productVariants);
 
         $galleryImages = $product->productVariants
             ->pluck('image')
-            ->filter(fn($img) => filled($img))
-            ->map(fn($img) => $this->normalizeImageUrl((string) $img, '700x700'))
+            ->filter(fn ($img) => filled($img))
+            ->map(fn ($img) => $this->normalizeImageUrl((string) $img, '700x700'))
             ->unique()
             ->values()
             ->all();
@@ -351,6 +354,7 @@ class FrontendController extends Controller
         $ratingDistribution = collect([5, 4, 3, 2, 1])->map(function ($star) use ($ratingCounts, $reviews) {
             $count = (int) ($ratingCounts[$star] ?? 0);
             $percent = $reviews > 0 ? (int) round(($count / $reviews) * 100) : 0;
+
             return [
                 'star' => $star,
                 'count' => $count,
@@ -361,7 +365,7 @@ class FrontendController extends Controller
         $reviewItems = TransactionProductReview::query()
             ->with(['user:id,name', 'transactionDetail:id,variant_name'])
             ->where('is_hidden', false)
-            ->whereHas('transactionDetail', fn($q) => $q->where('product_id', $product->id))
+            ->whereHas('transactionDetail', fn ($q) => $q->where('product_id', $product->id))
             ->latest()
             ->get()
             ->map(function ($review) {
@@ -380,6 +384,7 @@ class FrontendController extends Controller
                         ) {
                             return $photo;
                         }
+
                         return asset(ltrim($photo, '/'));
                     })
                     ->filter()
@@ -401,7 +406,7 @@ class FrontendController extends Controller
         $activeFlashSaleItem = $product->flashSaleItems
             ->first(function ($item) {
                 $sale = $item->flashSale;
-                if (!$sale || !$item->is_active) {
+                if (! $sale || ! $item->is_active) {
                     return false;
                 }
 
@@ -410,6 +415,7 @@ class FrontendController extends Controller
                 }
 
                 $now = now();
+
                 return $sale->start_at && $sale->end_at && $now->between($sale->start_at, $sale->end_at);
             });
 
@@ -494,7 +500,7 @@ class FrontendController extends Controller
         $recommendedProducts = $recommendedCandidates
             ->map(function ($recProduct) use ($soldCounts, $reviewStatsByProduct) {
                 $recVariant = $recProduct->productVariants->first();
-                if (!$recVariant) {
+                if (! $recVariant) {
                     return null;
                 }
 
@@ -502,10 +508,11 @@ class FrontendController extends Controller
                 $recActiveFlashSaleItem = $recProduct->flashSaleItems
                     ->first(function ($item) {
                         $sale = $item->flashSale;
-                        if (!$sale || !$item->is_active || $sale->status !== 'active') {
+                        if (! $sale || ! $item->is_active || $sale->status !== 'active') {
                             return false;
                         }
                         $now = now();
+
                         return $sale->start_at && $sale->end_at && $now->between($sale->start_at, $sale->end_at);
                     });
 
@@ -531,13 +538,14 @@ class FrontendController extends Controller
             ->values()
             ->map(function ($item) {
                 unset($item['_score']);
+
                 return $item;
             })
             ->all();
 
         $recentIds = collect(session('recently_viewed_products', []))
-            ->map(fn($id) => (int) $id)
-            ->filter(fn($id) => $id > 0 && $id !== (int) $product->id)
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn ($id) => $id > 0 && $id !== (int) $product->id)
             ->unique()
             ->take(8)
             ->values();
@@ -546,7 +554,7 @@ class FrontendController extends Controller
         session([
             'recently_viewed_products' => collect([(int) $product->id])
                 ->merge(session('recently_viewed_products', []))
-                ->map(fn($id) => (int) $id)
+                ->map(fn ($id) => (int) $id)
                 ->unique()
                 ->take(12)
                 ->values()
@@ -582,9 +590,9 @@ class FrontendController extends Controller
                 'productVariantId' => (int) $variant->id,
                 'isWishlisted' => auth()->check()
                     ? Wishlist::query()
-                    ->where('user_id', auth()->id())
-                    ->where('product_id', $product->id)
-                    ->exists()
+                        ->where('user_id', auth()->id())
+                        ->where('product_id', $product->id)
+                        ->exists()
                     : false,
                 'variantOptions' => $product->productVariants
                     ->map(function ($pv) use ($product, $isFlashSale, $flashSalePrice) {
@@ -623,17 +631,18 @@ class FrontendController extends Controller
             ->where('status', 'active')
             ->whereIn('id', $ids)
             ->get()
-            ->sortBy(fn($product) => array_search((int) $product->id, $ids, true));
+            ->sortBy(fn ($product) => array_search((int) $product->id, $ids, true));
 
         return $products->map(function ($product) {
             $variant = $product->productVariants->first();
-            if (!$variant) {
+            if (! $variant) {
                 return null;
             }
 
             $basePrice = (int) $variant->price;
             $activeFlashSaleItem = $product->flashSaleItems->first(function ($item) {
                 $sale = $item->flashSale;
+
                 return $sale && $item->is_active && $sale->status === 'active' && $sale->start_at && $sale->end_at && now()->between($sale->start_at, $sale->end_at);
             });
 
@@ -675,7 +684,7 @@ class FrontendController extends Controller
         $soldMap = TransactionDetail::query()
             ->selectRaw('product_id, SUM(quantity) as sold_qty')
             ->whereIn('product_id', $productIds)
-            ->whereHas('transaction', fn($q) => $q->whereIn(DB::raw('LOWER(status)'), $deliveredStatuses))
+            ->whereHas('transaction', fn ($q) => $q->whereIn(DB::raw('LOWER(status)'), $deliveredStatuses))
             ->groupBy('product_id')
             ->pluck('sold_qty', 'product_id');
 
@@ -690,7 +699,9 @@ class FrontendController extends Controller
 
         return $products->take(10)->map(function ($product) use ($soldMap, $reviewStats) {
             $variant = $product->productVariants->first();
-            if (!$variant) return null;
+            if (! $variant) {
+                return null;
+            }
 
             $price = (int) $variant->price;
             $stat = $reviewStats->get($product->id);
@@ -699,8 +710,11 @@ class FrontendController extends Controller
 
             $activeFlashSaleItem = $product->flashSaleItems->first(function ($item) {
                 $sale = $item->flashSale;
-                if (!$sale || !$item->is_active || $sale->status !== 'active') return false;
+                if (! $sale || ! $item->is_active || $sale->status !== 'active') {
+                    return false;
+                }
                 $now = now();
+
                 return $sale->start_at && $sale->end_at && $now->between($sale->start_at, $sale->end_at);
             });
             $isFlashSale = (bool) $activeFlashSaleItem;
@@ -729,6 +743,7 @@ class FrontendController extends Controller
         $addresses = auth()->check()
             ? auth()->user()->addresses()->orderByDesc('is_primary')->latest()->get()
             : collect();
+        $taxProfiles = auth()->user()->taxProfiles()->orderByDesc('is_default')->latest()->get();
 
         $checkout = session('checkout', []);
         $source = (string) ($checkout['source'] ?? '');
@@ -738,7 +753,7 @@ class FrontendController extends Controller
             $checkoutItems = collect($checkout['items'] ?? [])->values()->all();
         } elseif ($source === 'cart_selected') {
             $selectedIds = collect($checkout['cart_ids'] ?? [])
-                ->map(fn($id) => (int) $id)
+                ->map(fn ($id) => (int) $id)
                 ->filter()
                 ->values()
                 ->all();
@@ -752,6 +767,7 @@ class FrontendController extends Controller
             'checkoutItems' => $checkoutItems,
             'checkoutSource' => $source ?: 'cart_all',
             'taxSettings' => StoreSetting::taxSettings(),
+            'taxProfiles' => $taxProfiles,
         ]);
     }
 
@@ -769,6 +785,7 @@ class FrontendController extends Controller
                 'details.returnRequestItems.returnRequest',
                 'statusHistories.user',
                 'returnRequests.items',
+                'taxInvoice',
             ])
             ->where('user_id', $user->id)
             ->latest()
@@ -795,7 +812,9 @@ class FrontendController extends Controller
 
         $membershipSummary = $membershipTierService->resolveForUser($user);
 
-        return view('frontend.profil', compact('user', 'addresses', 'transactions', 'notifications', 'wishlists', 'profileStats', 'membershipSummary'));
+        $taxProfiles = $user->taxProfiles()->orderByDesc('is_default')->latest()->get();
+
+        return view('frontend.profil', compact('user', 'addresses', 'transactions', 'notifications', 'wishlists', 'profileStats', 'membershipSummary', 'taxProfiles'));
     }
 
     private function buildFrontendProducts(): array
@@ -845,11 +864,11 @@ class FrontendController extends Controller
             ->keyBy('product_id');
         $wishedProductIds = auth()->check()
             ? Wishlist::query()
-            ->where('user_id', auth()->id())
-            ->whereIn('product_id', $productIds)
-            ->pluck('product_id')
-            ->map(fn($id) => (int) $id)
-            ->all()
+                ->where('user_id', auth()->id())
+                ->whereIn('product_id', $productIds)
+                ->pluck('product_id')
+                ->map(fn ($id) => (int) $id)
+                ->all()
             : [];
         $wishedLookup = array_flip($wishedProductIds);
 
@@ -858,21 +877,21 @@ class FrontendController extends Controller
 
         foreach ($products as $idx => $product) {
             $variant = $product->productVariants->first();
-            if (!$variant) {
+            if (! $variant) {
                 continue;
             }
 
             $image = $this->resolveProductVariantImageUrl($product, $variant, '400x400');
             $variantFilters = $product->productVariants
-                ->flatMap(fn($pv) => $this->buildVariantFilterPairs($pv))
-                ->unique(fn($item) => strtolower($item['name'] . '|' . $item['value']))
+                ->flatMap(fn ($pv) => $this->buildVariantFilterPairs($pv))
+                ->unique(fn ($item) => strtolower($item['name'].'|'.$item['value']))
                 ->values()
                 ->all();
 
             $variantPrices = $product->productVariants
                 ->pluck('price')
-                ->map(fn($v) => (int) $v)
-                ->filter(fn($v) => $v > 0)
+                ->map(fn ($v) => (int) $v)
+                ->filter(fn ($v) => $v > 0)
                 ->values();
             $priceMin = $variantPrices->isNotEmpty() ? (int) $variantPrices->min() : (int) $variant->price;
             $priceMax = $variantPrices->isNotEmpty() ? (int) $variantPrices->max() : (int) $variant->price;
@@ -884,7 +903,7 @@ class FrontendController extends Controller
             $activeFlashSaleItem = $product->flashSaleItems
                 ->first(function ($item) {
                     $sale = $item->flashSale;
-                    if (!$sale || !$item->is_active) {
+                    if (! $sale || ! $item->is_active) {
                         return false;
                     }
 
@@ -893,6 +912,7 @@ class FrontendController extends Controller
                     }
 
                     $now = now();
+
                     return $sale->start_at && $sale->end_at && $now->between($sale->start_at, $sale->end_at);
                 });
             $isFlashSale = (bool) $activeFlashSaleItem;
@@ -1001,7 +1021,7 @@ class FrontendController extends Controller
             ->get()
             ->map(function ($product) use ($soldMap, $reviewStats) {
                 $variant = $product->productVariants->first();
-                if (!$variant) {
+                if (! $variant) {
                     return null;
                 }
 
@@ -1060,6 +1080,7 @@ class FrontendController extends Controller
     private function homeCategoryIcon(string $name): string
     {
         $n = strtolower($name);
+
         return match (true) {
             str_contains($n, 'baut') => 'ri-screwdriver-line',
             str_contains($n, 'mur') => 'ri-settings-3-line',
@@ -1091,7 +1112,7 @@ class FrontendController extends Controller
             return $value;
         }
 
-        return asset('storage/' . ltrim($value, '/'));
+        return asset('storage/'.ltrim($value, '/'));
     }
 
     private function mapCategoryPageCategory(?string $categoryName): string
@@ -1121,7 +1142,7 @@ class FrontendController extends Controller
             return $image;
         }
 
-        return asset('storage/' . ltrim($image, '/'));
+        return asset('storage/'.ltrim($image, '/'));
     }
 
     private function resolveProductVariantImageUrl(Product $product, ?ProductVariant $variant, string $fallbackSize = '400x400'): string
@@ -1162,13 +1183,13 @@ class FrontendController extends Controller
 
         return collect($this->buildVariantAttributeMap($variant))
             ->map(function ($value, $code) use ($labels) {
-                if (!isset($labels[$code]) || trim((string) $value) === '') {
+                if (! isset($labels[$code]) || trim((string) $value) === '') {
                     return null;
                 }
 
                 return [
                     'name' => $labels[$code],
-                    'value' => $code === 'length_mm' ? $value . 'mm' : $value,
+                    'value' => $code === 'length_mm' ? $value.'mm' : $value,
                 ];
             })
             ->filter()
@@ -1193,11 +1214,11 @@ class FrontendController extends Controller
                 $values = collect($variants)
                     ->map(function ($variant) use ($code) {
                         $value = $variant->attributeValue($code);
-                        if (!$value) {
+                        if (! $value) {
                             return null;
                         }
 
-                        return $code === 'length_mm' ? $value . 'mm' : $value;
+                        return $code === 'length_mm' ? $value.'mm' : $value;
                     })
                     ->filter()
                     ->unique()
@@ -1236,7 +1257,7 @@ class FrontendController extends Controller
             ->orderByDesc('flash_sale_id')
             ->orderByDesc('id')
             ->get()
-            ->filter(fn($item) => $item->productVariant && $item->productVariant->product)
+            ->filter(fn ($item) => $item->productVariant && $item->productVariant->product)
             ->values();
 
         $mapped = $items->map(function ($item) {
@@ -1273,6 +1294,7 @@ class FrontendController extends Controller
             ->groupBy('flashSaleId')
             ->map(function ($campaignItems) {
                 $first = $campaignItems->first();
+
                 return [
                     'id' => $first['flashSaleId'],
                     'name' => $first['flashSaleName'] ?: 'Flash Sale',
@@ -1296,11 +1318,11 @@ class FrontendController extends Controller
 
     private function buildCheckoutItems(int $userId, ?array $cartIds = null): array
     {
-        $query = \App\Models\Cart::query()
+        $query = Cart::query()
             ->with(['productVariant.product', 'productVariant.variant', 'productVariant.attributeValues.definition', 'productVariant.flashSaleItems.flashSale'])
             ->where('user_id', $userId)
             ->latest();
-        if (is_array($cartIds) && !empty($cartIds)) {
+        if (is_array($cartIds) && ! empty($cartIds)) {
             $query->whereIn('id', $cartIds);
         }
         $rows = $query->get();
@@ -1309,7 +1331,7 @@ class FrontendController extends Controller
             /** @var ProductVariant|null $variant */
             $variant = $row->productVariant;
             $product = $variant?->product;
-            if (!$variant || !$product || $product->status !== 'active' || (int) $variant->stock < 1) {
+            if (! $variant || ! $product || $product->status !== 'active' || (int) $variant->stock < 1) {
                 return null;
             }
 
@@ -1321,11 +1343,12 @@ class FrontendController extends Controller
             $basePrice = (int) $variant->price;
             $flashItem = $variant->flashSaleItems->first(function ($item) {
                 $sale = $item->flashSale;
-                if (!$sale || !$item->is_active || $sale->status !== 'active') {
+                if (! $sale || ! $item->is_active || $sale->status !== 'active') {
                     return false;
                 }
 
                 $now = now();
+
                 return $sale->start_at && $sale->end_at && $now->between($sale->start_at, $sale->end_at);
             });
 

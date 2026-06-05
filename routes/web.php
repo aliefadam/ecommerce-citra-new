@@ -1,44 +1,46 @@
 <?php
 
+use App\Http\Controllers\AddressController;
+use App\Http\Controllers\AdminManualTransactionController;
+use App\Http\Controllers\AdminProductReviewController;
+use App\Http\Controllers\AdminReturnRequestController;
+use App\Http\Controllers\AdminRoleController;
+use App\Http\Controllers\AdminTaxInvoiceController;
+use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BackendController;
-use App\Http\Controllers\FrontendController;
-use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\MainCategoryController;
-use App\Http\Controllers\CategoryDetailController;
-use App\Http\Controllers\FlashSaleController;
-use App\Http\Controllers\ProductController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\VariantController;
-use App\Http\Controllers\AddressController;
-use App\Http\Controllers\CartController;
-use App\Http\Controllers\RajaOngkirController;
-use App\Http\Controllers\MidtransController;
-use App\Http\Controllers\TransactionController;
-use App\Http\Controllers\TransactionReviewController;
-use App\Http\Controllers\UserNotificationController;
 use App\Http\Controllers\BannerController;
-use App\Http\Controllers\StoreLocationController;
-use App\Http\Controllers\WishlistController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\StockController;
-use App\Http\Controllers\ReturnRequestController;
-use App\Http\Controllers\AdminReturnRequestController;
-use App\Http\Controllers\AdminProductReviewController;
-use App\Http\Controllers\AdminRoleController;
-use App\Http\Controllers\AdminUserController;
-use App\Http\Controllers\CustomerOrderController;
-use App\Http\Controllers\CouponController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\CategoryDetailController;
 use App\Http\Controllers\CheckoutCouponController;
+use App\Http\Controllers\ContentPageController;
+use App\Http\Controllers\CouponController;
+use App\Http\Controllers\CustomerOrderController;
+use App\Http\Controllers\CustomerTaxInvoiceController;
+use App\Http\Controllers\FlashSaleController;
+use App\Http\Controllers\FrontendContentController;
+use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\InvoiceController;
-use App\Http\Controllers\SalesReportController;
+use App\Http\Controllers\MainCategoryController;
 use App\Http\Controllers\ManualPaymentController;
 use App\Http\Controllers\MemberTierController;
+use App\Http\Controllers\MidtransController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\NewsletterSubscriberController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PromoPageController;
-use App\Http\Controllers\ContentPageController;
-use App\Http\Controllers\FrontendContentController;
+use App\Http\Controllers\RajaOngkirController;
+use App\Http\Controllers\ReturnRequestController;
+use App\Http\Controllers\SalesReportController;
+use App\Http\Controllers\StockController;
+use App\Http\Controllers\StoreLocationController;
+use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\TransactionReviewController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\UserNotificationController;
+use App\Http\Controllers\VariantController;
+use App\Http\Controllers\WishlistController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -157,6 +159,17 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('store-location/provinces', [StoreLocationController::class, 'provinces'])->name('store-locations.provinces')->middleware('admin.permission:store_settings.edit');
         Route::get('store-location/cities', [StoreLocationController::class, 'cities'])->name('store-locations.cities')->middleware('admin.permission:store_settings.edit');
         Route::get('transactions/shipping-labels/bulk', [TransactionController::class, 'bulkShippingLabels'])->name('transactions.bulk-shipping-label')->middleware('admin.permission:transactions.show');
+        Route::get('tax-invoices', [AdminTaxInvoiceController::class, 'index'])->name('tax-invoices.index')->middleware('admin.permission:tax_invoices.index');
+        Route::get('tax-invoices/{taxInvoice}', [AdminTaxInvoiceController::class, 'show'])->name('tax-invoices.show')->middleware('admin.permission:tax_invoices.show');
+        Route::get('tax-invoices/{taxInvoice}/download', [AdminTaxInvoiceController::class, 'download'])->name('tax-invoices.download')->middleware('admin.permission:tax_invoices.show');
+        Route::patch('tax-invoices/{taxInvoice}/process', [AdminTaxInvoiceController::class, 'process'])->name('tax-invoices.process')->middleware('admin.permission:tax_invoices.process');
+        Route::patch('tax-invoices/{taxInvoice}/reject', [AdminTaxInvoiceController::class, 'reject'])->name('tax-invoices.reject')->middleware('admin.permission:tax_invoices.reject');
+        Route::post('tax-invoices/{taxInvoice}/upload', [AdminTaxInvoiceController::class, 'upload'])->name('tax-invoices.upload')->middleware('admin.permission:tax_invoices.upload');
+        Route::post('tax-invoices/{taxInvoice}/send', [AdminTaxInvoiceController::class, 'send'])->name('tax-invoices.send')->middleware('admin.permission:tax_invoices.send');
+        Route::get('transactions/create-manual', [AdminManualTransactionController::class, 'create'])->name('transactions.create-manual')->middleware('admin.permission:transactions.create');
+        Route::post('transactions/create-manual', [AdminManualTransactionController::class, 'store'])->name('transactions.store-manual')->middleware('admin.permission:transactions.create');
+        Route::patch('transactions/{transaction}/manual-payment', [AdminManualTransactionController::class, 'updatePayment'])->name('transactions.manual-payment.update')->middleware('admin.permission:transactions.verify_payment');
+        Route::patch('transactions/{transaction}/manual-shipping', [AdminManualTransactionController::class, 'updateShipping'])->name('transactions.manual-shipping.update')->middleware('admin.permission:transactions.edit');
         Route::resource('transactions', TransactionController::class)->only(['index', 'show'])
             ->middlewareFor(['index'], 'admin.permission:transactions.index')
             ->middlewareFor(['show'], 'admin.permission:transactions.show');
@@ -182,6 +195,8 @@ Route::middleware('auth')->prefix('profil')->name('frontend.profil.')->group(fun
     Route::post('/reviews', [TransactionReviewController::class, 'store'])->name('reviews.store');
     Route::post('/return-requests', [ReturnRequestController::class, 'store'])->name('return-requests.store');
     Route::patch('/orders/{transaction}/complete', [CustomerOrderController::class, 'complete'])->name('orders.complete');
+    Route::post('/orders/{transaction}/tax-invoice', [CustomerTaxInvoiceController::class, 'store'])->name('orders.tax-invoice.store');
+    Route::get('/orders/{transaction}/tax-invoice/download', [CustomerTaxInvoiceController::class, 'download'])->name('orders.tax-invoice.download');
 });
 
 Route::name('frontend.')->group(function () {
