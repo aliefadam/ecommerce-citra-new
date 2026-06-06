@@ -58,7 +58,7 @@ class AdminWhatsappGatewayController extends Controller
     public function connect(Request $request, WaGatewayService $gateway): JsonResponse
     {
         return $this->run(function () use ($request, $gateway) {
-            $result = $gateway->connect($this->storeId(), $request->boolean('reset'));
+            $result = $this->withPreparedStore($gateway, fn () => $gateway->connect($this->storeId(), $request->boolean('reset')));
 
             return [
                 'message' => (string) ($result['message'] ?? 'Sesi WhatsApp sedang disiapkan.'),
@@ -83,7 +83,7 @@ class AdminWhatsappGatewayController extends Controller
     {
         return $this->run(fn () => [
             'message' => 'Status WhatsApp Gateway berhasil dimuat.',
-            'data' => $gateway->status($this->storeId()),
+            'data' => $this->withPreparedStore($gateway, fn () => $gateway->status($this->storeId())),
         ]);
     }
 
@@ -91,13 +91,13 @@ class AdminWhatsappGatewayController extends Controller
     {
         return $this->run(fn () => [
             'message' => 'QR WhatsApp berhasil dimuat.',
-            'data' => $gateway->qr($this->storeId()),
+            'data' => $this->withPreparedStore($gateway, fn () => $gateway->qr($this->storeId())),
         ]);
     }
 
     public function qrRaw(WaGatewayService $gateway): Response
     {
-        $response = $gateway->qrRaw($this->storeId());
+        $response = $this->withPreparedStore($gateway, fn () => $gateway->qrRaw($this->storeId()));
 
         return response($response->body(), 200, [
             'Content-Type' => $response->header('Content-Type', 'image/png'),
@@ -109,7 +109,7 @@ class AdminWhatsappGatewayController extends Controller
     {
         return $this->run(fn () => [
             'message' => 'Kuota WhatsApp Gateway berhasil dimuat.',
-            'data' => $gateway->usage($this->storeId()),
+            'data' => $this->withPreparedStore($gateway, fn () => $gateway->usage($this->storeId())),
         ]);
     }
 
@@ -148,5 +148,29 @@ class AdminWhatsappGatewayController extends Controller
     private function storeId(): string
     {
         return $this->settings()['storeId'];
+    }
+
+    private function withPreparedStore(WaGatewayService $gateway, callable $callback): mixed
+    {
+        try {
+            return $callback();
+        } catch (RuntimeException $e) {
+            if (! str_contains(strtolower($e->getMessage()), 'toko tidak ditemukan')) {
+                throw $e;
+            }
+
+            $settings = $this->settings();
+            $gateway->prepareStore(
+                StoreSetting::values()['store_name'] ?? 'Ecommerce Citra',
+                $settings['storeId'],
+                [
+                    'perMinute' => $settings['limits']['perMinute'],
+                    'perDay' => $settings['limits']['perDay'],
+                    'perMonth' => $settings['limits']['perMonth'],
+                ],
+            );
+
+            return $callback();
+        }
     }
 }

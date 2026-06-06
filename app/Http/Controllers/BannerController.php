@@ -32,14 +32,14 @@ class BannerController extends Controller
             'is_active' => ['nullable', 'boolean'],
         ]);
 
-        $image = $this->resolveImageValue($request, $imageOptimizer, (string) ($validated['image_url'] ?? ''));
+        $isActiveTarget = (bool) ($validated['is_active'] ?? false);
+        $type = $validated['type'];
+        $image = $this->resolveImageValue($request, $imageOptimizer, $type, (string) ($validated['image_url'] ?? ''));
         if ($image === null) {
             return back()
                 ->withErrors(['image_url' => 'Gambar banner wajib diisi (upload file atau URL).'])
                 ->withInput();
         }
-        $isActiveTarget = (bool) ($validated['is_active'] ?? false);
-        $type = $validated['type'];
         if (!$isActiveTarget && $type === 'carousel' && Banner::query()->where('type', 'carousel')->where('is_active', true)->count() === 0) {
             return back()
                 ->withErrors(['is_active' => 'Minimal harus ada 1 banner carousel aktif.'])
@@ -84,7 +84,7 @@ class BannerController extends Controller
         }
 
         $oldImage = (string) $banner->image;
-        $image = $this->resolveImageValue($request, $imageOptimizer, (string) ($validated['image_url'] ?? ''), $oldImage);
+        $image = $this->resolveImageValue($request, $imageOptimizer, $type, (string) ($validated['image_url'] ?? ''), $oldImage);
         if ($image === null) {
             return back()
                 ->withErrors(['image_url' => 'Gambar banner wajib diisi (upload file atau URL).'])
@@ -129,10 +129,11 @@ class BannerController extends Controller
             ->exists();
     }
 
-    private function resolveImageValue(Request $request, ImageOptimizer $imageOptimizer, string $imageUrl, ?string $fallback = null): ?string
+    private function resolveImageValue(Request $request, ImageOptimizer $imageOptimizer, string $type, string $imageUrl, ?string $fallback = null): ?string
     {
         if ($request->hasFile('image_file')) {
-            return $imageOptimizer->storeWebp($request->file('image_file'), 'banners', 1600, 700, 82);
+            [$w, $h] = $type === 'side' ? [800, 250] : [1600, 700];
+            return $imageOptimizer->storeWebp($request->file('image_file'), 'banners', $w, $h, 82);
         }
 
         $trimmed = trim($imageUrl);

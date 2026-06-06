@@ -61,6 +61,9 @@
                                 <input id="bannerImageFile" type="file" name="image_file" accept="image/*" class="hidden" />
                             </label>
                         </div>
+                        <p id="bannerSizeHint" class="mt-1.5 text-xs text-slate-400 dark:text-slate-500">
+                            Rekomendasi: <span id="bannerSizeHintText">{{ $banner->type === 'side' ? '800 × 250 px (rasio 16:5, untuk banner kanan)' : '1600 × 700 px (rasio 16:4, untuk slider utama)' }}</span> — otomatis dikonversi saat upload.
+                        </p>
                     </div>
 
                     <div>
@@ -122,6 +125,18 @@
 @section('script')
     <script>
         (function() {
+            const typeSelect = document.querySelector('select[name="type"]');
+            const hintText = document.getElementById('bannerSizeHintText');
+            const hints = {
+                carousel: '1600 × 700 px (rasio 16:4, untuk slider utama)',
+                side: '800 × 250 px (rasio 16:5, untuk banner kanan)',
+            };
+            if (typeSelect && hintText) {
+                typeSelect.addEventListener('change', function() {
+                    hintText.textContent = hints[this.value] || hints.carousel;
+                });
+            }
+
             const input = document.getElementById('bannerImageFile');
             const preview = document.getElementById('bannerImagePreview');
             const label = document.getElementById('bannerImagePreviewLabel');

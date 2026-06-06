@@ -243,7 +243,7 @@
     @endphp
     <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-3 pb-0">
         {{-- Wrapper with explicit height so side banners align perfectly --}}
-        <div class="flex gap-2 h-[160px] sm:h-[200px] md:h-[220px]">
+        <div class="flex gap-2 h-[160px] sm:h-[200px] md:h-[220px] overflow-hidden">
             {{-- Main slider (left, full width on mobile, ~68% on desktop) --}}
             <div class="relative rounded-xl overflow-hidden shadow-sm flex-1 min-w-0 h-full" id="heroCarousel">
                 <div id="carouselTrack" class="flex transition-transform duration-600 ease-in-out h-full">

@@ -62,4 +62,37 @@ class WaGatewayServiceTest extends TestCase
         $this->assertTrue($result['success']);
         $this->assertSame('Toko sudah tersedia di WA Gateway.', $result['message']);
     }
+
+    public function test_status_can_be_loaded_after_prepare_when_store_is_missing(): void
+    {
+        config()->set('services.wa_gateway.url', 'https://wa.example.test');
+        config()->set('services.wa_gateway.token', 'secret-token');
+
+        Http::fake([
+            'https://wa.example.test/api/stores/session-boq-ecommerce/whatsapp/status' => Http::sequence()
+                ->push(['message' => 'Toko tidak ditemukan'], 404)
+                ->push(['connected' => true, 'status' => 'connected'], 200),
+            'https://wa.example.test/api/stores' => Http::response([
+                'success' => true,
+                'storeId' => 'session-boq-ecommerce',
+            ], 201),
+        ]);
+
+        $service = app(WaGatewayService::class);
+
+        try {
+            $service->status('session-boq-ecommerce');
+        } catch (\RuntimeException $e) {
+            $service->prepareStore('Toko Demo', 'session-boq-ecommerce', [
+                'perMinute' => 10,
+                'perDay' => 200,
+                'perMonth' => 3000,
+            ]);
+        }
+
+        $result = $service->status('session-boq-ecommerce');
+
+        $this->assertTrue($result['connected']);
+        Http::assertSentCount(3);
+    }
 }
