@@ -32,6 +32,95 @@
                     </div>
                 </div>
 
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+                    <div>
+                        <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Periode</label>
+                        <select id="txDatePreset" onchange="updateTxDateRangeFilter()"
+                            class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700/60 dark:text-slate-200">
+                            <option value="">Semua tanggal</option>
+                            <option value="today">Hari ini</option>
+                            <option value="7days">7 hari terakhir</option>
+                            <option value="month">Bulan ini</option>
+                            <option value="custom">Tanggal custom</option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Dari</label>
+                            <input id="txDateFrom" type="date" onchange="setTxCustomDateRange()"
+                                class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700/60 dark:text-slate-200">
+                        </div>
+                        <div>
+                            <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Sampai</label>
+                            <input id="txDateTo" type="date" onchange="setTxCustomDateRange()"
+                                class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700/60 dark:text-slate-200">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Metode Bayar</label>
+                        <select id="txPaymentTypeFilter"
+                            class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700/60 dark:text-slate-200">
+                            <option value="">Semua metode</option>
+                            <option value="manual_transfer">Transfer manual</option>
+                            <option value="bank_transfer">Virtual account</option>
+                            <option value="qris">QRIS</option>
+                            <option value="other">Lainnya</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Status Bayar</label>
+                        <select id="txPaymentStatusFilter"
+                            class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700/60 dark:text-slate-200">
+                            <option value="">Semua status bayar</option>
+                            <option value="unpaid">Unpaid</option>
+                            <option value="paid">Paid</option>
+                            <option value="partial">Partial</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Pengiriman</label>
+                        <select id="txShippingStateFilter"
+                            class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700/60 dark:text-slate-200">
+                            <option value="">Semua pengiriman</option>
+                            <option value="ready_to_ship">Siap dikirim</option>
+                            <option value="has_tracking">Sudah ada resi</option>
+                            <option value="needs_tracking">Dikirim tanpa resi</option>
+                            <option value="missing_address">Alamat belum lengkap</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Voucher</label>
+                        <select id="txCouponFilter"
+                            class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700/60 dark:text-slate-200">
+                            <option value="">Semua voucher</option>
+                            <option value="with_coupon">Pakai voucher</option>
+                            <option value="without_coupon">Tanpa voucher</option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Min Total</label>
+                            <input id="txMinTotal" type="number" min="0" step="1000" placeholder="0" oninput="updateTxTotalRangeFilter()"
+                                class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700/60 dark:text-slate-200">
+                        </div>
+                        <div>
+                            <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Max Total</label>
+                            <input id="txMaxTotal" type="number" min="0" step="1000" placeholder="999999" oninput="updateTxTotalRangeFilter()"
+                                class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700/60 dark:text-slate-200">
+                        </div>
+                    </div>
+                    <div class="flex items-end">
+                        <button type="button" onclick="resetTxAdvancedFilters()"
+                            class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
+                            <i data-lucide="rotate-ccw" class="h-4 w-4"></i>
+                            Reset Filter
+                        </button>
+                    </div>
+                </div>
+
+                <input id="txDateRangeFilter" type="hidden" value="">
+                <input id="txTotalRangeFilter" type="hidden" value="">
                 <input id="txStatusFilter" type="hidden" value="">
                 <div id="txStatusFilters" class="flex flex-wrap gap-2"></div>
                 <input id="txSourceFilter" type="hidden" value="">
@@ -255,10 +344,12 @@
                     'status' => $tx->status,
                     'payment_type' => $tx->payment_type ?? '-',
                     'payment_method' => $tx->payment_method ?? '-',
+                    'payment_status' => (string) ($tx->payment_status ?: 'unpaid'),
                     'payment_va_bank' => (string) ($tx->payment_va_bank ?? ''),
                     'payment_va_number' => (string) ($tx->payment_va_number ?? ''),
                     'payment_qr_url' => (string) ($tx->payment_qr_url ?? ''),
                     'shipping_cost' => (int) $tx->shipping_cost,
+                    'shipping_type' => (string) ($tx->shipping_type ?? ''),
                     'discount_amount' => (int) ($tx->discount_amount ?? 0),
                     'coupon_code' => (string) ($tx->coupon_code ?? ''),
                     'shipping_label' => $tx->shipping_label ?? '-',
@@ -267,6 +358,8 @@
                     'created_at_date' => $tx->created_at ? $tx->created_at->timezone(config('app.timezone'))->toDateString() : '',
                     'created_at_iso' => $tx->created_at ? $tx->created_at->timezone(config('app.timezone'))->toIso8601String() : '',
                     'created_at_display' => $tx->created_at ? $tx->created_at->timezone(config('app.timezone'))->format('d M Y H:i') : '-',
+                    'paid_at_date' => $tx->paid_at ? $tx->paid_at->timezone(config('app.timezone'))->toDateString() : '',
+                    'shipped_at_date' => $tx->shipped_at ? $tx->shipped_at->timezone(config('app.timezone'))->toDateString() : '',
                     'expires_at_iso' => $tx->expires_at ? $tx->expires_at->timezone(config('app.timezone'))->toIso8601String() : '',
                     'invoice_url' => route('invoice.show', ['transaction' => $tx->id]),
                     'shipping_label_url' => route('transactions.shipping-label', ['transaction' => $tx->id]),
@@ -372,6 +465,166 @@
 
         function txSourceFilterKey(tx) {
             return normalizeTxSource(tx.source);
+        }
+
+        function txPaymentTypeFilterKey(tx) {
+            const type = String(tx.payment_type_raw || tx.payment_type || '').toLowerCase().trim();
+            const method = String(tx.payment_method || '').toLowerCase().trim();
+            const bank = String(tx.payment_va_bank || '').trim();
+            if (type === 'manual_transfer') return 'manual_transfer';
+            if (type === 'qris' || method === 'qris') return 'qris';
+            if (type === 'bank_transfer' || bank) return 'bank_transfer';
+            return 'other';
+        }
+
+        function txPaymentStatusFilterKey(tx) {
+            const raw = String(tx.payment_status || '').toLowerCase().trim();
+            const status = normalizeTxStatus(tx.status);
+            if (['paid', 'partial', 'cancelled'].includes(raw)) return raw;
+            if (['paid', 'settlement', 'capture', 'process', 'processing', 'kirim', 'shipping', 'shipped', 'selesai', 'completed', 'delivered'].includes(status)) {
+                return 'paid';
+            }
+            if (['cancel', 'expire', 'deny', 'failed', 'dibatalkan'].includes(status)) return 'cancelled';
+            return 'unpaid';
+        }
+
+        function txHasCompleteAddress(tx) {
+            return Boolean(
+                String(tx.shipping_recipient_name || '').trim() &&
+                String(tx.shipping_phone || '').trim() &&
+                String(tx.shipping_address_line || '').trim()
+            );
+        }
+
+        function txMatchesShippingState(tx, state) {
+            const status = normalizeTxStatus(tx.status);
+            const hasTracking = Boolean(String(tx.tracking_number || '').trim());
+            if (!state) return true;
+            if (state === 'ready_to_ship') return ['process', 'processing'].includes(status);
+            if (state === 'has_tracking') return hasTracking;
+            if (state === 'needs_tracking') return ['kirim', 'shipping', 'shipped'].includes(status) && !hasTracking;
+            if (state === 'missing_address') return !txHasCompleteAddress(tx);
+            return true;
+        }
+
+        function txShippingStateFilterKey(tx) {
+            const state = document.getElementById('txShippingStateFilter')?.value || '';
+            if (!state) return '';
+            return txMatchesShippingState(tx, state) ? state : '__miss';
+        }
+
+        function txCouponFilterKey(tx) {
+            const hasCoupon = Boolean(String(tx.coupon_code || '').trim()) || Number(tx.discount_amount || 0) > 0;
+            return hasCoupon ? 'with_coupon' : 'without_coupon';
+        }
+
+        function txDateRangeFilterKey(tx) {
+            const active = document.getElementById('txDateRangeFilter')?.value || '';
+            if (!active) return '';
+            const date = String(tx.created_at_date || '');
+            const from = document.getElementById('txDateFrom')?.value || '';
+            const to = document.getElementById('txDateTo')?.value || '';
+            const afterFrom = !from || date >= from;
+            const beforeTo = !to || date <= to;
+            return date && afterFrom && beforeTo ? 'match' : 'miss';
+        }
+
+        function txTotalRangeFilterKey(tx) {
+            const active = document.getElementById('txTotalRangeFilter')?.value || '';
+            if (!active) return '';
+            const total = Number(tx.grand_total || 0);
+            const minRaw = document.getElementById('txMinTotal')?.value || '';
+            const maxRaw = document.getElementById('txMaxTotal')?.value || '';
+            const min = minRaw === '' ? null : Number(minRaw);
+            const max = maxRaw === '' ? null : Number(maxRaw);
+            const aboveMin = min === null || total >= min;
+            const belowMax = max === null || total <= max;
+            return aboveMin && belowMax ? 'match' : 'miss';
+        }
+
+        function txDateStringFromOffset(daysBack) {
+            const date = new Date(`${txTodayDate}T00:00:00`);
+            date.setDate(date.getDate() - daysBack);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function updateTxDateRangeFilter() {
+            const preset = document.getElementById('txDatePreset')?.value || '';
+            const from = document.getElementById('txDateFrom');
+            const to = document.getElementById('txDateTo');
+            const hidden = document.getElementById('txDateRangeFilter');
+            if (!from || !to || !hidden) return;
+
+            if (preset === 'today') {
+                from.value = txTodayDate;
+                to.value = txTodayDate;
+            } else if (preset === '7days') {
+                from.value = txDateStringFromOffset(6);
+                to.value = txTodayDate;
+            } else if (preset === 'month') {
+                from.value = txTodayDate.slice(0, 8) + '01';
+                to.value = txTodayDate;
+            } else if (preset === '') {
+                from.value = '';
+                to.value = '';
+            }
+
+            hidden.value = from.value || to.value ? 'match' : '';
+            hidden.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
+        function setTxCustomDateRange() {
+            const preset = document.getElementById('txDatePreset');
+            if (preset) preset.value = 'custom';
+            updateTxDateRangeFilter();
+        }
+
+        function updateTxTotalRangeFilter() {
+            const hidden = document.getElementById('txTotalRangeFilter');
+            if (!hidden) return;
+            const min = document.getElementById('txMinTotal')?.value || '';
+            const max = document.getElementById('txMaxTotal')?.value || '';
+            hidden.value = min || max ? 'match' : '';
+            hidden.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
+        function resetTxAdvancedFilters() {
+            const ids = [
+                'txSearch',
+                'txDatePreset',
+                'txDateFrom',
+                'txDateTo',
+                'txPaymentTypeFilter',
+                'txPaymentStatusFilter',
+                'txShippingStateFilter',
+                'txCouponFilter',
+                'txMinTotal',
+                'txMaxTotal',
+                'txDateRangeFilter',
+                'txTotalRangeFilter',
+                'txSourceFilter',
+                'txStatusFilter',
+            ];
+
+            ids.forEach((id) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.value = '';
+                el.dispatchEvent(new Event(['txDateRangeFilter', 'txTotalRangeFilter', 'txSourceFilter', 'txStatusFilter'].includes(id) ? 'change' : 'input', { bubbles: true }));
+                el.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+
+            activeTxStatusFilter = '';
+            closeFloatingMenu();
+            renderTxStatusFilters();
+            renderTxSourceFilters();
+            renderTxSummaryCards();
+            if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                window.lucide.createIcons();
+            }
         }
 
         function txSourceBadge(tx) {
@@ -1173,13 +1426,31 @@
             tbodyId: 'txTableBody',
             paginationInfoId: 'txPaginationInfo',
             paginationButtonsId: 'txPaginationButtons',
-            searchFields: ['invoice_no', 'customer', 'customer_email', 'source_label'],
+            searchFields: ['invoice_no', 'order_id', 'customer', 'customer_email', 'source_label', 'payment_method', 'payment_va_bank', 'coupon_code', 'tracking_number', 'shipping_phone'],
             filters: [{
                 elementId: 'txStatusFilter',
                 accessor: txStatusFilterKey,
             }, {
                 elementId: 'txSourceFilter',
                 accessor: txSourceFilterKey,
+            }, {
+                elementId: 'txDateRangeFilter',
+                accessor: txDateRangeFilterKey,
+            }, {
+                elementId: 'txPaymentTypeFilter',
+                accessor: txPaymentTypeFilterKey,
+            }, {
+                elementId: 'txPaymentStatusFilter',
+                accessor: txPaymentStatusFilterKey,
+            }, {
+                elementId: 'txShippingStateFilter',
+                accessor: txShippingStateFilterKey,
+            }, {
+                elementId: 'txCouponFilter',
+                accessor: txCouponFilterKey,
+            }, {
+                elementId: 'txTotalRangeFilter',
+                accessor: txTotalRangeFilterKey,
             }],
             renderRow: (tx, index) => renderTxRow(tx, index),
             emptyRowHtml: '<tr><td colspan="9" class="text-center py-12 text-slate-400 dark:text-slate-500">No transactions found</td></tr>',

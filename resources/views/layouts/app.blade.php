@@ -133,15 +133,14 @@
             }
 
             .settings-tab.active {
-                background: white;
-                color: #1e293b;
-                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                background: #eff6ff;
+                color: #1d4ed8;
                 border-radius: 10px;
             }
 
             .dark .settings-tab.active {
-                background: #334155;
-                color: white;
+                background: rgba(30, 58, 138, 0.3);
+                color: #60a5fa;
             }
 
             .color-option input:checked~.color-ring {
