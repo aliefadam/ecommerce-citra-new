@@ -201,32 +201,32 @@
                         <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
                             <div class="xl:col-span-2 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
                                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-                                    <button type="button" onclick="prepareWaGateway()" class="inline-flex items-center justify-center gap-2 min-h-12 px-4 py-3 text-sm font-bold rounded-xl border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                                    <button id="waPrepareBtn" type="button" onclick="prepareWaGateway()" class="inline-flex items-center justify-center gap-2 min-h-12 px-4 py-3 text-sm font-bold rounded-xl border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
                                         <i data-lucide="qr-code" class="w-4 h-4"></i>
                                         Siapkan
                                     </button>
-                                    <button type="button" onclick="connectWaGateway()" class="inline-flex items-center justify-center gap-2 min-h-12 px-4 py-3 text-sm font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-colors">
+                                    <button id="waConnectBtn" type="button" onclick="connectWaGateway()" class="inline-flex items-center justify-center gap-2 min-h-12 px-4 py-3 text-sm font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-colors">
                                         <i data-lucide="plug" class="w-4 h-4"></i>
                                         Hubungkan
                                     </button>
-                                    <button type="button" onclick="disconnectWaGateway()" class="inline-flex items-center justify-center gap-2 min-h-12 px-4 py-3 text-sm font-bold rounded-xl border border-red-200 dark:border-red-400/40 text-red-600 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                                    <button id="waDisconnectBtn" type="button" onclick="disconnectWaGateway()" class="inline-flex items-center justify-center gap-2 min-h-12 px-4 py-3 text-sm font-bold rounded-xl border border-red-200 dark:border-red-400/40 text-red-600 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
                                         <i data-lucide="unplug" class="w-4 h-4"></i>
                                         Putuskan
                                     </button>
                                 </div>
 
-                                <div class="flex items-center justify-between mb-5">
+                                <div id="waQrHeader" class="flex items-center justify-between mb-5">
                                     <div>
                                         <h3 class="font-bold text-slate-800 dark:text-white">QR WhatsApp</h3>
                                         <p id="waQrHint" class="text-xs text-slate-400 mt-1">Siapkan atau hubungkan gateway, lalu scan QR dari WhatsApp.</p>
                                     </div>
-                                    <button type="button" onclick="loadWaQr()" class="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-semibold rounded-xl border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                                    <button id="waQrRefreshBtn" type="button" onclick="loadWaQr()" class="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-semibold rounded-xl border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
                                         <i data-lucide="refresh-cw" class="w-4 h-4"></i>
                                         QR
                                     </button>
                                 </div>
 
-                                <div class="min-h-[360px] rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 flex items-center justify-center p-5">
+                                <div id="waQrPanel" class="min-h-[360px] rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 flex items-center justify-center p-5">
                                     <img id="waQrImage" alt="QR WhatsApp Gateway" class="hidden w-full max-w-sm rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
                                     <div id="waQrEmpty" class="text-center max-w-sm">
                                         <div class="mx-auto mb-3 w-12 h-12 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400">
@@ -234,6 +234,15 @@
                                         </div>
                                         <p class="text-sm font-semibold text-slate-600 dark:text-slate-300">QR belum dimuat</p>
                                         <p class="text-xs text-slate-400 mt-1">Klik Hubungkan atau QR untuk mengambil kode scan terbaru.</p>
+                                    </div>
+                                </div>
+                                <div id="waConnectedPanel" class="hidden min-h-[240px] rounded-2xl border border-emerald-200 bg-emerald-50 dark:border-emerald-900/50 dark:bg-emerald-900/15 flex items-center justify-center p-6 text-center">
+                                    <div class="max-w-sm">
+                                        <div class="mx-auto mb-4 w-14 h-14 rounded-2xl bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-emerald-600 dark:text-emerald-300">
+                                            <i data-lucide="check-circle-2" class="w-7 h-7"></i>
+                                        </div>
+                                        <p class="text-base font-bold text-slate-800 dark:text-white">WhatsApp sudah terhubung</p>
+                                        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">QR disembunyikan otomatis. Gunakan Putuskan jika ingin mengganti perangkat.</p>
                                     </div>
                                 </div>
                             </div>
@@ -424,6 +433,9 @@
         const waGatewayRoutes = @json($waGatewayRoutes);
         const waGatewayLimits = @json($waGateway['limits'] ?? ['perMinute' => 10, 'perDay' => 200, 'perMonth' => 3000]);
         const csrfToken = @json(csrf_token());
+        let waGatewayState = 'unknown';
+        let waStatusPollTimer = null;
+        let waStatusPollCount = 0;
 
         function setWaMessage(message, tone = 'slate') {
             const el = document.getElementById('waGatewayMessage');
@@ -451,6 +463,72 @@
             el.textContent = label;
         }
 
+        function setButtonDisabled(id, disabled) {
+            const button = document.getElementById(id);
+            if (!button) return;
+            button.disabled = disabled;
+            button.classList.toggle('opacity-50', disabled);
+            button.classList.toggle('cursor-not-allowed', disabled);
+        }
+
+        function updateWaGatewayUiState(state) {
+            waGatewayState = state || 'unknown';
+            const connected = waGatewayState === 'connected';
+            const scanning = waGatewayState === 'scanning';
+            const qrHeader = document.getElementById('waQrHeader');
+            const qrPanel = document.getElementById('waQrPanel');
+            const connectedPanel = document.getElementById('waConnectedPanel');
+            const qrImage = document.getElementById('waQrImage');
+            const qrEmpty = document.getElementById('waQrEmpty');
+            const hint = document.getElementById('waQrHint');
+
+            qrHeader?.classList.toggle('hidden', connected);
+            qrPanel?.classList.toggle('hidden', connected);
+            qrPanel?.classList.toggle('flex', !connected);
+            connectedPanel?.classList.toggle('hidden', !connected);
+            connectedPanel?.classList.toggle('flex', connected);
+
+            setButtonDisabled('waConnectBtn', connected);
+            setButtonDisabled('waPrepareBtn', connected);
+            setButtonDisabled('waQrRefreshBtn', connected);
+            setButtonDisabled('waDisconnectBtn', !connected && !scanning);
+
+            if (connected) {
+                stopWaStatusPolling();
+                if (qrImage) {
+                    qrImage.src = '';
+                    qrImage.classList.add('hidden');
+                }
+                qrEmpty?.classList.remove('hidden');
+                setWaMessage('WhatsApp sudah terhubung. QR otomatis disembunyikan.', 'success');
+            } else if (scanning && hint) {
+                hint.textContent = 'Scan QR ini lewat WhatsApp di ponsel admin. Status dicek otomatis.';
+            }
+
+            if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                window.lucide.createIcons();
+            }
+        }
+
+        function stopWaStatusPolling() {
+            if (waStatusPollTimer) {
+                clearInterval(waStatusPollTimer);
+                waStatusPollTimer = null;
+            }
+            waStatusPollCount = 0;
+        }
+
+        function startWaStatusPolling() {
+            stopWaStatusPolling();
+            waStatusPollTimer = setInterval(async () => {
+                waStatusPollCount += 1;
+                await loadWaStatus(false);
+                if (waGatewayState === 'connected' || waStatusPollCount >= 40) {
+                    stopWaStatusPolling();
+                }
+            }, 3000);
+        }
+
         async function waFetch(url, options = {}) {
             const res = await fetch(url, {
                 ...options,
@@ -474,10 +552,10 @@
             const raw = String(data?.status || data?.state || data?.connection || data?.data?.status || '').toLowerCase();
             const connected = data?.connected === true || data?.isConnected === true || ['connected', 'open', 'ready', 'authenticated'].includes(raw);
             const qr = ['qr', 'scan', 'pairing', 'connecting'].some((key) => raw.includes(key));
-            if (connected) return ['Terhubung', 'success'];
-            if (qr) return ['Menunggu scan QR', 'warning'];
-            if (raw) return [raw.replace(/_/g, ' '), 'slate'];
-            return ['Belum terhubung', 'slate'];
+            if (connected) return ['Terhubung', 'success', 'connected'];
+            if (qr) return ['Menunggu scan QR', 'warning', 'scanning'];
+            if (raw) return [raw.replace(/_/g, ' '), 'slate', 'disconnected'];
+            return ['Belum terhubung', 'slate', 'disconnected'];
         }
 
         function findQrValue(data) {
@@ -500,6 +578,7 @@
             const img = document.getElementById('waQrImage');
             const empty = document.getElementById('waQrEmpty');
             if (!img || !empty) return;
+            updateWaGatewayUiState('scanning');
             img.src = src;
             img.classList.remove('hidden');
             empty.classList.add('hidden');
@@ -526,7 +605,10 @@
                 });
                 setWaMessage(json.message, 'success');
                 await loadWaQr();
-                refreshWaGateway();
+                await refreshWaGateway();
+                if (waGatewayState !== 'connected') {
+                    startWaStatusPolling();
+                }
             } catch (error) {
                 setWaMessage(error.message, 'danger');
             }
@@ -539,20 +621,26 @@
                     method: 'POST'
                 });
                 setWaMessage(json.message, 'success');
+                stopWaStatusPolling();
+                updateWaGatewayUiState('disconnected');
                 refreshWaGateway();
             } catch (error) {
                 setWaMessage(error.message, 'danger');
             }
         }
 
-        async function loadWaStatus() {
+        async function loadWaStatus(showError = true) {
             try {
                 const json = await waFetch(waGatewayRoutes.status);
-                const [label, tone] = normalizeWaStatus(json.data || {});
+                const [label, tone, state] = normalizeWaStatus(json.data || {});
                 setWaStatus(label, tone);
+                updateWaGatewayUiState(state);
             } catch (error) {
                 setWaStatus('Status gagal dimuat', 'danger');
-                setWaMessage(error.message, 'danger');
+                updateWaGatewayUiState('unknown');
+                if (showError) {
+                    setWaMessage(error.message, 'danger');
+                }
             }
         }
 
@@ -568,11 +656,11 @@
                 } else {
                     setQrImage(`${waGatewayRoutes.qrRaw}?t=${Date.now()}`);
                 }
-                if (hint) hint.textContent = 'Scan QR ini lewat WhatsApp di ponsel admin.';
+                startWaStatusPolling();
             } catch (error) {
                 setWaMessage(error.message, 'warning');
                 setQrImage(`${waGatewayRoutes.qrRaw}?t=${Date.now()}`);
-                if (hint) hint.textContent = 'Jika QR belum muncul, klik Hubungkan lalu refresh QR.';
+                startWaStatusPolling();
             }
         }
 
@@ -614,8 +702,8 @@
             }
         }
 
-        function refreshWaGateway() {
-            loadWaStatus();
+        async function refreshWaGateway() {
+            await loadWaStatus();
             loadWaUsage();
         }
 
