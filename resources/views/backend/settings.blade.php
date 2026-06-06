@@ -196,33 +196,6 @@
                                     WA_GATEWAY_URL atau WA_GATEWAY_TOKEN belum lengkap di ENV. Isi konfigurasi dulu agar tombol gateway bisa dipakai.
                                 </div>
                             @endunless
-
-                            <form id="waGatewaySettingsForm" class="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-                                @csrf
-                                <div>
-                                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Store ID</label>
-                                    <input type="text" name="store_id" value="{{ $waGateway['storeId'] ?? 'store-1' }}" required
-                                        class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Per Menit</label>
-                                    <input type="number" name="per_minute" min="1" value="{{ $waGateway['limits']['perMinute'] ?? 10 }}" required
-                                        class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Per Hari</label>
-                                    <input type="number" name="per_day" min="1" value="{{ $waGateway['limits']['perDay'] ?? 200 }}" required
-                                        class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Per Bulan</label>
-                                    <input type="number" name="per_month" min="1" value="{{ $waGateway['limits']['perMonth'] ?? 3000 }}" required
-                                        class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200">
-                                </div>
-                                <div class="md:col-span-4 flex justify-end">
-                                    <button type="submit" class="px-5 py-2.5 text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors">Simpan Gateway</button>
-                                </div>
-                            </form>
                         </div>
 
                         <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
@@ -449,6 +422,7 @@
         }
 
         const waGatewayRoutes = @json($waGatewayRoutes);
+        const waGatewayLimits = @json($waGateway['limits'] ?? ['perMinute' => 10, 'perDay' => 200, 'perMonth' => 3000]);
         const csrfToken = @json(csrf_token());
 
         function setWaMessage(message, tone = 'slate') {
@@ -531,19 +505,6 @@
             empty.classList.add('hidden');
         }
 
-        async function saveWaGatewaySettings(event) {
-            event.preventDefault();
-            const form = event.currentTarget;
-            const formData = new FormData(form);
-            const json = await waFetch(waGatewayRoutes.update, {
-                method: 'POST',
-                body: formData,
-            });
-            document.getElementById('waGatewayLabel').textContent = formData.get('store_id') || 'store-1';
-            setWaMessage(json.message, 'success');
-            refreshWaGateway();
-        }
-
         async function prepareWaGateway() {
             try {
                 setWaMessage('Menyiapkan toko di WA Gateway...', 'slate');
@@ -623,7 +584,8 @@
                 month: ['month', 'perMonth', 'currentMonth'],
             };
             const used = Number(bucket.used ?? bucket.count ?? data?.used?.[key] ?? data?.usage?.[aliases[key]?.[1]] ?? 0);
-            const limit = Number(bucket.limit ?? data?.limit?.[key] ?? data?.limits?.[aliases[key]?.[1]] ?? document.querySelector(`[name="${key === 'minute' ? 'per_minute' : key === 'day' ? 'per_day' : 'per_month'}"]`)?.value ?? 0);
+            const fallbackLimit = key === 'minute' ? waGatewayLimits.perMinute : key === 'day' ? waGatewayLimits.perDay : waGatewayLimits.perMonth;
+            const limit = Number(bucket.limit ?? data?.limit?.[key] ?? data?.limits?.[aliases[key]?.[1]] ?? fallbackLimit ?? 0);
             const remaining = Number(bucket.remaining ?? Math.max(0, limit - used));
             return {
                 used: Number.isFinite(used) ? used : 0,
@@ -656,10 +618,6 @@
             loadWaStatus();
             loadWaUsage();
         }
-
-        document.getElementById('waGatewaySettingsForm')?.addEventListener('submit', (event) => {
-            saveWaGatewaySettings(event).catch((error) => setWaMessage(error.message, 'danger'));
-        });
 
         if (@json($activeTab) === 'whatsapp') {
             refreshWaGateway();
