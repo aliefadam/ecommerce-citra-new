@@ -68,8 +68,28 @@ class ProductController extends Controller
             ->orderBy('name')
             ->get();
 
+        $definitionIds = $attributeDefinitions->pluck('id');
+        $attributeOptions = ProductVariantAttribute::query()
+            ->select('attribute_definition_id', 'value_text', 'value_number')
+            ->whereIn('attribute_definition_id', $definitionIds)
+            ->get()
+            ->groupBy('attribute_definition_id')
+            ->map(function ($group, $defId) use ($attributeDefinitions) {
+                $def = $attributeDefinitions->firstWhere('id', (int) $defId);
+                if (!$def) return [];
+                if ($def->data_type === 'number') {
+                    return $group->pluck('value_number')
+                        ->filter(fn ($v) => $v !== null && $v !== '')
+                        ->map(fn ($v) => rtrim(rtrim(number_format((float) $v, 3, '.', ''), '0'), '.') ?: '0')
+                        ->unique()->sort()->values()->all();
+                }
+                return $group->pluck('value_text')
+                    ->filter(fn ($v) => $v !== null && $v !== '')
+                    ->unique()->sort()->values()->all();
+            });
+
         $categories = $categoryDetails;
-        return view('backend.products.create', compact('mainCategories', 'categoryDetails', 'categories', 'attributeDefinitions'));
+        return view('backend.products.create', compact('mainCategories', 'categoryDetails', 'categories', 'attributeDefinitions', 'attributeOptions'));
     }
 
     public function store(Request $request, ImageOptimizer $imageOptimizer)

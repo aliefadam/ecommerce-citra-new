@@ -306,22 +306,67 @@
                                         </div>
                                         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
                                             @foreach ($attributeDefinitions as $definition)
-                                                <div>
-                                                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">{{ $definition->name }}@if($definition->unit) ({{ $definition->unit }}) @endif</label>
+                                                @php
+                                                    $defId     = $definition->id;
+                                                    $isNumber  = $definition->data_type === 'number';
+                                                    $fieldKey  = $isNumber ? 'valueNumber' : 'valueText';
+                                                    $fieldName = $isNumber ? 'value_number' : 'value_text';
+                                                    $opts      = json_encode($attributeOptions->get($defId, []));
+                                                    $placeholder = $definition->unit ?: 'Isi ' . strtolower($definition->name) . '...';
+                                                @endphp
+                                                <div x-data="{
+                                                        open: false,
+                                                        opts: {{ $opts }},
+                                                        get curVal() { return row.attributes['{{ $defId }}']['{{ $fieldKey }}']; },
+                                                        set curVal(v) { row.attributes['{{ $defId }}']['{{ $fieldKey }}'] = v; },
+                                                        get filtered() {
+                                                            const q = String(this.curVal || '').toLowerCase().trim();
+                                                            if (!q) return this.opts;
+                                                            return this.opts.filter(o => String(o).toLowerCase().includes(q));
+                                                        },
+                                                        pick(opt) { this.curVal = String(opt); this.open = false; }
+                                                    }"
+                                                    class="relative" @click.outside="open = false">
+                                                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">
+                                                        {{ $definition->name }}@if($definition->unit) ({{ $definition->unit }}) @endif
+                                                    </label>
                                                     <input type="hidden"
-                                                        :name="`variants[${index}][attributes][{{ $definition->id }}][attribute_definition_id]`"
-                                                        value="{{ $definition->id }}" />
-                                                    @if ($definition->data_type === 'number')
-                                                        <input type="number" min="0" step="0.001" placeholder="{{ $definition->unit ?: '0' }}"
-                                                            :name="`variants[${index}][attributes][{{ $definition->id }}][value_number]`"
-                                                            x-model="row.attributes['{{ $definition->id }}'].valueNumber"
-                                                            class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                                                    @else
-                                                        <input type="text" placeholder="Isi {{ strtolower($definition->name) }}..."
-                                                            :name="`variants[${index}][attributes][{{ $definition->id }}][value_text]`"
-                                                            x-model="row.attributes['{{ $definition->id }}'].valueText"
-                                                            class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                                                    @endif
+                                                        :name="`variants[${index}][attributes][{{ $defId }}][attribute_definition_id]`"
+                                                        value="{{ $defId }}" />
+                                                    <div class="relative">
+                                                        <input type="text"
+                                                            :name="`variants[${index}][attributes][{{ $defId }}][{{ $fieldName }}]`"
+                                                            x-model="curVal"
+                                                            @focus="open = true"
+                                                            @keydown.escape="open = false"
+                                                            @keydown.enter.prevent="if (filtered.length) { pick(filtered[0]); }"
+                                                            @keydown.arrow-down.prevent="open = true"
+                                                            placeholder="{{ $placeholder }}"
+                                                            autocomplete="off"
+                                                            class="w-full px-3 py-2 pr-7 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                                        <button type="button" tabindex="-1"
+                                                            @mousedown.prevent="open = !open"
+                                                            class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                                <polyline :points="open ? '18 15 12 9 6 15' : '6 9 12 15 18 9'"></polyline>
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                    <div x-show="open && opts.length > 0"
+                                                        x-transition:enter="transition ease-out duration-100"
+                                                        x-transition:enter-start="opacity-0 -translate-y-1"
+                                                        x-transition:enter-end="opacity-100 translate-y-0"
+                                                        class="absolute z-50 mt-1 w-full max-h-44 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl shadow-lg">
+                                                        <p x-show="filtered.length === 0" class="px-3 py-2 text-xs text-slate-400">Tidak ada pilihan cocok</p>
+                                                        <template x-for="opt in filtered" :key="opt">
+                                                            <button type="button"
+                                                                @mousedown.prevent="pick(opt)"
+                                                                :class="curVal === String(opt) ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-semibold' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60'"
+                                                                class="w-full text-left px-3 py-2 text-sm"
+                                                                x-text="opt">
+                                                            </button>
+                                                        </template>
+                                                    </div>
                                                 </div>
                                             @endforeach
                                         </div>
@@ -594,20 +639,21 @@
                 },
 
                 addRow() {
+                    const last = this.rows[this.rows.length - 1];
                     this.rows.push({
                         id: this.nextId++,
                         imagePreview: null,
                         imageStoredPath: '',
                         sku: '',
-                        price: '',
-                        priceDisplay: '',
+                        price: last?.price || '',
+                        priceDisplay: last?.priceDisplay || '',
                         stock: '',
                         stockDisplay: '',
-                        weightGrams: '',
-                        lengthCm: '',
-                        widthCm: '',
-                        heightCm: '',
-                        attributes: normalizeAttributes()
+                        weightGrams: last?.weightGrams || '',
+                        lengthCm: last?.lengthCm || '',
+                        widthCm: last?.widthCm || '',
+                        heightCm: last?.heightCm || '',
+                        attributes: normalizeAttributes(last?.attributes || {}),
                     });
                 },
                 removeRow(id) {
