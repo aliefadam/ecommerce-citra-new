@@ -18,20 +18,18 @@
 
         <div id="txSummaryCards" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-4"></div>
 
-        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-            <div class="p-4 border-b border-slate-200 dark:border-slate-700 space-y-4">
-                <div class="flex flex-col sm:flex-row gap-3">
-                    <div class="relative flex-1">
-                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" width="16" height="16"
-                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="11" cy="11" r="8" />
-                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                        </svg>
-                        <input id="txSearch" type="text" placeholder="Cari invoice / customer / email..."
-                            class="pl-9 pr-4 py-2 text-sm w-full bg-slate-50 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200 placeholder-slate-400" />
-                    </div>
+        {{-- Filter Card --}}
+        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 mb-4">
+            <button type="button" onclick="toggleTxFilterPanel()" id="txFilterToggleBtn"
+                class="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/40 rounded-2xl transition-colors">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="sliders-horizontal" class="h-4 w-4 text-slate-400"></i>
+                    <span>Filter Lanjutan</span>
+                    <span id="txFilterActiveCount" class="hidden items-center justify-center rounded-full bg-blue-600 px-2 py-0.5 text-[10px] font-bold text-white">0</span>
                 </div>
-
+                <i data-lucide="chevron-down" id="txFilterChevron" class="h-4 w-4 text-slate-400 transition-transform duration-200"></i>
+            </button>
+            <div id="txFilterPanel" class="hidden border-t border-slate-100 dark:border-slate-700 px-4 pb-4 pt-3">
                 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
                     <div>
                         <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Periode</label>
@@ -118,9 +116,25 @@
                         </button>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <input id="txDateRangeFilter" type="hidden" value="">
-                <input id="txTotalRangeFilter" type="hidden" value="">
+        {{-- Table Card --}}
+        <input id="txDateRangeFilter" type="hidden" value="">
+        <input id="txTotalRangeFilter" type="hidden" value="">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <div class="p-4 border-b border-slate-200 dark:border-slate-700 space-y-3">
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <div class="relative flex-1">
+                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" width="16" height="16"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8" />
+                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                        </svg>
+                        <input id="txSearch" type="text" placeholder="Cari invoice / customer / email..."
+                            class="pl-9 pr-4 py-2 text-sm w-full bg-slate-50 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200 placeholder-slate-400" />
+                    </div>
+                </div>
                 <input id="txStatusFilter" type="hidden" value="">
                 <div id="txStatusFilters" class="flex flex-wrap gap-2"></div>
                 <input id="txSourceFilter" type="hidden" value="">
@@ -589,6 +603,36 @@
             const max = document.getElementById('txMaxTotal')?.value || '';
             hidden.value = min || max ? 'match' : '';
             hidden.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
+        function toggleTxFilterPanel() {
+            const panel = document.getElementById('txFilterPanel');
+            const chevron = document.getElementById('txFilterChevron');
+            if (!panel || !chevron) return;
+            const isHidden = panel.classList.contains('hidden');
+            panel.classList.toggle('hidden', !isHidden);
+            chevron.style.transform = isHidden ? 'rotate(180deg)' : '';
+        }
+
+        function updateTxFilterBadge() {
+            const fields = [
+                { id: 'txDatePreset', empty: '' },
+                { id: 'txPaymentTypeFilter', empty: '' },
+                { id: 'txPaymentStatusFilter', empty: '' },
+                { id: 'txShippingStateFilter', empty: '' },
+                { id: 'txCouponFilter', empty: '' },
+                { id: 'txMinTotal', empty: '' },
+                { id: 'txMaxTotal', empty: '' },
+            ];
+            const active = fields.filter(f => {
+                const el = document.getElementById(f.id);
+                return el && String(el.value).trim() !== f.empty;
+            }).length;
+            const badge = document.getElementById('txFilterActiveCount');
+            if (!badge) return;
+            badge.textContent = String(active);
+            badge.classList.toggle('hidden', active === 0);
+            badge.classList.toggle('inline-flex', active > 0);
         }
 
         function resetTxAdvancedFilters() {
@@ -1458,6 +1502,11 @@
                 visibleTxPageItems = Array.isArray(pageData) ? pageData : [];
                 syncTxSelectionUi();
             },
+        });
+
+        ['txDatePreset','txPaymentTypeFilter','txPaymentStatusFilter','txShippingStateFilter','txCouponFilter','txMinTotal','txMaxTotal','txDateFrom','txDateTo'].forEach(id => {
+            document.getElementById(id)?.addEventListener('change', updateTxFilterBadge);
+            document.getElementById(id)?.addEventListener('input', updateTxFilterBadge);
         });
 
         document.getElementById('shipSubmitBtn')?.addEventListener('click', submitShip);

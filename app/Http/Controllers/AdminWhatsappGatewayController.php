@@ -58,7 +58,7 @@ class AdminWhatsappGatewayController extends Controller
     public function connect(Request $request, WaGatewayService $gateway): JsonResponse
     {
         return $this->run(function () use ($request, $gateway) {
-            $result = $this->withPreparedStore($gateway, fn () => $gateway->connect($this->storeId(), $request->boolean('reset')));
+            $result = $this->withResolvedStore($gateway, fn (string $storeId) => $gateway->connect($storeId, $request->boolean('reset')));
 
             return [
                 'message' => (string) ($result['message'] ?? 'Sesi WhatsApp sedang disiapkan.'),
@@ -70,7 +70,7 @@ class AdminWhatsappGatewayController extends Controller
     public function disconnect(WaGatewayService $gateway): JsonResponse
     {
         return $this->run(function () use ($gateway) {
-            $result = $gateway->disconnect($this->storeId());
+            $result = $this->withResolvedStore($gateway, fn (string $storeId) => $gateway->disconnect($storeId), prepareWhenMissing: false);
 
             return [
                 'message' => (string) ($result['message'] ?? 'Sesi WhatsApp berhasil diputuskan.'),
@@ -83,7 +83,7 @@ class AdminWhatsappGatewayController extends Controller
     {
         return $this->run(fn () => [
             'message' => 'Status WhatsApp Gateway berhasil dimuat.',
-            'data' => $this->withPreparedStore($gateway, fn () => $gateway->status($this->storeId())),
+            'data' => $this->withResolvedStore($gateway, fn (string $storeId) => $gateway->status($storeId)),
         ]);
     }
 
@@ -91,13 +91,13 @@ class AdminWhatsappGatewayController extends Controller
     {
         return $this->run(fn () => [
             'message' => 'QR WhatsApp berhasil dimuat.',
-            'data' => $this->withPreparedStore($gateway, fn () => $gateway->qr($this->storeId())),
+            'data' => $this->withResolvedStore($gateway, fn (string $storeId) => $gateway->qr($storeId)),
         ]);
     }
 
     public function qrRaw(WaGatewayService $gateway): Response
     {
-        $response = $this->withPreparedStore($gateway, fn () => $gateway->qrRaw($this->storeId()));
+        $response = $this->withResolvedStore($gateway, fn (string $storeId) => $gateway->qrRaw($storeId));
 
         return response($response->body(), 200, [
             'Content-Type' => $response->header('Content-Type', 'image/png'),
@@ -109,7 +109,7 @@ class AdminWhatsappGatewayController extends Controller
     {
         return $this->run(fn () => [
             'message' => 'Kuota WhatsApp Gateway berhasil dimuat.',
-            'data' => $this->withPreparedStore($gateway, fn () => $gateway->usage($this->storeId())),
+            'data' => $this->withResolvedStore($gateway, fn (string $storeId) => $gateway->usage($storeId)),
         ]);
     }
 
@@ -162,27 +162,62 @@ class AdminWhatsappGatewayController extends Controller
         return $storeId !== '' ? $storeId : 'boq-ecommerce';
     }
 
-    private function withPreparedStore(WaGatewayService $gateway, callable $callback): mixed
+    private function withResolvedStore(WaGatewayService $gateway, callable $callback, bool $prepareWhenMissing = true): mixed
     {
-        try {
-            return $callback();
-        } catch (RuntimeException $e) {
-            if (! str_contains(strtolower($e->getMessage()), 'toko tidak ditemukan')) {
-                throw $e;
+        $lastException = null;
+
+        foreach ($this->storeIdCandidates() as $storeId) {
+            try {
+                return $callback($storeId);
+            } catch (RuntimeException $e) {
+                if (! $this->isStoreMissing($e)) {
+                    throw $e;
+                }
+
+                $lastException = $e;
             }
-
-            $settings = $this->settings();
-            $gateway->prepareStore(
-                StoreSetting::values()['store_name'] ?? 'Ecommerce Citra',
-                $settings['storeId'],
-                [
-                    'perMinute' => $settings['limits']['perMinute'],
-                    'perDay' => $settings['limits']['perDay'],
-                    'perMonth' => $settings['limits']['perMonth'],
-                ],
-            );
-
-            return $callback();
         }
+
+        if (! $prepareWhenMissing) {
+            throw $lastException ?? new RuntimeException('Toko tidak ditemukan.');
+        }
+
+        $settings = $this->settings();
+        $gateway->prepareStore(
+            StoreSetting::values()['store_name'] ?? 'Ecommerce Citra',
+            $settings['storeId'],
+            [
+                'perMinute' => $settings['limits']['perMinute'],
+                'perDay' => $settings['limits']['perDay'],
+                'perMonth' => $settings['limits']['perMonth'],
+            ],
+        );
+
+        foreach ($this->storeIdCandidates() as $storeId) {
+            try {
+                return $callback($storeId);
+            } catch (RuntimeException $e) {
+                if (! $this->isStoreMissing($e)) {
+                    throw $e;
+                }
+
+                $lastException = $e;
+            }
+        }
+
+        throw $lastException ?? new RuntimeException('Toko tidak ditemukan.');
+    }
+
+    private function storeIdCandidates(): array
+    {
+        $storeId = $this->storeId();
+        $prefixed = 'session-store-'.$storeId;
+
+        return array_values(array_unique([$storeId, $prefixed]));
+    }
+
+    private function isStoreMissing(RuntimeException $e): bool
+    {
+        return str_contains(strtolower($e->getMessage()), 'toko tidak ditemukan');
     }
 }
