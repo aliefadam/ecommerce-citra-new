@@ -371,9 +371,14 @@
             return Math.max(0, Number(input?.value || 0));
         }
 
-        // ── Tax invoice toggle ────────────────────────────────────────────
+        // ── Tax invoice toggle & auto-fill helpers ────────────────────────
         function toggleTaxInvoicePanel(show) {
             document.getElementById('taxInvoicePanel')?.classList.toggle('hidden', !show);
+        }
+
+        function clearTaxProfileHint() {
+            document.getElementById('taxProfileHint')?.remove();
+            document.getElementById('taxInvoicePanel')?.classList.remove('ring-1', 'ring-blue-300', 'rounded-xl', 'p-2');
         }
 
         // ── Customer mode toggle ──────────────────────────────────────────
@@ -416,11 +421,32 @@
                         ? `<p class="mt-2 text-xs leading-relaxed">${addr.recipient_name || item.name}<br>${addr.phone || item.phone || '-'}<br>${addr.address_line || ''}${addr.city ? ', ' + addr.city : ''}${addr.province ? ', ' + addr.province : ''}</p>`
                         : '<p class="mt-2 text-xs text-amber-600 dark:text-amber-400">Customer belum punya alamat tersimpan.</p>'
                     }`;
+
+                // Auto-fill faktur pajak dari profil pajak default customer
+                clearTaxProfileHint();
+                const tp = item.tax_profile;
+                if (tp) {
+                    document.getElementById('requestTaxInvoice').checked = true;
+                    toggleTaxInvoicePanel(true);
+                    document.querySelector('[name="tax_taxpayer_name"]').value    = tp.taxpayer_name    || '';
+                    document.querySelector('[name="tax_taxpayer_number"]').value  = tp.taxpayer_number  || '';
+                    document.querySelector('[name="tax_taxpayer_address"]').value = tp.taxpayer_address || '';
+                    document.querySelector('[name="tax_taxpayer_email"]').value   = tp.taxpayer_email   || '';
+
+                    const panel = document.getElementById('taxInvoicePanel');
+                    panel.classList.add('ring-1', 'ring-blue-300', 'rounded-xl', 'p-2');
+                    const hint = document.createElement('p');
+                    hint.id = 'taxProfileHint';
+                    hint.className = 'md:col-span-2 -mt-1 mb-1 text-xs text-blue-600 dark:text-blue-400 font-medium';
+                    hint.textContent = 'Data diisi otomatis dari profil pajak customer.';
+                    panel.prepend(hint);
+                }
             });
 
             $('#customer_id').on('select2:clear', function () {
                 const box = document.getElementById('customerSnapshot');
                 if (box) box.innerHTML = 'Belum ada customer dipilih.';
+                clearTaxProfileHint();
             });
         });
 

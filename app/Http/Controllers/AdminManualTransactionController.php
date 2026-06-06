@@ -21,7 +21,10 @@ class AdminManualTransactionController extends Controller
     {
         $term = trim((string) ($request->query('q', '')));
         $query = User::query()
-            ->with(['addresses' => fn ($q) => $q->orderByDesc('is_primary')->latest('id')])
+            ->with([
+                'addresses' => fn ($q) => $q->orderByDesc('is_primary')->latest('id'),
+                'taxProfiles' => fn ($q) => $q->where('is_default', true)->latest('id'),
+            ])
             ->where(function ($q) {
                 $q->whereNull('role')->orWhere('role', '!=', 'admin');
             })
@@ -36,14 +39,15 @@ class AdminManualTransactionController extends Controller
         }
 
         $results = $query->limit(20)->get()->map(function (User $user) {
-            $address = $user->addresses->first();
+            $address    = $user->addresses->first();
+            $taxProfile = $user->taxProfiles->first();
             return [
-                'id'      => $user->id,
-                'text'    => $user->name . ' — ' . $user->email,
-                'name'    => $user->name,
-                'email'   => $user->email,
-                'phone'   => trim((string) ($user->phone_country_code ?? '') . (string) ($user->phone_number ?? '')),
-                'address' => $address ? [
+                'id'         => $user->id,
+                'text'       => $user->name . ' — ' . $user->email,
+                'name'       => $user->name,
+                'email'      => $user->email,
+                'phone'      => trim((string) ($user->phone_country_code ?? '') . (string) ($user->phone_number ?? '')),
+                'address'    => $address ? [
                     'recipient_name' => $address->recipient_name,
                     'phone'          => trim((string) ($address->phone_country_code ?? '') . (string) ($address->phone_number ?? '')),
                     'address_line'   => $address->address_line,
@@ -51,6 +55,12 @@ class AdminManualTransactionController extends Controller
                     'city'           => $address->city,
                     'district'       => $address->district,
                     'postal_code'    => $address->postal_code,
+                ] : null,
+                'tax_profile' => $taxProfile ? [
+                    'taxpayer_name'    => $taxProfile->taxpayer_name,
+                    'taxpayer_number'  => $taxProfile->taxpayer_number,
+                    'taxpayer_address' => $taxProfile->taxpayer_address,
+                    'taxpayer_email'   => $taxProfile->taxpayer_email,
                 ] : null,
             ];
         });
