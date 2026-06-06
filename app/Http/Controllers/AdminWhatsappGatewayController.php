@@ -136,7 +136,7 @@ class AdminWhatsappGatewayController extends Controller
         $settings = StoreSetting::values();
 
         return [
-            'storeId' => (string) ($settings['wa_gateway_store_id'] ?? 'store-1'),
+            'storeId' => (string) ($settings['wa_gateway_store_id'] ?? 'session-boq-ecommerce'),
             'limits' => [
                 'perMinute' => (int) ($settings['wa_gateway_per_minute'] ?? 10),
                 'perDay' => (int) ($settings['wa_gateway_per_day'] ?? 200),

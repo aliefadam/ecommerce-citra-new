@@ -265,7 +265,7 @@ class BackendController extends Controller
             'waGateway' => [
                 'configured' => (bool) (config('services.wa_gateway.url') && config('services.wa_gateway.token')),
                 'baseUrl' => rtrim((string) config('services.wa_gateway.url'), '/'),
-                'storeId' => (string) ($storeSettings['wa_gateway_store_id'] ?? 'store-1'),
+                'storeId' => (string) ($storeSettings['wa_gateway_store_id'] ?? 'session-boq-ecommerce'),
                 'limits' => [
                     'perMinute' => (int) ($storeSettings['wa_gateway_per_minute'] ?? 10),
                     'perDay' => (int) ($storeSettings['wa_gateway_per_day'] ?? 200),

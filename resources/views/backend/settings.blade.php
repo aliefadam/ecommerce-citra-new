@@ -178,7 +178,7 @@
                                         </span>
                                         <div>
                                             <h2 class="font-bold text-slate-800 dark:text-white">WhatsApp Gateway</h2>
-                                            <p class="text-xs text-slate-400">Gateway: <span id="waGatewayLabel">{{ $waGateway['storeId'] ?? 'store-1' }}</span></p>
+                                            <p class="text-xs text-slate-400">Gateway: <span id="waGatewayLabel">{{ $waGateway['storeId'] ?? 'session-boq-ecommerce' }}</span></p>
                                         </div>
                                     </div>
                                 </div>
