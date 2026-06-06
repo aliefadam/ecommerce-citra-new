@@ -255,6 +255,13 @@ class BackendController extends Controller
     public function settings()
     {
         $storeSettings = StoreSetting::values();
+        $waGatewayStoreId = (string) ($storeSettings['wa_gateway_store_id'] ?? 'boq-ecommerce');
+        foreach (['session-store-session-', 'session-store-', 'session-'] as $prefix) {
+            if (str_starts_with($waGatewayStoreId, $prefix)) {
+                $waGatewayStoreId = substr($waGatewayStoreId, strlen($prefix));
+                break;
+            }
+        }
 
         return view('backend.settings', [
             'storeSettings' => $storeSettings,
@@ -265,7 +272,7 @@ class BackendController extends Controller
             'waGateway' => [
                 'configured' => (bool) (config('services.wa_gateway.url') && config('services.wa_gateway.token')),
                 'baseUrl' => rtrim((string) config('services.wa_gateway.url'), '/'),
-                'storeId' => (string) ($storeSettings['wa_gateway_store_id'] ?? 'session-boq-ecommerce'),
+                'storeId' => $waGatewayStoreId !== '' ? $waGatewayStoreId : 'boq-ecommerce',
                 'limits' => [
                     'perMinute' => (int) ($storeSettings['wa_gateway_per_minute'] ?? 10),
                     'perDay' => (int) ($storeSettings['wa_gateway_per_day'] ?? 200),

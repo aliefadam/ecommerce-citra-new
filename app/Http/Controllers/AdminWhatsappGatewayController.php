@@ -136,7 +136,7 @@ class AdminWhatsappGatewayController extends Controller
         $settings = StoreSetting::values();
 
         return [
-            'storeId' => (string) ($settings['wa_gateway_store_id'] ?? 'session-boq-ecommerce'),
+            'storeId' => $this->normalizeStoreId((string) ($settings['wa_gateway_store_id'] ?? 'boq-ecommerce')),
             'limits' => [
                 'perMinute' => (int) ($settings['wa_gateway_per_minute'] ?? 10),
                 'perDay' => (int) ($settings['wa_gateway_per_day'] ?? 200),
@@ -148,6 +148,18 @@ class AdminWhatsappGatewayController extends Controller
     private function storeId(): string
     {
         return $this->settings()['storeId'];
+    }
+
+    private function normalizeStoreId(string $storeId): string
+    {
+        $storeId = trim($storeId);
+        foreach (['session-store-session-', 'session-store-', 'session-'] as $prefix) {
+            if (str_starts_with($storeId, $prefix)) {
+                return substr($storeId, strlen($prefix));
+            }
+        }
+
+        return $storeId !== '' ? $storeId : 'boq-ecommerce';
     }
 
     private function withPreparedStore(WaGatewayService $gateway, callable $callback): mixed
