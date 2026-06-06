@@ -201,36 +201,17 @@
                         <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
                             <h3 class="font-bold text-slate-800 dark:text-white mb-1">Konfigurasi Session</h3>
                             <p class="text-xs text-slate-400 mb-5">Sesuaikan nama session dengan yang terdaftar di WA Gateway Anda.</p>
-                            <div class="grid grid-cols-1 gap-4">
-                                <div>
-                                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">Nama Session (Store ID)</label>
-                                    <input type="text" id="waStoreIdInput"
-                                           value="{{ $storeSettings['wa_gateway_store_id'] ?? 'boq-ecommerce' }}"
-                                           placeholder="contoh: session-store-boq-ecommerce"
-                                           class="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-300 dark:placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                    <p class="text-xs text-slate-400 mt-1.5">Nama session yang digunakan di WA Gateway. Hanya huruf, angka, titik, dan strip.</p>
-                                </div>
-                                <div class="grid grid-cols-3 gap-4">
-                                    <div>
-                                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">Maks. / Menit</label>
-                                        <input type="number" id="waPerMinuteInput"
-                                               value="{{ $waGateway['limits']['perMinute'] ?? 10 }}" min="1" max="10000"
-                                               class="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">Maks. / Hari</label>
-                                        <input type="number" id="waPerDayInput"
-                                               value="{{ $waGateway['limits']['perDay'] ?? 200 }}" min="1" max="1000000"
-                                               class="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">Maks. / Bulan</label>
-                                        <input type="number" id="waPerMonthInput"
-                                               value="{{ $waGateway['limits']['perMonth'] ?? 3000 }}" min="1" max="10000000"
-                                               class="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                    </div>
-                                </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">Nama Session (Store ID)</label>
+                                <input type="text" id="waStoreIdInput"
+                                       value="{{ $storeSettings['wa_gateway_store_id'] ?? 'boq-ecommerce' }}"
+                                       placeholder="contoh: boq-ecommerce"
+                                       class="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-300 dark:placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <p class="text-xs text-slate-400 mt-1.5">Nama session yang digunakan di WA Gateway. Hanya huruf, angka, titik, dan strip.</p>
                             </div>
+                            <input type="hidden" id="waPerMinuteInput" value="{{ $waGateway['limits']['perMinute'] ?? 10 }}">
+                            <input type="hidden" id="waPerDayInput" value="{{ $waGateway['limits']['perDay'] ?? 200 }}">
+                            <input type="hidden" id="waPerMonthInput" value="{{ $waGateway['limits']['perMonth'] ?? 3000 }}">
                             <div class="flex justify-end mt-4">
                                 <button type="button" onclick="saveWaGatewaySettings()"
                                         class="px-4 py-2.5 text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors">
