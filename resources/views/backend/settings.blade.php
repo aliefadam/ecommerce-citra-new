@@ -7,6 +7,16 @@
         $activeTab = in_array(request('tab', 'store'), ['store', 'location', 'payment', 'tax', 'whatsapp', 'social'], true) ? request('tab', 'store') : 'store';
         $logoPath = (string) ($storeSettings['store_logo_path'] ?? '');
         $logoUrl = $logoPath !== '' ? asset('storage/' . ltrim($logoPath, '/')) : null;
+        $waGatewayRoutes = [
+            'update' => route('whatsapp-gateway.update'),
+            'prepare' => route('whatsapp-gateway.prepare'),
+            'connect' => route('whatsapp-gateway.connect'),
+            'disconnect' => route('whatsapp-gateway.disconnect'),
+            'status' => route('whatsapp-gateway.status'),
+            'qr' => route('whatsapp-gateway.qr'),
+            'qrRaw' => route('whatsapp-gateway.qr-raw'),
+            'usage' => route('whatsapp-gateway.usage'),
+        ];
     @endphp
 
     <main class="flex-1 p-4 sm:p-6 mt-6">
@@ -438,16 +448,7 @@
             }
         }
 
-        const waGatewayRoutes = @json([
-            'update' => route('whatsapp-gateway.update'),
-            'prepare' => route('whatsapp-gateway.prepare'),
-            'connect' => route('whatsapp-gateway.connect'),
-            'disconnect' => route('whatsapp-gateway.disconnect'),
-            'status' => route('whatsapp-gateway.status'),
-            'qr' => route('whatsapp-gateway.qr'),
-            'qrRaw' => route('whatsapp-gateway.qr-raw'),
-            'usage' => route('whatsapp-gateway.usage'),
-        ]);
+        const waGatewayRoutes = @json($waGatewayRoutes);
         const csrfToken = @json(csrf_token());
 
         function setWaMessage(message, tone = 'slate') {
