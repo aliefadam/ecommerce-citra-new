@@ -40,7 +40,7 @@ class AdminWhatsappGatewayController extends Controller
             $settings = $this->settings();
             $result = $gateway->prepareStore(
                 StoreSetting::values()['store_name'] ?? 'Ecommerce Citra',
-                $settings['storeId'],
+                $this->storeIdCandidates()[0],
                 [
                     'perMinute' => $settings['limits']['perMinute'],
                     'perDay' => $settings['limits']['perDay'],
@@ -185,7 +185,7 @@ class AdminWhatsappGatewayController extends Controller
         $settings = $this->settings();
         $gateway->prepareStore(
             StoreSetting::values()['store_name'] ?? 'Ecommerce Citra',
-            $settings['storeId'],
+            $this->storeIdCandidates()[0],
             [
                 'perMinute' => $settings['limits']['perMinute'],
                 'perDay' => $settings['limits']['perDay'],
@@ -213,7 +213,8 @@ class AdminWhatsappGatewayController extends Controller
         $storeId = $this->storeId();
         $prefixed = 'session-store-'.$storeId;
 
-        return array_values(array_unique([$storeId, $prefixed]));
+        // Try prefixed version first — gateways typically store sessions as session-store-{id}
+        return array_values(array_unique([$prefixed, $storeId]));
     }
 
     private function isStoreMissing(RuntimeException $e): bool
