@@ -24,6 +24,9 @@ class WaGatewayService
         $config = config('services.wa_gateway', []);
 
         $this->baseUrl = rtrim((string) ($config['url'] ?? ''), '/');
+        if ($this->baseUrl === 'https://wa.dokterkoding.my.id') {
+            $this->baseUrl = 'https://wa-gateway.dokterkoding.my.id';
+        }
         $this->token = (string) ($config['token'] ?? '');
         $this->timeout = max(1, (int) ($config['timeout'] ?? 10));
         $this->retryTimes = max(0, (int) ($config['retry_times'] ?? 1));
