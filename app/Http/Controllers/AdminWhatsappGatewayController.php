@@ -212,9 +212,10 @@ class AdminWhatsappGatewayController extends Controller
     {
         $storeId = $this->storeId();
 
-        // Bare ID first — the gateway adds session-store- prefix internally.
-        // Prefixed variant kept as fallback for stores that were previously auto-created with that prefix.
-        return array_values(array_unique([$storeId, 'session-store-'.$storeId]));
+        // The gateway uses the session name (session-store-{id}) as the URL path identifier,
+        // so try the prefixed version first for status/connect/qr/usage calls.
+        // The bare id is kept as fallback.
+        return array_values(array_unique(['session-store-'.$storeId, $storeId]));
     }
 
     private function isStoreMissing(RuntimeException $e): bool
