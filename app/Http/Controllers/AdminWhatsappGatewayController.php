@@ -218,6 +218,13 @@ class AdminWhatsappGatewayController extends Controller
 
     private function isStoreMissing(RuntimeException $e): bool
     {
-        return str_contains(strtolower($e->getMessage()), 'toko tidak ditemukan');
+        if ($e->getCode() === 404) {
+            return true;
+        }
+        $msg = strtolower($e->getMessage());
+
+        return str_contains($msg, 'toko tidak ditemukan')
+            || str_contains($msg, 'store not found')
+            || str_contains($msg, 'kode: 404');
     }
 }

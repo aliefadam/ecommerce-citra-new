@@ -83,7 +83,7 @@ class WaGatewayService
             ->get($this->url("/api/stores/{$this->encodeStoreId($storeId)}/whatsapp/qr/raw"));
 
         if (! $response->successful()) {
-            throw new RuntimeException($this->messageFromResponse($response));
+            throw new RuntimeException($this->messageFromResponse($response), $response->status());
         }
 
         return $response;
@@ -106,7 +106,7 @@ class WaGatewayService
         }
 
         if (! $response->successful()) {
-            throw new RuntimeException($this->messageFromResponse($response));
+            throw new RuntimeException($this->messageFromResponse($response), $response->status());
         }
 
         $json = $response->json();
