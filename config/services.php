@@ -42,7 +42,7 @@ return [
     ],
 
     'wa_gateway' => [
-        'url' => env('WA_GATEWAY_URL', 'https://wa.dokterkoding.my.id'),
+        'url' => env('WA_GATEWAY_URL', 'https://wa-gateway.dokterkoding.my.id'),
         'token' => env('WA_GATEWAY_TOKEN', ''),
         'timeout' => (int) env('WA_GATEWAY_TIMEOUT', 10),
         'retry_times' => (int) env('WA_GATEWAY_RETRY_TIMES', 1),
