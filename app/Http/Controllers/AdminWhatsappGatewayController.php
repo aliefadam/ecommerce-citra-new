@@ -153,7 +153,7 @@ class AdminWhatsappGatewayController extends Controller
     private function normalizeStoreId(string $storeId): string
     {
         $storeId = trim($storeId);
-        foreach (['session-store-session-', 'session-store-', 'session-'] as $prefix) {
+        foreach (['session-store-session-', 'session-store-', 'session-', 'store-'] as $prefix) {
             if (str_starts_with($storeId, $prefix)) {
                 return substr($storeId, strlen($prefix));
             }
@@ -212,10 +212,13 @@ class AdminWhatsappGatewayController extends Controller
     {
         $storeId = $this->storeId();
 
-        // The gateway uses the session name (session-store-{id}) as the URL path identifier,
-        // so try the prefixed version first for status/connect/qr/usage calls.
-        // The bare id is kept as fallback.
-        return array_values(array_unique(['session-store-'.$storeId, $storeId]));
+        // Gateway assigns storeId as "store-{submittedId}" in the URL path.
+        // session-store- variant is kept as a fallback for legacy sessions.
+        return array_values(array_unique([
+            'store-'.$storeId,
+            'session-store-'.$storeId,
+            $storeId,
+        ]));
     }
 
     private function isStoreMissing(RuntimeException $e): bool
