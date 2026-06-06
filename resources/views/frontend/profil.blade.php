@@ -1792,38 +1792,72 @@
                         `).join('')}
                     </div>
                 ` : '';
-                return `<div class="border border-slate-200 rounded-2xl p-5 hover:border-slate-300 transition-colors">
-          <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-3">
-            <div>
-              <span class="font-mono font-bold text-slate-800 text-sm">${o.id}</span>
-              <span class="text-slate-400 text-xs ml-2">&bull; ${o.date}</span>
+                // Tentukan aksi utama berdasarkan status
+                let primaryBtn = '';
+                if (o.status === 'menunggu') {
+                    primaryBtn = `<a href="${waitingUrlTemplate.replace('__ORDER_ID__', o.order_id)}"
+                        class="inline-flex items-center gap-1.5 rounded-xl bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600 transition-colors">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                        Bayar Sekarang</a>`;
+                } else if (o.status === 'menunggu_verifikasi') {
+                    primaryBtn = `<a href="${waitingUrlTemplate.replace('__ORDER_ID__', o.order_id)}"
+                        class="inline-flex items-center gap-1.5 rounded-xl bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600 transition-colors">Upload Bukti</a>`;
+                } else if (o.status === 'kirim') {
+                    primaryBtn = `<form method="POST" action="${o.complete_url}" onsubmit="return confirm('Tandai pesanan ini sudah diterima?')" class="inline">
+                        <input type="hidden" name="_token" value="${csrfToken}"><input type="hidden" name="_method" value="PATCH">
+                        <button type="submit" class="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Pesanan Diterima</button></form>`;
+                } else if (o.status === 'selesai' && Array.isArray(o.items) && o.items.some((it) => !it.is_reviewed)) {
+                    primaryBtn = `<button onclick="openReviewModal('${o.id}')"
+                        class="inline-flex items-center gap-1.5 rounded-xl bg-yellow-500 px-4 py-2 text-sm font-semibold text-white hover:bg-yellow-600 transition-colors">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                        Beri Ulasan</button>`;
+                }
+
+                // Aksi sekunder (ditampilkan sebagai link teks kecil)
+                let secondaryLinks = [];
+                if (o.status === 'kirim') secondaryLinks.push(`<button onclick="openTrackingModal('${o.id}')" class="text-xs font-medium text-blue-600 hover:underline">Lacak Resi</button>`);
+                if (o.status === 'menunggu') secondaryLinks.push(`<button onclick="openOrderCancelModal('${o.order_id}')" class="text-xs font-medium text-red-500 hover:underline">Batalkan</button>`);
+                if (o.can_return && items.some((it) => Number(it.returnable_qty || 0) > 0)) secondaryLinks.push(`<button onclick="openReturnRequestModal('${o.id}')" class="text-xs font-medium text-slate-500 hover:underline">Return/Refund</button>`);
+                if (!taxInvoice) secondaryLinks.push(`<button onclick="openTaxInvoiceModal('${o.id}')" class="text-xs font-medium text-slate-500 hover:underline">Faktur Pajak</button>`);
+                if (taxInvoice?.status === 'rejected') secondaryLinks.push(`<button onclick="openTaxInvoiceModal('${o.id}')" class="text-xs font-medium text-red-500 hover:underline">Ajukan Ulang Faktur</button>`);
+                if (taxInvoice?.file_available && taxInvoice?.download_url) secondaryLinks.push(`<a href="${taxInvoice.download_url}" class="text-xs font-medium text-emerald-600 hover:underline">Download Faktur</a>`);
+                if (o.invoice_url) secondaryLinks.push(`<a href="${o.invoice_url}" target="_blank" class="text-xs font-medium text-slate-500 hover:underline">Invoice</a>`);
+                secondaryLinks.push(`<button onclick="openOrderDetailModal('${o.id}')" class="text-xs font-medium text-slate-500 hover:underline">Lihat Detail</button>`);
+
+                const secondaryHtml = secondaryLinks.length
+                    ? `<div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2">${secondaryLinks.join('<span class="text-slate-200 text-xs">|</span>')}</div>`
+                    : '';
+
+                return `<div class="border border-slate-200 rounded-2xl overflow-hidden hover:border-slate-300 hover:shadow-sm transition-all">
+          <!-- Header kartu -->
+          <div class="flex items-center justify-between px-5 py-3 bg-slate-50 border-b border-slate-100">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="font-mono font-bold text-slate-700 text-xs truncate">${o.id}</span>
+              <span class="text-slate-400 text-xs shrink-0">&bull; ${o.date}</span>
             </div>
-            <span class="status-badge ${s.class}">${s.label}</span>
+            <span class="status-badge ${s.class} shrink-0 ml-2">${s.label}</span>
           </div>
-          <div class="space-y-2 mb-3">${itemsHtml}</div>
-          ${returnRequestsHtml}
-          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-3 border-t border-slate-100">
+
+          <!-- Produk -->
+          <div class="px-5 py-4 space-y-3">${itemsHtml}</div>
+
+          ${returnRequestsHtml ? `<div class="px-5 pb-3">${returnRequestsHtml}</div>` : ''}
+
+          <!-- Footer -->
+          <div class="px-5 py-4 border-t border-slate-100 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <span class="text-xs text-slate-500">Total: </span>
-              <span class="font-bold text-slate-800">Rp ${o.total.toLocaleString('id-ID')}</span>
-              ${o.status === 'kirim' && o.tracking_number ? `<p class="text-xs text-slate-500 mt-1">No. Resi: <span class="font-semibold text-slate-700">${o.tracking_number}</span></p>` : ''}
-              ${o.can_return && o.return_deadline ? `<p class="text-xs text-blue-600 mt-1">Batas return/refund: ${o.return_deadline}</p>` : ''}
+              <p class="text-xs text-slate-400 mb-0.5">Total Pesanan</p>
+              <p class="font-bold text-slate-900 text-lg leading-none">Rp ${o.total.toLocaleString('id-ID')}</p>
+              ${o.status === 'kirim' && o.tracking_number ? `<p class="text-xs text-slate-500 mt-1.5 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17l9.2-9.2M17 17V7H7"/></svg>Resi: <span class="font-semibold text-slate-700">${o.tracking_number}</span></p>` : ''}
+              ${o.can_return && o.return_deadline ? `<p class="text-xs text-amber-600 mt-1">⏱ Batas return: ${o.return_deadline}</p>` : ''}
               ${renderTaxInvoiceBadge(taxInvoice)}
               ${taxInvoice?.rejected_reason ? `<p class="mt-1 text-xs text-red-500">Alasan: ${taxInvoice.rejected_reason}</p>` : ''}
             </div>
-            <div class="flex flex-wrap gap-2">
-              ${o.status === 'menunggu' ? `<a href="${waitingUrlTemplate.replace('__ORDER_ID__', o.order_id)}" class="text-xs border border-orange-300 text-orange-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-orange-50 transition-colors flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>Bayar Sekarang</a>` : ''}
-              ${o.status === 'menunggu_verifikasi' ? `<a href="${waitingUrlTemplate.replace('__ORDER_ID__', o.order_id)}" class="text-xs border border-orange-300 text-orange-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-orange-50 transition-colors">Upload Bukti</a>` : ''}
-              ${o.status === 'menunggu' ? `<button type="button" onclick="openOrderCancelModal('${o.order_id}')" class="text-xs border border-red-300 text-red-500 font-semibold px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors">Batalkan</button>` : ''}
-              ${Array.isArray(o.items) && o.items.some((it) => !it.is_reviewed) ? '<button onclick="openReviewModal(\'' + o.id + '\')" class="text-xs border border-yellow-300 text-yellow-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-yellow-50 transition-colors">Beri Ulasan</button>' : ''}
-              ${o.status === 'kirim' ? `<button onclick="openTrackingModal('${o.id}')" class="text-xs border border-blue-300 text-blue-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors">Lacak Pesanan</button>` : ''}
-              ${o.status === 'kirim' ? `<form method="POST" action="${o.complete_url}" onsubmit="return confirm('Tandai pesanan ini sudah diterima?')" class="inline"><input type="hidden" name="_token" value="${csrfToken}"><input type="hidden" name="_method" value="PATCH"><button type="submit" class="text-xs border border-emerald-300 text-emerald-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-emerald-50 transition-colors">Pesanan Diterima</button></form>` : ''}
-              ${o.can_return && items.some((it) => Number(it.returnable_qty || 0) > 0) ? `<button onclick="openReturnRequestModal('${o.id}')" class="text-xs border border-emerald-300 text-emerald-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-emerald-50 transition-colors">Return / Refund</button>` : ''}
-              ${!taxInvoice ? `<button type="button" onclick="openTaxInvoiceModal('${o.id}')" class="text-xs border border-blue-300 text-blue-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors">Minta Faktur Pajak</button>` : ''}
-              ${taxInvoice?.status === 'rejected' ? `<button type="button" onclick="openTaxInvoiceModal('${o.id}')" class="text-xs border border-red-300 text-red-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors">Ajukan Ulang Faktur</button>` : ''}
-              ${taxInvoice?.file_available && taxInvoice?.download_url ? `<a href="${taxInvoice.download_url}" class="text-xs border border-emerald-300 text-emerald-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-emerald-50 transition-colors">Download Faktur</a>` : ''}
-              ${o.invoice_url ? `<a href="${o.invoice_url}" target="_blank" class="text-xs border border-indigo-300 text-indigo-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-indigo-50 transition-colors">Invoice</a>` : ''}
-              <button type="button" onclick="openOrderDetailModal('${o.id}')" class="text-xs border border-slate-300 text-slate-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors">Lihat Detail</button>
+            <div class="flex flex-col items-start sm:items-end shrink-0">
+              ${primaryBtn}
+              ${secondaryHtml}
             </div>
           </div>
         </div>`;
