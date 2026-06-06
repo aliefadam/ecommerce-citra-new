@@ -7,6 +7,7 @@ use App\Models\StockMovement;
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
 use App\Models\TransactionStatusHistory;
+use App\Models\TransactionTaxInvoice;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -116,6 +117,12 @@ class AdminManualTransactionController extends Controller
             'discount_amount' => ['nullable', 'integer', 'min:0'],
             'shipping_cost' => ['nullable', 'integer', 'min:0'],
             'ppn_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'request_tax_invoice' => ['nullable', 'boolean'],
+            'tax_taxpayer_name' => ['nullable', 'required_if:request_tax_invoice,1', 'string', 'max:200'],
+            'tax_taxpayer_number' => ['nullable', 'required_if:request_tax_invoice,1', 'string', 'max:50'],
+            'tax_taxpayer_address' => ['nullable', 'required_if:request_tax_invoice,1', 'string', 'max:500'],
+            'tax_taxpayer_email' => ['nullable', 'email', 'max:150'],
+            'tax_customer_note' => ['nullable', 'string', 'max:500'],
         ]);
 
         $transaction = DB::transaction(function () use ($request, $validated) {
@@ -243,6 +250,20 @@ class AdminManualTransactionController extends Controller
                 'type' => 'manual_admin_created',
                 'note' => 'Transaksi manual dibuat oleh admin.',
             ]);
+
+            if (!empty($validated['request_tax_invoice'])) {
+                TransactionTaxInvoice::create([
+                    'transaction_id' => $transaction->id,
+                    'requested_by_user_id' => null,
+                    'status' => TransactionTaxInvoice::STATUS_REQUESTED,
+                    'taxpayer_name' => $validated['tax_taxpayer_name'],
+                    'taxpayer_number' => $validated['tax_taxpayer_number'],
+                    'taxpayer_address' => $validated['tax_taxpayer_address'],
+                    'taxpayer_email' => $validated['tax_taxpayer_email'] ?? null,
+                    'customer_note' => $validated['tax_customer_note'] ?? null,
+                    'requested_at' => now(),
+                ]);
+            }
 
             return $transaction;
         });

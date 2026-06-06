@@ -215,6 +215,71 @@
                     </div>
                 </div>
 
+                {{-- Faktur Pajak --}}
+                <div class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800">
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <h2 class="font-bold text-slate-800 dark:text-white">Faktur Pajak</h2>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Opsional — isi jika customer membutuhkan faktur pajak (e-Faktur).</p>
+                        </div>
+                        <label class="inline-flex cursor-pointer items-center gap-3">
+                            <input type="checkbox" id="requestTaxInvoice" name="request_tax_invoice" value="1"
+                                class="peer sr-only" onchange="toggleTaxInvoicePanel(this.checked)"
+                                {{ old('request_tax_invoice') ? 'checked' : '' }}>
+                            <div class="relative h-6 w-11 rounded-full bg-slate-200 transition-colors
+                                        peer-checked:bg-blue-600
+                                        dark:bg-slate-600 dark:peer-checked:bg-blue-500
+                                        after:absolute after:left-[2px] after:top-[2px]
+                                        after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow
+                                        after:transition-all after:content-['']
+                                        peer-checked:after:translate-x-full"></div>
+                            <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Minta Faktur Pajak</span>
+                        </label>
+                    </div>
+
+                    <div id="taxInvoicePanel" class="{{ old('request_tax_invoice') ? '' : 'hidden' }} mt-5 grid gap-4 md:grid-cols-2">
+                        <div>
+                            <label class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                                Nama Wajib Pajak <span class="text-red-500">*</span>
+                            </label>
+                            <input name="tax_taxpayer_name" type="text" value="{{ old('tax_taxpayer_name') }}"
+                                placeholder="PT / CV / Nama Perorangan"
+                                class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200">
+                        </div>
+                        <div>
+                            <label class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                                NPWP <span class="text-red-500">*</span>
+                            </label>
+                            <input name="tax_taxpayer_number" type="text" value="{{ old('tax_taxpayer_number') }}"
+                                placeholder="000000000000000"
+                                class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                                Alamat Wajib Pajak <span class="text-red-500">*</span>
+                            </label>
+                            <input name="tax_taxpayer_address" type="text" value="{{ old('tax_taxpayer_address') }}"
+                                placeholder="Alamat sesuai NPWP"
+                                class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200">
+                        </div>
+                        <div>
+                            <label class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                                Email Penerima Faktur
+                            </label>
+                            <input name="tax_taxpayer_email" type="email" value="{{ old('tax_taxpayer_email') }}"
+                                placeholder="email@perusahaan.com"
+                                class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200">
+                            <p class="mt-1 text-xs text-slate-400">Faktur pajak akan dikirim ke email ini. Kosongkan untuk gunakan email customer.</p>
+                        </div>
+                        <div>
+                            <label class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-300">Catatan</label>
+                            <input name="tax_customer_note" type="text" value="{{ old('tax_customer_note') }}"
+                                placeholder="Keterangan tambahan (opsional)"
+                                class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200">
+                        </div>
+                    </div>
+                </div>
+
             </section>
 
             {{-- Sidebar total --}}
@@ -304,6 +369,11 @@
 
         function moneyValue(input) {
             return Math.max(0, Number(input?.value || 0));
+        }
+
+        // ── Tax invoice toggle ────────────────────────────────────────────
+        function toggleTaxInvoicePanel(show) {
+            document.getElementById('taxInvoicePanel')?.classList.toggle('hidden', !show);
         }
 
         // ── Customer mode toggle ──────────────────────────────────────────
