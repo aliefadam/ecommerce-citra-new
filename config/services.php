@@ -41,4 +41,12 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    'wa_gateway' => [
+        'url' => env('WA_GATEWAY_URL', 'https://wa.dokterkoding.my.id'),
+        'token' => env('WA_GATEWAY_TOKEN', ''),
+        'timeout' => (int) env('WA_GATEWAY_TIMEOUT', 10),
+        'retry_times' => (int) env('WA_GATEWAY_RETRY_TIMES', 1),
+        'retry_sleep' => (int) env('WA_GATEWAY_RETRY_SLEEP', 200),
+    ],
+
 ];

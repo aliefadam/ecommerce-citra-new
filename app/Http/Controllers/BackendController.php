@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Transaction;
-use App\Models\TransactionDetail;
-use App\Models\User;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\StoreLocation;
 use App\Models\StoreSetting;
+use App\Models\Transaction;
+use App\Models\TransactionDetail;
+use App\Models\User;
 use App\Services\ImageOptimizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -21,7 +21,7 @@ class BackendController extends Controller
         $period = $request->query('period', 'month');
         $allowedPeriods = ['today', '7days', 'month', 'all'];
 
-        if (!in_array($period, $allowedPeriods, true)) {
+        if (! in_array($period, $allowedPeriods, true)) {
             $period = 'month';
         }
 
@@ -160,11 +160,11 @@ class BackendController extends Controller
             ->whereIn(DB::raw('LOWER(status)'), $paidStatuses)
             ->sum('grand_total');
         $totalOrders = $this->applyPeriod(Transaction::query(), $period)->count();
-        $totalUsers    = User::where('role', 'user')->count();
+        $totalUsers = User::where('role', 'user')->count();
         $totalProducts = Product::count();
 
-        $thisMonth        = now()->startOfMonth();
-        $lastMonthStart   = now()->subMonth()->startOfMonth();
+        $thisMonth = now()->startOfMonth();
+        $lastMonthStart = now()->subMonth()->startOfMonth();
         $thisMonthRevenue = Transaction::whereIn(DB::raw('LOWER(status)'), $paidStatuses)
             ->whereBetween('created_at', [$thisMonth, now()])->sum('grand_total');
         $lastMonthRevenue = Transaction::whereIn(DB::raw('LOWER(status)'), $paidStatuses)
@@ -254,12 +254,24 @@ class BackendController extends Controller
 
     public function settings()
     {
+        $storeSettings = StoreSetting::values();
+
         return view('backend.settings', [
-            'storeSettings' => StoreSetting::values(),
+            'storeSettings' => $storeSettings,
             'location' => StoreLocation::query()
                 ->where('is_active', true)
                 ->latest('id')
                 ->first(),
+            'waGateway' => [
+                'configured' => (bool) (config('services.wa_gateway.url') && config('services.wa_gateway.token')),
+                'baseUrl' => rtrim((string) config('services.wa_gateway.url'), '/'),
+                'storeId' => (string) ($storeSettings['wa_gateway_store_id'] ?? 'store-1'),
+                'limits' => [
+                    'perMinute' => (int) ($storeSettings['wa_gateway_per_minute'] ?? 10),
+                    'perDay' => (int) ($storeSettings['wa_gateway_per_day'] ?? 200),
+                    'perMonth' => (int) ($storeSettings['wa_gateway_per_month'] ?? 3000),
+                ],
+            ],
         ]);
     }
 
@@ -299,17 +311,17 @@ class BackendController extends Controller
         if ($section === 'social_media') {
             $validated = $request->validate([
                 'social_instagram' => ['nullable', 'url', 'max:255'],
-                'social_tiktok'    => ['nullable', 'url', 'max:255'],
-                'social_facebook'  => ['nullable', 'url', 'max:255'],
-                'social_twitter'   => ['nullable', 'url', 'max:255'],
-                'social_youtube'   => ['nullable', 'url', 'max:255'],
-                'social_whatsapp'  => ['nullable', 'url', 'max:255'],
-                'social_shopee'    => ['nullable', 'url', 'max:255'],
+                'social_tiktok' => ['nullable', 'url', 'max:255'],
+                'social_facebook' => ['nullable', 'url', 'max:255'],
+                'social_twitter' => ['nullable', 'url', 'max:255'],
+                'social_youtube' => ['nullable', 'url', 'max:255'],
+                'social_whatsapp' => ['nullable', 'url', 'max:255'],
+                'social_shopee' => ['nullable', 'url', 'max:255'],
                 'social_tokopedia' => ['nullable', 'url', 'max:255'],
-                'social_lazada'    => ['nullable', 'url', 'max:255'],
+                'social_lazada' => ['nullable', 'url', 'max:255'],
             ]);
 
-            StoreSetting::setMany(array_map(fn($v) => $v ?? '', $validated));
+            StoreSetting::setMany(array_map(fn ($v) => $v ?? '', $validated));
 
             return redirect()->route('pages.settings', ['tab' => 'social'])->with('success', 'Link social media berhasil disimpan.');
         }
@@ -348,7 +360,7 @@ class BackendController extends Controller
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
-        if (!Hash::check($validated['current_password'], $user->password)) {
+        if (! Hash::check($validated['current_password'], $user->password)) {
             return back()->withErrors(['current_password' => 'Password saat ini tidak valid.'])->withInput();
         }
 

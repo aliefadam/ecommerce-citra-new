@@ -4,7 +4,7 @@
 
 @section('content')
     @php
-        $activeTab = in_array(request('tab', 'store'), ['store', 'location', 'payment', 'tax', 'social'], true) ? request('tab', 'store') : 'store';
+        $activeTab = in_array(request('tab', 'store'), ['store', 'location', 'payment', 'tax', 'whatsapp', 'social'], true) ? request('tab', 'store') : 'store';
         $logoPath = (string) ($storeSettings['store_logo_path'] ?? '');
         $logoUrl = $logoPath !== '' ? asset('storage/' . ltrim($logoPath, '/')) : null;
     @endphp
@@ -50,6 +50,11 @@
                             class="settings-tab {{ $activeTab === 'tax' ? 'active' : '' }} w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white transition-all text-left">
                             <i data-lucide="percent" class="w-[17px] h-[17px]"></i>
                             Pajak / PPN
+                        </button>
+                        <button type="button" onclick="showTab('whatsapp')" id="nav-whatsapp"
+                            class="settings-tab {{ $activeTab === 'whatsapp' ? 'active' : '' }} w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white transition-all text-left">
+                            <i data-lucide="message-circle" class="w-[17px] h-[17px]"></i>
+                            WhatsApp Gateway
                         </button>
                         <button type="button" onclick="showTab('social')" id="nav-social"
                             class="settings-tab {{ $activeTab === 'social' ? 'active' : '' }} w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white transition-all text-left">
@@ -150,6 +155,133 @@
                             <button type="submit" class="px-5 py-2.5 text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors">Simpan Lokasi</button>
                         </div>
                     </form>
+                </div>
+
+                <div id="tab-whatsapp" class="settings-content {{ $activeTab === 'whatsapp' ? '' : 'hidden' }}">
+                    <div class="space-y-5">
+                        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
+                            <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                                <div>
+                                    <div class="flex items-center gap-3 mb-1">
+                                        <span class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-300 flex items-center justify-center">
+                                            <i data-lucide="smartphone" class="w-5 h-5"></i>
+                                        </span>
+                                        <div>
+                                            <h2 class="font-bold text-slate-800 dark:text-white">WhatsApp Gateway</h2>
+                                            <p class="text-xs text-slate-400">Gateway: <span id="waGatewayLabel">{{ $waGateway['storeId'] ?? 'store-1' }}</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex flex-wrap gap-2">
+                                    <span id="waStatusBadge" class="inline-flex items-center rounded-full bg-slate-100 dark:bg-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300">Memuat status</span>
+                                    <button type="button" onclick="refreshWaGateway()" class="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-semibold rounded-xl border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                                        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                                        Refresh
+                                    </button>
+                                </div>
+                            </div>
+
+                            @unless ($waGateway['configured'] ?? false)
+                                <div class="mt-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+                                    WA_GATEWAY_URL atau WA_GATEWAY_TOKEN belum lengkap di ENV. Isi konfigurasi dulu agar tombol gateway bisa dipakai.
+                                </div>
+                            @endunless
+
+                            <form id="waGatewaySettingsForm" class="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+                                @csrf
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Store ID</label>
+                                    <input type="text" name="store_id" value="{{ $waGateway['storeId'] ?? 'store-1' }}" required
+                                        class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Per Menit</label>
+                                    <input type="number" name="per_minute" min="1" value="{{ $waGateway['limits']['perMinute'] ?? 10 }}" required
+                                        class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Per Hari</label>
+                                    <input type="number" name="per_day" min="1" value="{{ $waGateway['limits']['perDay'] ?? 200 }}" required
+                                        class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Per Bulan</label>
+                                    <input type="number" name="per_month" min="1" value="{{ $waGateway['limits']['perMonth'] ?? 3000 }}" required
+                                        class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200">
+                                </div>
+                                <div class="md:col-span-4 flex justify-end">
+                                    <button type="submit" class="px-5 py-2.5 text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors">Simpan Gateway</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
+                            <div class="xl:col-span-2 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+                                    <button type="button" onclick="prepareWaGateway()" class="inline-flex items-center justify-center gap-2 min-h-12 px-4 py-3 text-sm font-bold rounded-xl border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                                        <i data-lucide="qr-code" class="w-4 h-4"></i>
+                                        Siapkan
+                                    </button>
+                                    <button type="button" onclick="connectWaGateway()" class="inline-flex items-center justify-center gap-2 min-h-12 px-4 py-3 text-sm font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-colors">
+                                        <i data-lucide="plug" class="w-4 h-4"></i>
+                                        Hubungkan
+                                    </button>
+                                    <button type="button" onclick="disconnectWaGateway()" class="inline-flex items-center justify-center gap-2 min-h-12 px-4 py-3 text-sm font-bold rounded-xl border border-red-200 dark:border-red-400/40 text-red-600 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                                        <i data-lucide="unplug" class="w-4 h-4"></i>
+                                        Putuskan
+                                    </button>
+                                </div>
+
+                                <div class="flex items-center justify-between mb-5">
+                                    <div>
+                                        <h3 class="font-bold text-slate-800 dark:text-white">QR WhatsApp</h3>
+                                        <p id="waQrHint" class="text-xs text-slate-400 mt-1">Siapkan atau hubungkan gateway, lalu scan QR dari WhatsApp.</p>
+                                    </div>
+                                    <button type="button" onclick="loadWaQr()" class="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-semibold rounded-xl border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                                        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                                        QR
+                                    </button>
+                                </div>
+
+                                <div class="min-h-[360px] rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 flex items-center justify-center p-5">
+                                    <img id="waQrImage" alt="QR WhatsApp Gateway" class="hidden w-full max-w-sm rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+                                    <div id="waQrEmpty" class="text-center max-w-sm">
+                                        <div class="mx-auto mb-3 w-12 h-12 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400">
+                                            <i data-lucide="qr-code" class="w-6 h-6"></i>
+                                        </div>
+                                        <p class="text-sm font-semibold text-slate-600 dark:text-slate-300">QR belum dimuat</p>
+                                        <p class="text-xs text-slate-400 mt-1">Klik Hubungkan atau QR untuk mengambil kode scan terbaru.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
+                                <h3 class="font-bold text-slate-800 dark:text-white mb-1">Sisa Kuota Pesan</h3>
+                                <p class="text-xs text-slate-400 mb-5">Pemakaian dikirim dari endpoint usage gateway.</p>
+                                <div class="space-y-4">
+                                    @foreach ([
+                                        'minute' => ['label' => 'Menit Ini', 'limit' => $waGateway['limits']['perMinute'] ?? 10],
+                                        'day' => ['label' => 'Hari Ini', 'limit' => $waGateway['limits']['perDay'] ?? 200],
+                                        'month' => ['label' => 'Bulan Ini', 'limit' => $waGateway['limits']['perMonth'] ?? 3000],
+                                    ] as $key => $meta)
+                                        <div>
+                                            <div class="flex items-center justify-between gap-3 text-sm mb-2">
+                                                <span class="font-semibold text-slate-700 dark:text-slate-200">{{ $meta['label'] }}</span>
+                                                <span id="waUsage{{ ucfirst($key) }}Text" class="text-xs font-semibold text-slate-500 dark:text-slate-400">0 / {{ $meta['limit'] }}</span>
+                                            </div>
+                                            <div class="h-2 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
+                                                <div id="waUsage{{ ucfirst($key) }}Bar" class="h-full w-0 rounded-full bg-emerald-500 transition-all"></div>
+                                            </div>
+                                            <p id="waUsage{{ ucfirst($key) }}Remaining" class="text-xs text-slate-400 mt-1">Sisa {{ $meta['limit'] }} pesan</p>
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <div id="waGatewayMessage" class="mt-5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 px-4 py-3 text-xs text-slate-500 dark:text-slate-400">
+                                    Belum ada aktivitas gateway.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="tab-social" class="settings-content {{ $activeTab === 'social' ? '' : 'hidden' }}">
@@ -300,6 +432,236 @@
             const url = new URL(window.location.href);
             url.searchParams.set('tab', tab);
             window.history.replaceState({}, '', url.toString());
+
+            if (tab === 'whatsapp') {
+                refreshWaGateway();
+            }
+        }
+
+        const waGatewayRoutes = @json([
+            'update' => route('whatsapp-gateway.update'),
+            'prepare' => route('whatsapp-gateway.prepare'),
+            'connect' => route('whatsapp-gateway.connect'),
+            'disconnect' => route('whatsapp-gateway.disconnect'),
+            'status' => route('whatsapp-gateway.status'),
+            'qr' => route('whatsapp-gateway.qr'),
+            'qrRaw' => route('whatsapp-gateway.qr-raw'),
+            'usage' => route('whatsapp-gateway.usage'),
+        ]);
+        const csrfToken = @json(csrf_token());
+
+        function setWaMessage(message, tone = 'slate') {
+            const el = document.getElementById('waGatewayMessage');
+            if (!el) return;
+            const tones = {
+                slate: 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 text-slate-500 dark:text-slate-400',
+                success: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+                warning: 'border-amber-200 bg-amber-50 text-amber-700',
+                danger: 'border-red-200 bg-red-50 text-red-700',
+            };
+            el.className = `mt-5 rounded-xl px-4 py-3 text-xs ${tones[tone] || tones.slate}`;
+            el.textContent = message || 'Belum ada aktivitas gateway.';
+        }
+
+        function setWaStatus(label, tone = 'slate') {
+            const el = document.getElementById('waStatusBadge');
+            if (!el) return;
+            const tones = {
+                slate: 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300',
+                success: 'bg-emerald-100 text-emerald-700',
+                warning: 'bg-amber-100 text-amber-700',
+                danger: 'bg-red-100 text-red-700',
+            };
+            el.className = `inline-flex items-center rounded-full px-3 py-1.5 text-xs font-semibold ${tones[tone] || tones.slate}`;
+            el.textContent = label;
+        }
+
+        async function waFetch(url, options = {}) {
+            const res = await fetch(url, {
+                ...options,
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    ...(options.method && options.method !== 'GET' ? {
+                        'X-CSRF-TOKEN': csrfToken
+                    } : {}),
+                    ...(options.headers || {}),
+                },
+            });
+            const json = await res.json().catch(() => ({}));
+            if (!res.ok || json.success === false) {
+                throw new Error(json.message || 'WA Gateway gagal memproses permintaan.');
+            }
+            return json;
+        }
+
+        function normalizeWaStatus(data) {
+            const raw = String(data?.status || data?.state || data?.connection || data?.data?.status || '').toLowerCase();
+            const connected = data?.connected === true || data?.isConnected === true || ['connected', 'open', 'ready', 'authenticated'].includes(raw);
+            const qr = ['qr', 'scan', 'pairing', 'connecting'].some((key) => raw.includes(key));
+            if (connected) return ['Terhubung', 'success'];
+            if (qr) return ['Menunggu scan QR', 'warning'];
+            if (raw) return [raw.replace(/_/g, ' '), 'slate'];
+            return ['Belum terhubung', 'slate'];
+        }
+
+        function findQrValue(data) {
+            const candidates = [
+                data?.qr,
+                data?.qrcode,
+                data?.qrCode,
+                data?.image,
+                data?.base64,
+                data?.data?.qr,
+                data?.data?.qrcode,
+                data?.data?.qrCode,
+                data?.data?.image,
+                data?.data?.base64,
+            ].filter(Boolean);
+            return candidates.length ? String(candidates[0]) : '';
+        }
+
+        function setQrImage(src) {
+            const img = document.getElementById('waQrImage');
+            const empty = document.getElementById('waQrEmpty');
+            if (!img || !empty) return;
+            img.src = src;
+            img.classList.remove('hidden');
+            empty.classList.add('hidden');
+        }
+
+        async function saveWaGatewaySettings(event) {
+            event.preventDefault();
+            const form = event.currentTarget;
+            const formData = new FormData(form);
+            const json = await waFetch(waGatewayRoutes.update, {
+                method: 'POST',
+                body: formData,
+            });
+            document.getElementById('waGatewayLabel').textContent = formData.get('store_id') || 'store-1';
+            setWaMessage(json.message, 'success');
+            refreshWaGateway();
+        }
+
+        async function prepareWaGateway() {
+            try {
+                setWaMessage('Menyiapkan toko di WA Gateway...', 'slate');
+                const json = await waFetch(waGatewayRoutes.prepare, {
+                    method: 'POST'
+                });
+                setWaMessage(json.message, 'success');
+                refreshWaGateway();
+            } catch (error) {
+                setWaMessage(error.message, 'danger');
+            }
+        }
+
+        async function connectWaGateway() {
+            try {
+                setWaMessage('Menghubungkan sesi WhatsApp...', 'slate');
+                const json = await waFetch(waGatewayRoutes.connect, {
+                    method: 'POST'
+                });
+                setWaMessage(json.message, 'success');
+                await loadWaQr();
+                refreshWaGateway();
+            } catch (error) {
+                setWaMessage(error.message, 'danger');
+            }
+        }
+
+        async function disconnectWaGateway() {
+            try {
+                setWaMessage('Memutuskan sesi WhatsApp...', 'slate');
+                const json = await waFetch(waGatewayRoutes.disconnect, {
+                    method: 'POST'
+                });
+                setWaMessage(json.message, 'success');
+                refreshWaGateway();
+            } catch (error) {
+                setWaMessage(error.message, 'danger');
+            }
+        }
+
+        async function loadWaStatus() {
+            try {
+                const json = await waFetch(waGatewayRoutes.status);
+                const [label, tone] = normalizeWaStatus(json.data || {});
+                setWaStatus(label, tone);
+            } catch (error) {
+                setWaStatus('Status gagal dimuat', 'danger');
+                setWaMessage(error.message, 'danger');
+            }
+        }
+
+        async function loadWaQr() {
+            const hint = document.getElementById('waQrHint');
+            try {
+                if (hint) hint.textContent = 'Mengambil QR terbaru dari gateway...';
+                const json = await waFetch(waGatewayRoutes.qr);
+                const qr = findQrValue(json.data || {});
+                if (qr) {
+                    const src = qr.startsWith('data:image') ? qr : `data:image/png;base64,${qr}`;
+                    setQrImage(src);
+                } else {
+                    setQrImage(`${waGatewayRoutes.qrRaw}?t=${Date.now()}`);
+                }
+                if (hint) hint.textContent = 'Scan QR ini lewat WhatsApp di ponsel admin.';
+            } catch (error) {
+                setWaMessage(error.message, 'warning');
+                setQrImage(`${waGatewayRoutes.qrRaw}?t=${Date.now()}`);
+                if (hint) hint.textContent = 'Jika QR belum muncul, klik Hubungkan lalu refresh QR.';
+            }
+        }
+
+        function readUsageBucket(data, key) {
+            const bucket = data?.[key] || data?.usage?.[key] || data?.limits?.[key] || {};
+            const aliases = {
+                minute: ['minute', 'perMinute', 'currentMinute'],
+                day: ['day', 'perDay', 'today'],
+                month: ['month', 'perMonth', 'currentMonth'],
+            };
+            const used = Number(bucket.used ?? bucket.count ?? data?.used?.[key] ?? data?.usage?.[aliases[key]?.[1]] ?? 0);
+            const limit = Number(bucket.limit ?? data?.limit?.[key] ?? data?.limits?.[aliases[key]?.[1]] ?? document.querySelector(`[name="${key === 'minute' ? 'per_minute' : key === 'day' ? 'per_day' : 'per_month'}"]`)?.value ?? 0);
+            const remaining = Number(bucket.remaining ?? Math.max(0, limit - used));
+            return {
+                used: Number.isFinite(used) ? used : 0,
+                limit: Number.isFinite(limit) && limit > 0 ? limit : 0,
+                remaining: Number.isFinite(remaining) ? remaining : 0,
+            };
+        }
+
+        function renderUsage(key, bucket) {
+            const name = key.charAt(0).toUpperCase() + key.slice(1);
+            const text = document.getElementById(`waUsage${name}Text`);
+            const bar = document.getElementById(`waUsage${name}Bar`);
+            const remaining = document.getElementById(`waUsage${name}Remaining`);
+            const percent = bucket.limit > 0 ? Math.min(100, Math.round((bucket.used / bucket.limit) * 100)) : 0;
+            if (text) text.textContent = `${bucket.used} / ${bucket.limit}`;
+            if (bar) bar.style.width = `${percent}%`;
+            if (remaining) remaining.textContent = `Sisa ${bucket.remaining} pesan`;
+        }
+
+        async function loadWaUsage() {
+            try {
+                const json = await waFetch(waGatewayRoutes.usage);
+                ['minute', 'day', 'month'].forEach((key) => renderUsage(key, readUsageBucket(json.data || {}, key)));
+            } catch (error) {
+                setWaMessage(error.message, 'warning');
+            }
+        }
+
+        function refreshWaGateway() {
+            loadWaStatus();
+            loadWaUsage();
+        }
+
+        document.getElementById('waGatewaySettingsForm')?.addEventListener('submit', (event) => {
+            saveWaGatewaySettings(event).catch((error) => setWaMessage(error.message, 'danger'));
+        });
+
+        if (@json($activeTab) === 'whatsapp') {
+            refreshWaGateway();
         }
 
         const provincesUrl = @json(route('store-locations.provinces'));

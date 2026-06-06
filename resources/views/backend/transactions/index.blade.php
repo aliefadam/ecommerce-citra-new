@@ -76,7 +76,6 @@
                             <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Invoice</th>
                             <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Source</th>
                             <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Customer</th>
-                            <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Tanggal</th>
                             <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Pembayaran</th>
                             <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Status</th>
                             <th class="text-left px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">Grand Total
@@ -380,7 +379,7 @@
             const cls = source === 'manual'
                 ? 'bg-violet-100 text-violet-700 dark:bg-violet-900/35 dark:text-violet-300'
                 : 'bg-sky-100 text-sky-700 dark:bg-sky-900/35 dark:text-sky-300';
-            return `<span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${cls}">${tx.source_label || (source === 'manual' ? 'Manual Admin' : 'Checkout Ecommerce')}</span>`;
+            return `<span class="inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold ${cls}">${tx.source_label || (source === 'manual' ? 'Manual Admin' : 'Checkout Ecommerce')}</span>`;
         }
 
         function txSummaryStats() {
@@ -471,21 +470,21 @@
         function txStatusBadge(status) {
             const s = String(status || '').toLowerCase();
             if (['settlement', 'capture', 'paid'].includes(s)) {
-                return '<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">Paid</span>';
+                return '<span class="whitespace-nowrap px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">Paid</span>';
             }
             if (s === 'menunggu_verifikasi') {
-                return '<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">Menunggu Verifikasi</span>';
+                return '<span class="whitespace-nowrap px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">Menunggu Verifikasi</span>';
             }
             if (['process', 'processing'].includes(s)) {
-                return '<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400">Diproses</span>';
+                return '<span class="whitespace-nowrap px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400">Diproses</span>';
             }
             if (['kirim', 'shipping', 'shipped'].includes(s)) {
-                return '<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">Dikirim</span>';
+                return '<span class="whitespace-nowrap px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">Dikirim</span>';
             }
             if (['cancel', 'expire', 'deny', 'failed', 'dibatalkan'].includes(s)) {
-                return '<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400">Dibatalkan</span>';
+                return '<span class="whitespace-nowrap px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400">Dibatalkan</span>';
             }
-            return '<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">Pending</span>';
+            return '<span class="whitespace-nowrap px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">Pending</span>';
         }
 
         function txActionAccentClass(tx) {
@@ -812,18 +811,27 @@
                             ${txPermissions.can_show ? '' : 'disabled'} class="tx-row-check h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-600 dark:bg-slate-700">
                     </td>
                     <td class="px-4 py-3.5 text-slate-500 dark:text-slate-400">${visibleIndex + 1}</td>
-                    <td class="px-4 py-3.5 font-medium text-slate-800 dark:text-slate-200">
-                        <div>${tx.invoice_no}</div>
-                        ${tx.tracking_number ? `<div class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Resi: ${tx.tracking_number}</div>` : ''}
+                    <td class="px-4 py-3.5">
+                        <div class="flex items-start gap-2.5">
+                            <div class="shrink-0 flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            </div>
+                            <div>
+                                <div class="font-medium text-slate-800 dark:text-slate-200 text-sm">${tx.invoice_no}</div>
+                                <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">${txRelativeOrderTime(tx)}</div>
+                                <div class="text-xs text-slate-400 dark:text-slate-500">${tx.created_at_display || '-'}</div>
+                                ${txExpiryWarning(tx) ? `<div class="mt-0.5 text-xs font-semibold text-amber-600 dark:text-amber-400">${txExpiryWarning(tx)}</div>` : ''}
+                                ${tx.tracking_number ? `<div class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Resi: ${tx.tracking_number}</div>` : ''}
+                            </div>
+                        </div>
                     </td>
                     <td class="px-4 py-3.5">${txSourceBadge(tx)}</td>
                     <td class="px-4 py-3.5 text-slate-500 dark:text-slate-400">
                         <div>${tx.customer}</div>
                     </td>
-                    <td class="px-4 py-3.5">${txDateCell(tx)}</td>
                     <td class="px-4 py-3.5">${txPaymentCell(tx)}</td>
                     <td class="px-4 py-3.5">${txStatusBadge(tx.status)}</td>
-                    <td class="px-4 py-3.5 font-semibold text-slate-800 dark:text-slate-200">Rp ${Number(tx.grand_total || 0).toLocaleString('id-ID')}</td>
+                    <td class="px-4 py-3.5 whitespace-nowrap font-semibold text-slate-800 dark:text-slate-200">Rp ${Number(tx.grand_total || 0).toLocaleString('id-ID')}</td>
                     <td class="px-4 py-3.5">
                         <div class="flex items-center gap-1.5">
                             ${txPrimaryActionButton(tx)}
@@ -1174,7 +1182,7 @@
                 accessor: txSourceFilterKey,
             }],
             renderRow: (tx, index) => renderTxRow(tx, index),
-            emptyRowHtml: '<tr><td colspan="10" class="text-center py-12 text-slate-400 dark:text-slate-500">No transactions found</td></tr>',
+            emptyRowHtml: '<tr><td colspan="9" class="text-center py-12 text-slate-400 dark:text-slate-500">No transactions found</td></tr>',
             onAfterRender: (pageData) => {
                 visibleTxPageItems = Array.isArray(pageData) ? pageData : [];
                 syncTxSelectionUi();

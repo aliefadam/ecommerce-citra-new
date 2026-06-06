@@ -7,6 +7,7 @@ use App\Http\Controllers\AdminReturnRequestController;
 use App\Http\Controllers\AdminRoleController;
 use App\Http\Controllers\AdminTaxInvoiceController;
 use App\Http\Controllers\AdminUserController;
+use App\Http\Controllers\AdminWhatsappGatewayController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BackendController;
 use App\Http\Controllers\BannerController;
@@ -66,6 +67,16 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/datatables', [BackendController::class, 'datatables'])->name('pages.datatables')->middleware('admin.permission:dashboard.index');
         Route::get('/settings', [BackendController::class, 'settings'])->name('pages.settings')->middleware('admin.permission:store_settings.index,store_settings.edit');
         Route::post('/settings', [BackendController::class, 'updateSettings'])->name('pages.settings.update')->middleware('admin.permission:store_settings.edit');
+        Route::prefix('settings/whatsapp-gateway')->name('whatsapp-gateway.')->middleware('admin.permission:store_settings.edit')->group(function () {
+            Route::post('/', [AdminWhatsappGatewayController::class, 'update'])->name('update');
+            Route::post('/prepare', [AdminWhatsappGatewayController::class, 'prepare'])->name('prepare');
+            Route::post('/connect', [AdminWhatsappGatewayController::class, 'connect'])->name('connect');
+            Route::post('/disconnect', [AdminWhatsappGatewayController::class, 'disconnect'])->name('disconnect');
+            Route::get('/status', [AdminWhatsappGatewayController::class, 'status'])->name('status');
+            Route::get('/qr', [AdminWhatsappGatewayController::class, 'qr'])->name('qr');
+            Route::get('/qr/raw', [AdminWhatsappGatewayController::class, 'qrRaw'])->name('qr-raw');
+            Route::get('/usage', [AdminWhatsappGatewayController::class, 'usage'])->name('usage');
+        });
         Route::get('/change-password', [BackendController::class, 'changePassword'])->name('pages.change-password');
         Route::post('/change-password', [BackendController::class, 'updatePassword'])->name('pages.change-password.update');
 

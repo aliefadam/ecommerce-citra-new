@@ -32,6 +32,10 @@ class StoreSetting extends Model
             'social_shopee' => '',
             'social_tokopedia' => '',
             'social_lazada' => '',
+            'wa_gateway_store_id' => 'store-1',
+            'wa_gateway_per_minute' => '10',
+            'wa_gateway_per_day' => '200',
+            'wa_gateway_per_month' => '3000',
         ];
     }
 
