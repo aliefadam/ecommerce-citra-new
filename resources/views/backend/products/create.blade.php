@@ -316,17 +316,19 @@
                                                 @endphp
                                                 <div x-data="{
                                                         open: false,
+                                                        query: '',
                                                         opts: {{ $opts }},
                                                         get curVal() { return row.attributes['{{ $defId }}']['{{ $fieldKey }}']; },
                                                         set curVal(v) { row.attributes['{{ $defId }}']['{{ $fieldKey }}'] = v; },
                                                         get filtered() {
-                                                            const q = String(this.curVal || '').toLowerCase().trim();
+                                                            const q = this.query.toLowerCase().trim();
                                                             if (!q) return this.opts;
                                                             return this.opts.filter(o => String(o).toLowerCase().includes(q));
                                                         },
-                                                        pick(opt) { this.curVal = String(opt); this.open = false; }
+                                                        pick(opt) { this.curVal = String(opt); this.query = ''; this.open = false; },
+                                                        onOpen() { this.query = ''; this.open = true; }
                                                     }"
-                                                    class="relative" @click.outside="open = false">
+                                                    class="relative" @click.outside="open = false; query = ''">
                                                     <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">
                                                         {{ $definition->name }}@if($definition->unit) ({{ $definition->unit }}) @endif
                                                     </label>
@@ -336,16 +338,17 @@
                                                     <div class="relative">
                                                         <input type="text"
                                                             :name="`variants[${index}][attributes][{{ $defId }}][{{ $fieldName }}]`"
-                                                            x-model="curVal"
-                                                            @focus="open = true"
-                                                            @keydown.escape="open = false"
+                                                            :value="curVal"
+                                                            @input="curVal = $event.target.value; query = $event.target.value"
+                                                            @focus="onOpen()"
+                                                            @keydown.escape="open = false; query = ''"
                                                             @keydown.enter.prevent="if (filtered.length) { pick(filtered[0]); }"
-                                                            @keydown.arrow-down.prevent="open = true"
+                                                            @keydown.arrow-down.prevent="onOpen()"
                                                             placeholder="{{ $placeholder }}"
                                                             autocomplete="off"
                                                             class="w-full px-3 py-2 pr-7 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
                                                         <button type="button" tabindex="-1"
-                                                            @mousedown.prevent="open = !open"
+                                                            @mousedown.prevent="open ? (open = false) : onOpen()"
                                                             class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
                                                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                                                 <polyline :points="open ? '18 15 12 9 6 15' : '6 9 12 15 18 9'"></polyline>
