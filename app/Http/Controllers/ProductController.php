@@ -68,25 +68,7 @@ class ProductController extends Controller
             ->orderBy('name')
             ->get();
 
-        $definitionIds = $attributeDefinitions->pluck('id');
-        $attributeOptions = ProductVariantAttribute::query()
-            ->select('attribute_definition_id', 'value_text', 'value_number')
-            ->whereIn('attribute_definition_id', $definitionIds)
-            ->get()
-            ->groupBy('attribute_definition_id')
-            ->map(function ($group, $defId) use ($attributeDefinitions) {
-                $def = $attributeDefinitions->firstWhere('id', (int) $defId);
-                if (!$def) return [];
-                if ($def->data_type === 'number') {
-                    return $group->pluck('value_number')
-                        ->filter(fn ($v) => $v !== null && $v !== '')
-                        ->map(fn ($v) => rtrim(rtrim(number_format((float) $v, 3, '.', ''), '0'), '.') ?: '0')
-                        ->unique()->sort()->values()->all();
-                }
-                return $group->pluck('value_text')
-                    ->filter(fn ($v) => $v !== null && $v !== '')
-                    ->unique()->sort()->values()->all();
-            });
+        $attributeOptions = $this->buildAttributeOptions($attributeDefinitions);
 
         $categories = $categoryDetails;
         return view('backend.products.create', compact('mainCategories', 'categoryDetails', 'categories', 'attributeDefinitions', 'attributeOptions'));
@@ -387,25 +369,7 @@ class ProductController extends Controller
             ->orderBy('name')
             ->get();
 
-        $definitionIds = $attributeDefinitions->pluck('id');
-        $attributeOptions = ProductVariantAttribute::query()
-            ->select('attribute_definition_id', 'value_text', 'value_number')
-            ->whereIn('attribute_definition_id', $definitionIds)
-            ->get()
-            ->groupBy('attribute_definition_id')
-            ->map(function ($group, $defId) use ($attributeDefinitions) {
-                $def = $attributeDefinitions->firstWhere('id', (int) $defId);
-                if (!$def) return [];
-                if ($def->data_type === 'number') {
-                    return $group->pluck('value_number')
-                        ->filter(fn ($v) => $v !== null && $v !== '')
-                        ->map(fn ($v) => rtrim(rtrim(number_format((float) $v, 3, '.', ''), '0'), '.') ?: '0')
-                        ->unique()->sort()->values()->all();
-                }
-                return $group->pluck('value_text')
-                    ->filter(fn ($v) => $v !== null && $v !== '')
-                    ->unique()->sort()->values()->all();
-            });
+        $attributeOptions = $this->buildAttributeOptions($attributeDefinitions);
 
         $categories = $categoryDetails;
         return view('backend.products.edit', compact('product', 'mainCategories', 'categoryDetails', 'categories', 'attributeDefinitions', 'attributeOptions'));
@@ -748,6 +712,42 @@ class ProductController extends Controller
             ->when($keptDefinitionIds !== [], fn ($query) => $query->whereNotIn('attribute_definition_id', $keptDefinitionIds))
             ->when($keptDefinitionIds === [], fn ($query) => $query)
             ->delete();
+    }
+
+    private function buildAttributeOptions($attributeDefinitions): \Illuminate\Support\Collection
+    {
+        $usedValues = ProductVariantAttribute::query()
+            ->select('attribute_definition_id', 'value_text', 'value_number')
+            ->whereIn('attribute_definition_id', $attributeDefinitions->pluck('id'))
+            ->get()
+            ->groupBy('attribute_definition_id');
+
+        $masterValues = Variant::query()
+            ->select('name', 'value')
+            ->whereIn('name', $attributeDefinitions->pluck('name'))
+            ->get()
+            ->groupBy('name');
+
+        return $attributeDefinitions->mapWithKeys(function ($def) use ($usedValues, $masterValues) {
+            $isNumber = $def->data_type === 'number';
+
+            $fromUsed = $usedValues->get($def->id, collect())
+                ->map(fn ($row) => $isNumber
+                    ? (($v = $row->value_number) !== null ? rtrim(rtrim(number_format((float) $v, 3, '.', ''), '0'), '.') : null)
+                    : $row->value_text)
+                ->filter(fn ($v) => $v !== null && $v !== '');
+
+            $fromMaster = $masterValues->get($def->name, collect())
+                ->pluck('value')
+                ->filter(fn ($v) => $v !== null && $v !== '');
+
+            $merged = $fromUsed->merge($fromMaster)->unique();
+            $sorted = $isNumber
+                ? $merged->sortBy(fn ($v) => (float) $v)->values()
+                : $merged->sort()->values();
+
+            return [$def->id => $sorted->all()];
+        });
     }
 
     private function getVariantUsageLabels($existingVariants, array $variantIds): array
