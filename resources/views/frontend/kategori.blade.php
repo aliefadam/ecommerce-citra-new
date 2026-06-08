@@ -275,9 +275,9 @@
         <div class="flex flex-col lg:flex-row gap-8">
             <!-- SIDEBAR -->
             <aside id="filterSidebar" class="hidden lg:block lg:w-64 flex-shrink-0">
-                <div id="filterPanel" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 sticky top-20">
+                <div id="filterPanel" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 sticky top-20 flex flex-col max-h-[calc(100vh-6rem)]">
                     <div id="filterDrawerHandle" class="filter-drawer-handle lg:hidden"></div>
-                    <div class="flex items-center justify-between mb-5">
+                    <div class="flex items-center justify-between mb-5 shrink-0">
                         <h3 class="font-bold text-slate-800">Filter Produk</h3>
                         <div class="flex items-center gap-3">
                             <button onclick="resetFilter()"
@@ -287,39 +287,41 @@
                         </div>
                     </div>
 
-                    <div class="mb-6">
-                        <h4 class="text-sm font-semibold text-slate-700 mb-3">Kategori</h4>
-                        <div class="space-y-2" id="filterCategoryList"></div>
-                    </div>
-
-                    <div>
-                        <h4 class="text-sm font-semibold text-slate-700 mb-3">Harga</h4>
-                        <div class="grid grid-cols-2 gap-2">
-                            <input id="priceMin" type="number" min="0" placeholder="Min" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:border-blue-400">
-                            <input id="priceMax" type="number" min="0" placeholder="Max" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:border-blue-400">
+                    <div class="overflow-y-auto flex-1 pr-3 space-y-5">
+                        <div>
+                            <h4 class="text-sm font-semibold text-slate-700 mb-3">Kategori</h4>
+                            <div class="space-y-2" id="filterCategoryList"></div>
                         </div>
-                    </div>
 
-                    <div>
-                        <h4 class="text-sm font-semibold text-slate-700 mb-3">Status Produk</h4>
-                        <label class="flex items-center gap-2 text-sm text-slate-600 mb-2"><input id="filterPromo" type="checkbox" class="accent-blue-500"> Hanya promo / flash sale</label>
-                        <label class="flex items-center gap-2 text-sm text-slate-600"><input id="filterStock" type="checkbox" class="accent-blue-500"> Hanya stok tersedia</label>
-                    </div>
+                        <div>
+                            <h4 class="text-sm font-semibold text-slate-700 mb-3">Harga</h4>
+                            <div class="grid grid-cols-2 gap-2">
+                                <input id="priceMin" type="number" min="0" placeholder="Min" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:border-blue-400">
+                                <input id="priceMax" type="number" min="0" placeholder="Max" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:border-blue-400">
+                            </div>
+                        </div>
 
-                    <div>
-                        <h4 class="text-sm font-semibold text-slate-700 mb-3">Rating</h4>
-                        <select id="ratingMin" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:border-blue-400 bg-white">
-                            <option value="0">Semua rating</option>
-                            <option value="4">4 ke atas</option>
-                            <option value="4.5">4.5 ke atas</option>
-                            <option value="5">5 saja</option>
-                        </select>
-                    </div>
+                        <div>
+                            <h4 class="text-sm font-semibold text-slate-700 mb-3">Status Produk</h4>
+                            <label class="flex items-center gap-2 text-sm text-slate-600 mb-2"><input id="filterPromo" type="checkbox" class="accent-blue-500"> Hanya promo / flash sale</label>
+                            <label class="flex items-center gap-2 text-sm text-slate-600"><input id="filterStock" type="checkbox" class="accent-blue-500"> Hanya stok tersedia</label>
+                        </div>
 
-                    <div id="filterVariantList" class="space-y-5"></div>
+                        <div>
+                            <h4 class="text-sm font-semibold text-slate-700 mb-3">Rating</h4>
+                            <select id="ratingMin" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:border-blue-400 bg-white">
+                                <option value="0">Semua rating</option>
+                                <option value="4">4 ke atas</option>
+                                <option value="4.5">4.5 ke atas</option>
+                                <option value="5">5 saja</option>
+                            </select>
+                        </div>
+
+                        <div id="filterVariantList" class="space-y-5"></div>
+                    </div>
 
                     <button onclick="applyFilter()"
-                        class="w-full mt-6 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 rounded-xl transition-colors text-sm">Terapkan
+                        class="w-full mt-4 shrink-0 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 rounded-xl transition-colors text-sm">Terapkan
                         Filter</button>
                 </div>
             </aside>

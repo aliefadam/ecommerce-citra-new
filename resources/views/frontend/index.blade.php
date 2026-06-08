@@ -438,9 +438,9 @@
     <section class="max-w-7xl mx-auto px-4 sm:px-6 pb-8">
         <div class="flex flex-col lg:flex-row gap-8"> <!-- SIDEBAR FILTER -->
             <aside id="filterSidebar" class="hidden lg:block lg:w-64 flex-shrink-0">
-                <div id="filterPanel" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 sticky top-20">
+                <div id="filterPanel" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 sticky top-20 flex flex-col max-h-[calc(100vh-6rem)]">
                     <div id="filterDrawerHandle" class="filter-drawer-handle lg:hidden"></div>
-                    <div class="flex items-center justify-between mb-5">
+                    <div class="flex items-center justify-between mb-5 flex-shrink-0">
                         <h3 class="font-bold text-slate-800">Filter Produk</h3>
                         <div class="flex items-center gap-3">
                             <button onclick="resetFilter()"
@@ -450,24 +450,26 @@
                         </div>
                     </div>
 
-                    <div class="mb-6">
-                        <h4 class="text-sm font-semibold text-slate-700 mb-3">Kategori</h4>
-                        <div class="space-y-2">
-                            @foreach ($homeFilterCategories ?? [] as $cat)
-                                <label class="flex items-center gap-2 cursor-pointer group"><input type="checkbox"
-                                        class="filter-cat w-4 h-4 rounded accent-blue-500" value="{{ $cat['slug'] }}"
-                                        checked onchange="applyFilter()" /><span
-                                        class="text-sm text-slate-600 group-hover:text-slate-800">{{ $cat['name'] }}
-                                        ({{ $cat['count'] }})
-                                    </span></label>
-                            @endforeach
+                    <div class="overflow-y-auto flex-1 pr-3">
+                        <div class="mb-6">
+                            <h4 class="text-sm font-semibold text-slate-700 mb-3">Kategori</h4>
+                            <div class="space-y-2">
+                                @foreach ($homeFilterCategories ?? [] as $cat)
+                                    <label class="flex items-center gap-2 cursor-pointer group"><input type="checkbox"
+                                            class="filter-cat w-4 h-4 rounded accent-blue-500" value="{{ $cat['slug'] }}"
+                                            checked onchange="applyFilter()" /><span
+                                            class="text-sm text-slate-600 group-hover:text-slate-800">{{ $cat['name'] }}
+                                            ({{ $cat['count'] }})
+                                        </span></label>
+                                @endforeach
+                            </div>
                         </div>
+
+                        <div id="homeFilterVariantList" class="space-y-5"></div>
                     </div>
 
-                    <div id="homeFilterVariantList" class="space-y-5"></div>
-
                     <button onclick="applyFilter()"
-                        class="w-full mt-6 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 rounded-xl transition-colors text-sm">Terapkan
+                        class="w-full mt-4 flex-shrink-0 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 rounded-xl transition-colors text-sm">Terapkan
                         Filter</button>
                 </div>
             </aside>
