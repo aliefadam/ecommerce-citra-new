@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ScopesToActiveCompany;
 use App\Models\FlashSale;
 use App\Models\ProductVariant;
 use Illuminate\Http\Request;
@@ -10,16 +11,19 @@ use Illuminate\Validation\Rule;
 
 class FlashSaleController extends Controller
 {
+    use ScopesToActiveCompany;
+
     public function index()
     {
-        $flashSales = FlashSale::withCount('items')->latest()->get();
+        $flashSales = FlashSale::where('company_id', $this->activeCompanyId())->withCount('items')->latest()->get();
 
         return view('backend.flash-sales.index', compact('flashSales'));
     }
 
     public function create()
     {
-        $productVariants = ProductVariant::with(['product', 'variant', 'attributeValues.definition'])
+        $productVariants = ProductVariant::whereHas('product', fn ($q) => $q->where('company_id', $this->activeCompanyId()))
+            ->with(['product', 'variant', 'attributeValues.definition'])
             ->orderByDesc('id')
             ->get();
 
@@ -32,6 +36,7 @@ class FlashSaleController extends Controller
 
         DB::transaction(function () use ($validated) {
             $flashSale = FlashSale::create([
+                'company_id' => $this->activeCompanyId(),
                 'name' => $validated['name'],
                 'start_at' => $validated['start_at'],
                 'end_at' => $validated['end_at'],
@@ -60,8 +65,11 @@ class FlashSaleController extends Controller
 
     public function edit(FlashSale $flashSale)
     {
+        $this->guardCompanyOwnership($flashSale->company_id);
+
         $flashSale->load('items');
-        $productVariants = ProductVariant::with(['product', 'variant', 'attributeValues.definition'])
+        $productVariants = ProductVariant::whereHas('product', fn ($q) => $q->where('company_id', $this->activeCompanyId()))
+            ->with(['product', 'variant', 'attributeValues.definition'])
             ->orderByDesc('id')
             ->get();
 
@@ -70,6 +78,8 @@ class FlashSaleController extends Controller
 
     public function update(Request $request, FlashSale $flashSale)
     {
+        $this->guardCompanyOwnership($flashSale->company_id);
+
         $validated = $this->validateFlashSale($request);
 
         DB::transaction(function () use ($flashSale, $validated) {
@@ -99,6 +109,8 @@ class FlashSaleController extends Controller
 
     public function destroy(FlashSale $flashSale)
     {
+        $this->guardCompanyOwnership($flashSale->company_id);
+
         $flashSale->delete();
 
         return redirect()->route('flash-sales.index')->with('success', 'Flash sale berhasil dihapus.');

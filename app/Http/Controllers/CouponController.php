@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ScopesToActiveCompany;
 use App\Models\Coupon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -9,9 +10,11 @@ use Illuminate\Validation\Rule;
 
 class CouponController extends Controller
 {
+    use ScopesToActiveCompany;
+
     public function index()
     {
-        $coupons = Coupon::query()->latest()->get();
+        $coupons = Coupon::where('company_id', $this->activeCompanyId())->latest()->get();
 
         return view('backend.coupons.index', compact('coupons'));
     }
@@ -20,6 +23,7 @@ class CouponController extends Controller
     {
         $validated = $this->validated($request);
         $validated['code'] = Str::upper(trim((string) $validated['code']));
+        $validated['company_id'] = $this->activeCompanyId();
         Coupon::create($validated);
 
         return back()->with('success', 'Voucher berhasil dibuat.');
@@ -27,6 +31,8 @@ class CouponController extends Controller
 
     public function update(Request $request, Coupon $coupon)
     {
+        $this->guardCompanyOwnership($coupon->company_id);
+
         $validated = $this->validated($request, $coupon);
         $validated['code'] = Str::upper(trim((string) $validated['code']));
         $coupon->update($validated);
@@ -36,6 +42,8 @@ class CouponController extends Controller
 
     public function destroy(Coupon $coupon)
     {
+        $this->guardCompanyOwnership($coupon->company_id);
+
         $coupon->delete();
 
         return back()->with('success', 'Voucher berhasil dihapus.');

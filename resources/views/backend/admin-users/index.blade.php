@@ -33,7 +33,8 @@
                         @forelse ($adminUsers as $user)
                             @php
                                 $isSuperAdmin = strtolower((string) $user->role) === 'admin';
-                                $permissionCount = $isSuperAdmin ? 'All permissions' : count($user->adminRole?->permissions ?? []);
+                                $hasCompanyOverrides = !$isSuperAdmin && $user->companyAssignments->whereNotNull('company_id')->isNotEmpty();
+                                $permissionCount = $isSuperAdmin ? 'All permissions' : ($user->adminRole ? count($user->adminRole->permissions ?? []) . ' permissions' : 'Bervariasi per perusahaan');
                             @endphp
                             <tr class="align-top hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                                 <td class="px-4 py-3.5">
@@ -48,8 +49,13 @@
                                         {{ $isSuperAdmin ? 'Super Admin' : 'Staff' }}
                                     </span>
                                 </td>
-                                <td class="px-4 py-3.5 text-slate-600 dark:text-slate-300">{{ $user->adminRole?->name ?? 'Full access' }}</td>
-                                <td class="px-4 py-3.5 text-slate-500 dark:text-slate-400">{{ is_string($permissionCount) ? $permissionCount : $permissionCount . ' permissions' }}</td>
+                                <td class="px-4 py-3.5 text-slate-600 dark:text-slate-300">
+                                    {{ $isSuperAdmin ? 'Full access' : ($user->adminRole?->name ?? 'Custom per perusahaan') }}
+                                    @if ($hasCompanyOverrides)
+                                        <span class="ml-1 text-xs text-slate-400">(+override)</span>
+                                    @endif
+                                </td>
+                                <td class="px-4 py-3.5 text-slate-500 dark:text-slate-400">{{ $permissionCount }}</td>
                                 <td class="px-4 py-3.5">
                                     <div class="flex justify-end gap-2">
                                         <a href="{{ route('admin-users.edit', $user) }}"

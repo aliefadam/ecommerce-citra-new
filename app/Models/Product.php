@@ -2,15 +2,23 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\DefaultsToPrimaryCompany;
 use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
-    protected $fillable = ['name', 'slug', 'category_id', 'main_category_id', 'category_detail_id', 'description', 'is_redeem_product', 'redeem_points', 'status'];
+    use DefaultsToPrimaryCompany;
+
+    protected $fillable = ['company_id', 'name', 'slug', 'category_id', 'main_category_id', 'category_detail_id', 'description', 'is_redeem_product', 'redeem_points', 'status'];
 
     protected $casts = [
         'is_redeem_product' => 'boolean',
     ];
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
 
     public function category()
     {

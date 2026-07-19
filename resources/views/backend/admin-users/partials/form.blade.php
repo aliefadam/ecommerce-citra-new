@@ -53,10 +53,10 @@
                 </div>
 
                 <div id="role_wrap">
-                    <label class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Role</label>
+                    <label class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Role Default / Semua Perusahaan (opsional)</label>
                     <select name="admin_role_id"
                         class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-700/60 dark:text-slate-100">
-                        <option value="">Select a role</option>
+                        <option value="">Tidak ada (batasi hanya ke perusahaan yang di-override di bawah)</option>
                         @foreach ($roles as $role)
                             <option value="{{ $role->id }}" @selected((string) old('admin_role_id', $adminUser->admin_role_id) === (string) $role->id)>
                                 {{ $role->name }}
@@ -66,8 +66,32 @@
                     @error('admin_role_id')
                         <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                     @enderror
+                    <p class="mt-1 text-xs text-slate-400">Kalau diisi, berlaku untuk semua perusahaan kecuali di-override di bawah. Kalau dikosongkan, staff ini HANYA bisa akses perusahaan yang di-override.</p>
                 </div>
             </div>
+
+            @if ($companies->count() > 1)
+                <div id="company_overrides_wrap">
+                    <label class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Override Role per Perusahaan (opsional)</label>
+                    <p class="mb-3 text-xs text-slate-400">Kosongkan / pilih "Ikuti role default" kalau staff ini cukup pakai role default di atas untuk perusahaan tersebut. Isi kalau perlu role berbeda (atau tanpa akses) khusus di perusahaan itu.</p>
+                    <div class="space-y-2 rounded-xl border border-slate-200 dark:border-slate-600 p-3">
+                        @foreach ($companies as $company)
+                            <div class="grid grid-cols-1 sm:grid-cols-[1fr,1fr] items-center gap-2">
+                                <span class="text-sm font-medium text-slate-600 dark:text-slate-300">{{ $company->name }}</span>
+                                <select name="company_role_overrides[{{ $company->id }}]"
+                                    class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-700/60 dark:text-slate-100">
+                                    <option value="">Ikuti role default</option>
+                                    @foreach ($roles as $role)
+                                        <option value="{{ $role->id }}" @selected((string) old('company_role_overrides.' . $company->id, $companyOverrides[$company->id] ?? '') === (string) $role->id)>
+                                            {{ $role->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
 
             <div class="grid gap-5 md:grid-cols-2">
                 <div>
@@ -108,8 +132,11 @@
         function syncAdminRoleField() {
             const type = document.getElementById('account_type');
             const wrap = document.getElementById('role_wrap');
+            const overridesWrap = document.getElementById('company_overrides_wrap');
             if (!type || !wrap) return;
-            wrap.style.display = type.value === 'staff' ? '' : 'none';
+            const isStaff = type.value === 'staff';
+            wrap.style.display = isStaff ? '' : 'none';
+            if (overridesWrap) overridesWrap.style.display = isStaff ? '' : 'none';
         }
 
         document.getElementById('account_type')?.addEventListener('change', syncAdminRoleField);

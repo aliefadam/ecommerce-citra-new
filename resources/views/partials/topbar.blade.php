@@ -40,6 +40,32 @@
         -->
 
         <div class="flex items-center gap-2 ml-auto">
+            @if (($accessibleCompanies ?? collect())->count() > 1)
+                <div x-data="{ open: false }" class="relative">
+                    <button @click="open = !open" @click.outside="open = false" data-testid="company-switcher"
+                        class="flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors">
+                        <i data-lucide="building-2" class="h-4 w-4 text-slate-400"></i>
+                        <span class="hidden sm:block" data-testid="active-company-name">{{ $activeCompany?->name ?? 'Pilih Perusahaan' }}</span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-slate-400">
+                            <polyline points="6 9 12 15 18 9" />
+                        </svg>
+                    </button>
+                    <div x-show="open" x-cloak data-testid="company-switcher-menu"
+                        class="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden z-50">
+                        @foreach ($accessibleCompanies as $companyOption)
+                            <form action="{{ route('companies.switch') }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="company_id" value="{{ $companyOption->id }}">
+                                <button type="submit" data-testid="company-switcher-option"
+                                    class="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-left transition-colors {{ $activeCompany?->id === $companyOption->id ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 font-semibold' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50' }}">
+                                    {{ $companyOption->name }}
+                                </button>
+                            </form>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
             <button onclick="toggleDark()"
                 class="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                 title="Toggle Dark Mode">

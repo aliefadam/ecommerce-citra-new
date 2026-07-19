@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\DefaultsToPrimaryCompany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,11 +10,14 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Transaction extends Model
 {
+    use DefaultsToPrimaryCompany;
+
     public const SOURCE_CHECKOUT = 'checkout';
 
     public const SOURCE_MANUAL = 'manual';
 
     protected $fillable = [
+        'company_id',
         'user_id',
         'source',
         'created_by_admin_id',
@@ -96,6 +100,11 @@ class Transaction extends Model
                 $transaction->source = self::SOURCE_CHECKOUT;
             }
         });
+    }
+
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
     }
 
     public function user(): BelongsTo

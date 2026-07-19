@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ScopesToActiveCompany;
 use App\Models\MainCategory;
 use App\Models\AttributeDefinition;
 use App\Models\CategoryDetail;
@@ -23,6 +24,8 @@ use App\Exports\ProductImportTemplateExport;
 
 class ProductController extends Controller
 {
+    use ScopesToActiveCompany;
+
     private const IMPORT_TEMPLATE_COLUMNS = [
         'product_name',
         'category_detail',
@@ -45,7 +48,10 @@ class ProductController extends Controller
 
     public function index()
     {
-        $products = Product::with(['mainCategory', 'categoryDetail', 'productVariants'])->latest()->get();
+        $products = Product::where('company_id', $this->activeCompanyId())
+            ->with(['mainCategory', 'categoryDetail', 'productVariants'])
+            ->latest()
+            ->get();
 
         return view('backend.products.index', compact('products'));
     }
@@ -122,6 +128,7 @@ class ProductController extends Controller
             $slug = $this->makeUniqueProductSlug($validated['name']);
 
             $product = Product::create([
+                'company_id'  => $this->activeCompanyId(),
                 'name'        => $validated['name'],
                 'slug'        => $slug,
                 'main_category_id' => (int) $detail->main_category_id,
@@ -284,6 +291,7 @@ class ProductController extends Controller
 
                 $slug = $this->makeUniqueProductSlug($productName);
                 $product = Product::create([
+                    'company_id' => $this->activeCompanyId(),
                     'name' => $productName,
                     'slug' => $slug,
                     'main_category_id' => (int) $detail->main_category_id,
@@ -352,6 +360,8 @@ class ProductController extends Controller
 
     public function edit(Product $product)
     {
+        $this->guardCompanyOwnership($product->company_id);
+
         $product->load('productVariants.variant', 'productVariants.attributeValues.definition');
         $mainCategories = MainCategory::query()->orderBy('name')->get();
         $categoryDetails = CategoryDetail::query()
@@ -377,6 +387,8 @@ class ProductController extends Controller
 
     public function update(Request $request, Product $product, ImageOptimizer $imageOptimizer)
     {
+        $this->guardCompanyOwnership($product->company_id);
+
         $request->merge([
             'variants' => $this->normalizeVariantNumericFields($request->input('variants', [])),
         ]);
@@ -517,6 +529,8 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
+        $this->guardCompanyOwnership($product->company_id);
+
         $imageOptimizer = app(ImageOptimizer::class);
         $product->productVariants()
             ->pluck('image')
@@ -537,6 +551,7 @@ class ProductController extends Controller
 
         while (
             Product::query()
+                ->where('company_id', $this->activeCompanyId())
                 ->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))
                 ->where('slug', $slug)
                 ->exists()

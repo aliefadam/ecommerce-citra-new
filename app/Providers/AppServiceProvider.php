@@ -4,6 +4,9 @@ namespace App\Providers;
 
 use App\Models\StoreSetting;
 use App\Models\Transaction;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -14,6 +17,12 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Rate limit untuk Open Catalog API: per-IP, longgar (anti scraping/DoS),
+        // bukan untuk autentikasi. Lihat docs/prd-company-catalog-api.md §1.
+        RateLimiter::for('api', function (Request $request) {
+            return Limit::perMinute(120)->by($request->ip());
+        });
+
         $storeSettings = StoreSetting::defaults();
         try {
             if (Schema::hasTable('store_settings')) {

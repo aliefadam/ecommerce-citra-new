@@ -249,6 +249,20 @@ return [
                 'permission' => 'content_pages.index',
             ],
             [
+                'name' => 'Companies',
+                'route' => 'companies.index',
+                'active' => 'companies.*',
+                'icon' => 'building-2',
+                'permission' => 'companies.index',
+            ],
+            [
+                'name' => 'API Katalog',
+                'route' => 'api-docs.index',
+                'active' => 'api-docs.*',
+                'icon' => 'code-2',
+                'permission' => 'api_docs.index',
+            ],
+            [
                 'name' => 'Admin Users',
                 'route' => 'admin-users.index',
                 'active' => 'admin-users.*',

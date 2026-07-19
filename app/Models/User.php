@@ -92,23 +92,44 @@ class User extends Authenticatable
         return $this->belongsTo(AdminRole::class);
     }
 
+    public function companyAssignments(): HasMany
+    {
+        return $this->hasMany(AdminCompanyAssignment::class);
+    }
+
     public function pointHistories(): HasMany
     {
         return $this->hasMany(PointHistory::class);
     }
 
+    /**
+     * admin_role_id bisa NULL untuk staff yang aksesnya murni lewat company-specific override
+     * (tanpa role global) -- jadi keberadaan admin_company_assignments dicek juga, bukan cuma
+     * kolom admin_role_id. Lihat docs/prd-multi-company-foundation.md §3.
+     */
     public function canAccessAdminPanel(): bool
     {
-        return strtolower((string) $this->role) === 'admin' || ! is_null($this->admin_role_id);
+        if (strtolower((string) $this->role) === 'admin' || ! is_null($this->admin_role_id)) {
+            return true;
+        }
+
+        return $this->companyAssignments()->exists();
     }
 
-    public function hasAdminPermission(string $permission): bool
+    /**
+     * $companyId null berarti "perusahaan aktif di session" (company switcher). Assignment dengan
+     * company_id NULL berlaku untuk semua perusahaan (hasil backfill single-role lama), jadi tetap
+     * cocok walau $companyId tidak diisi -- ini yang menjaga perilaku tidak berubah selama hanya
+     * ada satu perusahaan (lihat docs/prd-multi-company-foundation.md §3).
+     */
+    public function hasAdminPermission(string $permission, ?int $companyId = null): bool
     {
         if (strtolower((string) $this->role) === 'admin') {
             return true;
         }
 
-        $permissions = $this->adminRole?->permissions ?? [];
+        $companyId = $companyId ?? static::activeCompanyId();
+        $permissions = $this->permissionsForCompany($companyId);
 
         if (in_array($permission, $permissions, true)) {
             return true;
@@ -121,6 +142,38 @@ class User extends Authenticatable
         }
 
         return false;
+    }
+
+    public static function activeCompanyId(): ?int
+    {
+        $companyId = session('admin_active_company_id');
+
+        return $companyId ? (int) $companyId : null;
+    }
+
+    /**
+     * Assignment company-spesifik menggantikan (bukan digabung dengan) role global -- supaya
+     * "role berbeda per perusahaan" (lihat docs/prd-multi-company-foundation.md §3) benar-benar
+     * berarti berbeda, bukan union permission dari keduanya. Assignment company_id=NULL (role
+     * global/default) dipakai kalau tidak ada override untuk company yang diminta. Kalau user
+     * belum punya assignment sama sekali, fallback ke users.admin_role_id langsung -- menjaga
+     * kompatibilitas untuk kode/test/seeder yang membuat staff user tanpa lewat
+     * AdminUserController.
+     */
+    private function permissionsForCompany(?int $companyId): array
+    {
+        if ($this->companyAssignments->isEmpty()) {
+            return $this->adminRole?->permissions ?? [];
+        }
+
+        $specific = $this->companyAssignments->first(fn (AdminCompanyAssignment $assignment) => $assignment->company_id === $companyId);
+        if ($specific) {
+            return $specific->adminRole?->permissions ?? [];
+        }
+
+        $global = $this->companyAssignments->first(fn (AdminCompanyAssignment $assignment) => $assignment->company_id === null);
+
+        return $global?->adminRole?->permissions ?? [];
     }
 
     private function legacyPermissionAliases(): array

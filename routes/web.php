@@ -14,6 +14,8 @@ use App\Http\Controllers\BannerController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryDetailController;
 use App\Http\Controllers\CheckoutCouponController;
+use App\Http\Controllers\ApiDocController;
+use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\ContentPageController;
 use App\Http\Controllers\CouponController;
 use App\Http\Controllers\CustomerOrderController;
@@ -58,7 +60,7 @@ Route::middleware('guest')->group(function () {
     Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
 });
 
-Route::middleware(['auth', 'admin'])->group(function () {
+Route::middleware(['auth', 'admin', 'company.scope'])->group(function () {
     Route::prefix('admin')->group(function () {
         Route::get('/', [BackendController::class, 'index'])->name('pages.index')->middleware('admin.permission:dashboard.index');
         Route::get('/dashboard2', [BackendController::class, 'dashboard2'])->name('pages.dashboard2')->middleware('admin.permission:dashboard.index');
@@ -103,6 +105,14 @@ Route::middleware(['auth', 'admin'])->group(function () {
             ->middlewareFor(['create', 'store'], 'admin.permission:admin_roles.create')
             ->middlewareFor(['edit', 'update'], 'admin.permission:admin_roles.edit')
             ->middlewareFor(['destroy'], 'admin.permission:admin_roles.delete');
+        Route::resource('companies', CompanyController::class)->except(['show'])
+            ->middlewareFor(['index'], 'admin.permission:companies.index')
+            ->middlewareFor(['create', 'store'], 'admin.permission:companies.create')
+            ->middlewareFor(['edit', 'update'], 'admin.permission:companies.edit')
+            ->middlewareFor(['destroy'], 'admin.permission:companies.delete');
+        Route::post('switch-company', [CompanyController::class, 'switch'])->name('companies.switch');
+
+        Route::get('/api-docs', [ApiDocController::class, 'index'])->name('api-docs.index')->middleware('admin.permission:api_docs.index');
 
         Route::resource('main-categories', MainCategoryController::class)->except(['show'])
             ->middlewareFor(['index'], 'admin.permission:categories.index')

@@ -198,6 +198,7 @@ class TransactionController extends Controller
     {
         $transaction->load(['user', 'details.productVariant']);
         $storeLocation = StoreLocation::query()
+            ->where('company_id', $transaction->company_id)
             ->where('is_active', true)
             ->latest('id')
             ->first();

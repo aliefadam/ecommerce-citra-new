@@ -263,6 +263,12 @@ return [
                         'delete' => ['key' => 'content_pages.delete', 'label' => 'Delete pages and blog posts'],
                     ],
                 ],
+                'api_docs' => [
+                    'label' => 'API Katalog',
+                    'permissions' => [
+                        'index' => ['key' => 'api_docs.index', 'label' => 'Open catalog API documentation'],
+                    ],
+                ],
             ],
         ],
 
@@ -270,6 +276,15 @@ return [
             'label' => 'Administration',
             'icon' => 'shield-check',
             'modules' => [
+                'companies' => [
+                    'label' => 'Companies',
+                    'permissions' => [
+                        'index' => ['key' => 'companies.index', 'label' => 'List companies'],
+                        'create' => ['key' => 'companies.create', 'label' => 'Create companies'],
+                        'edit' => ['key' => 'companies.edit', 'label' => 'Edit companies'],
+                        'delete' => ['key' => 'companies.delete', 'label' => 'Deactivate companies'],
+                    ],
+                ],
                 'admin_users' => [
                     'label' => 'Admin Users',
                     'permissions' => [

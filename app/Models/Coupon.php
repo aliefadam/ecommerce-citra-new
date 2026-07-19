@@ -2,11 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\DefaultsToPrimaryCompany;
 use Illuminate\Database\Eloquent\Model;
 
 class Coupon extends Model
 {
+    use DefaultsToPrimaryCompany;
+
     protected $fillable = [
+        'company_id',
         'code',
         'name',
         'type',
@@ -25,6 +29,11 @@ class Coupon extends Model
         'ends_at' => 'datetime',
         'is_active' => 'boolean',
     ];
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
 
     public function isUsableFor(int $subtotal): bool
     {

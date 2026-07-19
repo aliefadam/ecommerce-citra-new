@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Banner extends Model
 {
     protected $fillable = [
+        'company_id',
         'title',
         'type',
         'image',
@@ -21,6 +22,11 @@ class Banner extends Model
             'sort_order' => 'integer',
             'is_active' => 'boolean',
         ];
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
     }
 }
 

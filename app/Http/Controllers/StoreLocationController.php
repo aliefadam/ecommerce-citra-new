@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ScopesToActiveCompany;
 use App\Models\StoreLocation;
 use App\Services\RajaOngkirService;
 use Illuminate\Http\Request;
@@ -9,11 +10,14 @@ use Throwable;
 
 class StoreLocationController extends Controller
 {
+    use ScopesToActiveCompany;
+
     public function __construct(private readonly RajaOngkirService $rajaOngkir) {}
 
     public function edit()
     {
         $location = StoreLocation::query()
+            ->where('company_id', $this->activeCompanyId())
             ->where('is_active', true)
             ->latest('id')
             ->first();
@@ -31,9 +35,12 @@ class StoreLocationController extends Controller
             'city_name' => ['required', 'string', 'max:255'],
         ]);
 
-        StoreLocation::query()->update(['is_active' => false]);
+        $companyId = $this->activeCompanyId();
+
+        StoreLocation::query()->where('company_id', $companyId)->update(['is_active' => false]);
 
         StoreLocation::query()->create([
+            'company_id' => $companyId,
             'label' => $validated['label'] ?: 'Lokasi Toko Utama',
             'province_id' => (int) $validated['province_id'],
             'city_id' => (int) $validated['city_id'],
