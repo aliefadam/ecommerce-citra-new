@@ -1313,6 +1313,7 @@
                         'transaction_id' => (int) $tx->id,
                         'id' => (string) $tx->invoice_no,
                         'order_id' => (string) $tx->order_id,
+                        'store_name' => (string) ($tx->company?->name ?? ''),
                         'date' => optional($tx->created_at)->translatedFormat('d M Y'),
                         'status' => $status,
                         'status_raw' => $tx->status,
@@ -1836,6 +1837,7 @@
             <div class="flex items-center gap-2 min-w-0">
               <span class="font-mono font-bold text-slate-700 text-xs truncate">${o.id}</span>
               <span class="text-slate-400 text-xs shrink-0">&bull; ${o.date}</span>
+              ${o.store_name ? `<span class="shrink-0 rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-blue-600">${o.store_name}</span>` : ''}
             </div>
             <span class="status-badge ${s.class} shrink-0 ml-2">${s.label}</span>
           </div>

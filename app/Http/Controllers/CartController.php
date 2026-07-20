@@ -159,7 +159,7 @@ class CartController extends Controller
         ]);
 
         $variant = ProductVariant::query()
-            ->with(['product.productVariants', 'variant', 'attributeValues.definition', 'flashSaleItems.flashSale'])
+            ->with(['product.productVariants', 'product.company', 'variant', 'attributeValues.definition', 'flashSaleItems.flashSale'])
             ->findOrFail((int) $validated['product_variant_id']);
 
         $product = $variant->product;
@@ -184,6 +184,8 @@ class CartController extends Controller
                     'cartId' => null,
                     'productVariantId' => (int) $variant->id,
                     'id' => (int) $product->id,
+                    'companyId' => (int) $product->company_id,
+                    'companyName' => (string) ($product->company?->name ?? ''),
                     'slug' => (string) $product->slug,
                     'name' => (string) $product->name,
                     'variant' => $variantText !== '' ? $variantText : '-',
@@ -207,7 +209,7 @@ class CartController extends Controller
         ]);
 
         $variant = ProductVariant::query()
-            ->with(['product', 'variant', 'attributeValues.definition'])
+            ->with(['product.company', 'variant', 'attributeValues.definition'])
             ->findOrFail((int) $validated['product_variant_id']);
 
         $item = $this->buildRedeemCheckoutItem($variant, (int) $validated['quantity']);
@@ -276,7 +278,7 @@ class CartController extends Controller
     private function buildCartItems(int $userId): array
     {
         $rows = Cart::query()
-            ->with(['productVariant.product.productVariants', 'productVariant.variant', 'productVariant.attributeValues.definition', 'productVariant.flashSaleItems.flashSale'])
+            ->with(['productVariant.product.productVariants', 'productVariant.product.company', 'productVariant.variant', 'productVariant.attributeValues.definition', 'productVariant.flashSaleItems.flashSale'])
             ->where('user_id', $userId)
             ->latest()
             ->get();
@@ -306,6 +308,8 @@ class CartController extends Controller
                 'cartId' => $row->id,
                 'productVariantId' => $variant->id,
                 'id' => $product->id,
+                'companyId' => (int) $product->company_id,
+                'companyName' => (string) ($product->company?->name ?? ''),
                 'slug' => (string) $product->slug,
                 'name' => (string) $product->name,
                 'variant' => $variantText !== '' ? $variantText : '-',
@@ -452,6 +456,8 @@ class CartController extends Controller
             'cartId' => null,
             'productVariantId' => (int) $variant->id,
             'id' => (int) $product->id,
+            'companyId' => (int) $product->company_id,
+            'companyName' => (string) ($product->company?->name ?? ''),
             'slug' => (string) $product->slug,
             'name' => (string) $product->name,
             'variant' => $variantText !== '' ? $variantText : '-',

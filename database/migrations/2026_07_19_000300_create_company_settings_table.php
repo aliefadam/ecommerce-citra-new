@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\StoreSetting;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -36,14 +37,15 @@ return new class extends Migration
         });
 
         $boqId = DB::table('companies')->where('slug', 'boq')->value('id');
-        $storeSettings = DB::table('store_settings')->pluck('value', 'key');
+        $storeSettings = (array) DB::table('store_settings')->pluck('value', 'key');
+        // store_settings sering cuma berisi key yang pernah benar-benar disimpan admin (mis.
+        // wa_gateway_store_id) -- key manual_payment_*/tax_* yang belum pernah disentuh cuma ada
+        // sebagai default PHP di StoreSetting::defaults(), jadi fallback ke situ supaya BOQ tidak
+        // kehilangan nilai placeholder yang selama ini tampil ke customer (no behavior change).
+        $storeSettings = array_merge(StoreSetting::defaults(), $storeSettings);
         $now = now();
 
         foreach (self::COMPANY_SCOPED_KEYS as $key) {
-            if (!array_key_exists($key, (array) $storeSettings)) {
-                continue;
-            }
-
             DB::table('company_settings')->insert([
                 'company_id' => $boqId,
                 'key' => $key,

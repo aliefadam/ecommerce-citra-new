@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\InvoiceOrder;
 use App\Models\Address;
+use App\Models\CompanySetting;
 use App\Models\Coupon;
 use App\Models\StoreSetting;
 use App\Models\Transaction;
@@ -31,6 +32,7 @@ class MidtransController extends Controller
             'items' => ['required', 'array', 'min:1'],
             'items.*.id' => ['required'],
             'items.*.productVariantId' => ['nullable', 'integer'],
+            'items.*.companyId' => ['nullable', 'integer'],
             'items.*.name' => ['required', 'string'],
             'items.*.variant' => ['nullable', 'string'],
             'items.*.image' => ['nullable', 'string'],
@@ -38,6 +40,7 @@ class MidtransController extends Controller
             'items.*.price' => ['required', 'numeric', 'min:0'],
             'items.*.qty' => ['required', 'integer', 'min:1'],
             'items.*.redeemPoints' => ['nullable', 'integer', 'min:0'],
+            'company_id' => ['required', 'integer', 'exists:companies,id'],
             'shipping_cost' => ['required', 'numeric', 'min:0'],
             'shipping_label' => ['nullable', 'string', 'max:100'],
             'address_id' => ['nullable', 'integer'],
@@ -65,6 +68,13 @@ class MidtransController extends Controller
                 ? 'https://api.midtrans.com/v2/charge'
                 : 'https://api.sandbox.midtrans.com/v2/charge';
 
+            $companyId = (int) $validated['company_id'];
+            $hasMixedCompanyItems = collect($validated['items'])
+                ->contains(fn ($item) => !empty($item['companyId']) && (int) $item['companyId'] !== $companyId);
+            if ($hasMixedCompanyItems) {
+                throw new RuntimeException('Item di keranjang berasal dari lebih dari satu perusahaan. Checkout lintas perusahaan belum didukung dalam satu transaksi.');
+            }
+
             $itemDetails = collect($validated['items'])->map(function ($item) {
                 return [
                     'id' => (string) $item['id'],
@@ -76,16 +86,18 @@ class MidtransController extends Controller
 
             $shippingCost = (int) round((float) $validated['shipping_cost']);
             $subtotal = collect($validated['items'])->sum(fn ($item) => ((int) round((float) $item['price'])) * ((int) $item['qty']));
-            $couponData = session('checkout_coupon', []);
+            $couponsByCompany = (array) session('checkout_coupon', []);
+            $couponData = $couponsByCompany[$companyId] ?? [];
             $couponCode = (string) ($couponData['code'] ?? '');
             $discountAmount = 0;
 
             if ($couponCode !== '') {
                 $coupon = Coupon::query()->where('code', $couponCode)->first();
-                if ($coupon && $coupon->isUsableFor((int) $subtotal)) {
+                if ($coupon && (int) $coupon->company_id === $companyId && $coupon->isUsableFor((int) $subtotal)) {
                     $discountAmount = $coupon->discountFor((int) $subtotal);
                 } else {
-                    session()->forget('checkout_coupon');
+                    unset($couponsByCompany[$companyId]);
+                    session(['checkout_coupon' => $couponsByCompany]);
                     throw new RuntimeException('Voucher tidak valid atau sudah tidak bisa digunakan.');
                 }
             }
@@ -107,7 +119,7 @@ class MidtransController extends Controller
                     'name' => mb_substr('Voucher '.$couponCode, 0, 50),
                 ];
             }
-            $tax = $taxCalculator->calculate((int) $subtotal, $discountAmount, $shippingCost);
+            $tax = $taxCalculator->calculate((int) $subtotal, $discountAmount, $shippingCost, companyId: $companyId);
             if ((int) $tax['tax_amount'] > 0) {
                 $itemDetails[] = [
                     'id' => 'TAX',
@@ -242,6 +254,7 @@ class MidtransController extends Controller
 
             $paymentSummary = [
                 'order_id' => $orderId,
+                'company_id' => $companyId,
                 'transaction_id' => (string) ($json['transaction_id'] ?? ''),
                 'transaction_status' => $transactionStatus,
                 'payment_type' => $paymentType,
@@ -349,9 +362,11 @@ class MidtransController extends Controller
             $this->syncTransactionStatus($orderId, 'expire');
         }
 
+        $waitingCompanyId = (int) ($tx?->company_id ?? $data['company_id'] ?? 0);
+
         return view('frontend.checkout-waiting', [
             'payment' => $data,
-            'manualPaymentSettings' => StoreSetting::manualPayment(),
+            'manualPaymentSettings' => $waitingCompanyId ? CompanySetting::manualPayment($waitingCompanyId) : StoreSetting::manualPayment(),
         ]);
     }
 
@@ -816,6 +831,7 @@ class MidtransController extends Controller
 
             $snapshot = $payment['address_snapshot'] ?? [];
             $transaction->fill([
+                'company_id' => (int) ($payment['company_id'] ?? 0) ?: null,
                 'user_id' => $request->user()?->id,
                 'source' => Transaction::SOURCE_CHECKOUT,
                 'midtrans_transaction_id' => (string) ($payment['transaction_id'] ?? ''),

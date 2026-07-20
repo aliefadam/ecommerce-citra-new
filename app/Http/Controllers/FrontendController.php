@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Banner;
 use App\Models\Cart;
 use App\Models\CategoryDetail;
+use App\Models\CompanySetting;
 use App\Models\ContentPage;
 use App\Models\FlashSaleItem;
 use App\Models\MainCategory;
@@ -156,13 +157,14 @@ class FrontendController extends Controller
 
         $productsQuery = Product::query()
             ->with([
+                'company',
                 'mainCategory',
                 'categoryDetail',
                 'productVariants.variant',
                 'productVariants.attributeValues.definition',
                 'flashSaleItems.flashSale',
             ])
-            ->where('status', 'active');
+            ->storefrontVisible();
 
         if ($query !== '') {
             $q = strtolower($query);
@@ -246,6 +248,7 @@ class FrontendController extends Controller
                 'rating' => round($rating, 1),
                 'reviews' => $reviews,
                 'image' => $this->resolveProductVariantImageUrl($product, $variant, '400x400'),
+                'storeName' => (string) ($product->company?->name ?? ''),
             ];
         })->filter()->values()->all();
 
@@ -274,7 +277,7 @@ class FrontendController extends Controller
     {
         if (! $slug) {
             $firstProduct = Product::query()
-                ->where('status', 'active')
+                ->storefrontVisible()
                 ->whereNotNull('slug')
                 ->orderByDesc('id')
                 ->first();
@@ -285,13 +288,14 @@ class FrontendController extends Controller
         }
 
         $product = Product::with([
+            'company',
             'mainCategory',
             'categoryDetail',
             'productVariants.variant',
             'productVariants.attributeValues.definition',
             'flashSaleItems.flashSale',
         ])
-            ->where('status', 'active')
+            ->storefrontVisible()
             ->where('slug', $slug)
             ->firstOrFail();
 
@@ -438,12 +442,13 @@ class FrontendController extends Controller
 
         $recommendedCandidatesQuery = Product::query()
             ->with([
+                'company',
                 'mainCategory',
                 'categoryDetail',
                 'productVariants.variant',
                 'flashSaleItems.flashSale',
             ])
-            ->where('status', 'active')
+            ->storefrontVisible()
             ->where('id', '!=', $product->id);
 
         if ($product->category_detail_id || $product->main_category_id) {
@@ -464,12 +469,13 @@ class FrontendController extends Controller
         if ($recommendedCandidates->count() < 5) {
             $fallback = Product::query()
                 ->with([
+                    'company',
                     'mainCategory',
                     'categoryDetail',
                     'productVariants.variant',
                     'flashSaleItems.flashSale',
                 ])
-                ->where('status', 'active')
+                ->storefrontVisible()
                 ->where('id', '!=', $product->id)
                 ->whereNotIn('id', $recommendedCandidates->pluck('id'))
                 ->latest('id')
@@ -529,6 +535,7 @@ class FrontendController extends Controller
                     'image' => $this->resolveProductVariantImageUrl($recProduct, $recVariant, '300x300'),
                     'rating' => round($rating, 1),
                     'url' => route('frontend.detail-produk', ['slug' => $recProduct->slug]),
+                    'storeName' => (string) ($recProduct->company?->name ?? ''),
                     '_score' => $score,
                 ];
             })
@@ -614,6 +621,7 @@ class FrontendController extends Controller
                     ->all(),
                 'reviewItems' => $reviewItems,
                 'reviewDistribution' => $ratingDistribution,
+                'storeName' => (string) ($product->company?->name ?? ''),
             ],
             'relatedProductsJson' => $relatedProducts,
             'recentlyViewedProductsJson' => $recentlyViewedProducts,
@@ -627,8 +635,8 @@ class FrontendController extends Controller
         }
 
         $products = Product::query()
-            ->with(['productVariants.variant', 'productVariants.attributeValues.definition', 'flashSaleItems.flashSale'])
-            ->where('status', 'active')
+            ->with(['company', 'productVariants.variant', 'productVariants.attributeValues.definition', 'flashSaleItems.flashSale'])
+            ->storefrontVisible()
             ->whereIn('id', $ids)
             ->get()
             ->sortBy(fn ($product) => array_search((int) $product->id, $ids, true));
@@ -652,6 +660,7 @@ class FrontendController extends Controller
                 'image' => $this->resolveProductVariantImageUrl($product, $variant, '300x300'),
                 'rating' => 0,
                 'url' => route('frontend.detail-produk', ['slug' => $product->slug]),
+                'storeName' => (string) ($product->company?->name ?? ''),
             ];
         })->filter()->values()->all();
     }
@@ -660,8 +669,8 @@ class FrontendController extends Controller
     {
         $deliveredStatuses = ['paid', 'settlement', 'capture', 'process', 'processing', 'kirim', 'shipping', 'shipped', 'selesai', 'completed', 'delivered'];
 
-        $query = Product::with(['mainCategory', 'categoryDetail', 'productVariants.variant', 'productVariants.attributeValues.definition', 'flashSaleItems.flashSale'])
-            ->where('status', 'active')
+        $query = Product::with(['company', 'mainCategory', 'categoryDetail', 'productVariants.variant', 'productVariants.attributeValues.definition', 'flashSaleItems.flashSale'])
+            ->storefrontVisible()
             ->where('id', '!=', $excludeProductId);
 
         if ($mainCategoryId) {
@@ -671,8 +680,8 @@ class FrontendController extends Controller
         $products = $query->latest()->limit(20)->get();
 
         if ($products->isEmpty()) {
-            $products = Product::with(['mainCategory', 'categoryDetail', 'productVariants.variant', 'productVariants.attributeValues.definition', 'flashSaleItems.flashSale'])
-                ->where('status', 'active')
+            $products = Product::with(['company', 'mainCategory', 'categoryDetail', 'productVariants.variant', 'productVariants.attributeValues.definition', 'flashSaleItems.flashSale'])
+                ->storefrontVisible()
                 ->where('id', '!=', $excludeProductId)
                 ->latest()
                 ->limit(10)
@@ -732,6 +741,7 @@ class FrontendController extends Controller
                 'reviews' => $reviews,
                 'sold' => (int) ($soldMap[$product->id] ?? 0),
                 'isFlashSale' => $isFlashSale,
+                'storeName' => (string) ($product->company?->name ?? ''),
             ];
         })->filter()->values()->all();
     }
@@ -762,12 +772,43 @@ class FrontendController extends Controller
             $checkoutItems = $this->buildCheckoutItems((int) auth()->id());
         }
 
+        // Tiap perusahaan bisa punya tarif pajak sendiri (lihat docs/prd-multi-company-foundation.md
+        // §4/§Pajak) -- checkout dikelompokkan per perusahaan, jadi hitung PPN pakai company_settings
+        // milik masing-masing, bukan satu tarif global untuk semua toko dalam keranjang.
+        $taxSettingsByCompany = collect($checkoutItems)
+            ->pluck('companyId')
+            ->filter()
+            ->unique()
+            ->mapWithKeys(fn ($companyId) => [(int) $companyId => CompanySetting::taxSettings((int) $companyId)]);
+
         return view('frontend.checkout', [
             'addresses' => $addresses,
             'checkoutItems' => $checkoutItems,
             'checkoutSource' => $source ?: 'cart_all',
-            'taxSettings' => StoreSetting::taxSettings(),
+            'taxSettingsByCompany' => $taxSettingsByCompany,
             'taxProfiles' => $taxProfiles,
+        ]);
+    }
+
+    public function checkoutOrders(Request $request)
+    {
+        abort_unless(auth()->check(), 403);
+
+        $orderIds = collect(explode(',', (string) $request->query('ids', '')))
+            ->map(fn ($id) => trim((string) $id))
+            ->filter()
+            ->values();
+
+        $orders = Transaction::query()
+            ->with('company')
+            ->where('user_id', auth()->id())
+            ->whereIn('order_id', $orderIds)
+            ->get()
+            ->sortBy(fn (Transaction $transaction) => $orderIds->search($transaction->order_id))
+            ->values();
+
+        return view('frontend.checkout-orders', [
+            'orders' => $orders,
         ]);
     }
 
@@ -779,6 +820,7 @@ class FrontendController extends Controller
         $addresses = $user->addresses()->orderByDesc('is_primary')->latest()->get();
         $transactions = Transaction::query()
             ->with([
+                'company',
                 'details.productReviews' => function ($q) use ($user) {
                     $q->where('user_id', $user->id);
                 },
@@ -834,13 +876,14 @@ class FrontendController extends Controller
         ];
 
         $products = Product::with([
+            'company',
             'mainCategory',
             'categoryDetail',
             'productVariants.variant',
             'productVariants.attributeValues.definition',
             'flashSaleItems.flashSale',
         ])
-            ->where('status', 'active')
+            ->storefrontVisible()
             ->latest()
             ->get();
         $productIds = $products->pluck('id')->filter()->values()->all();
@@ -952,6 +995,7 @@ class FrontendController extends Controller
                 'isNew' => $badge === 'new',
                 'isFlashSale' => $isFlashSale,
                 'isWishlisted' => isset($wishedLookup[(int) $product->id]),
+                'storeName' => (string) ($product->company?->name ?? ''),
             ];
 
             $category[] = [
@@ -976,6 +1020,7 @@ class FrontendController extends Controller
                 'isNew' => $badge === 'new',
                 'isFlashSale' => $isFlashSale,
                 'isWishlisted' => isset($wishedLookup[(int) $product->id]),
+                'storeName' => (string) ($product->company?->name ?? ''),
             ];
         }
 
@@ -988,7 +1033,7 @@ class FrontendController extends Controller
     private function buildRedeemProducts(): array
     {
         $productIds = Product::query()
-            ->where('status', 'active')
+            ->storefrontVisible()
             ->where('is_redeem_product', true)
             ->pluck('id')
             ->all();
@@ -1013,9 +1058,9 @@ class FrontendController extends Controller
             ->keyBy('product_id');
 
         return Product::query()
-            ->with(['mainCategory', 'categoryDetail', 'productVariants.variant'])
+            ->with(['company', 'mainCategory', 'categoryDetail', 'productVariants.variant'])
             ->with(['productVariants.attributeValues.definition'])
-            ->where('status', 'active')
+            ->storefrontVisible()
             ->where('is_redeem_product', true)
             ->latest()
             ->get()
@@ -1041,6 +1086,7 @@ class FrontendController extends Controller
                     'rating' => $stats ? round((float) $stats->avg_rating, 1) : 0.0,
                     'reviews' => $stats ? (int) $stats->total_reviews : 0,
                     'detailUrl' => route('frontend.detail-produk', ['slug' => $product->slug]),
+                    'storeName' => (string) ($product->company?->name ?? ''),
                 ];
             })
             ->filter()
@@ -1246,7 +1292,7 @@ class FrontendController extends Controller
 
         $items = FlashSaleItem::with([
             'flashSale',
-            'productVariant.product',
+            'productVariant.product.company',
         ])
             ->where('is_active', true)
             ->whereHas('flashSale', function ($q) use ($now) {
@@ -1254,6 +1300,7 @@ class FrontendController extends Controller
                     ->where('start_at', '<=', $now)
                     ->where('end_at', '>=', $now);
             })
+            ->whereHas('productVariant.product', fn ($q) => $q->storefrontVisible())
             ->orderByDesc('flash_sale_id')
             ->orderByDesc('id')
             ->get()
@@ -1287,6 +1334,7 @@ class FrontendController extends Controller
                 'flashSaleName' => (string) ($item->flashSale?->name ?? 'Flash Sale'),
                 'flashSaleId' => (int) ($item->flash_sale_id),
                 'flashSaleEndAt' => $item->flashSale?->end_at?->toIso8601String(),
+                'storeName' => (string) ($product->company?->name ?? ''),
             ];
         })->values();
 
@@ -1319,7 +1367,7 @@ class FrontendController extends Controller
     private function buildCheckoutItems(int $userId, ?array $cartIds = null): array
     {
         $query = Cart::query()
-            ->with(['productVariant.product', 'productVariant.variant', 'productVariant.attributeValues.definition', 'productVariant.flashSaleItems.flashSale'])
+            ->with(['productVariant.product.company', 'productVariant.variant', 'productVariant.attributeValues.definition', 'productVariant.flashSaleItems.flashSale'])
             ->where('user_id', $userId)
             ->latest();
         if (is_array($cartIds) && ! empty($cartIds)) {
@@ -1359,6 +1407,8 @@ class FrontendController extends Controller
                 'cartId' => (int) $row->id,
                 'productVariantId' => (int) $variant->id,
                 'id' => (int) $product->id,
+                'companyId' => (int) $product->company_id,
+                'companyName' => (string) ($product->company?->name ?? ''),
                 'slug' => (string) $product->slug,
                 'name' => (string) $product->name,
                 'variant' => $variantText !== '' ? $variantText : '-',

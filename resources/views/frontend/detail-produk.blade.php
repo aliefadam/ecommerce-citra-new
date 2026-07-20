@@ -397,8 +397,12 @@
                     </div>
                 </div>
 
-                <h1 class="text-lg sm:text-2xl md:text-3xl font-extrabold text-slate-900 mb-3 leading-tight">
+                <h1 class="text-lg sm:text-2xl md:text-3xl font-extrabold text-slate-900 mb-1 leading-tight">
                     {{ $productData['name'] }}</h1>
+
+                @if (!empty($productData['storeName']))
+                    <p class="text-xs sm:text-sm text-slate-500 mb-3">Dijual oleh <span class="font-semibold text-slate-700">{{ $productData['storeName'] }}</span></p>
+                @endif
 
                 <!-- Rating & Sales -->
                 <div class="flex items-center gap-2 sm:gap-4 mb-4 flex-wrap">

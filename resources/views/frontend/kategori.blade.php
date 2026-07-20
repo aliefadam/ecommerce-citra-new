@@ -517,6 +517,7 @@
                   <span class="text-xs font-medium text-slate-700">${p.rating}</span>
                   <span class="text-xs text-slate-400">(${p.reviews}) &bull; ${p.sold.toLocaleString()} terjual</span>
                 </div>
+                ${p.storeName ? `<p class="text-xs text-slate-400 mt-0.5">${p.storeName}</p>` : ''}
               </div>
               <div class="flex items-center justify-between">
                 <div>
@@ -552,6 +553,7 @@
               <span class="text-[10px] font-medium text-slate-600">${p.rating}</span>
               <span class="text-[10px] text-slate-400 ml-0.5">· ${p.sold.toLocaleString()} terjual</span>
             </div>
+            ${p.storeName ? `<p class="text-[10px] text-slate-400 mb-1 truncate">${p.storeName}</p>` : ''}
             <div class="mt-auto">
               <p class="text-xs sm:text-sm font-bold text-slate-900">${priceLabel}</p>
               ${p.origPrice > p.price ? `<p class="text-[10px] text-slate-400 line-through">Rp ${p.origPrice.toLocaleString('id-ID')}</p>` : ''}

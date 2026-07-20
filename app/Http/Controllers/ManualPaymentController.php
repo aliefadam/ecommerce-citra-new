@@ -27,6 +27,7 @@ class ManualPaymentController extends Controller
             'items' => ['required', 'array', 'min:1'],
             'items.*.id' => ['required'],
             'items.*.productVariantId' => ['nullable', 'integer'],
+            'items.*.companyId' => ['nullable', 'integer'],
             'items.*.name' => ['required', 'string'],
             'items.*.variant' => ['nullable', 'string'],
             'items.*.image' => ['nullable', 'string'],
@@ -34,6 +35,7 @@ class ManualPaymentController extends Controller
             'items.*.price' => ['required', 'numeric', 'min:0'],
             'items.*.qty' => ['required', 'integer', 'min:1'],
             'items.*.redeemPoints' => ['nullable', 'integer', 'min:0'],
+            'company_id' => ['required', 'integer', 'exists:companies,id'],
             'shipping_cost' => ['required', 'numeric', 'min:0'],
             'shipping_label' => ['nullable', 'string', 'max:100'],
             'address_id' => ['nullable', 'integer'],
@@ -52,21 +54,30 @@ class ManualPaymentController extends Controller
         $orderId = 'MAN-'.now()->format('YmdHis').'-'.random_int(1000, 9999);
 
         $transaction = DB::transaction(function () use ($request, $validated, $orderId, $loyaltyPointService, $taxCalculator, $taxInvoiceService) {
+            $companyId = (int) $validated['company_id'];
             $items = collect($validated['items'])->values();
+
+            $hasMixedCompanyItems = $items->contains(fn ($item) => !empty($item['companyId']) && (int) $item['companyId'] !== $companyId);
+            if ($hasMixedCompanyItems) {
+                abort(422, 'Item di keranjang berasal dari lebih dari satu perusahaan. Checkout lintas perusahaan belum didukung dalam satu transaksi.');
+            }
+
             $subtotal = (int) $items->sum(fn ($item) => ((int) round((float) $item['price'])) * ((int) $item['qty']));
             $shippingCost = (int) round((float) $validated['shipping_cost']);
             $discountAmount = 0;
-            $couponCode = (string) (session('checkout_coupon.code') ?? '');
+            $couponsByCompany = (array) session('checkout_coupon', []);
+            $couponCode = (string) ($couponsByCompany[$companyId]['code'] ?? '');
 
             if ($couponCode !== '') {
                 $coupon = Coupon::query()->where('code', $couponCode)->first();
-                if (! $coupon || ! $coupon->isUsableFor($subtotal)) {
-                    session()->forget('checkout_coupon');
+                if (! $coupon || (int) $coupon->company_id !== $companyId || ! $coupon->isUsableFor($subtotal)) {
+                    unset($couponsByCompany[$companyId]);
+                    session(['checkout_coupon' => $couponsByCompany]);
                     abort(422, 'Voucher tidak valid atau sudah tidak bisa digunakan.');
                 }
                 $discountAmount = $coupon->discountFor($subtotal);
             }
-            $tax = $taxCalculator->calculate($subtotal, $discountAmount, $shippingCost);
+            $tax = $taxCalculator->calculate($subtotal, $discountAmount, $shippingCost, companyId: $companyId);
 
             $snapshot = [];
             if (! empty($validated['address_id'])) {
@@ -87,6 +98,7 @@ class ManualPaymentController extends Controller
             }
 
             $transaction = Transaction::create([
+                'company_id' => $companyId,
                 'user_id' => $request->user()?->id,
                 'source' => Transaction::SOURCE_CHECKOUT,
                 'invoice_no' => $this->generateDailyInvoiceNo(),

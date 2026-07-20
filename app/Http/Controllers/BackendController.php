@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ScopesToActiveCompany;
+use App\Models\CompanySetting;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\StoreLocation;
@@ -16,6 +18,9 @@ use Illuminate\Support\Facades\Hash;
 
 class BackendController extends Controller
 {
+    use ScopesToActiveCompany;
+
+
     private function dashboardPeriod(Request $request): array
     {
         $period = $request->query('period', 'month');
@@ -118,7 +123,9 @@ class BackendController extends Controller
             ->whereIn(DB::raw('LOWER(status)'), ['paid', 'settlement', 'capture']);
         $pendingPayment = $this->applyPeriod(Transaction::query(), $period)
             ->whereIn(DB::raw('LOWER(status)'), ['pending', 'menunggu']);
-        $lowStockCount = ProductVariant::whereColumn('stock', '<=', 'low_stock_threshold')->count();
+        $lowStockCount = ProductVariant::whereColumn('stock', '<=', 'low_stock_threshold')
+            ->whereHas('product', fn ($q) => $q->where('company_id', $this->activeCompanyId()))
+            ->count();
 
         return [
             [
@@ -161,7 +168,7 @@ class BackendController extends Controller
             ->sum('grand_total');
         $totalOrders = $this->applyPeriod(Transaction::query(), $period)->count();
         $totalUsers = User::where('role', 'user')->count();
-        $totalProducts = Product::count();
+        $totalProducts = Product::where('company_id', $this->activeCompanyId())->count();
 
         $thisMonth = now()->startOfMonth();
         $lastMonthStart = now()->subMonth()->startOfMonth();
@@ -195,6 +202,7 @@ class BackendController extends Controller
             ->latest()->take(7)->get();
 
         $lowStockProducts = ProductVariant::with(['product', 'variant', 'attributeValues.definition'])
+            ->whereHas('product', fn ($q) => $q->where('company_id', $this->activeCompanyId()))
             ->whereColumn('stock', '<=', 'low_stock_threshold')->orderBy('stock')->take(7)->get();
 
         $orderStatusCards = $this->orderStatusCards($period);
@@ -265,7 +273,9 @@ class BackendController extends Controller
 
         return view('backend.settings', [
             'storeSettings' => $storeSettings,
+            'companySettings' => CompanySetting::valuesWithDefaults($this->activeCompanyId()),
             'location' => StoreLocation::query()
+                ->where('company_id', $this->activeCompanyId())
                 ->where('is_active', true)
                 ->latest('id')
                 ->first(),
@@ -294,7 +304,7 @@ class BackendController extends Controller
                 'manual_payment_instruction' => ['nullable', 'string', 'max:1000'],
             ]);
 
-            StoreSetting::setMany($validated);
+            CompanySetting::setMany($this->activeCompanyId(), $validated);
 
             return redirect()->route('pages.settings', ['tab' => 'payment'])->with('success', 'Setting pembayaran manual berhasil disimpan.');
         }
@@ -306,7 +316,7 @@ class BackendController extends Controller
                 'tax_rate' => ['required', 'numeric', 'min:0', 'max:100', 'regex:/^\d+(\.\d{1,2})?$/'],
             ]);
 
-            StoreSetting::setMany([
+            CompanySetting::setMany($this->activeCompanyId(), [
                 'tax_enabled' => $request->boolean('tax_enabled') ? '1' : '0',
                 'tax_name' => trim((string) ($validated['tax_name'] ?? 'PPN')),
                 'tax_rate' => number_format((float) $validated['tax_rate'], 2, '.', ''),

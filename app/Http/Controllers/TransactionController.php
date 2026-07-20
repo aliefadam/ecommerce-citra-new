@@ -235,12 +235,13 @@ class TransactionController extends Controller
             ->reject(fn (Transaction $transaction) => count($this->shippingLabelIssues($transaction)) > 0)
             ->values();
 
-        $storeLocation = StoreLocation::query()
+        $storeLocationsByCompany = StoreLocation::query()
             ->where('is_active', true)
-            ->latest('id')
-            ->first();
+            ->whereIn('company_id', $transactions->pluck('company_id')->unique())
+            ->get()
+            ->keyBy('company_id');
 
-        return view('invoices.shipping-label-bulk', compact('transactions', 'validTransactions', 'invalidTransactions', 'storeLocation'));
+        return view('invoices.shipping-label-bulk', compact('transactions', 'validTransactions', 'invalidTransactions', 'storeLocationsByCompany'));
     }
 
     private function recordHistory(Transaction $transaction, ?string $from, string $to, string $type, ?string $note = null, ?int $userId = null): void

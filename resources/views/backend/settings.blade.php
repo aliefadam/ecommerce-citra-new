@@ -359,28 +359,28 @@
                         <input type="hidden" name="section" value="manual_payment">
 
                         <h2 class="font-bold text-slate-800 dark:text-white mb-1">Manual Payment</h2>
-                        <p class="text-xs text-slate-400 mb-6">Rekening ini ditampilkan ke customer saat memilih transfer manual.</p>
+                        <p class="text-xs text-slate-400 mb-6">Rekening ini ditampilkan ke customer saat memilih transfer manual, khusus untuk perusahaan yang sedang aktif ({{ $activeCompany?->name ?? '-' }}).</p>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Bank</label>
-                                <input type="text" name="manual_payment_bank_name" value="{{ old('manual_payment_bank_name', $storeSettings['manual_payment_bank_name'] ?? 'BCA') }}" required
+                                <input type="text" name="manual_payment_bank_name" value="{{ old('manual_payment_bank_name', $companySettings['manual_payment_bank_name'] ?? '') }}" required
                                     class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Nomor Rekening</label>
-                                <input type="text" name="manual_payment_account_number" value="{{ old('manual_payment_account_number', $storeSettings['manual_payment_account_number'] ?? '1234567890') }}" required
+                                <input type="text" name="manual_payment_account_number" value="{{ old('manual_payment_account_number', $companySettings['manual_payment_account_number'] ?? '') }}" required
                                     class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200">
                             </div>
                             <div class="sm:col-span-2">
                                 <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Atas Nama</label>
-                                <input type="text" name="manual_payment_account_name" value="{{ old('manual_payment_account_name', $storeSettings['manual_payment_account_name'] ?? 'Ecommerce Citra') }}" required
+                                <input type="text" name="manual_payment_account_name" value="{{ old('manual_payment_account_name', $companySettings['manual_payment_account_name'] ?? '') }}" required
                                     class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200">
                             </div>
                             <div class="sm:col-span-2">
                                 <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Instruksi Transfer</label>
                                 <textarea name="manual_payment_instruction" rows="4"
-                                    class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200 resize-none">{{ old('manual_payment_instruction', $storeSettings['manual_payment_instruction'] ?? '') }}</textarea>
+                                    class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200 resize-none">{{ old('manual_payment_instruction', $companySettings['manual_payment_instruction'] ?? '') }}</textarea>
                             </div>
                         </div>
 
@@ -397,14 +397,14 @@
                         <input type="hidden" name="section" value="tax">
 
                         <h2 class="font-bold text-slate-800 dark:text-white mb-1">Pajak / PPN</h2>
-                        <p class="text-xs text-slate-400 mb-6">PPN dihitung dari subtotal produk setelah diskon. Ongkir tidak dikenakan PPN.</p>
+                        <p class="text-xs text-slate-400 mb-6">PPN dihitung dari subtotal produk setelah diskon, khusus untuk perusahaan yang sedang aktif ({{ $activeCompany?->name ?? '-' }}). Ongkir tidak dikenakan PPN.</p>
 
                         <div class="space-y-4">
                             <label class="flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 px-4 py-3">
                                 <input type="hidden" name="tax_enabled" value="0">
                                 <input type="checkbox" name="tax_enabled" value="1"
                                     class="accent-blue-600"
-                                    {{ filter_var(old('tax_enabled', $storeSettings['tax_enabled'] ?? '1'), FILTER_VALIDATE_BOOLEAN) ? 'checked' : '' }}>
+                                    {{ filter_var(old('tax_enabled', $companySettings['tax_enabled'] ?? '1'), FILTER_VALIDATE_BOOLEAN) ? 'checked' : '' }}>
                                 <span>
                                     <span class="block text-sm font-semibold text-slate-700 dark:text-slate-200">Aktifkan PPN</span>
                                     <span class="block text-xs text-slate-400">Nonaktifkan jika checkout tidak perlu menambahkan pajak.</span>
@@ -414,12 +414,12 @@
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Nama Pajak</label>
-                                    <input type="text" name="tax_name" maxlength="30" value="{{ old('tax_name', $storeSettings['tax_name'] ?? 'PPN') }}"
+                                    <input type="text" name="tax_name" maxlength="30" value="{{ old('tax_name', $companySettings['tax_name'] ?? 'PPN') }}"
                                         class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Persentase</label>
-                                    <input type="number" name="tax_rate" min="0" max="100" step="0.01" value="{{ old('tax_rate', $storeSettings['tax_rate'] ?? '11.00') }}"
+                                    <input type="number" name="tax_rate" min="0" max="100" step="0.01" value="{{ old('tax_rate', $companySettings['tax_rate'] ?? '11.00') }}"
                                         class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200">
                                 </div>
                             </div>

@@ -2,13 +2,14 @@
 
 namespace App\Services;
 
+use App\Models\CompanySetting;
 use App\Models\StoreSetting;
 
 class CheckoutTaxCalculator
 {
-    public function calculate(int|float $subtotal, int|float $discountAmount, int|float $shippingCost, ?array $settings = null): array
+    public function calculate(int|float $subtotal, int|float $discountAmount, int|float $shippingCost, ?array $settings = null, ?int $companyId = null): array
     {
-        $settings = $settings ?? StoreSetting::taxSettings();
+        $settings = $settings ?? ($companyId ? CompanySetting::taxSettings($companyId) : StoreSetting::taxSettings());
 
         $subtotal = max(0, (int) round((float) $subtotal));
         $discountAmount = max(0, (int) round((float) $discountAmount));

@@ -226,29 +226,18 @@
             <!-- LEFT COL -->
             <div class="lg:col-span-2 space-y-6">
 
-                <!-- CART ITEMS -->
-                <div class="checkout-card bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                    <div
-                        class="checkout-card-header px-6 py-4 border-b border-slate-100 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <h2 class="font-bold text-slate-800 flex items-center gap-2">
-                            <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                            </svg>
-                            Keranjang Belanja
-                        </h2>
-                        <span class="text-sm text-slate-500" id="itemCountText">3 item</span>
-                    </div>
-                    <div id="cartItems" class="checkout-card-body divide-y divide-slate-100 p-4 space-y-0"></div>
-                    <div
-                        class="px-6 py-3 bg-slate-50 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" class="accent-blue-500" checked /> <span
-                                class="text-sm text-slate-600">Pilih semua</span>
-                        </label>
-                        <button class="text-red-400 hover:text-red-500 text-sm font-medium">Hapus dipilih</button>
-                    </div>
+                <!-- CART ITEMS (dikelompokkan per perusahaan) -->
+                <div class="flex items-center justify-between px-1">
+                    <h2 class="font-bold text-slate-800 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        Keranjang Belanja
+                    </h2>
+                    <span class="text-sm text-slate-500" id="itemCountText">0 item</span>
                 </div>
+                <div id="orderGroups" class="space-y-6"></div>
 
                 <!-- ALAMAT PENGIRIMAN -->
                 <div class="checkout-card bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
@@ -298,25 +287,6 @@
                                 Belum ada alamat tersimpan. Silakan tambahkan alamat di halaman profil.
                             </div>
                         @endforelse
-                    </div>
-                </div>
-
-                <!-- METODE PENGIRIMAN -->
-                <div class="checkout-card bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                    <div class="checkout-card-header px-6 py-4 border-b border-slate-100">
-                        <h2 class="font-bold text-slate-800 flex items-center gap-2">
-                            <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
-                            </svg>
-                            Metode Pengiriman
-                        </h2>
-                    </div>
-                    <div class="checkout-card-body p-6 space-y-3">
-                        <div id="shippingOptions" class="space-y-3">
-                            <div class="text-sm text-slate-500">Memuat opsi pengiriman...</div>
-                        </div>
                     </div>
                 </div>
 
@@ -507,33 +477,8 @@
                         <h2 class="font-bold text-slate-800">Ringkasan Pesanan</h2>
                     </div>
                     <div class="checkout-card-body p-6 space-y-3">
-                        <div class="summary-row flex justify-between text-sm">
-                            <span class="text-slate-600">{{ $isRedeemCheckout ? 'Total Point Redeem' : 'Subtotal' }} (<span id="sumItems">3 item</span>)</span>
-                            <span class="summary-value font-medium text-slate-800" id="subtotalAmt">Rp 947.000</span>
-                        </div>
-                        <div class="summary-row stack-mobile flex justify-between text-sm">
-                            <span class="text-slate-600">Ongkos Kirim</span>
-                            <span class="summary-value font-medium text-slate-800" id="shippingAmt">Menghitung Ongkos Kirim...</span>
-                        </div>
-                        <div class="rounded-xl border border-slate-200 p-3 space-y-2">
-                            <label class="text-xs font-semibold text-slate-600">Voucher</label>
-                            <div class="voucher-actions flex gap-2">
-                                <input id="couponCodeInput" type="text" placeholder="Kode voucher"
-                                    class="min-w-0 flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400 uppercase {{ $isRedeemCheckout ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : '' }}"
-                                    {{ $isRedeemCheckout ? 'disabled' : '' }}>
-                                <button type="button" onclick="applyCoupon()"
-                                    class="px-3 py-2 rounded-lg bg-blue-500 text-white text-xs font-semibold hover:bg-blue-600 {{ $isRedeemCheckout ? 'opacity-50 cursor-not-allowed pointer-events-none' : '' }}">Pakai</button>
-                            </div>
-                            <div id="couponInfo" class="hidden text-xs"></div>
-                        </div>
-                        <div class="summary-row flex justify-between text-sm hidden" id="discountRow">
-                            <span class="text-slate-600">Diskon Voucher</span>
-                            <span class="summary-value font-medium text-emerald-600" id="discountAmt">- Rp 0</span>
-                        </div>
-                        <div class="summary-row flex justify-between text-sm hidden" id="taxRow">
-                            <span class="text-slate-600" id="taxLabel">PPN 11%</span>
-                            <span class="summary-value font-medium text-slate-800" id="taxAmt">Rp 0</span>
-                        </div>
+                        <p class="text-xs text-slate-400" id="sumItems">0 item</p>
+                        <div id="summaryBreakdown" class="space-y-4"></div>
                         <div class="border-t border-slate-100 pt-3 mt-3">
                             <div class="summary-row flex justify-between">
                                 <span class="font-bold text-slate-800">{{ $isRedeemCheckout ? 'Total Bayar Ongkir' : 'Grand Total' }}</span>
@@ -831,15 +776,15 @@
         let cartItems = @json($checkoutItems ?? []);
         const checkoutSource = @json($checkoutSource ?? 'cart_all');
         const isRedeemCheckout = checkoutSource === 'redeem_point';
-        const taxSettings = @json($taxSettings ?? ['enabled' => true, 'name' => 'PPN', 'rate' => 11]);
-        let shippingCost = null;
-        let shippingLabel = 'Reguler';
-        let couponCode = '';
-        let discountAmount = 0;
+        const taxSettingsByCompany = @json($taxSettingsByCompany ?? []);
+        function taxSettingsFor(companyId) {
+            return taxSettingsByCompany?.[companyId] ?? { enabled: true, name: 'PPN', rate: 11 };
+        }
         let selectedPayment = 'qris';
         let selectedPaymentLabel = 'QRIS';
         const csrfToken = @json(csrf_token());
         const completeCheckoutUrl = @json(route('frontend.checkout.complete'));
+        const checkoutOrdersUrl = @json(route('frontend.checkout.orders'));
         const shippingOptionsUrl = @json(route('frontend.rajaongkir.shipping-options'));
         const midtransChargeUrl = @json(route('frontend.checkout.midtrans.charge'));
         const manualPaymentUrl = @json(route('frontend.checkout.manual-payment'));
@@ -864,6 +809,8 @@
                 key: item?.key || `${item?.product_id || item?.id || 'item'}::${item?.variant || '-'}`,
                 cartId: item?.cartId || item?.cart_id || null,
                 id: item?.product_id || item?.id || index + 1,
+                companyId: Number(item?.companyId || item?.company_id || 0),
+                companyName: String(item?.companyName || item?.company_name || 'Toko'),
                 productVariantId: item?.productVariantId || item?.product_variant_id || null,
                 slug: item?.slug || '',
                 name: item?.name || 'Produk',
@@ -880,21 +827,41 @@
         }
         cartItems = (Array.isArray(cartItems) ? cartItems : []).map((item, idx) => normalizeItem(item, idx));
 
-        function totalCheckoutWeight() {
-            const totalWeight = cartItems.reduce((sum, item) => {
-                const itemWeight = Math.max(1, Number(item.weightGrams || 0));
-                const qty = Math.max(1, Number(item.qty || 0));
-                return sum + (itemWeight * qty);
-            }, 0);
+        // Menyimpan state ongkir/kupon per perusahaan (checkout marketplace: N transaksi sekaligus,
+        // satu per perusahaan -- lihat docs/prd-multi-company-foundation.md §4b).
+        const groupState = {};
 
+        function getGroupState(companyId) {
+            if (!groupState[companyId]) {
+                groupState[companyId] = { shippingCost: null, shippingLabel: 'Reguler', couponCode: '', discountAmount: 0 };
+            }
+            return groupState[companyId];
+        }
+
+        function buildGroups() {
+            const map = new Map();
+            cartItems.forEach((item, idx) => {
+                const key = item.companyId || 0;
+                if (!map.has(key)) {
+                    map.set(key, { companyId: key, companyName: item.companyName || 'Toko', items: [] });
+                }
+                map.get(key).items.push({ ...item, _idx: idx });
+            });
+            return Array.from(map.values());
+        }
+
+        function groupWeight(group) {
+            const totalWeight = group.items.reduce((sum, item) => {
+                return sum + Math.max(1, Number(item.weightGrams || 0)) * Math.max(1, Number(item.qty || 0));
+            }, 0);
             return Math.max(1, totalWeight);
         }
 
         function renderCart() {
-            const container = document.getElementById('cartItems');
+            const container = document.getElementById('orderGroups');
             if (!cartItems.length) {
                 container.innerHTML = `
-                    <div class="py-10 text-center">
+                    <div class="checkout-card bg-white rounded-2xl shadow-sm border border-slate-100 py-10 text-center">
                         <p class="text-slate-500 text-sm mb-3">Keranjang masih kosong.</p>
                         <a href="{{ route('frontend.index') }}" class="inline-flex items-center gap-2 text-blue-600 text-sm font-semibold hover:text-blue-700">
                             Belanja sekarang
@@ -903,7 +870,10 @@
                 updateSummary();
                 return;
             }
-            container.innerHTML = cartItems.map((item, i) => `
+
+            const groups = buildGroups();
+            container.innerHTML = groups.map((group) => {
+                const itemsHtml = group.items.map((item, i) => `
         <div class="relative flex gap-3 py-4 pr-7 ${i > 0 ? 'border-t border-slate-100' : ''}">
           <input type="checkbox" class="mt-10 sm:mt-1 accent-blue-500 flex-shrink-0" checked />
           <img src="${item.image}" alt="${item.name}" class="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
@@ -918,17 +888,17 @@
                        ${item.origPrice > item.price ? `<span class="text-xs text-slate-400 line-through ml-1">Rp ${item.origPrice.toLocaleString('id-ID')}</span>` : ''}`}
               </div>
               <div class="inline-flex items-center border border-slate-200 rounded-lg overflow-hidden self-start sm:self-auto">
-                <button class="qty-btn px-2.5 py-1 text-slate-500 hover:bg-slate-50 transition-colors text-sm" onclick="changeQty(${i}, -1)">−</button>
+                <button class="qty-btn px-2.5 py-1 text-slate-500 hover:bg-slate-50 transition-colors text-sm" onclick="changeQty(${item._idx}, -1)">−</button>
                 <input
                   type="number"
                   min="1"
                   value="${item.qty}"
                   inputmode="numeric"
-                  oninput="handleCheckoutQtyInput(${i}, this)"
-                  onblur="commitCheckoutQtyInput(${i}, this)"
+                  oninput="handleCheckoutQtyInput(${item._idx}, this)"
+                  onblur="commitCheckoutQtyInput(${item._idx}, this)"
                   class="w-12 px-2 py-1 text-sm font-semibold text-center border-x border-slate-200 focus:outline-none focus:bg-blue-50"
                 />
-                <button class="qty-btn px-2.5 py-1 text-slate-500 hover:bg-slate-50 transition-colors text-sm" onclick="changeQty(${i}, 1)">+</button>
+                <button class="qty-btn px-2.5 py-1 text-slate-500 hover:bg-slate-50 transition-colors text-sm" onclick="changeQty(${item._idx}, 1)">+</button>
               </div>
             </div>
             <div class="mt-2">
@@ -936,23 +906,56 @@
               <input
                 type="text"
                 value="${String(item.note || '').replace(/"/g, '&quot;')}"
-                oninput="updateItemNote(${i}, this.value)"
+                oninput="updateItemNote(${item._idx}, this.value)"
                 placeholder="Tulis catatan untuk produk ini"
                 class="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-blue-400"
               />
             </div>
           </div>
-          <button onclick="removeItem(${i})" class="absolute top-4 right-0 sm:static text-slate-300 hover:text-red-400 transition-colors flex-shrink-0 self-start">
+          <button onclick="removeItem(${item._idx})" class="absolute top-4 right-0 sm:static text-slate-300 hover:text-red-400 transition-colors flex-shrink-0 self-start">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
         </div>`).join('');
+
+                return `
+        <div class="checkout-card bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden" data-company-id="${group.companyId}">
+            <div class="checkout-card-header px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                <h3 class="font-bold text-slate-800 flex items-center gap-2 text-sm">
+                    <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21h18M5 21V7l7-4 7 4v14M9 9h1m4 0h1m-6 4h1m4 0h1m-6 4h1m4 0h1" />
+                    </svg>
+                    ${group.companyName}
+                </h3>
+                <span class="text-xs text-slate-400">${group.items.length} produk</span>
+            </div>
+            <div class="p-4">${itemsHtml}</div>
+            <div class="border-t border-slate-100 p-4 space-y-2">
+                <p class="text-xs font-semibold text-slate-600">Pengiriman dari ${group.companyName}</p>
+                <div id="shippingOptions-${group.companyId}" class="space-y-2">
+                    <div class="text-sm text-slate-500">Menghitung ongkos kirim...</div>
+                </div>
+            </div>
+            ${!isRedeemCheckout ? `
+            <div class="border-t border-slate-100 p-4 space-y-2 bg-slate-50">
+                <p class="text-xs font-semibold text-slate-600">Voucher untuk ${group.companyName}</p>
+                <div class="flex gap-2">
+                    <input id="couponInput-${group.companyId}" type="text" placeholder="Kode voucher"
+                        class="min-w-0 flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400 uppercase bg-white">
+                    <button type="button" onclick="applyGroupCoupon(${group.companyId})"
+                        class="px-3 py-2 rounded-lg bg-blue-500 text-white text-xs font-semibold hover:bg-blue-600">Pakai</button>
+                </div>
+                <div id="couponInfo-${group.companyId}" class="hidden text-xs"></div>
+            </div>` : ''}
+        </div>`;
+            }).join('');
+
             updateSummary();
+            loadShippingOptions();
         }
 
         function changeQty(idx, d) {
             cartItems[idx].qty = Math.max(1, cartItems[idx].qty + d);
             renderCart();
-            loadShippingOptions();
         }
 
         function normalizeCheckoutQty(value) {
@@ -973,7 +976,6 @@
             cartItems[idx].qty = normalizeCheckoutQty(input.value);
             input.value = String(cartItems[idx].qty);
             renderCart();
-            loadShippingOptions();
         }
 
         function removeItem(idx) {
@@ -987,45 +989,74 @@
         }
 
         function updateSummary() {
-            const subtotal = cartItems.reduce((s, i) => s + i.price * i.qty, 0);
-            const totalRedeemPoints = cartItems.reduce((s, i) => s + (Number(i.redeemPoints || 0) * Number(i.qty || 0)), 0);
-            const shippingValue = typeof shippingCost === 'number' ? shippingCost : 0;
-            if (discountAmount > subtotal) discountAmount = subtotal;
-            const taxableAmount = isRedeemCheckout ? 0 : Math.max(0, subtotal - discountAmount);
-            const taxEnabled = !isRedeemCheckout && Boolean(taxSettings?.enabled);
-            const taxRate = taxEnabled ? Math.max(0, Math.min(100, Number(taxSettings?.rate || 0))) : 0;
-            const taxAmount = taxEnabled ? Math.round(taxableAmount * taxRate / 100) : 0;
-            const grandTotal = taxableAmount + taxAmount + shippingValue;
+            const groups = buildGroups();
             const totalItems = cartItems.reduce((s, i) => s + i.qty, 0);
             const hasSelectedAddress = !!document.querySelector('input[name="address"]:checked');
             document.getElementById('itemCountText').textContent = totalItems + ' item';
-            document.getElementById('sumItems').textContent = totalItems + ' item';
-            document.getElementById('subtotalAmt').textContent = isRedeemCheckout
-                ? totalRedeemPoints.toLocaleString('id-ID') + ' point'
-                : 'Rp ' + subtotal.toLocaleString('id-ID');
-            document.getElementById('discountRow').classList.toggle('hidden', discountAmount <= 0 || isRedeemCheckout);
-            document.getElementById('discountAmt').textContent = '- Rp ' + discountAmount.toLocaleString('id-ID');
-            document.getElementById('taxRow').classList.toggle('hidden', !taxEnabled || taxAmount <= 0);
-            document.getElementById('taxLabel').textContent = `${taxSettings?.name || 'PPN'} ${taxRate.toLocaleString('id-ID')}%`;
-            document.getElementById('taxAmt').textContent = 'Rp ' + taxAmount.toLocaleString('id-ID');
-            if (!hasSelectedAddress) {
-                document.getElementById('shippingAmt').textContent = 'Pilih/Tambahkan alamat dulu';
-            } else if (typeof shippingCost !== 'number') {
-                document.getElementById('shippingAmt').textContent = 'Menghitung Ongkos Kirim...';
-            } else {
-                document.getElementById('shippingAmt').textContent = shippingCost === 0 ? 'Gratis' : 'Rp ' +
-                    shippingCost.toLocaleString('id-ID');
-            }
-            document.getElementById('grandTotal').textContent = isRedeemCheckout
-                ? 'Rp ' + shippingValue.toLocaleString('id-ID')
-                : 'Rp ' + grandTotal.toLocaleString('id-ID');
-            document.getElementById('totalPaid').textContent = isRedeemCheckout
-                ? 'Rp ' + shippingValue.toLocaleString('id-ID')
-                : 'Rp ' + grandTotal.toLocaleString('id-ID');
+            document.getElementById('sumItems').textContent = totalItems + ' item dari ' + groups.length + ' toko';
+
+            let grandTotal = 0;
+            let allShippingReady = groups.length > 0;
+
+            const breakdownHtml = groups.map((group) => {
+                const state = getGroupState(group.companyId);
+                const subtotal = group.items.reduce((s, i) => s + i.price * i.qty, 0);
+                const totalRedeemPoints = group.items.reduce((s, i) => s + (Number(i.redeemPoints || 0) * Number(i.qty || 0)), 0);
+                const shippingValue = typeof state.shippingCost === 'number' ? state.shippingCost : 0;
+                if (typeof state.shippingCost !== 'number') allShippingReady = false;
+                if (state.discountAmount > subtotal) state.discountAmount = subtotal;
+                const groupTaxSettings = taxSettingsFor(group.companyId);
+                const taxableAmount = isRedeemCheckout ? 0 : Math.max(0, subtotal - state.discountAmount);
+                const taxEnabled = !isRedeemCheckout && Boolean(groupTaxSettings?.enabled);
+                const taxRate = taxEnabled ? Math.max(0, Math.min(100, Number(groupTaxSettings?.rate || 0))) : 0;
+                const taxAmount = taxEnabled ? Math.round(taxableAmount * taxRate / 100) : 0;
+                const groupTotal = isRedeemCheckout ? shippingValue : (taxableAmount + taxAmount + shippingValue);
+                grandTotal += groupTotal;
+
+                const shippingText = !hasSelectedAddress
+                    ? 'Pilih alamat dulu'
+                    : (typeof state.shippingCost !== 'number'
+                        ? 'Menghitung...'
+                        : (state.shippingCost === 0 ? 'Gratis' : 'Rp ' + state.shippingCost.toLocaleString('id-ID')));
+
+                return `
+                    <div class="rounded-xl border border-slate-200 p-3">
+                        <p class="text-xs font-semibold text-slate-700 mb-2">${group.companyName}</p>
+                        <div class="space-y-1 text-xs">
+                            <div class="flex justify-between text-slate-500">
+                                <span>${isRedeemCheckout ? 'Point' : 'Subtotal'}</span>
+                                <span>${isRedeemCheckout ? totalRedeemPoints.toLocaleString('id-ID') + ' point' : 'Rp ' + subtotal.toLocaleString('id-ID')}</span>
+                            </div>
+                            <div class="flex justify-between text-slate-500">
+                                <span>Ongkos Kirim</span>
+                                <span>${shippingText}</span>
+                            </div>
+                            ${state.discountAmount > 0 && !isRedeemCheckout ? `
+                            <div class="flex justify-between text-emerald-600">
+                                <span>Diskon (${state.couponCode})</span>
+                                <span>- Rp ${state.discountAmount.toLocaleString('id-ID')}</span>
+                            </div>` : ''}
+                            ${taxAmount > 0 ? `
+                            <div class="flex justify-between text-slate-500">
+                                <span>${groupTaxSettings?.name || 'PPN'} ${taxRate.toLocaleString('id-ID')}%</span>
+                                <span>Rp ${taxAmount.toLocaleString('id-ID')}</span>
+                            </div>` : ''}
+                            <div class="flex justify-between font-semibold text-slate-800 pt-1 mt-1 border-t border-slate-100">
+                                <span>Subtotal Toko</span>
+                                <span>Rp ${groupTotal.toLocaleString('id-ID')}</span>
+                            </div>
+                        </div>
+                    </div>`;
+            }).join('');
+
+            document.getElementById('summaryBreakdown').innerHTML = breakdownHtml || '<p class="text-xs text-slate-400">Keranjang kosong.</p>';
+            document.getElementById('grandTotal').textContent = 'Rp ' + grandTotal.toLocaleString('id-ID');
+            document.getElementById('totalPaid').textContent = 'Rp ' + grandTotal.toLocaleString('id-ID');
+
             const payBtn = document.getElementById('payBtn');
             const hintEl = document.getElementById('checkoutHintText');
             if (payBtn) {
-                const shouldDisable = totalItems <= 0 || !hasSelectedAddress || shippingCost === null;
+                const shouldDisable = totalItems <= 0 || !hasSelectedAddress || !allShippingReady;
                 payBtn.disabled = shouldDisable;
                 payBtn.classList.toggle('opacity-60', shouldDisable);
                 payBtn.classList.toggle('cursor-not-allowed', shouldDisable);
@@ -1036,21 +1067,23 @@
                     hintEl.textContent = isRedeemCheckout ? 'Pilih produk redeem terlebih dahulu untuk melanjutkan penukaran.' : 'Pilih produk terlebih dahulu untuk melanjutkan pembayaran.';
                 } else if (!hasSelectedAddress) {
                     hintEl.textContent = 'Tambahkan atau pilih alamat pengiriman agar ongkos kirim bisa dihitung.';
-                } else if (shippingCost === null) {
-                    hintEl.textContent = 'Ongkos kirim belum tersedia. Pilih alamat lain atau coba lagi.';
+                } else if (!allShippingReady) {
+                    hintEl.textContent = 'Ongkos kirim belum tersedia untuk salah satu toko. Pilih alamat lain atau coba lagi.';
                 } else {
                     hintEl.textContent = '';
                 }
             }
         }
 
-        async function applyCoupon() {
+        async function applyGroupCoupon(companyId) {
             if (isRedeemCheckout) return;
-            const input = document.getElementById('couponCodeInput');
-            const info = document.getElementById('couponInfo');
+            const input = document.getElementById(`couponInput-${companyId}`);
+            const info = document.getElementById(`couponInfo-${companyId}`);
             const code = String(input?.value || '').trim().toUpperCase();
-            const subtotal = cartItems.reduce((s, i) => s + i.price * i.qty, 0);
             if (!code) return;
+            const state = getGroupState(companyId);
+            const group = buildGroups().find((g) => g.companyId === companyId);
+            const subtotal = group ? group.items.reduce((s, i) => s + i.price * i.qty, 0) : 0;
 
             info.className = 'text-xs text-slate-500';
             info.textContent = 'Memeriksa voucher...';
@@ -1064,20 +1097,20 @@
                         'X-CSRF-TOKEN': csrfToken,
                         'X-Requested-With': 'XMLHttpRequest',
                     },
-                    body: JSON.stringify({ code, subtotal }),
+                    body: JSON.stringify({ code, subtotal, company_id: companyId }),
                 });
                 const json = await res.json().catch(() => ({}));
                 if (!res.ok) throw new Error(json?.message || 'Voucher tidak valid.');
-                couponCode = json.code || code;
-                discountAmount = Number(json.discount_amount || 0);
-                input.value = couponCode;
+                state.couponCode = json.code || code;
+                state.discountAmount = Number(json.discount_amount || 0);
+                input.value = state.couponCode;
                 info.className = 'text-xs text-emerald-600';
-                info.textContent = `${json.message || 'Voucher digunakan'} (-Rp ${discountAmount.toLocaleString('id-ID')})`;
+                info.textContent = `${json.message || 'Voucher digunakan'} (-Rp ${state.discountAmount.toLocaleString('id-ID')})`;
                 updateSummary();
             } catch (e) {
-                couponCode = '';
-                discountAmount = 0;
-                await fetch(couponRemoveUrl, {
+                state.couponCode = '';
+                state.discountAmount = 0;
+                await fetch(`${couponRemoveUrl}?company_id=${companyId}`, {
                     method: 'DELETE',
                     headers: { 'X-CSRF-TOKEN': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
                 }).catch(() => {});
@@ -1087,10 +1120,12 @@
             }
         }
 
-        function setShipping(el, cost, label) {
-            shippingCost = cost;
-            shippingLabel = label;
-            document.querySelectorAll('.shipping-card').forEach(c => {
+        function setGroupShipping(companyId, el, cost, label) {
+            const state = getGroupState(companyId);
+            state.shippingCost = cost;
+            state.shippingLabel = label;
+            const container = document.getElementById(`shippingOptions-${companyId}`);
+            container?.querySelectorAll('.shipping-card').forEach(c => {
                 c.classList.remove('active', 'border-blue-400');
                 c.classList.add('border-slate-200');
             });
@@ -1103,14 +1138,15 @@
             updateSummary();
         }
 
-        function renderShippingOptions(list) {
-            const container = document.getElementById('shippingOptions');
+        function renderGroupShippingOptions(companyId, list) {
+            const container = document.getElementById(`shippingOptions-${companyId}`);
+            const state = getGroupState(companyId);
             if (!container) return;
             if (!Array.isArray(list) || !list.length) {
                 container.innerHTML =
                     `<div class="text-sm text-slate-500">Opsi pengiriman belum tersedia untuk alamat ini.</div>`;
-                shippingCost = null;
-                shippingLabel = '-';
+                state.shippingCost = null;
+                state.shippingLabel = '-';
                 updateSummary();
                 return;
             }
@@ -1120,65 +1156,71 @@
                 const etd = String(item.etd || '-');
                 const cost = Number(item.cost || 0);
                 return `
-                    <label class="shipping-card ${idx === 0 ? 'active border-blue-400' : 'border-slate-200'} flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer hover:border-slate-300 transition-all"
-                        onclick="setShipping(this, ${cost}, '${label.replace(/'/g, "\\'")}')">
-                        <input type="radio" name="shipping" class="accent-blue-500" ${idx === 0 ? 'checked' : ''} />
+                    <label class="shipping-card ${idx === 0 ? 'active border-blue-400' : 'border-slate-200'} flex items-center gap-3 p-3 border-2 rounded-xl cursor-pointer hover:border-slate-300 transition-all"
+                        onclick="setGroupShipping(${companyId}, this, ${cost}, '${label.replace(/'/g, "\\'")}')">
+                        <input type="radio" name="shipping-${companyId}" class="accent-blue-500" ${idx === 0 ? 'checked' : ''} />
                         <div class="flex-1">
-                            <div class="flex items-center gap-2 mb-0.5">
-                                <p class="font-semibold text-slate-800">${label}</p>
-                                <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded">${etd}</span>
+                            <div class="flex items-center gap-2">
+                                <p class="font-semibold text-slate-800 text-sm">${label}</p>
+                                <span class="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">${etd}</span>
                             </div>
-                            <p class="text-sm text-slate-500">${item.description || 'Pengiriman via RajaOngkir'}</p>
                         </div>
-                        <span class="font-semibold text-slate-800 text-sm">Rp ${cost.toLocaleString('id-ID')}</span>
+                        <span class="font-semibold text-slate-800 text-xs">Rp ${cost.toLocaleString('id-ID')}</span>
                     </label>
                 `;
             }).join('');
 
             const first = list[0];
-            shippingCost = Number(first.cost || 0);
-            shippingLabel = `${(first.name || first.code || '').toUpperCase()} ${first.service || ''}`.trim();
+            state.shippingCost = Number(first.cost || 0);
+            state.shippingLabel = `${(first.name || first.code || '').toUpperCase()} ${first.service || ''}`.trim();
             updateSummary();
         }
 
         async function loadShippingOptions() {
             const checkedAddress = document.querySelector('input[name="address"]:checked');
             const destinationId = Number(checkedAddress?.dataset?.destinationId || 0);
-            const container = document.getElementById('shippingOptions');
-            if (!container) return;
-            if (!destinationId) {
-                container.innerHTML =
-                    `<div class="text-sm text-slate-500">Anda belum mengatur alamat pengiriman, Silahkan atur dibagian profil</div>`;
-                shippingCost = null;
-                shippingLabel = '-';
-                updateSummary();
-                return;
-            }
+            const groups = buildGroups();
 
-            shippingCost = null;
-            shippingLabel = '-';
-            updateSummary();
-            container.innerHTML = `<div class="text-sm text-slate-500">Memuat opsi pengiriman...</div>`;
-            const query = new URLSearchParams({
-                destination_id: String(destinationId),
-                weight: String(totalCheckoutWeight()),
-            });
+            for (const group of groups) {
+                const container = document.getElementById(`shippingOptions-${group.companyId}`);
+                const state = getGroupState(group.companyId);
+                if (!container) continue;
 
-            try {
-                const res = await fetch(`${shippingOptionsUrl}?${query.toString()}`, {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
+                if (!destinationId) {
+                    container.innerHTML = `<div class="text-sm text-slate-500">Anda belum mengatur alamat pengiriman, Silahkan atur dibagian profil</div>`;
+                    state.shippingCost = null;
+                    state.shippingLabel = '-';
+                    continue;
+                }
+
+                if (!group.companyId) {
+                    container.innerHTML = `<div class="text-sm text-red-500">Produk ini belum terhubung ke perusahaan mana pun.</div>`;
+                    state.shippingCost = null;
+                    state.shippingLabel = '-';
+                    continue;
+                }
+
+                container.innerHTML = `<div class="text-sm text-slate-500">Memuat opsi pengiriman...</div>`;
+                const query = new URLSearchParams({
+                    destination_id: String(destinationId),
+                    weight: String(groupWeight(group)),
+                    company_id: String(group.companyId),
                 });
-                if (!res.ok) throw new Error('gagal');
-                const json = await res.json();
-                renderShippingOptions(Array.isArray(json?.data) ? json.data : []);
-            } catch (e) {
-                container.innerHTML = `<div class="text-sm text-red-500">Gagal memuat ongkir RajaOngkir.</div>`;
-                shippingCost = null;
-                shippingLabel = '-';
-                updateSummary();
+
+                try {
+                    const res = await fetch(`${shippingOptionsUrl}?${query.toString()}`, {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    });
+                    if (!res.ok) throw new Error('gagal');
+                    const json = await res.json();
+                    renderGroupShippingOptions(group.companyId, Array.isArray(json?.data) ? json.data : []);
+                } catch (e) {
+                    container.innerHTML = `<div class="text-sm text-red-500">Gagal memuat ongkir RajaOngkir.</div>`;
+                    state.shippingCost = null;
+                    state.shippingLabel = '-';
+                }
             }
+            updateSummary();
         }
 
         function setPaymentTab(tab) {
@@ -1579,13 +1621,25 @@
             return payload;
         }
 
+        function payBtnIdleHtml() {
+            return `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>${isRedeemCheckout ? 'Bayar Ongkir & Tukar Point' : 'Bayar Sekarang'}`;
+        }
+
+        /**
+         * Pola marketplace: klik "Bayar Sekarang" sekali membuat N Transaction sekaligus (satu per
+         * perusahaan pemilik item di keranjang), lalu mengarahkan ke daftar pesanan -- customer bisa
+         * membayar tiap pesanan independen. Endpoint per-company (Midtrans/manual) dipanggil
+         * berurutan dari sini karena keduanya sudah company-aware sejak checkpoint sebelumnya; gagal
+         * di satu perusahaan tidak membatalkan yang lain (lihat docs/prd-multi-company-foundation.md §4b).
+         */
         async function processPayment() {
             if (!cartItems.length) {
                 alert('Keranjang masih kosong. Silakan pilih produk terlebih dahulu.');
                 return;
             }
-            if (typeof shippingCost !== 'number') {
-                alert('Ongkos kirim masih dihitung. Silakan tunggu sebentar.');
+            const groups = buildGroups();
+            if (!isRedeemCheckout && groups.some((g) => typeof getGroupState(g.companyId).shippingCost !== 'number')) {
+                alert('Ongkos kirim masih dihitung untuk salah satu toko. Silakan tunggu sebentar.');
                 return;
             }
             let taxInvoicePayload = { requested: false };
@@ -1600,16 +1654,22 @@
             btn.disabled = true;
             btn.innerHTML = `
         <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-        ${isRedeemCheckout ? 'Memproses Pembayaran Ongkir...' : 'Memproses Pembayaran...'}`;
+        ${isRedeemCheckout ? 'Memproses Pembayaran Ongkir...' : `Memproses ${groups.length > 1 ? groups.length + ' Pesanan' : 'Pembayaran'}...`}`;
 
-            try {
-                const checkedAddress = document.querySelector('input[name="address"]:checked');
-                const selectedAddressId = checkedAddress ? Number(checkedAddress.dataset.addressId || 0) : null;
+            const checkedAddress = document.querySelector('input[name="address"]:checked');
+            const selectedAddressId = checkedAddress ? Number(checkedAddress.dataset.addressId || 0) : null;
+            const checkoutUrl = selectedPayment === 'manual_transfer' ? manualPaymentUrl : midtransChargeUrl;
 
+            const successes = [];
+            const failures = [];
+
+            for (const group of groups) {
+                const state = getGroupState(group.companyId);
                 const payload = {
-                    items: cartItems.map((i) => ({
+                    items: group.items.map((i) => ({
                         id: i.id,
                         productVariantId: i.productVariantId || null,
+                        companyId: i.companyId || null,
                         name: i.name,
                         variant: i.variant || '',
                         image: i.image || '',
@@ -1618,43 +1678,56 @@
                         qty: i.qty,
                         redeemPoints: Number(i.redeemPoints || 0),
                     })),
-                    shipping_cost: Number(shippingCost || 0),
-                    shipping_label: String(shippingLabel || 'Reguler'),
+                    company_id: group.companyId,
+                    shipping_cost: Number(state.shippingCost || 0),
+                    shipping_label: String(state.shippingLabel || 'Reguler'),
                     address_id: selectedAddressId || null,
                     payment_method: selectedPayment,
                     tax_invoice: taxInvoicePayload,
                 };
 
-                const checkoutUrl = selectedPayment === 'manual_transfer' ? manualPaymentUrl : midtransChargeUrl;
-                const tokenRes = await fetch(checkoutUrl, {
+                try {
+                    const res = await fetch(checkoutUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                        body: JSON.stringify(payload),
+                    });
+                    const json = await res.json().catch(() => ({}));
+                    if (!res.ok) throw new Error(json?.message || `Gagal membuat pesanan untuk ${group.companyName}.`);
+                    successes.push({ companyName: group.companyName, orderId: json?.order_id || '' });
+                } catch (e) {
+                    failures.push({ companyName: group.companyName, message: e?.message || 'Terjadi kesalahan.' });
+                }
+            }
+
+            if (successes.length > 0) {
+                await fetch(completeCheckoutUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': csrfToken,
                         'X-Requested-With': 'XMLHttpRequest',
                     },
-                    body: JSON.stringify(payload),
-                });
+                    body: JSON.stringify({}),
+                }).catch(() => {});
 
-                if (!tokenRes.ok) {
-                    const err = await tokenRes.json().catch(() => ({}));
-                    throw new Error(err?.message || (isRedeemCheckout ? 'Gagal membuat transaksi redeem.' : 'Gagal membuat transaksi Midtrans.'));
+                if (failures.length > 0) {
+                    alert(`${successes.length} pesanan berhasil dibuat. ${failures.length} gagal:\n` +
+                        failures.map((f) => `- ${f.companyName}: ${f.message}`).join('\n'));
                 }
 
-                const tokenJson = await tokenRes.json();
-                const redirectUrl = tokenJson?.redirect_url || '';
-                if (!redirectUrl) throw new Error('Gagal mendapatkan halaman menunggu pembayaran.');
-
-                btn.disabled = false;
-                btn.innerHTML =
-                    `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>${isRedeemCheckout ? 'Bayar Ongkir & Tukar Point' : 'Bayar Sekarang'}`;
-                window.location.href = redirectUrl;
-            } catch (e) {
-                btn.disabled = false;
-                btn.innerHTML =
-                    `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>${isRedeemCheckout ? 'Bayar Ongkir & Tukar Point' : 'Bayar Sekarang'}`;
-                alert(e?.message || (isRedeemCheckout ? 'Terjadi kesalahan saat memproses redeem.' : 'Terjadi kesalahan saat memproses pembayaran.'));
+                const ids = successes.map((s) => s.orderId).filter(Boolean).join(',');
+                window.location.href = `${checkoutOrdersUrl}?ids=${encodeURIComponent(ids)}`;
+                return;
             }
+
+            btn.disabled = false;
+            btn.innerHTML = payBtnIdleHtml();
+            alert(`Gagal membuat pesanan:\n` + failures.map((f) => `- ${f.companyName}: ${f.message}`).join('\n'));
         }
 
         function formatCard(input) {

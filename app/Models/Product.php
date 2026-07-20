@@ -20,6 +20,17 @@ class Product extends Model
         return $this->belongsTo(Company::class);
     }
 
+    /**
+     * Katalog gabungan storefront hanya menampilkan produk aktif milik perusahaan yang juga aktif
+     * -- begitu perusahaan dinonaktifkan, produknya otomatis hilang dari storefront tanpa perlu
+     * mengubah status produk satu-satu (lihat docs/prd-multi-company-foundation.md §Scope Functional 1).
+     */
+    public function scopeStorefrontVisible($query)
+    {
+        return $query->where('status', 'active')
+            ->whereHas('company', fn ($q) => $q->where('is_active', true));
+    }
+
     public function category()
     {
         return $this->belongsTo(Category::class);

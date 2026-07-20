@@ -290,12 +290,13 @@
                     ($transaction->shipping_province ? ', ' . $transaction->shipping_province : '') .
                     ($transaction->shipping_postal_code ? ', ' . $transaction->shipping_postal_code : ''),
             );
-            $senderAddress = $storeLocation
+            $transactionStoreLocation = $storeLocationsByCompany->get($transaction->company_id);
+            $senderAddress = $transactionStoreLocation
                 ? trim(
-                    ($storeLocation->label ?: 'Lokasi Toko') .
+                    ($transactionStoreLocation->label ?: 'Lokasi Toko') .
                         "\n" .
-                        ($storeLocation->city_name ?: '') .
-                        ($storeLocation->province_name ? ', ' . $storeLocation->province_name : ''),
+                        ($transactionStoreLocation->city_name ?: '') .
+                        ($transactionStoreLocation->province_name ? ', ' . $transactionStoreLocation->province_name : ''),
                 )
                 : 'Alamat toko belum diatur';
             $notes = trim((string) $transaction->shipping_note);

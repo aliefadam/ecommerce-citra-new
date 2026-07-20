@@ -765,6 +765,7 @@
                 <span class="text-[10px] font-medium text-slate-600">${p.rating}</span>
                 <span class="text-[10px] text-slate-400 ml-0.5">· ${p.sold.toLocaleString()} terjual</span>
               </div>
+              ${p.storeName ? `<p class="text-[10px] text-slate-400 mb-1 truncate">${p.storeName}</p>` : ''}
               <div class="mt-auto">
                 <p class="text-xs sm:text-sm font-bold text-slate-900">${priceLabel}</p>
                 ${p.originalPrice > p.price ? `<p class="text-[10px] text-slate-400 line-through">Rp ${p.originalPrice.toLocaleString('id-ID')}</p>` : ''}

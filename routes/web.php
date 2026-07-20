@@ -250,6 +250,7 @@ Route::name('frontend.')->group(function () {
         Route::post('/redeem-point/checkout', [CartController::class, 'prepareRedeemCheckout'])->name('redeem.prepare-checkout');
         Route::post('/checkout/buy-now', [CartController::class, 'buyNow'])->name('checkout.buy-now');
         Route::post('/checkout/complete', [CartController::class, 'completeCheckout'])->name('checkout.complete');
+        Route::get('/checkout/orders', [FrontendController::class, 'checkoutOrders'])->name('checkout.orders');
         Route::post('/checkout/manual-payment', [ManualPaymentController::class, 'checkout'])->name('checkout.manual-payment');
         Route::post('/checkout/coupon/apply', [CheckoutCouponController::class, 'apply'])->name('checkout.coupon.apply');
         Route::delete('/checkout/coupon', [CheckoutCouponController::class, 'remove'])->name('checkout.coupon.remove');

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ScopesToActiveCompany;
 use App\Models\ProductVariant;
 use App\Models\StockMovement;
 use Illuminate\Http\Request;
@@ -11,14 +12,20 @@ use Illuminate\Validation\ValidationException;
 
 class StockController extends Controller
 {
+    use ScopesToActiveCompany;
+
     public function index()
     {
+        $companyId = $this->activeCompanyId();
+
         $movements = StockMovement::query()
+            ->whereHas('productVariant.product', fn ($q) => $q->where('company_id', $companyId))
             ->with(['productVariant.product', 'productVariant.variant', 'productVariant.attributeValues.definition', 'adminUser'])
             ->latest()
             ->get();
 
         $variants = ProductVariant::query()
+            ->whereHas('product', fn ($q) => $q->where('company_id', $companyId))
             ->with(['product', 'variant', 'attributeValues.definition'])
             ->orderByDesc('id')
             ->get();
@@ -28,6 +35,8 @@ class StockController extends Controller
 
     public function updateThreshold(Request $request, ProductVariant $productVariant)
     {
+        $this->guardCompanyOwnership($productVariant->product?->company_id);
+
         $validated = $request->validate([
             'low_stock_threshold' => ['required', 'integer', 'min:0'],
         ]);
@@ -48,10 +57,14 @@ class StockController extends Controller
             'description' => ['nullable', 'string'],
         ]);
 
-        DB::transaction(function () use ($request, $validated) {
+        $companyId = $this->activeCompanyId();
+
+        DB::transaction(function () use ($request, $validated, $companyId) {
             $variant = ProductVariant::query()
                 ->lockForUpdate()
                 ->findOrFail((int) $validated['product_variant_id']);
+
+            $this->guardCompanyOwnership($variant->product?->company_id);
 
             $before = (int) $variant->stock;
             $qty = (int) $validated['quantity'];

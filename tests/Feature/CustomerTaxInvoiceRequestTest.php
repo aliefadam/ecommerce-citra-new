@@ -20,17 +20,21 @@ class CustomerTaxInvoiceRequestTest extends TestCase
         $customer = User::factory()->create();
         $this->actingAs($customer);
 
+        $companyId = \App\Models\Company::query()->value('id');
+
         $response = $this->postJson(route('frontend.checkout.manual-payment'), [
             'items' => [
                 [
                     'id' => 1,
                     'productVariantId' => null,
+                    'companyId' => $companyId,
                     'name' => 'Produk Pajak',
                     'variant' => 'M10',
                     'price' => 100000,
                     'qty' => 1,
                 ],
             ],
+            'company_id' => $companyId,
             'shipping_cost' => 0,
             'shipping_label' => 'Ambil sendiri',
             'tax_invoice' => [

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ScopesToActiveCompany;
 use App\Models\ProductVariant;
 use App\Models\StockMovement;
 use App\Models\Transaction;
@@ -17,6 +18,9 @@ use Illuminate\Validation\ValidationException;
 
 class AdminManualTransactionController extends Controller
 {
+    use ScopesToActiveCompany;
+
+
     public function searchCustomers(Request $request): \Illuminate\Http\JsonResponse
     {
         $term = trim((string) ($request->query('q', '')));
@@ -73,7 +77,7 @@ class AdminManualTransactionController extends Controller
         $term = trim((string) ($request->query('q', '')));
         $query = ProductVariant::query()
             ->with(['product', 'attributeValues.definition'])
-            ->whereHas('product')
+            ->whereHas('product', fn ($q) => $q->where('company_id', $this->activeCompanyId()))
             ->orderBy('product_id')
             ->orderBy('id');
 
@@ -135,7 +139,9 @@ class AdminManualTransactionController extends Controller
             'tax_customer_note' => ['nullable', 'string', 'max:500'],
         ]);
 
-        $transaction = DB::transaction(function () use ($request, $validated) {
+        $companyId = $this->activeCompanyId();
+
+        $transaction = DB::transaction(function () use ($request, $validated, $companyId) {
             $items = collect($validated['items'])
                 ->map(fn (array $item) => [
                     'product_variant_id' => (int) $item['product_variant_id'],
@@ -161,6 +167,10 @@ class AdminManualTransactionController extends Controller
 
                 if (!$variant || !$variant->product) {
                     throw ValidationException::withMessages(['items.' . $index . '.product_variant_id' => 'Produk tidak ditemukan.']);
+                }
+
+                if ((int) $variant->product->company_id !== $companyId) {
+                    throw ValidationException::withMessages(['items.' . $index . '.product_variant_id' => 'Produk "' . $variant->product->name . '" bukan milik perusahaan yang sedang aktif.']);
                 }
 
                 if ((string) $variant->product->status !== 'active') {
@@ -189,6 +199,7 @@ class AdminManualTransactionController extends Controller
             $customerMode = (string) $validated['customer_mode'];
 
             $transaction = Transaction::create([
+                'company_id' => $companyId,
                 'user_id' => $customerMode === 'existing' ? (int) $validated['customer_id'] : null,
                 'source' => Transaction::SOURCE_MANUAL,
                 'created_by_admin_id' => $request->user()?->id,

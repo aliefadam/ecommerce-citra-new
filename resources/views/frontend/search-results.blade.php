@@ -331,6 +331,7 @@
                         <span class="text-[10px] text-slate-400 ml-0.5">· ${Number(p.sold || 0).toLocaleString('id-ID')} terjual</span>
                     </div>
                     <div class="mt-1 text-[10px] text-slate-400">${Number(p.stock || 0) > 0 ? `Stok ${Number(p.stock).toLocaleString('id-ID')}` : 'Stok habis'}</div>
+                    ${p.storeName ? `<div class="text-[10px] text-slate-400 truncate">${escapeHtml(p.storeName)}</div>` : ''}
                     <div class="mt-auto pt-1">
                         <p class="text-xs sm:text-sm font-bold text-slate-900">Rp ${Number(p.price).toLocaleString('id-ID')}</p>
                         ${p.originalPrice > p.price ? `<p class="text-[10px] text-slate-400 line-through">Rp ${Number(p.originalPrice).toLocaleString('id-ID')}</p>` : ''}

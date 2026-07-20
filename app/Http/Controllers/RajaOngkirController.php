@@ -73,10 +73,12 @@ class RajaOngkirController extends Controller
         $validated = $request->validate([
             'destination_id' => ['required', 'integer'],
             'weight' => ['required', 'integer', 'min:1'],
+            'company_id' => ['required', 'integer', 'exists:companies,id'],
         ]);
 
         try {
             $storeLocation = StoreLocation::query()
+                ->where('company_id', (int) $validated['company_id'])
                 ->where('is_active', true)
                 ->latest('id')
                 ->first();
