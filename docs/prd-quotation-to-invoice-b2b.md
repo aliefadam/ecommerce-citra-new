@@ -1,5 +1,7 @@
 # PRD: Alur Dokumen Penjualan B2B (Quotation - Sales Order - Proforma Invoice - Surat Jalan - Packing List - Invoice)
 
+> Status: Siap dieksekusi — company-aware & urutan implementasi sudah lengkap (v2, 2026-07-20). Ini adalah Fase 3 dari `prd-multi-company-foundation.md`, dieksekusi setelah Fase 1 & Fase 2 (fondasi multi-perusahaan + marketplace/checkout) selesai dan sudah diverifikasi.
+
 ## Ringkasan
 
 Fitur ini menambahkan alur dokumen penjualan bergaya B2B/distributor yang terpisah dari alur `Transaction` (checkout online & transaksi manual/POS) yang sudah ada. Alur ini dimulai dari **Quotation** (penawaran harga), dikonfirmasi menjadi **Sales Order** (order internal yang menggerakkan fulfillment), opsional dilengkapi **Proforma Invoice** (tagihan sementara untuk minta DP/pembayaran di muka jika diperlukan customer tertentu), lalu proses pengiriman barang dicatat lewat **Surat Jalan** dan **Packing List** (bisa lebih dari satu, untuk pengiriman bertahap), dan diakhiri dengan **Invoice** (tagihan final resmi).
@@ -34,6 +36,28 @@ Keputusan utama:
 - Setiap dokumen bisa dilihat riwayat statusnya dan dicetak/diunduh dalam format yang layak dibagikan ke customer atau dibawa kurir/gudang.
 - Sistem menyediakan penomoran dokumen yang konsisten dan unik per jenis dokumen.
 
+## Company-Aware (Fase 3 dari Fondasi Multi-Perusahaan)
+
+Seluruh entitas baru di PRD ini **wajib ber-`company_id`**, mengikuti pola yang sudah dipakai `products`, `coupons`, `store_locations`, `transactions` di Fase 1 & 2:
+
+- Tabel yang mendapat kolom `company_id` (FK `companies`, NOT NULL): `quotations`, `sales_orders`, `proforma_invoices`, `delivery_notes`, `packing_lists`, `b2b_invoices`. Tabel detail/histori (`quotation_details`, `sales_order_details`, dst.) tidak perlu `company_id` sendiri — ikut induknya.
+- `document_payments` juga tidak perlu `company_id` sendiri — scoping-nya ikut `payable` (`ProformaInvoice`/`B2bInvoice`) yang dituju.
+- **Satu Quotation hanya boleh berisi produk dari satu perusahaan** (konsisten dengan pola `hasMixedCompanyItems` yang sudah dipakai di checkout retail). Saat admin menambah item ke Quotation, item pertama menentukan `company_id` Quotation; item berikutnya divalidasi harus dari perusahaan yang sama. Sales Order/Proforma Invoice/Surat Jalan/Invoice B2B mewarisi `company_id` dari Quotation/Sales Order asalnya (tidak perlu dipilih ulang).
+- Semua controller list/detail/create menerapkan `ScopesToActiveCompany` (trait yang sama dipakai `ProductController`, dkk.) — admin hanya melihat & bisa membuat dokumen untuk perusahaan yang sedang aktif di company switcher. Akses ke dokumen milik perusahaan lain via URL langsung → 404 (`guardCompanyOwnership`), sama seperti produk/kupon.
+- **Penomoran dokumen memakai `company.invoice_prefix`** (kolom yang sudah ada sejak Fase 1 tapi belum pernah dipakai): `{invoice_prefix}-QUO-{YmdHis}-{seq}`, `{invoice_prefix}-SO-...`, `{invoice_prefix}-PI-...`, `{invoice_prefix}-SJ-...`, `{invoice_prefix}-PL-...`, `{invoice_prefix}-INVB-...`. Sequence 4-digit di-generate lewat `DocumentNumberGenerator` (service baru, lihat §7 Scope Functional) yang menghitung urutan **per hari per perusahaan** (bukan global lintas perusahaan).
+  - **Sekalian retrofit**: `Transaction::invoice_no` (retail/checkout) yang saat ini hardcode `INV-{YmdHis}-{seq}` di 4 tempat berbeda (`AdminManualTransactionController`, `CartController`, `ManualPaymentController`, `MidtransController`) turut dipindah ke `DocumentNumberGenerator` dengan format `{invoice_prefix}-INV-{YmdHis}-{seq}`. Berlaku untuk transaksi baru saja — `invoice_no` yang sudah terbit sebelumnya tidak diubah retroaktif.
+- **Role "Staff Gudang"** memakai mekanisme `admin_company_assignments` yang sudah ada apa adanya (tidak perlu logic baru): saat admin meng-assign role ini ke seorang staff, admin memilih `company_id` tertentu (staff hanya lihat Sales Order/Surat Jalan/Packing List perusahaan itu) atau membiarkan `company_id` kosong/NULL (akses ke semua perusahaan) — persis pola assignment role lain yang sudah berjalan.
+- **Piutang (Invoice B2B overdue/outstanding)** ditampilkan per-perusahaan aktif (ikut company switcher), konsisten dengan keputusan "Reports di-skip dulu" pada Fase 2. Dashboard piutang konsolidasi lintas-perusahaan ditunda ke fase berikutnya bersamaan dengan `reports.consolidated`.
+- Baru setelah seluruh alur ini diuji dengan 1 perusahaan (perilaku harus identik dengan asumsi single-company), perusahaan kedua diaktifkan untuk transaksi B2B riil — mengikuti pola rollout yang sama dengan Fase 1 & 2.
+
+## Keputusan Terkonfirmasi (2026-07-20)
+
+- **Pembatalan Invoice B2B/Proforma Invoice yang sudah ada Pembayaran tercatat: diblokir total.** Admin harus menghapus/mengoreksi baris Pembayaran (fitur koreksi sudah ada di Acceptance Criteria) sebelum bisa membatalkan dokumen. Tombol batal disembunyikan/ditolak selama masih ada Pembayaran aktif.
+- **Quotation yang sudah `expired`: tidak bisa di-extend.** Bersifat read-only permanen (konsisten dengan aturan `closed`/`rejected`/`expired` yang sudah ada). Admin membuat Quotation baru (bisa duplikasi item dari Quotation lama) jika customer baru konfirmasi setelah lewat `valid_until`.
+- **Sales Order tidak ikut batal otomatis saat Quotation asalnya ditutup/expired.** Sales Order yang sudah dibuat adalah snapshot komitmen order yang berdiri sendiri, independen dari status Quotation asal.
+- **Tidak ada pembatasan jumlah Quotation aktif per customer** — satu customer boleh punya banyak Quotation aktif paralel (mis. nego beberapa proyek berbeda bersamaan).
+- **Sales Order dibatalkan padahal ada Proforma Invoice `issued`/`paid` terkait: Proforma Invoice tidak ikut otomatis dibatalkan.** Tetap tercatat sebagai piutang/DP yang sudah diterima; jika ada uang yang sudah masuk, direkonsiliasi/refund manual di luar sistem. Konsisten dengan aturan "dokumen yang sudah ada Pembayaran tidak boleh hilang begitu saja".
+
 ## Non-Tujuan
 
 - Tidak mengubah atau menggantikan `Transaction`, `TransactionDetail`, alur checkout online, maupun alur transaksi manual/POS yang sudah ada.
@@ -41,7 +65,7 @@ Keputusan utama:
 - Tidak membangun integrasi akuntansi/pajak resmi (mis. e-Faktur) pada fase pertama — Invoice B2B ini adalah dokumen internal, bukan faktur pajak resmi (berbeda dari fitur `transaction_tax_invoices` yang sudah ada).
 - Tidak membangun sistem retur/komplain untuk alur B2B ini pada fase pertama.
 - Tidak membangun pelacakan pembayaran granular (cicilan/termin) di luar status dasar Proforma Invoice/Invoice pada fase pertama.
-- Tidak membangun unit of measure (UOM) baru seperti pcs/box/kg secara ekstensif pada fase pertama — asumsi satuan tetap generik seperti pola produk yang sudah ada, kecuali disepakati sebaliknya (lihat Open Questions).
+- Tidak membangun unit of measure (UOM) baru seperti pcs/box/kg secara ekstensif pada fase pertama — asumsi satuan tetap generik seperti pola produk yang sudah ada.
 - Tidak mewajibkan Proforma Invoice pada setiap Sales Order — penerbitannya murni opsional berdasarkan kebutuhan customer.
 
 ## Definisi
@@ -112,7 +136,7 @@ Pembayaran (ledger, N per Invoice B2B)
 Catatan alur:
 
 - Quotation -> Sales Order: **1:N** (satu Quotation yang sama bisa ditarik berkali-kali menjadi beberapa Sales Order terpisah, masing-masing menarik sebagian qty per item, selama sisa qty & masa berlaku masih ada). Jika perlu revisi harga/item besar, tetap buat Quotation baru.
-- Sales Order -> Proforma Invoice: **0..N, opsional**. Sales Order tidak wajib punya Proforma Invoice. Jika diterbitkan, Proforma Invoice hanya berfungsi sebagai dokumen tagihan/DP, tidak menjadi prasyarat untuk membuat Surat Jalan (lihat Open Questions untuk kemungkinan pengecualian bisnis tertentu).
+- Sales Order -> Proforma Invoice: **0..N, opsional**. Sales Order tidak wajib punya Proforma Invoice. Jika diterbitkan, Proforma Invoice hanya berfungsi sebagai dokumen tagihan/DP, tidak menjadi prasyarat untuk membuat Surat Jalan — tidak ada flag "DP wajib" pada fase pertama (lihat Rekomendasi MVP).
 - Sales Order -> Surat Jalan: 1:N (pengiriman bertahap), dengan validasi qty per item tidak boleh melebihi sisa qty yang belum dikirim di Sales Order.
 - Surat Jalan -> Packing List: 1:1, dibuat dalam satu aksi yang sama.
 - Sales Order -> Invoice B2B: 1:N (via Surat Jalan), tetapi setiap Invoice hanya boleh mencakup Surat Jalan yang sudah berstatus terkirim dan belum pernah ditagih di Invoice lain.
@@ -192,7 +216,7 @@ Behavior:
 - Sales Order berstatus `confirmed` begitu dibuat (dianggap komitmen order yang sah), siap dijadikan acuan Surat Jalan kapan saja tanpa menunggu dokumen lain.
 - Status berubah otomatis menjadi `partially_fulfilled` ketika ada Surat Jalan pertama dibuat, dan `fulfilled` ketika seluruh qty di semua item sudah tercakup oleh Surat Jalan yang tidak dibatalkan.
 - Admin bisa membatalkan Sales Order selama belum ada Surat Jalan aktif terkait (status `draft`/`confirmed` tanpa Surat Jalan). Qty yang dibatalkan dikembalikan sebagai sisa qty yang bisa ditarik ulang dari Quotation asal.
-- Sales Order dapat memiliki nol, satu, atau lebih Proforma Invoice terkait — keberadaan/status Proforma Invoice tidak memengaruhi kemampuan Sales Order untuk lanjut ke Surat Jalan pada fase pertama (lihat Open Questions).
+- Sales Order dapat memiliki nol, satu, atau lebih Proforma Invoice terkait — keberadaan/status Proforma Invoice tidak memengaruhi kemampuan Sales Order untuk lanjut ke Surat Jalan pada fase pertama (tidak ada flag "DP wajib", lihat Rekomendasi MVP).
 
 ### 3. Proforma Invoice (Opsional)
 
@@ -209,7 +233,7 @@ Behavior:
 - Admin menerbitkan Proforma Invoice dari halaman detail Sales Order, hanya jika diperlukan (tombol opsional, tidak wajib diklik).
 - Proforma Invoice murni dokumen penagihan — tidak memiliki relasi langsung ke Surat Jalan/Packing List dan tidak ikut serta dalam perhitungan sisa qty fulfillment Sales Order.
 - Status berubah otomatis menjadi `partially_paid` saat ada Pembayaran pertama tercatat dengan total belum menutupi `grand_total`, dan `paid` saat total Pembayaran sudah menutupi/melebihi `grand_total`.
-- Satu Sales Order bisa punya lebih dari satu Proforma Invoice jika DP diminta bertahap (mis. termin pembayaran), tapi ini bisa disederhanakan jadi satu Proforma Invoice per Sales Order pada MVP (lihat Open Questions).
+- Satu Sales Order bisa punya lebih dari satu Proforma Invoice jika DP diminta bertahap (mis. termin pembayaran), tapi **dibatasi jadi satu Proforma Invoice per Sales Order pada MVP** untuk menyederhanakan (lihat Rekomendasi MVP). DP bertahap/termin ditunda ke fase berikutnya.
 
 ### 4. Surat Jalan & Packing List
 
@@ -224,7 +248,7 @@ Field Surat Jalan:
 
 Field Packing List (1:1 dengan Surat Jalan):
 
-- Nomor Packing List (`packing_list_no`, auto-generate, atau reuse nomor Surat Jalan dengan prefix beda — lihat Open Questions).
+- Nomor Packing List (`packing_list_no`, auto-generate lewat `DocumentNumberGenerator` dengan prefix `PL-` sendiri, bukan reuse nomor Surat Jalan — default sederhana, konsisten dengan dokumen lain).
 - Rincian item & qty (sama dengan Surat Jalan pasangannya).
 - Ringkasan total berat/dimensi (dihitung dari `weight_grams`/`length_cm`/`width_cm`/`height_cm` per varian x qty, kolom yang sudah tersedia di `product_variants`).
 - Jumlah koli/paket (opsional, input manual staff gudang).
@@ -236,7 +260,7 @@ Behavior:
 - Saat Surat Jalan disimpan dengan status `shipped`, sistem memotong stok varian terkait dalam `DB::transaction()` + `lockForUpdate()`, mengikuti pola `TransactionController::process()` yang sudah ada, dan mencatat ke `stock_movements` dengan `source` baru (mis. `delivery_note`).
 - Jika stok tidak cukup saat submit, transaksi ditolak dan staff gudang diminta menyesuaikan qty.
 - Status `delivered` diubah manual oleh staff gudang/admin setelah barang sampai (konfirmasi non-otomatis pada fase pertama).
-- Pembatalan Surat Jalan (`cancelled`) sebelum status `shipped` tidak memerlukan pengembalian stok (karena belum dipotong); pembatalan setelah `shipped` memerlukan alur pengembalian stok manual (lihat Open Questions).
+- Pembatalan Surat Jalan (`cancelled`) hanya bisa dilakukan selama masih berstatus `draft` (belum `shipped`), tidak memerlukan pengembalian stok karena belum dipotong. **Setelah `shipped`, tidak ada aksi pembatalan tersedia pada fase pertama** — alur retur/pengembalian stok pasca-`shipped` ditunda ke fase berikutnya (lihat Rekomendasi MVP).
 
 ### 5. Invoice B2B
 
@@ -278,7 +302,7 @@ Behavior:
 
 ### 7. Penomoran Dokumen
 
-Prefix yang disarankan, mengikuti pola `INV-{YmdHis}-{sequence 4 digit}` yang sudah ada:
+Format: `{company.invoice_prefix}-{jenis}-{YmdHis}-{sequence 4 digit}`, mis. `BOQ-QUO-20260720-0001`, `PTDUA-INVB-20260720-0003`.
 
 - Quotation: `QUO-...`
 - Sales Order: `SO-...`
@@ -286,8 +310,9 @@ Prefix yang disarankan, mengikuti pola `INV-{YmdHis}-{sequence 4 digit}` yang su
 - Surat Jalan: `SJ-...`
 - Packing List: `PL-...`
 - Invoice B2B: `INVB-...` (dibedakan dari `INV-...` milik `Transaction` retail agar tidak rancu)
+- Transaction retail (retrofit): `INV-...` tetap, hanya ditambah prefix perusahaan di depan.
 
-Rekomendasi teknis: karena penomoran invoice existing sudah diduplikasi identik di 3 controller (`AdminManualTransactionController`, `CartController`, `MidtransController`), fase ini sekaligus menarik logic penomoran ke satu service (`DocumentNumberGenerator` atau serupa) yang dipakai bersama oleh dokumen lama dan baru, agar tidak menambah duplikasi keempat/kelima/keenam.
+Rekomendasi teknis: penomoran invoice existing sudah diduplikasi identik di 4 controller (`AdminManualTransactionController`, `CartController`, `ManualPaymentController`, `MidtransController`) dan tidak per-perusahaan. Fase ini menarik logic penomoran ke satu service `DocumentNumberGenerator` yang dipakai bersama oleh dokumen lama (`Transaction::invoice_no`) dan seluruh dokumen baru, dengan sequence dihitung **per hari per `company_id`** (bukan global), agar tidak menambah duplikasi keempat/kelima/keenam sekaligus menutup celah `invoice_prefix` yang selama ini tidak terpakai.
 
 ### 8. Cetak / Ekspor Dokumen
 
@@ -300,6 +325,7 @@ Rekomendasi teknis: karena penomoran invoice existing sudah diduplikasi identik 
 ### Tabel `quotations`
 
 - `id`
+- `company_id` (FK `companies`, NOT NULL — lihat §Company-Aware)
 - `quotation_no`
 - `user_id` (nullable)
 - `manual_customer_name`, `manual_customer_phone`, `manual_customer_email`
@@ -325,7 +351,7 @@ Rekomendasi teknis: karena penomoran invoice existing sudah diduplikasi identik 
 
 ### Tabel `sales_orders`
 
-- `id`, `sales_order_no`, `quotation_id` (banyak Sales Order bisa menunjuk ke Quotation yang sama)
+- `id`, `company_id` (FK `companies`, NOT NULL, diwarisi dari `quotation.company_id` saat convert), `sales_order_no`, `quotation_id` (banyak Sales Order bisa menunjuk ke Quotation yang sama)
 - Snapshot customer (sama pola dengan `quotations`)
 - `status`
 - `subtotal_amount`, `discount_amount`, `grand_total`
@@ -343,7 +369,7 @@ Rekomendasi teknis: karena penomoran invoice existing sudah diduplikasi identik 
 
 ### Tabel `proforma_invoices`
 
-- `id`, `proforma_invoice_no`, `sales_order_id`
+- `id`, `company_id` (FK `companies`, NOT NULL, diwarisi dari `sales_order.company_id`), `proforma_invoice_no`, `sales_order_id`
 - Snapshot customer (sama pola dengan `sales_orders`)
 - `status`
 - `subtotal_amount`, `grand_total` (nominal yang ditagihkan, bisa sebagian dari total Sales Order)
@@ -358,7 +384,7 @@ Rekomendasi teknis: karena penomoran invoice existing sudah diduplikasi identik 
 
 ### Tabel `delivery_notes` (Surat Jalan)
 
-- `id`, `delivery_note_no`, `sales_order_id`
+- `id`, `company_id` (FK `companies`, NOT NULL, diwarisi dari `sales_order.company_id`), `delivery_note_no`, `sales_order_id`
 - `status`
 - `recipient_name`, `shipping_address`, `courier_name`, `note`
 - `created_by_user_id`, `shipped_at`, `delivered_at`, `created_at`, `updated_at`
@@ -371,13 +397,13 @@ Rekomendasi teknis: karena penomoran invoice existing sudah diduplikasi identik 
 
 ### Tabel `packing_lists`
 
-- `id`, `packing_list_no`, `delivery_note_id` (unique, 1:1)
+- `id`, `company_id` (FK `companies`, NOT NULL, diwarisi dari `delivery_note.company_id`), `packing_list_no`, `delivery_note_id` (unique, 1:1)
 - `total_weight_grams`, `total_packages` (opsional input manual)
 - `created_at`, `updated_at`
 
 ### Tabel `b2b_invoices`
 
-- `id`, `b2b_invoice_no`, `sales_order_id`
+- `id`, `company_id` (FK `companies`, NOT NULL, diwarisi dari `sales_order.company_id`), `b2b_invoice_no`, `sales_order_id`
 - `status`
 - `subtotal_amount`, `grand_total`
 - `paid_amount`, `outstanding_amount` (turunan, dihitung ulang setiap ada Pembayaran)
@@ -430,7 +456,8 @@ Module baru di `config/admin_permissions.php`, mengikuti pola existing (`{module
 Kebutuhan role baru:
 
 - Sistem role saat ini (`admin_roles`) belum punya role bawaan "Staff Gudang" — perlu dibuat role baru dengan permission terbatas hanya ke `sales_orders.index`/`sales_orders.show` (read-only, untuk lihat apa yang perlu dikirim), `delivery_notes.*`, dan `packing_lists.*` (plus `stock.index` yang sudah ada untuk melihat stok), tanpa akses ke `quotations`/`proforma_invoices`/`b2b_invoices` yang memuat data harga.
-- Role "Admin/Sales" bisa memakai role existing seperti "Store Manager" (full access) atau role baru khusus sales dengan permission `quotations.*`, `sales_orders.*`, `proforma_invoices.*`, `b2b_invoices.*`.
+- Role "Staff Gudang" di-assign lewat `admin_company_assignments` yang sudah ada apa adanya — admin memilih `company_id` spesifik (staff hanya lihat Sales Order/Surat Jalan/Packing List perusahaan itu) atau kosongkan `company_id` (akses semua perusahaan), tidak perlu mekanisme assignment baru.
+- Role "Admin/Sales" bisa memakai role existing seperti "Store Manager" (full access) atau role baru khusus sales dengan permission `quotations.*`, `sales_orders.*`, `proforma_invoices.*`, `b2b_invoices.*`, di-assign per perusahaan dengan cara yang sama.
 
 ## UI Requirements
 
@@ -465,6 +492,8 @@ Kebutuhan role baru:
 - Surat Jalan: qty per item wajib > 0 dan <= sisa qty belum terkirim pada Sales Order terkait; validasi ulang stok varian saat submit (row lock). Tidak ada validasi terhadap status Proforma Invoice pada fase pertama.
 - Invoice B2B: Surat Jalan yang dipilih wajib berstatus `shipped`/`delivered` dan belum terkait Invoice B2B lain manapun.
 - Pembayaran: `amount` wajib > 0 dan tidak boleh melebihi `outstanding_amount` dokumen terkait pada saat pencatatan (row lock saat hitung ulang); `payment_date` wajib diisi; `proof_path` opsional (tidak wajib).
+- Batalkan Proforma Invoice/Invoice B2B: ditolak (403/422) jika dokumen tersebut masih memiliki minimal satu baris `document_payments` aktif (termasuk `dp_credit`). Admin harus menghapus/mengoreksi seluruh baris Pembayaran dokumen tsb terlebih dahulu.
+- Batalkan Sales Order: ditolak jika masih ada Surat Jalan aktif terkait (status selain `cancelled`); tidak divalidasi terhadap status Proforma Invoice (PI yang sudah `issued`/`paid` tetap ada, tidak ikut dibatalkan — lihat Edge Cases).
 
 ## Acceptance Criteria
 
@@ -492,38 +521,28 @@ Kebutuhan role baru:
 
 ## Edge Cases
 
-- Quotation expired tapi customer baru konfirmasi setelah tanggal lewat — perlu keputusan apakah admin bisa "extend" `valid_until` atau wajib buat Quotation baru.
+- Quotation expired tapi customer baru konfirmasi setelah tanggal lewat — **wajib buat Quotation baru**, tidak bisa "extend" `valid_until` (lihat Keputusan Terkonfirmasi).
 - Stok cukup saat Quotation/Sales Order dibuat tapi habis saat Surat Jalan dibuat (item lain terjual duluan) — Surat Jalan gagal disimpan, staff gudang harus koordinasi ulang dengan sales.
-- Surat Jalan sudah `shipped` (stok terpotong) lalu perlu dibatalkan karena retur/kesalahan — perlu alur pengembalian stok (lihat Open Questions).
+- Surat Jalan sudah `shipped` (stok terpotong) lalu perlu dibatalkan karena retur/kesalahan — **tidak didukung pada fase pertama** (tidak ada aksi pembatalan setelah `shipped`); alur retur ditunda ke fase berikutnya (lihat Rekomendasi MVP).
 - Sales Order dibatalkan padahal sudah ada Surat Jalan aktif — harus dicegah di level validasi.
-- Sales Order dibatalkan padahal sudah ada Proforma Invoice yang `issued`/`paid` — perlu keputusan apakah Proforma Invoice ikut dibatalkan otomatis atau tetap ada sebagai catatan DP yang perlu direfund manual di luar sistem.
+- Sales Order dibatalkan padahal sudah ada Proforma Invoice yang `issued`/`paid` — **Proforma Invoice tidak ikut dibatalkan otomatis**, tetap ada sebagai catatan DP yang perlu direfund manual di luar sistem (lihat Keputusan Terkonfirmasi).
 - Invoice B2B dibuat dari Surat Jalan yang ternyata sebagian barangnya dikembalikan setelah `delivered`.
 - Dua staff gudang membuat Surat Jalan bersamaan dari Sales Order yang sama untuk item yang sama (race condition qty sisa) — perlu row lock di level Sales Order/Sales Order Detail saat validasi sisa qty.
 - Dua admin/sales membuat Sales Order bersamaan dari Quotation yang sama untuk item yang sama (race condition sisa qty Quotation) — perlu row lock di level Quotation/Quotation Detail saat validasi.
 - Customer berubah pikiran soal harga setelah Sales Order dibuat — perlu Quotation baru (bukan edit Sales Order), karena Sales Order dianggap snapshot final dari negosiasi.
 - Quotation qty 2 pcs, baru terpakai 1 pcs lewat satu Sales Order, lalu admin menutup manual sisa 1 pcs karena customer tidak melanjutkan — Quotation berstatus `closed` dengan riwayat 1 Sales Order yang tetap valid dan berjalan normal.
-- Quotation ditutup manual atau expired padahal ada Sales Order yang masih `draft`/`confirmed` (belum ada Surat Jalan) — perlu keputusan apakah Sales Order tersebut ikut otomatis dibatalkan atau tetap dibiarkan lanjut (lihat Open Questions).
+- Quotation ditutup manual atau expired padahal ada Sales Order yang masih `draft`/`confirmed` (belum ada Surat Jalan) — **Sales Order tetap berjalan normal**, tidak ikut batal otomatis (lihat Keputusan Terkonfirmasi).
 - Customer sudah bayar DP via Proforma Invoice, tapi ternyata batal beli sebagian qty (Sales Order sisa qty ditutup) — nominal DP yang sudah dibayar untuk qty yang batal perlu proses refund manual di luar sistem pada fase pertama.
-- Satu Sales Order menghasilkan lebih dari satu Invoice B2B (pengiriman bertahap ditagih terpisah) padahal DP di Proforma Invoice-nya cuma satu — perlu aturan alokasi DP yang jelas (lihat Open Questions), jangan sampai DP yang sama dikreditkan dobel ke lebih dari satu Invoice B2B.
+- Satu Sales Order menghasilkan lebih dari satu Invoice B2B (pengiriman bertahap ditagih terpisah) padahal DP di Proforma Invoice-nya cuma satu — **kredit DP hanya dialokasikan ke Invoice B2B pertama** (aturan MVP paling sederhana), Invoice B2B berikutnya dari Sales Order yang sama tidak dapat kredit DP lagi. DP tidak pernah dikreditkan dobel karena baris `dp_credit` hanya dibuat sekali per Sales Order (lihat Rekomendasi MVP).
 - Admin salah input nominal Pembayaran (lebih besar dari yang diterima) — perlu kemampuan koreksi/hapus baris Pembayaran manual (bukan `dp_credit`), dengan status dokumen dihitung ulang otomatis.
-- Invoice B2B dibatalkan (`cancelled`) padahal sudah ada Pembayaran tercatat — perlu keputusan apakah pembayaran yang sudah masuk otomatis jadi catatan piutang lebih bayar/refund, atau pembatalan diblokir selama masih ada Pembayaran aktif.
+- Invoice B2B dibatalkan (`cancelled`) padahal sudah ada Pembayaran tercatat — **pembatalan diblokir total** selama masih ada Pembayaran aktif; admin harus koreksi/hapus baris Pembayaran dulu (lihat Keputusan Terkonfirmasi).
 
 ## Open Questions
 
-- Apakah untuk bisnis/customer tertentu, Surat Jalan justru **harus** menunggu Proforma Invoice berstatus `paid` dulu sebelum bisa dibuat (aturan DP wajib)? Jika ya, ini perlu jadi flag opsional per Sales Order atau per customer, bukan aturan global, mengingat keputusan awal bahwa DP bersifat opsional tergantung customer.
-- Ketika satu Sales Order menghasilkan lebih dari satu Invoice B2B (pengiriman bertahap ditagih terpisah), bagaimana aturan alokasi kredit DP dari Proforma Invoice — semua dikreditkan ke Invoice B2B pertama saja, dibagi proporsional sesuai nilai tiap Invoice, atau admin yang pilih manual berapa yang mau dikreditkan ke Invoice mana?
-- Apakah pembatalan (`cancelled`) pada Invoice B2B/Proforma Invoice yang sudah ada Pembayaran tercatat perlu diblokir total, atau tetap diizinkan dengan catatan piutang lebih bayar yang perlu direkonsiliasi manual?
-- Bagaimana alur pengembalian stok jika Surat Jalan yang sudah `shipped` dibatalkan/diretur? Apakah perlu tabel/alur retur terpisah seperti `return_requests` yang sudah ada untuk `Transaction`?
-- Apakah Packing List butuh nomor dokumen sendiri, atau cukup mengikuti nomor Surat Jalan pasangannya dengan prefix berbeda?
-- Apakah dibutuhkan konsep unit of measure (UOM) eksplisit (pcs/box/kg) untuk Quotation & Packing List, mengingat saat ini seluruh produk diasumsikan satuan generik?
-- Apakah Quotation yang `expired` bisa "diperpanjang" (extend `valid_until`) oleh admin, atau wajib dibuatkan Quotation baru?
-- Apakah dibutuhkan generator PDF server-side (`barryvdh/laravel-dompdf`) untuk kebutuhan lampiran email/arsip resmi, atau cukup halaman cetak HTML (`window.print()`) seperti pola invoice existing pada fase pertama?
-- Siapa yang berwenang membuat role "Staff Gudang" pertama kali dan siapa saja user yang akan diberi role ini?
-- Apakah Invoice B2B perlu terhubung ke fitur faktur pajak (`transaction_tax_invoices`/`user_tax_profiles`) yang sudah ada, atau benar-benar terpisah (dokumen internal saja) pada fase pertama?
-- Apakah perlu pembatasan bahwa satu customer (`user_id`) hanya bisa punya satu Quotation aktif (belum `closed`/`rejected`/`expired`) pada satu waktu, atau bebas banyak paralel?
-- Apakah Sales Order/Proforma Invoice/Invoice B2B butuh mata uang/format khusus atau tetap mengikuti format Rupiah polos seperti `Transaction`?
-- Ketika Quotation ditutup manual atau expired, apakah Sales Order yang masih berstatus `draft`/`confirmed` (belum ada Surat Jalan) ikut otomatis dibatalkan, atau tetap dibiarkan berjalan sampai selesai?
-- Apakah satu Sales Order boleh punya lebih dari satu Proforma Invoice aktif (mis. DP bertahap/termin), atau cukup dibatasi satu Proforma Invoice per Sales Order pada MVP untuk menyederhanakan?
+Sisa pertanyaan berikut bersifat operasional/detail teknis kecil, tidak menghalangi mulainya implementasi (bisa dijawab sambil jalan):
+
+- Siapa user pertama yang akan diberi role "Staff Gudang" di tiap perusahaan? (murni onboarding, dilakukan lewat UI Admin Users yang sudah ada begitu role-nya dibuat)
+- Apakah Packing List butuh nomor urut sendiri atau reuse nomor Surat Jalan pasangannya dengan prefix `PL-` berbeda? (default: nomor sendiri lewat `DocumentNumberGenerator`, konsisten dengan dokumen lain — bisa diubah tanpa dampak besar jika ternyata tim lebih suka reuse)
 
 ## Rekomendasi MVP
 
@@ -532,11 +551,26 @@ Untuk fase pertama, gunakan pendekatan berikut agar scope tetap terkendali:
 - Bangun seluruh 6 dokumen (Quotation, Sales Order, Proforma Invoice, Surat Jalan, Packing List, Invoice B2B) plus ledger Pembayaran (`document_payments`) dengan data model dan status dasar seperti di atas.
 - Proforma Invoice benar-benar opsional dan tidak menghalangi Surat Jalan pada fase pertama (tanpa flag "DP wajib" dulu).
 - Pencatatan Pembayaran mendukung nominal, tanggal, catatan, dan upload bukti opsional (tidak wajib) — bukan sekadar toggle status lunas/belum.
-- Kredit DP otomatis dari Proforma Invoice ke Invoice B2B dibatasi ke Invoice B2B pertama dari Sales Order terkait pada MVP (aturan alokasi paling sederhana), sambil menunggu keputusan pemilik bisnis untuk kasus Invoice B2B lebih dari satu (lihat Open Questions).
+- Kredit DP otomatis dari Proforma Invoice ke Invoice B2B dibatasi ke Invoice B2B pertama dari Sales Order terkait pada MVP (aturan alokasi paling sederhana). Kasus Invoice B2B lebih dari satu dengan alokasi DP proporsional/manual ditunda ke fase berikutnya.
 - Approval Quotation tetap manual oleh admin (tanpa link publik/customer login) sesuai keputusan awal.
 - Cetak dokumen memakai halaman HTML + `window.print()`, konsisten dengan pola existing, generator PDF server-side ditunda ke fase berikutnya.
-- Tidak membangun UOM baru — pakai qty generik seperti pola produk yang sudah ada, kecuali Open Questions terkait UOM dijawab "ya" oleh pemilik bisnis sebelum implementasi.
+- Tidak membangun UOM baru — pakai qty generik seperti pola produk yang sudah ada.
 - Alur retur/pengembalian stok pasca Surat Jalan `shipped` ditunda ke fase berikutnya (fase pertama cukup mendukung pembatalan sebelum `shipped`).
 - Batasi satu Proforma Invoice per Sales Order pada MVP (tanpa DP bertahap/termin) untuk menyederhanakan.
-- Role "Staff Gudang" dibuat sebagai role baru dengan permission terbatas ke `sales_orders.index`/`sales_orders.show`, `delivery_notes.*`, dan `packing_lists.*`.
-- Ekstrak logic penomoran dokumen (`INV-`, `QUO-`, dst.) ke satu service bersama sekaligus merapikan duplikasi 3 controller lama, karena momentumnya pas dilakukan bersamaan dengan fitur baru ini.
+- Role "Staff Gudang" dibuat sebagai role baru dengan permission terbatas ke `sales_orders.index`/`sales_orders.show`, `delivery_notes.*`, dan `packing_lists.*`, di-assign per perusahaan (atau global) lewat `admin_company_assignments`.
+- Ekstrak logic penomoran dokumen (`INV-`, `QUO-`, dst.) ke satu service bersama (`DocumentNumberGenerator`) berbasis `company.invoice_prefix`, sekaligus merapikan duplikasi 4 controller lama dan me-retrofit `Transaction::invoice_no`, karena momentumnya pas dilakukan bersamaan dengan fitur baru ini.
+
+## Rekomendasi Urutan Implementasi
+
+Mengikuti pola checkpoint bertahap yang sudah terbukti efektif di Fase 1 & 2 (`prd-multi-company-foundation.md`): setiap sub-langkah diimplementasikan, diuji (otomatis + manual/Playwright), baru lanjut ke sub-langkah berikutnya. Urutan berdasarkan dependency alur dokumen (tidak bisa dibalik — Sales Order butuh Quotation lebih dulu, dst.):
+
+1. **Fondasi bersama**: migration 6 tabel dokumen + `company_id` di masing-masing, service `DocumentNumberGenerator` (company-prefix based) sekaligus retrofit `Transaction::invoice_no`, permission baru di `config/admin_permissions.php`, role "Staff Gudang" baru di `admin_roles`. Tidak ada UI baru di langkah ini — murni fondasi teknis, low-risk karena tidak mengubah alur retail yang sudah jalan (hanya menambah, retrofit invoice_no diuji khusus agar format lama tetap valid untuk data existing).
+2. **Quotation**: model + migration `quotations`/`quotation_details`/`quotation_status_histories`, CRUD, transisi status manual (`sent`/`accepted`/`rejected`), auto-`expired` via scheduled job, validasi 1-perusahaan-per-Quotation, tutup manual (`closed`). Belum ada Sales Order — checkpoint ini berdiri sendiri dan bisa diuji penuh (create, edit harga per item, status histories, cetak) sebelum lanjut.
+3. **Sales Order**: model + migration `sales_orders`/`sales_order_details`/`sales_order_status_histories`, aksi "Convert to Sales Order" dari Quotation (row lock sisa qty), auto-status `partially_converted`/`closed` di Quotation, cancel Sales Order (kembalikan sisa qty ke Quotation). Area risiko: race condition dua convert bersamaan — wajib diuji dengan concurrent request.
+4. **Proforma Invoice + Payment ledger dasar**: model + migration `proforma_invoices`/`proforma_invoice_details`/`document_payments` (polymorphic), aksi opsional "Terbitkan Proforma Invoice" dari Sales Order, form "Catat Pembayaran" (nominal/tanggal/catatan/bukti opsional), auto-status `partially_paid`/`paid`, koreksi/hapus baris Pembayaran dengan recalculation. Payment ledger dibangun di sini karena akan dipakai ulang oleh Invoice B2B di langkah 6.
+5. **Surat Jalan + Packing List (fulfillment)**: model + migration `delivery_notes`/`delivery_note_details`/`packing_lists`, aksi "Buat Pengiriman" dari Sales Order (partial qty, row lock stok, potong stok + `stock_movements` dalam satu `DB::transaction()`), auto-status `partially_fulfilled`/`fulfilled` di Sales Order, UI Staff Gudang (tanpa kolom harga). Area risiko tertinggi kedua setelah checkout multi-perusahaan Fase 2 — melibatkan potongan stok nyata, wajib diuji dengan stok pas-pasan & race condition dua Surat Jalan bersamaan.
+6. **Invoice B2B**: model + migration `b2b_invoices`/`b2b_invoice_delivery_note`, aksi pilih Surat Jalan `shipped`/`delivered` yang belum ditagih → gabung jadi satu Invoice, kredit DP otomatis dari Proforma Invoice (jika ada, ke Invoice B2B pertama), reuse form "Catat Pembayaran" dari langkah 4, indikator `overdue`.
+7. **Cetak dokumen & polish UI**: halaman cetak HTML untuk 6 dokumen (Quotation, Sales Order, Proforma Invoice, Surat Jalan + Packing List, Invoice B2B), badge status konsisten, halaman piutang per-perusahaan aktif (list Invoice B2B + indikator overdue).
+8. **Uji menyeluruh 1 perusahaan dulu** (perilaku harus identik dengan asumsi single-company, tidak menyentuh `Transaction`/`TransactionDetail` retail sama sekali — regression test suite existing harus tetap hijau), baru role "Staff Gudang" & perusahaan kedua diaktifkan untuk transaksi B2B riil.
+
+Dashboard piutang konsolidasi lintas-perusahaan, alur retur stok pasca-`shipped`, DP bertahap/termin, UOM, dan generator PDF server-side sengaja **tidak** masuk urutan di atas — semuanya sudah diputuskan ditunda ke fase berikutnya (lihat Rekomendasi MVP).

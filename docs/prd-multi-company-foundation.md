@@ -240,4 +240,4 @@ Sisa pertanyaan berikut tidak menghalangi mulainya Fase 2 (bisa dijawab sambil j
    7. Report per perusahaan + konsolidasi (`reports.consolidated`).
    
    Baru setelah seluruh sub-langkah di atas selesai dan diuji dengan 1 perusahaan (perilaku harus identik), perusahaan kedua diaktifkan untuk transaksi riil.
-3. **Fase 3 — B2B**: revisi `prd-quotation-to-invoice-b2b.md` agar company-aware (semua tabel B2B ber-`company_id`, penomoran per perusahaan, role Staff Gudang via `admin_company_assignments`, piutang per perusahaan), lalu implementasi.
+3. **Fase 3 — B2B**: `prd-quotation-to-invoice-b2b.md` sudah direvisi company-aware (semua tabel B2B ber-`company_id`, penomoran per perusahaan via `company.invoice_prefix`, role Staff Gudang via `admin_company_assignments`, piutang per perusahaan) dan sudah punya breakdown 8 sub-langkah implementasi sendiri (lihat "Rekomendasi Urutan Implementasi" di dokumen tsb) — siap dieksekusi.
