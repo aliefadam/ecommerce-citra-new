@@ -31,10 +31,17 @@ use App\Http\Controllers\MidtransController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\NewsletterSubscriberController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\B2bInvoiceController;
+use App\Http\Controllers\DeliveryNoteController;
+use App\Http\Controllers\DocumentPaymentController;
+use App\Http\Controllers\PackingListController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProformaInvoiceController;
 use App\Http\Controllers\PromoPageController;
+use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\RajaOngkirController;
 use App\Http\Controllers\ReturnRequestController;
+use App\Http\Controllers\SalesOrderController;
 use App\Http\Controllers\SalesReportController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\StoreLocationController;
@@ -187,6 +194,59 @@ Route::middleware(['auth', 'admin', 'company.scope'])->group(function () {
         Route::patch('tax-invoices/{taxInvoice}/reject', [AdminTaxInvoiceController::class, 'reject'])->name('tax-invoices.reject')->middleware('admin.permission:tax_invoices.reject');
         Route::post('tax-invoices/{taxInvoice}/upload', [AdminTaxInvoiceController::class, 'upload'])->name('tax-invoices.upload')->middleware('admin.permission:tax_invoices.upload');
         Route::post('tax-invoices/{taxInvoice}/send', [AdminTaxInvoiceController::class, 'send'])->name('tax-invoices.send')->middleware('admin.permission:tax_invoices.send');
+        Route::get('quotations/search-customers', [QuotationController::class, 'searchCustomers'])->name('quotations.search-customers')->middleware('admin.permission:quotations.create');
+        Route::get('quotations/search-products', [QuotationController::class, 'searchProducts'])->name('quotations.search-products')->middleware('admin.permission:quotations.create');
+        Route::get('quotations/{quotation}/print', [QuotationController::class, 'print'])->name('quotations.print')->middleware('admin.permission:quotations.show');
+        Route::post('quotations/{quotation}/send', [QuotationController::class, 'send'])->name('quotations.send')->middleware('admin.permission:quotations.send');
+        Route::patch('quotations/{quotation}/status', [QuotationController::class, 'updateStatus'])->name('quotations.update-status')->middleware('admin.permission:quotations.edit');
+        Route::post('quotations/{quotation}/close', [QuotationController::class, 'close'])->name('quotations.close')->middleware('admin.permission:quotations.close');
+        Route::get('quotations/{quotation}/convert', [QuotationController::class, 'convertForm'])->name('quotations.convert-form')->middleware('admin.permission:quotations.convert');
+        Route::post('quotations/{quotation}/convert', [QuotationController::class, 'convert'])->name('quotations.convert')->middleware('admin.permission:quotations.convert');
+        Route::resource('quotations', QuotationController::class)->except(['destroy'])
+            ->middlewareFor(['index'], 'admin.permission:quotations.index')
+            ->middlewareFor(['create', 'store'], 'admin.permission:quotations.create')
+            ->middlewareFor(['show'], 'admin.permission:quotations.show')
+            ->middlewareFor(['edit', 'update'], 'admin.permission:quotations.edit');
+
+        Route::get('sales-orders/{sales_order}/print', [SalesOrderController::class, 'print'])->name('sales-orders.print')->middleware('admin.permission:sales_orders.show');
+        Route::post('sales-orders/{sales_order}/cancel', [SalesOrderController::class, 'cancel'])->name('sales-orders.cancel')->middleware('admin.permission:sales_orders.cancel');
+        Route::get('sales-orders/{sales_order}/proforma-invoice/create', [ProformaInvoiceController::class, 'createForm'])->name('proforma-invoices.create-form')->middleware('admin.permission:proforma_invoices.create');
+        Route::post('sales-orders/{sales_order}/proforma-invoice', [ProformaInvoiceController::class, 'store'])->name('proforma-invoices.store')->middleware('admin.permission:proforma_invoices.create');
+        Route::get('sales-orders/{sales_order}/delivery-note/create', [DeliveryNoteController::class, 'createForm'])->name('delivery-notes.create-form')->middleware('admin.permission:delivery_notes.create');
+        Route::post('sales-orders/{sales_order}/delivery-note', [DeliveryNoteController::class, 'store'])->name('delivery-notes.store')->middleware('admin.permission:delivery_notes.create');
+        Route::resource('sales-orders', SalesOrderController::class)->only(['index', 'show'])
+            ->middlewareFor(['index'], 'admin.permission:sales_orders.index')
+            ->middlewareFor(['show'], 'admin.permission:sales_orders.show');
+
+        Route::get('delivery-notes/{delivery_note}/print', [DeliveryNoteController::class, 'print'])->name('delivery-notes.print')->middleware('admin.permission:delivery_notes.show');
+        Route::post('delivery-notes/{delivery_note}/ship', [DeliveryNoteController::class, 'ship'])->name('delivery-notes.ship')->middleware('admin.permission:delivery_notes.process');
+        Route::post('delivery-notes/{delivery_note}/deliver', [DeliveryNoteController::class, 'markDelivered'])->name('delivery-notes.deliver')->middleware('admin.permission:delivery_notes.process');
+        Route::post('delivery-notes/{delivery_note}/cancel', [DeliveryNoteController::class, 'cancel'])->name('delivery-notes.cancel')->middleware('admin.permission:delivery_notes.process');
+        Route::resource('delivery-notes', DeliveryNoteController::class)->only(['index', 'show'])
+            ->middlewareFor(['index'], 'admin.permission:delivery_notes.index')
+            ->middlewareFor(['show'], 'admin.permission:delivery_notes.show');
+
+        Route::resource('packing-lists', PackingListController::class)->only(['index', 'show'])
+            ->middlewareFor(['index'], 'admin.permission:packing_lists.index')
+            ->middlewareFor(['show'], 'admin.permission:packing_lists.show');
+
+        Route::get('sales-orders/{sales_order}/b2b-invoice/create', [B2bInvoiceController::class, 'createForm'])->name('b2b-invoices.create-form')->middleware('admin.permission:b2b_invoices.create');
+        Route::post('sales-orders/{sales_order}/b2b-invoice', [B2bInvoiceController::class, 'store'])->name('b2b-invoices.store')->middleware('admin.permission:b2b_invoices.create');
+        Route::get('b2b-invoices/{b2b_invoice}/print', [B2bInvoiceController::class, 'print'])->name('b2b-invoices.print')->middleware('admin.permission:b2b_invoices.show');
+        Route::post('b2b-invoices/{b2b_invoice}/payments', [B2bInvoiceController::class, 'recordPayment'])->name('b2b-invoices.record-payment')->middleware('admin.permission:b2b_invoices.record_payment');
+        Route::post('b2b-invoices/{b2b_invoice}/cancel', [B2bInvoiceController::class, 'cancel'])->name('b2b-invoices.cancel')->middleware('admin.permission:b2b_invoices.cancel');
+        Route::resource('b2b-invoices', B2bInvoiceController::class)->only(['index', 'show'])
+            ->middlewareFor(['index'], 'admin.permission:b2b_invoices.index')
+            ->middlewareFor(['show'], 'admin.permission:b2b_invoices.show');
+
+        Route::get('proforma-invoices/{proforma_invoice}/print', [ProformaInvoiceController::class, 'print'])->name('proforma-invoices.print')->middleware('admin.permission:proforma_invoices.show');
+        Route::post('proforma-invoices/{proforma_invoice}/payments', [ProformaInvoiceController::class, 'recordPayment'])->name('proforma-invoices.record-payment')->middleware('admin.permission:proforma_invoices.record_payment');
+        Route::post('proforma-invoices/{proforma_invoice}/cancel', [ProformaInvoiceController::class, 'cancel'])->name('proforma-invoices.cancel')->middleware('admin.permission:proforma_invoices.cancel');
+        Route::delete('document-payments/{payment}', [DocumentPaymentController::class, 'destroy'])->name('document-payments.destroy')->middleware('admin.permission:proforma_invoices.record_payment,b2b_invoices.record_payment');
+        Route::resource('proforma-invoices', ProformaInvoiceController::class)->only(['index', 'show'])
+            ->middlewareFor(['index'], 'admin.permission:proforma_invoices.index')
+            ->middlewareFor(['show'], 'admin.permission:proforma_invoices.show');
+
         Route::get('transactions/create-manual', [AdminManualTransactionController::class, 'create'])->name('transactions.create-manual')->middleware('admin.permission:transactions.create');
         Route::post('transactions/create-manual', [AdminManualTransactionController::class, 'store'])->name('transactions.store-manual')->middleware('admin.permission:transactions.create');
         Route::get('transactions/create-manual/search-customers', [AdminManualTransactionController::class, 'searchCustomers'])->name('transactions.create-manual.search-customers')->middleware('admin.permission:transactions.create');

@@ -13,6 +13,10 @@ return [
         'send' => 'Send',
         'view_sensitive' => 'Sensitive',
         'override' => 'Override',
+        'convert' => 'Convert',
+        'close' => 'Close',
+        'cancel' => 'Cancel',
+        'record_payment' => 'Record Payment',
     ],
 
     'groups' => [
@@ -267,6 +271,69 @@ return [
                     'label' => 'API Katalog',
                     'permissions' => [
                         'index' => ['key' => 'api_docs.index', 'label' => 'Open catalog API documentation'],
+                    ],
+                ],
+            ],
+        ],
+
+        'b2b' => [
+            'label' => 'B2B Sales',
+            'icon' => 'file-text',
+            'modules' => [
+                'quotations' => [
+                    'label' => 'Quotations',
+                    'permissions' => [
+                        'index' => ['key' => 'quotations.index', 'label' => 'List quotations'],
+                        'create' => ['key' => 'quotations.create', 'label' => 'Create quotations'],
+                        'show' => ['key' => 'quotations.show', 'label' => 'View quotation detail'],
+                        'edit' => ['key' => 'quotations.edit', 'label' => 'Edit quotations'],
+                        'send' => ['key' => 'quotations.send', 'label' => 'Change status to sent'],
+                        'convert' => ['key' => 'quotations.convert', 'label' => 'Convert to sales order'],
+                        'close' => ['key' => 'quotations.close', 'label' => 'Manually close remaining qty'],
+                    ],
+                ],
+                'sales_orders' => [
+                    'label' => 'Sales Orders',
+                    'permissions' => [
+                        'index' => ['key' => 'sales_orders.index', 'label' => 'List sales orders'],
+                        'show' => ['key' => 'sales_orders.show', 'label' => 'View sales order detail'],
+                        'cancel' => ['key' => 'sales_orders.cancel', 'label' => 'Cancel sales orders'],
+                    ],
+                ],
+                'proforma_invoices' => [
+                    'label' => 'Proforma Invoices',
+                    'permissions' => [
+                        'index' => ['key' => 'proforma_invoices.index', 'label' => 'List proforma invoices'],
+                        'create' => ['key' => 'proforma_invoices.create', 'label' => 'Issue proforma invoices'],
+                        'show' => ['key' => 'proforma_invoices.show', 'label' => 'View proforma invoice detail'],
+                        'cancel' => ['key' => 'proforma_invoices.cancel', 'label' => 'Cancel proforma invoices'],
+                        'record_payment' => ['key' => 'proforma_invoices.record_payment', 'label' => 'Record DP payments'],
+                    ],
+                ],
+                'delivery_notes' => [
+                    'label' => 'Surat Jalan',
+                    'permissions' => [
+                        'index' => ['key' => 'delivery_notes.index', 'label' => 'List delivery notes'],
+                        'create' => ['key' => 'delivery_notes.create', 'label' => 'Create delivery notes'],
+                        'show' => ['key' => 'delivery_notes.show', 'label' => 'View delivery note detail'],
+                        'process' => ['key' => 'delivery_notes.process', 'label' => 'Mark shipped/delivered'],
+                    ],
+                ],
+                'packing_lists' => [
+                    'label' => 'Packing Lists',
+                    'permissions' => [
+                        'index' => ['key' => 'packing_lists.index', 'label' => 'List packing lists'],
+                        'show' => ['key' => 'packing_lists.show', 'label' => 'View packing list detail'],
+                    ],
+                ],
+                'b2b_invoices' => [
+                    'label' => 'Invoice B2B',
+                    'permissions' => [
+                        'index' => ['key' => 'b2b_invoices.index', 'label' => 'List B2B invoices'],
+                        'create' => ['key' => 'b2b_invoices.create', 'label' => 'Create B2B invoices'],
+                        'show' => ['key' => 'b2b_invoices.show', 'label' => 'View B2B invoice detail'],
+                        'cancel' => ['key' => 'b2b_invoices.cancel', 'label' => 'Cancel B2B invoices'],
+                        'record_payment' => ['key' => 'b2b_invoices.record_payment', 'label' => 'Record invoice payments'],
                     ],
                 ],
             ],

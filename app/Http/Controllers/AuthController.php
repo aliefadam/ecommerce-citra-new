@@ -40,7 +40,7 @@ class AuthController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return $this->redirectByRole($user->role);
+        return $this->redirectByRole($user);
     }
 
     public function login(Request $request)
@@ -60,7 +60,7 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        return $this->redirectByRole(Auth::user()?->role);
+        return $this->redirectByRole(Auth::user());
     }
 
     public function logout(Request $request)
@@ -188,16 +188,16 @@ class AuthController extends Controller
         Auth::login($user, true);
         $request->session()->regenerate();
 
-        return $this->redirectByRole($user->role);
+        return $this->redirectByRole($user);
     }
 
-    private function redirectByRole(?string $role)
+    private function redirectByRole(?User $user)
     {
-        if ($role === 'user') {
-            return redirect()->intended(route('frontend.index'));
+        if ($user?->canAccessAdminPanel()) {
+            return redirect()->intended(route('pages.index'));
         }
 
-        return redirect()->intended(route('pages.index'));
+        return redirect()->intended(route('frontend.index'));
     }
 
     private function storeIntendedFromRedirectQuery(Request $request): void

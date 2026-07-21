@@ -12,6 +12,7 @@ use App\Models\TransactionDetail;
 use App\Models\TransactionStatusHistory;
 use App\Models\UserNotification;
 use App\Services\CheckoutTaxCalculator;
+use App\Services\DocumentNumberGenerator;
 use App\Services\LoyaltyPointService;
 use App\Services\TaxInvoiceRequestService;
 use Carbon\Carbon;
@@ -26,6 +27,8 @@ use Throwable;
 
 class MidtransController extends Controller
 {
+    public function __construct(private readonly DocumentNumberGenerator $documentNumberGenerator) {}
+
     public function createCharge(Request $request, CheckoutTaxCalculator $taxCalculator)
     {
         $validated = $request->validate([
@@ -826,7 +829,11 @@ class MidtransController extends Controller
             $transaction = Transaction::query()->firstOrNew(['order_id' => $orderId]);
             $isNew = ! $transaction->exists;
             if ($isNew) {
-                $transaction->invoice_no = $this->generateDailyInvoiceNo();
+                $transaction->invoice_no = $this->documentNumberGenerator->generate(
+                    Transaction::class,
+                    'INV',
+                    (int) ($payment['company_id'] ?? 0)
+                );
             }
 
             $snapshot = $payment['address_snapshot'] ?? [];
@@ -998,16 +1005,4 @@ class MidtransController extends Controller
         );
     }
 
-    private function generateDailyInvoiceNo(): string
-    {
-        $prefix = 'INV-'.now()->format('YmdHis').'-';
-        $dayStart = now()->startOfDay();
-        $dayEnd = now()->endOfDay();
-        $sequence = ((int) Transaction::query()
-            ->whereBetween('created_at', [$dayStart, $dayEnd])
-            ->lockForUpdate()
-            ->count()) + 1;
-
-        return $prefix.str_pad((string) $sequence, 4, '0', STR_PAD_LEFT);
-    }
 }

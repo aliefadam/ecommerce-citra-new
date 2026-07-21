@@ -10,6 +10,7 @@ use App\Models\TransactionDetail;
 use App\Models\TransactionStatusHistory;
 use App\Models\TransactionTaxInvoice;
 use App\Models\User;
+use App\Services\DocumentNumberGenerator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +20,8 @@ use Illuminate\Validation\ValidationException;
 class AdminManualTransactionController extends Controller
 {
     use ScopesToActiveCompany;
+
+    public function __construct(private readonly DocumentNumberGenerator $documentNumberGenerator) {}
 
 
     public function searchCustomers(Request $request): \Illuminate\Http\JsonResponse
@@ -206,7 +209,7 @@ class AdminManualTransactionController extends Controller
                 'manual_customer_name' => $customerMode === 'manual' ? (string) $validated['manual_customer_name'] : null,
                 'manual_customer_phone' => $customerMode === 'manual' ? (string) $validated['manual_customer_phone'] : null,
                 'manual_customer_email' => $customerMode === 'manual' ? (string) ($validated['manual_customer_email'] ?? '') : null,
-                'invoice_no' => $this->generateDailyInvoiceNo(),
+                'invoice_no' => $this->documentNumberGenerator->generate(Transaction::class, 'INV', $companyId),
                 'order_id' => $this->generateManualOrderId(),
                 'payment_type' => 'manual_admin',
                 'payment_method' => 'Manual Admin',
@@ -440,17 +443,6 @@ class AdminManualTransactionController extends Controller
         });
 
         return back()->with('success', 'Pengiriman manual berhasil diperbarui.');
-    }
-
-    private function generateDailyInvoiceNo(): string
-    {
-        $prefix = 'INV-' . now()->format('YmdHis') . '-';
-        $sequence = ((int) Transaction::query()
-            ->whereBetween('created_at', [now()->startOfDay(), now()->endOfDay()])
-            ->lockForUpdate()
-            ->count()) + 1;
-
-        return $prefix . str_pad((string) $sequence, 4, '0', STR_PAD_LEFT);
     }
 
     private function generateManualOrderId(): string

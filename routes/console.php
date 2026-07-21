@@ -1,5 +1,6 @@
 <?php
 
+use App\Console\Commands\ExpireQuotations;
 use App\Console\Commands\SendScheduledNewsletters;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -14,3 +15,4 @@ Artisan::command('newsletter:send-scheduled-inline', function () {
 })->purpose('Send scheduled newsletter campaigns');
 
 Schedule::command(SendScheduledNewsletters::class)->everyMinute();
+Schedule::command(ExpireQuotations::class)->hourly();

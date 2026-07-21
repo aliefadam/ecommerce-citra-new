@@ -91,6 +91,53 @@ return [
     ],
 
     [
+        'group' => 'B2B Sales',
+        'items' => [
+            [
+                'name' => 'Quotations',
+                'route' => 'quotations.index',
+                'active' => 'quotations.*',
+                'icon' => 'file-text',
+                'permission' => 'quotations.index',
+            ],
+            [
+                'name' => 'Sales Orders',
+                'route' => 'sales-orders.index',
+                'active' => 'sales-orders.*',
+                'icon' => 'clipboard-list',
+                'permission' => 'sales_orders.index',
+            ],
+            [
+                'name' => 'Proforma Invoices',
+                'route' => 'proforma-invoices.index',
+                'active' => 'proforma-invoices.*',
+                'icon' => 'file-clock',
+                'permission' => 'proforma_invoices.index',
+            ],
+            [
+                'name' => 'Surat Jalan',
+                'route' => 'delivery-notes.index',
+                'active' => 'delivery-notes.*',
+                'icon' => 'truck',
+                'permission' => 'delivery_notes.index',
+            ],
+            [
+                'name' => 'Packing Lists',
+                'route' => 'packing-lists.index',
+                'active' => 'packing-lists.*',
+                'icon' => 'package',
+                'permission' => 'packing_lists.index',
+            ],
+            [
+                'name' => 'Invoice B2B',
+                'route' => 'b2b-invoices.index',
+                'active' => 'b2b-invoices.*',
+                'icon' => 'receipt-text',
+                'permission' => 'b2b_invoices.index',
+            ],
+        ],
+    ],
+    [
         'group' => 'Transactions',
         'items' => [
             [

@@ -11,6 +11,7 @@ use App\Models\TransactionDetail;
 use App\Models\TransactionStatusHistory;
 use App\Models\UserNotification;
 use App\Services\CheckoutTaxCalculator;
+use App\Services\DocumentNumberGenerator;
 use App\Services\ImageOptimizer;
 use App\Services\LoyaltyPointService;
 use App\Services\TaxInvoiceRequestService;
@@ -21,7 +22,7 @@ use Illuminate\Support\Facades\Mail;
 
 class ManualPaymentController extends Controller
 {
-    public function checkout(Request $request, LoyaltyPointService $loyaltyPointService, CheckoutTaxCalculator $taxCalculator, TaxInvoiceRequestService $taxInvoiceService)
+    public function checkout(Request $request, LoyaltyPointService $loyaltyPointService, CheckoutTaxCalculator $taxCalculator, TaxInvoiceRequestService $taxInvoiceService, DocumentNumberGenerator $documentNumberGenerator)
     {
         $validated = $request->validate([
             'items' => ['required', 'array', 'min:1'],
@@ -53,7 +54,7 @@ class ManualPaymentController extends Controller
 
         $orderId = 'MAN-'.now()->format('YmdHis').'-'.random_int(1000, 9999);
 
-        $transaction = DB::transaction(function () use ($request, $validated, $orderId, $loyaltyPointService, $taxCalculator, $taxInvoiceService) {
+        $transaction = DB::transaction(function () use ($request, $validated, $orderId, $loyaltyPointService, $taxCalculator, $taxInvoiceService, $documentNumberGenerator) {
             $companyId = (int) $validated['company_id'];
             $items = collect($validated['items'])->values();
 
@@ -101,7 +102,7 @@ class ManualPaymentController extends Controller
                 'company_id' => $companyId,
                 'user_id' => $request->user()?->id,
                 'source' => Transaction::SOURCE_CHECKOUT,
-                'invoice_no' => $this->generateDailyInvoiceNo(),
+                'invoice_no' => $documentNumberGenerator->generate(Transaction::class, 'INV', $companyId),
                 'order_id' => $orderId,
                 'payment_type' => 'manual_transfer',
                 'payment_method' => 'Transfer Manual',
@@ -242,14 +243,4 @@ class ManualPaymentController extends Controller
         return back()->with('success', 'Bukti transfer berhasil diupload. Admin akan memverifikasi pembayaran.');
     }
 
-    private function generateDailyInvoiceNo(): string
-    {
-        $prefix = 'INV-'.now()->format('YmdHis').'-';
-        $sequence = ((int) Transaction::query()
-            ->whereBetween('created_at', [now()->startOfDay(), now()->endOfDay()])
-            ->lockForUpdate()
-            ->count()) + 1;
-
-        return $prefix.str_pad((string) $sequence, 4, '0', STR_PAD_LEFT);
-    }
 }

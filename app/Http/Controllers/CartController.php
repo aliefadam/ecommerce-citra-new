@@ -9,6 +9,7 @@ use App\Models\ProductVariant;
 use App\Models\TransactionStatusHistory;
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
+use App\Services\DocumentNumberGenerator;
 use Illuminate\Http\Request;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +17,8 @@ use Illuminate\Validation\ValidationException;
 
 class CartController extends Controller
 {
+    public function __construct(private readonly DocumentNumberGenerator $documentNumberGenerator) {}
+
     public function index()
     {
         $cartItems = $this->buildCartItems(auth()->id());
@@ -363,11 +366,13 @@ class CartController extends Controller
             $shippingCost = (int) ($payment['shipping_cost'] ?? 0);
             $discountAmount = min($subtotal, max(0, (int) ($payment['discount_amount'] ?? 0)));
             $grandTotal = max(0, $subtotal + $shippingCost - $discountAmount);
+            $companyId = (int) ($payment['company_id'] ?? 0);
 
             $transaction = Transaction::query()->create([
                 'user_id' => auth()->id(),
+                'company_id' => $companyId,
                 'source' => Transaction::SOURCE_CHECKOUT,
-                'invoice_no' => $this->generateDailyInvoiceNo(),
+                'invoice_no' => $this->documentNumberGenerator->generate(Transaction::class, 'INV', $companyId),
                 'order_id' => $orderId,
                 'midtrans_transaction_id' => (string) ($payment['transaction_id'] ?? ''),
                 'payment_type' => (string) ($payment['payment_type'] ?? ''),
@@ -505,17 +510,4 @@ class CartController extends Controller
         ], $status));
     }
 
-    private function generateDailyInvoiceNo(): string
-    {
-        $todayPrefix = 'INV-' . now()->format('YmdHis') . '-';
-        $dayStart = now()->startOfDay();
-        $dayEnd = now()->endOfDay();
-
-        $sequence = ((int) Transaction::query()
-            ->whereBetween('created_at', [$dayStart, $dayEnd])
-            ->lockForUpdate()
-            ->count()) + 1;
-
-        return $todayPrefix . str_pad((string) $sequence, 4, '0', STR_PAD_LEFT);
-    }
 }
