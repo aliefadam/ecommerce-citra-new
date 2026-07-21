@@ -208,15 +208,18 @@ Route::middleware(['auth', 'admin', 'company.scope'])->group(function () {
             ->middlewareFor(['show'], 'admin.permission:quotations.show')
             ->middlewareFor(['edit', 'update'], 'admin.permission:quotations.edit');
 
+        Route::get('sales-orders/search-customers', [SalesOrderController::class, 'searchCustomers'])->name('sales-orders.search-customers')->middleware('admin.permission:sales_orders.create');
+        Route::get('sales-orders/search-products', [SalesOrderController::class, 'searchProducts'])->name('sales-orders.search-products')->middleware('admin.permission:sales_orders.create');
         Route::get('sales-orders/{sales_order}/print', [SalesOrderController::class, 'print'])->name('sales-orders.print')->middleware('admin.permission:sales_orders.show');
         Route::post('sales-orders/{sales_order}/cancel', [SalesOrderController::class, 'cancel'])->name('sales-orders.cancel')->middleware('admin.permission:sales_orders.cancel');
         Route::get('sales-orders/{sales_order}/proforma-invoice/create', [ProformaInvoiceController::class, 'createForm'])->name('proforma-invoices.create-form')->middleware('admin.permission:proforma_invoices.create');
         Route::post('sales-orders/{sales_order}/proforma-invoice', [ProformaInvoiceController::class, 'store'])->name('proforma-invoices.store')->middleware('admin.permission:proforma_invoices.create');
         Route::get('sales-orders/{sales_order}/delivery-note/create', [DeliveryNoteController::class, 'createForm'])->name('delivery-notes.create-form')->middleware('admin.permission:delivery_notes.create');
         Route::post('sales-orders/{sales_order}/delivery-note', [DeliveryNoteController::class, 'store'])->name('delivery-notes.store')->middleware('admin.permission:delivery_notes.create');
-        Route::resource('sales-orders', SalesOrderController::class)->only(['index', 'show'])
+        Route::resource('sales-orders', SalesOrderController::class)->only(['index', 'show', 'create', 'store'])
             ->middlewareFor(['index'], 'admin.permission:sales_orders.index')
-            ->middlewareFor(['show'], 'admin.permission:sales_orders.show');
+            ->middlewareFor(['show'], 'admin.permission:sales_orders.show')
+            ->middlewareFor(['create', 'store'], 'admin.permission:sales_orders.create');
 
         Route::get('delivery-notes/{delivery_note}/print', [DeliveryNoteController::class, 'print'])->name('delivery-notes.print')->middleware('admin.permission:delivery_notes.show');
         Route::post('delivery-notes/{delivery_note}/ship', [DeliveryNoteController::class, 'ship'])->name('delivery-notes.ship')->middleware('admin.permission:delivery_notes.process');

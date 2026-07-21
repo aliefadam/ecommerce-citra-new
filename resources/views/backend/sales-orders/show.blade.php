@@ -30,8 +30,12 @@
             <p class="mt-1 text-xs text-slate-400 dark:text-slate-500">
                 Dibuat {{ $salesOrder->created_at->format('d M Y, H:i') }} oleh {{ $salesOrder->createdByAdmin?->name ?? '-' }}
                 @if ($canSeePricing)
-                    &bull; Dari Quotation
-                    <a href="{{ route('quotations.show', $salesOrder->quotation_id) }}" class="text-blue-600 hover:underline">{{ $salesOrder->quotation?->quotation_no }}</a>
+                    @if ($salesOrder->quotation_id)
+                        &bull; Dari Quotation
+                        <a href="{{ route('quotations.show', $salesOrder->quotation_id) }}" class="text-blue-600 hover:underline">{{ $salesOrder->quotation?->quotation_no }}</a>
+                    @else
+                        &bull; Dibuat langsung tanpa Quotation
+                    @endif
                 @endif
             </p>
         </div>
@@ -58,7 +62,7 @@
 
     <div class="mb-6 flex flex-wrap gap-2">
         @if ($salesOrder->canBeCancelled())
-            <form method="POST" action="{{ route('sales-orders.cancel', $salesOrder) }}" onsubmit="return confirm('Batalkan Sales Order ini? Sisa qty akan dikembalikan ke Quotation asal.')">
+            <form method="POST" action="{{ route('sales-orders.cancel', $salesOrder) }}" onsubmit="return confirm('Batalkan Sales Order ini?{{ $salesOrder->quotation_id ? ' Sisa qty akan dikembalikan ke Quotation asal.' : '' }}')">
                 @csrf
                 <button type="submit" class="inline-flex items-center gap-2 rounded-xl border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50">
                     <i data-lucide="ban"></i> Batalkan Sales Order

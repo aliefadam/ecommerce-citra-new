@@ -296,6 +296,7 @@ return [
                     'label' => 'Sales Orders',
                     'permissions' => [
                         'index' => ['key' => 'sales_orders.index', 'label' => 'List sales orders'],
+                        'create' => ['key' => 'sales_orders.create', 'label' => 'Create sales order directly (without quotation)'],
                         'show' => ['key' => 'sales_orders.show', 'label' => 'View sales order detail'],
                         'cancel' => ['key' => 'sales_orders.cancel', 'label' => 'Cancel sales orders'],
                     ],

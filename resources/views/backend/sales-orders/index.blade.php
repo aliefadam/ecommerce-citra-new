@@ -4,9 +4,17 @@
 
 @section('content')
     <main class="flex-1 p-4 sm:p-6 mt-6">
-        <div class="mb-6">
-            <h1 class="text-2xl font-bold text-slate-800 dark:text-white">Sales Orders</h1>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Order internal hasil konversi Quotation, menggerakkan fulfillment.</p>
+        <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800 dark:text-white">Sales Orders</h1>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Order internal hasil konversi Quotation, atau dibuat langsung tanpa Quotation, menggerakkan fulfillment.</p>
+            </div>
+            @if (auth()->user()?->hasAdminPermission('sales_orders.create'))
+                <a href="{{ route('sales-orders.create') }}"
+                   class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-blue-500/20 hover:bg-blue-700 shrink-0">
+                    <i data-lucide="plus" class="h-4 w-4"></i> Buat Sales Order Langsung
+                </a>
+            @endif
         </div>
 
         @if (session('success'))
@@ -62,7 +70,11 @@
                                 <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ $salesOrder->customerName() }}</td>
                                 @if ($canSeePricing)
                                     <td class="px-4 py-3 text-slate-600 dark:text-slate-300">
-                                        <a href="{{ route('quotations.show', $salesOrder->quotation_id) }}" class="hover:text-blue-600 hover:underline">{{ $salesOrder->quotation?->quotation_no }}</a>
+                                        @if ($salesOrder->quotation_id)
+                                            <a href="{{ route('quotations.show', $salesOrder->quotation_id) }}" class="hover:text-blue-600 hover:underline">{{ $salesOrder->quotation?->quotation_no }}</a>
+                                        @else
+                                            <span class="text-xs text-slate-400 italic">Langsung (tanpa Quotation)</span>
+                                        @endif
                                     </td>
                                     <td class="px-4 py-3 text-slate-600 dark:text-slate-300">Rp {{ number_format($salesOrder->grand_total, 0, ',', '.') }}</td>
                                 @endif

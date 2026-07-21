@@ -11,6 +11,7 @@ Keputusan utama:
 - Alur ini adalah entitas baru yang berdiri sendiri, tidak menggantikan atau mengubah `Transaction`, `TransactionDetail`, atau logic checkout/manual-sales yang sudah berjalan.
 - Satu Quotation dapat dipakai berkali-kali menjadi beberapa Sales Order (pembelian dicicil/parsial dalam beberapa PO terpisah selama quotation masih berlaku), bukan hanya sekali konversi.
 - **Sales Order adalah dokumen internal yang selalu dibuat** setiap kali Quotation dikonversi — merepresentasikan komitmen order yang menggerakkan fulfillment (Surat Jalan/Packing List), lepas dari apakah ada kebutuhan DP atau tidak.
+- **[Update 2026-07-22] Sales Order juga bisa dibuat langsung tanpa Quotation.** Tidak semua order butuh proses negosiasi harga formal — customer baru maupun lama yang order langsung dengan harga yang sudah disepakati di luar sistem (telepon/chat) bisa langsung dibuatkan Sales Order tanpa Quotation lebih dulu. `quotation_id` pada Sales Order bersifat nullable: `NULL` untuk order langsung, terisi untuk hasil convert Quotation. Kedua jalur menghasilkan Sales Order yang identik secara struktur & berjalan di alur fulfillment (Proforma Invoice/Surat Jalan/Invoice B2B) yang sama persis — perbedaannya murni di titik masuk pembuatan.
 - **Proforma Invoice bersifat opsional**, hanya diterbitkan untuk customer yang butuh dokumen tagihan sementara/DP sebelum barang dikirim. Fulfillment (Surat Jalan) tidak bergantung pada keberadaan Proforma Invoice — keduanya ditarik langsung dari Sales Order.
 - Satu Sales Order dapat dipecah menjadi beberapa Surat Jalan + Packing List (pengiriman parsial/bertahap), dan hasil pengirimannya digabung menjadi satu atau lebih Invoice final.
 - **Invoice B2B dan Proforma Invoice merepresentasikan piutang (receivable)**, bukan sekadar status lunas/belum — pelunasannya dicatat lewat ledger pembayaran (`document_payments`) yang mendukung pembayaran bertahap/cicilan, dan DP yang sudah dibayar di Proforma Invoice otomatis jadi kredit pengurang piutang saat Invoice B2B diterbitkan.
@@ -26,6 +27,7 @@ Keputusan utama:
 - Quotation yang disetujui customer (ditandai manual oleh admin) bisa dikonversi menjadi Sales Order, dan dapat dikonversi berkali-kali (per item, sebagian qty setiap kali) selama sisa qty & masa berlaku masih ada.
 - Admin bisa menutup manual sebuah Quotation kapan saja setelah minimal satu Sales Order dibuat, untuk menandai bahwa customer tidak akan melanjutkan pembelian sisa qty yang belum terpakai.
 - Sales Order merepresentasikan komitmen order yang sudah dikonfirmasi, menjadi acuan utama untuk perencanaan pengiriman (fulfillment), lepas dari kebutuhan DP.
+- Admin/sales bisa membuat Sales Order **langsung tanpa Quotation** untuk order yang tidak butuh negosiasi harga formal (mis. customer baru yang order langsung dengan harga sudah disepakati di luar sistem) — form input item/harga sama seperti Quotation, tapi hasilnya langsung jadi Sales Order berstatus `confirmed`.
 - Admin/Sales bisa menerbitkan Proforma Invoice dari sebuah Sales Order jika customer memerlukan dokumen tagihan sementara/DP sebelum barang dikirim — bersifat opsional, tidak semua Sales Order butuh ini.
 - Satu Sales Order bisa dipecah menjadi beberapa pengiriman, masing-masing dicatat sebagai Surat Jalan + Packing List, tanpa perlu menunggu Proforma Invoice.
 - Staff Gudang bisa membuat Surat Jalan & Packing List berdasarkan Sales Order, memilih item & qty yang benar-benar dikirim (mendukung pengiriman parsial).
@@ -101,11 +103,13 @@ Dokumen tagihan final/resmi secara internal untuk satu atau lebih Surat Jalan ya
 ## Alur Dokumen (Ringkasan)
 
 ```text
-Quotation (draft/sent/accepted/rejected/expired/partially_converted/closed)
+Quotation (draft/sent/accepted/rejected/expired/partially_converted/closed)   [opsional, bisa dilewati]
    |
    | convert (status accepted/partially_converted, belum expired/closed, bisa berkali-kali per sisa qty)
    v
 Sales Order (draft/confirmed/partially_fulfilled/fulfilled/cancelled/closed)  x N per Quotation
+   ^
+   |-- ATAU dibuat langsung tanpa Quotation (quotation_id = NULL), untuk order tanpa negosiasi formal
    |
    |-- (opsional, hanya jika customer perlu DP) issue
    |      v
@@ -136,6 +140,7 @@ Pembayaran (ledger, N per Invoice B2B)
 Catatan alur:
 
 - Quotation -> Sales Order: **1:N** (satu Quotation yang sama bisa ditarik berkali-kali menjadi beberapa Sales Order terpisah, masing-masing menarik sebagian qty per item, selama sisa qty & masa berlaku masih ada). Jika perlu revisi harga/item besar, tetap buat Quotation baru.
+- Sales Order **juga bisa dibuat tanpa Quotation sama sekali** (`quotation_id = NULL`) lewat form input item/harga langsung, untuk order yang tidak butuh negosiasi formal. Sales Order hasil jalur ini identik strukturnya dengan hasil convert Quotation dan mengikuti alur fulfillment yang sama persis dari titik ini ke bawah.
 - Sales Order -> Proforma Invoice: **0..N, opsional**. Sales Order tidak wajib punya Proforma Invoice. Jika diterbitkan, Proforma Invoice hanya berfungsi sebagai dokumen tagihan/DP, tidak menjadi prasyarat untuk membuat Surat Jalan — tidak ada flag "DP wajib" pada fase pertama (lihat Rekomendasi MVP).
 - Sales Order -> Surat Jalan: 1:N (pengiriman bertahap), dengan validasi qty per item tidak boleh melebihi sisa qty yang belum dikirim di Sales Order.
 - Surat Jalan -> Packing List: 1:1, dibuat dalam satu aksi yang sama.
@@ -204,8 +209,8 @@ Behavior:
 Field:
 
 - Nomor Sales Order (`sales_order_no`, auto-generate).
-- Referensi ke Quotation asal (`quotation_id`).
-- Snapshot data customer, item, qty, harga dari Quotation saat convert.
+- Referensi ke Quotation asal (`quotation_id`, **nullable** — kosong jika Sales Order dibuat langsung tanpa Quotation).
+- Snapshot data customer, item, qty, harga (dari Quotation saat convert, atau input langsung admin jika tanpa Quotation).
 - Status: `draft`, `confirmed`, `partially_fulfilled`, `fulfilled`, `cancelled`.
 - Kolom qty terkirim per item (turunan dari Surat Jalan terkait, untuk tracking sisa qty).
 
@@ -213,9 +218,10 @@ Behavior:
 
 - Convert dari Quotation menyalin item & qty yang dipilih admin saat itu (bisa sebagian dari sisa qty Quotation), dengan harga hasil nego tetap dipakai apa adanya (tidak di-refresh ke harga katalog terbaru).
 - Setiap convert memvalidasi qty per item terhadap sisa qty Quotation (`quantity` dikurangi `quantity_converted` berjalan), dengan row lock untuk mencegah race condition jika ada dua Sales Order dibuat bersamaan dari Quotation yang sama.
-- Sales Order berstatus `confirmed` begitu dibuat (dianggap komitmen order yang sah), siap dijadikan acuan Surat Jalan kapan saja tanpa menunggu dokumen lain.
+- **Sales Order juga bisa dibuat langsung** (`sales-orders.create`/`store`) tanpa Quotation, lewat form input item yang sama polanya dengan form Quotation (pilih customer existing/manual, pilih produk/varian, qty, harga manual per baris, diskon) — bukan hasil convert, jadi tidak ada validasi sisa qty terhadap dokumen lain. `quotation_id` dan `quotation_detail_id` pada baris detail disimpan `NULL`.
+- Sales Order berstatus `confirmed` begitu dibuat (baik lewat convert Quotation maupun langsung), dianggap komitmen order yang sah, siap dijadikan acuan Surat Jalan kapan saja tanpa menunggu dokumen lain.
 - Status berubah otomatis menjadi `partially_fulfilled` ketika ada Surat Jalan pertama dibuat, dan `fulfilled` ketika seluruh qty di semua item sudah tercakup oleh Surat Jalan yang tidak dibatalkan.
-- Admin bisa membatalkan Sales Order selama belum ada Surat Jalan aktif terkait (status `draft`/`confirmed` tanpa Surat Jalan). Qty yang dibatalkan dikembalikan sebagai sisa qty yang bisa ditarik ulang dari Quotation asal.
+- Admin bisa membatalkan Sales Order selama belum ada Surat Jalan aktif terkait (status `draft`/`confirmed` tanpa Surat Jalan). Jika berasal dari convert Quotation, qty yang dibatalkan dikembalikan sebagai sisa qty yang bisa ditarik ulang dari Quotation asal; jika `quotation_id` NULL (dibuat langsung), tidak ada Quotation yang perlu dibuka kembali (no-op, lihat `reopenQuotationIfNeeded()`).
 - Sales Order dapat memiliki nol, satu, atau lebih Proforma Invoice terkait — keberadaan/status Proforma Invoice tidak memengaruhi kemampuan Sales Order untuk lanjut ke Surat Jalan pada fase pertama (tidak ada flag "DP wajib", lihat Rekomendasi MVP).
 
 ### 3. Proforma Invoice (Opsional)
@@ -351,7 +357,7 @@ Rekomendasi teknis: penomoran invoice existing sudah diduplikasi identik di 4 co
 
 ### Tabel `sales_orders`
 
-- `id`, `company_id` (FK `companies`, NOT NULL, diwarisi dari `quotation.company_id` saat convert), `sales_order_no`, `quotation_id` (banyak Sales Order bisa menunjuk ke Quotation yang sama)
+- `id`, `company_id` (FK `companies`, NOT NULL, diwarisi dari `quotation.company_id` saat convert atau dari perusahaan aktif saat dibuat langsung), `sales_order_no`, `quotation_id` (**nullable** — banyak Sales Order bisa menunjuk ke Quotation yang sama, atau NULL jika dibuat langsung tanpa Quotation)
 - Snapshot customer (sama pola dengan `quotations`)
 - `status`
 - `subtotal_amount`, `discount_amount`, `grand_total`
@@ -448,7 +454,7 @@ Alasan Sales Order dipisah dari Proforma Invoice (bukan digabung jadi satu dokum
 Module baru di `config/admin_permissions.php`, mengikuti pola existing (`{module}.{action}`):
 
 - `quotations`: `index`, `create`, `show`, `edit`, `send` (ubah status ke sent), `convert` (convert ke sales order), `close` (tutup manual sisa qty)
-- `sales_orders`: `index`, `show`, `cancel`
+- `sales_orders`: `index`, `show`, `create` (buat Sales Order langsung tanpa Quotation), `cancel`
 - `proforma_invoices`: `index`, `create`, `show`, `cancel`, `record_payment` (catat pembayaran DP)
 - `delivery_notes`: `index`, `create`, `show`, `process` (ubah status shipped/delivered)
 - `packing_lists`: `index`, `show`
@@ -488,6 +494,7 @@ Kebutuhan role baru:
 
 - Quotation: item minimal 1, qty > 0, harga >= 0, `valid_until` wajib dan harus tanggal masa depan saat dibuat.
 - Convert Quotation -> Sales Order: status harus `accepted`/`partially_converted`, `valid_until` belum terlewati, qty yang ditarik per item <= sisa qty (`quantity` - `quantity_converted`) pada Quotation.
+- Buat Sales Order langsung (tanpa Quotation): item minimal 1, qty > 0, harga >= 0 — sama seperti validasi item Quotation, karena tidak ada dokumen sumber untuk divalidasi terhadap sisa qty.
 - Tutup manual Quotation: hanya bisa dilakukan setelah minimal satu Sales Order pernah dibuat dari Quotation tersebut, dan status belum `closed`/`rejected`/`expired`.
 - Terbitkan Proforma Invoice: Sales Order harus berstatus `confirmed`/`partially_fulfilled` (belum `cancelled`), item/qty yang ditagihkan tidak boleh melebihi qty pada Sales Order.
 - Surat Jalan: qty per item wajib > 0 dan <= sisa qty belum terkirim pada Sales Order terkait; validasi ulang stok varian saat submit (row lock). Tidak ada validasi terhadap status Proforma Invoice pada fase pertama.
@@ -503,6 +510,7 @@ Kebutuhan role baru:
 - Admin bisa mengubah status Quotation dan hanya bisa convert saat `accepted`/`partially_converted` dan belum expired/closed.
 - Admin bisa mengonversi satu Quotation menjadi lebih dari satu Sales Order secara bertahap (qty sebagian setiap kali), sepanjang sisa qty & masa berlaku masih ada.
 - Setiap convert menghasilkan satu Sales Order dengan data tersalin (snapshot) sesuai item & qty yang dipilih dari Quotation.
+- Admin bisa membuat Sales Order langsung tanpa Quotation untuk order yang tidak butuh negosiasi formal, dengan form input item/harga sendiri; Sales Order hasilnya berjalan identik di alur fulfillment berikutnya (Proforma Invoice/Surat Jalan/Invoice B2B) seperti hasil convert Quotation.
 - Admin bisa menutup manual sebuah Quotation yang masih ada sisa qty untuk menandai customer tidak melanjutkan pembelian sisanya.
 - Sistem mencegah qty yang ditarik ke Sales Order melebihi sisa qty Quotation, termasuk saat dua permintaan convert terjadi bersamaan.
 - Admin bisa menerbitkan Proforma Invoice dari Sales Order secara opsional, dan bisa melewatinya sepenuhnya jika customer tidak butuh DP.
@@ -531,6 +539,8 @@ Kebutuhan role baru:
 - Dua staff gudang membuat Surat Jalan bersamaan dari Sales Order yang sama untuk item yang sama (race condition qty sisa) — perlu row lock di level Sales Order/Sales Order Detail saat validasi sisa qty.
 - Dua admin/sales membuat Sales Order bersamaan dari Quotation yang sama untuk item yang sama (race condition sisa qty Quotation) — perlu row lock di level Quotation/Quotation Detail saat validasi.
 - Customer berubah pikiran soal harga setelah Sales Order dibuat — perlu Quotation baru (bukan edit Sales Order), karena Sales Order dianggap snapshot final dari negosiasi.
+- **[Ditambahkan 2026-07-22]** Sales Order yang dibuat langsung (`quotation_id` NULL) dibatalkan — `reopenQuotationIfNeeded()` cukup `return` tanpa aksi karena tidak ada Quotation yang perlu dibuka kembali; tidak perlu penanganan khusus tambahan karena fungsi ini sudah mencari Quotation lewat `find()` (bukan `findOrFail()`) dan null-safe terhadap `quotation_id` kosong.
+- Tampilan "Dari Quotation [nomor]" pada halaman list & detail Sales Order disembunyikan (bukan menampilkan link rusak) ketika `quotation_id` NULL.
 - Quotation qty 2 pcs, baru terpakai 1 pcs lewat satu Sales Order, lalu admin menutup manual sisa 1 pcs karena customer tidak melanjutkan — Quotation berstatus `closed` dengan riwayat 1 Sales Order yang tetap valid dan berjalan normal.
 - Quotation ditutup manual atau expired padahal ada Sales Order yang masih `draft`/`confirmed` (belum ada Surat Jalan) — **Sales Order tetap berjalan normal**, tidak ikut batal otomatis (lihat Keputusan Terkonfirmasi).
 - Customer sudah bayar DP via Proforma Invoice, tapi ternyata batal beli sebagian qty (Sales Order sisa qty ditutup) — nominal DP yang sudah dibayar untuk qty yang batal perlu proses refund manual di luar sistem pada fase pertama.
