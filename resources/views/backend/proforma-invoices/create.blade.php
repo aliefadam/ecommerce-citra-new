@@ -14,79 +14,123 @@
             <div class="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{{ $errors->first() }}</div>
         @endif
 
-        <form method="POST" action="{{ route('proforma-invoices.store', $salesOrder) }}" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden">
+        <form method="POST" action="{{ route('proforma-invoices.store', $salesOrder) }}" class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
             @csrf
-            <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-700">
-                <h2 class="font-bold text-slate-800 dark:text-white">Pilih Item & Qty yang Ditagihkan</h2>
-                <p class="text-xs text-slate-500 dark:text-slate-400">Bisa mencakup seluruh atau sebagian item Sales Order, sesuai kebutuhan DP.</p>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead class="bg-slate-50 dark:bg-slate-700/50">
-                        <tr>
-                            <th class="text-left px-4 py-3 text-slate-500">Produk</th>
-                            <th class="text-right px-4 py-3 text-slate-500">Harga</th>
-                            <th class="text-right px-4 py-3 text-slate-500">Qty Order</th>
-                            <th class="text-right px-4 py-3 text-slate-500 w-32">Qty Ditagihkan</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
-                        @foreach ($salesOrder->details as $detail)
-                            <tr>
-                                <td class="px-4 py-3">
-                                    <p class="font-semibold text-slate-800 dark:text-slate-200">{{ $detail->product_name }}</p>
-                                    <p class="text-xs text-slate-400">{{ $detail->variant_name }}</p>
-                                </td>
-                                <td class="px-4 py-3 text-right text-slate-600 dark:text-slate-300">Rp {{ number_format($detail->price, 0, ',', '.') }}</td>
-                                <td class="px-4 py-3 text-right text-slate-600 dark:text-slate-300">{{ $detail->quantity }}</td>
-                                <td class="px-4 py-3 text-right">
-                                    <input type="hidden" name="items[{{ $loop->index }}][sales_order_detail_id]" value="{{ $detail->id }}">
-                                    <input type="number" name="items[{{ $loop->index }}][qty]" min="0" max="{{ $detail->quantity }}" value="{{ $detail->quantity }}"
-                                        data-price="{{ $detail->price }}" oninput="recalculatePi()"
-                                        class="pi-qty w-24 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-right text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200">
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
 
-            <div class="px-5 py-4 border-t border-slate-100 dark:border-slate-700 grid gap-4 md:grid-cols-2">
-                <div>
-                    <label for="pi_ppn_rate" class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-300">PPN (%)</label>
-                    <input id="pi_ppn_rate" name="ppn_rate" type="number" min="0" max="100" step="0.01" value="{{ old('ppn_rate', $defaultPpnRate) }}" oninput="recalculatePi()"
-                        class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200">
+            <section class="space-y-6">
+                <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden">
+                    <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-700">
+                        <h2 class="font-bold text-slate-800 dark:text-white">Pilih Item & Qty yang Ditagihkan</h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Bisa mencakup seluruh atau sebagian item Sales Order, sesuai kebutuhan DP.</p>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead class="bg-slate-50 dark:bg-slate-700/50">
+                                <tr>
+                                    <th class="text-left px-4 py-3 text-slate-500">Produk</th>
+                                    <th class="text-right px-4 py-3 text-slate-500">Harga</th>
+                                    <th class="text-right px-4 py-3 text-slate-500">Qty Order</th>
+                                    <th class="text-right px-4 py-3 text-slate-500 w-32">Qty Ditagihkan</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+                                @foreach ($salesOrder->details as $detail)
+                                    <tr>
+                                        <td class="px-4 py-3">
+                                            <p class="font-semibold text-slate-800 dark:text-slate-200">{{ $detail->product_name }}</p>
+                                            <p class="text-xs text-slate-400">{{ $detail->variant_name }}</p>
+                                        </td>
+                                        <td class="px-4 py-3 text-right text-slate-600 dark:text-slate-300">Rp {{ number_format($detail->price, 0, ',', '.') }}</td>
+                                        <td class="px-4 py-3 text-right text-slate-600 dark:text-slate-300">{{ $detail->quantity }}</td>
+                                        <td class="px-4 py-3 text-right">
+                                            <input type="hidden" name="items[{{ $loop->index }}][sales_order_detail_id]" value="{{ $detail->id }}">
+                                            <input type="number" name="items[{{ $loop->index }}][qty]" min="0" max="{{ $detail->quantity }}" value="{{ $detail->quantity }}"
+                                                data-price="{{ $detail->price }}" oninput="recalculatePi()"
+                                                class="pi-qty w-24 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-right text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200">
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                <div>
-                    <label for="pi_shipping_cost" class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-300">Ongkir</label>
-                    <input id="pi_shipping_cost" name="shipping_cost" type="number" min="0" step="1" value="{{ old('shipping_cost', 0) }}" oninput="recalculatePi()"
-                        class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200">
-                </div>
-                <div>
-                    <label for="pi_admin_fee" class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-300">Biaya Admin</label>
-                    <input id="pi_admin_fee" name="admin_fee" type="number" min="0" step="1" value="{{ old('admin_fee', 0) }}" oninput="recalculatePi()"
-                        class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200">
-                </div>
-                <div>
-                    <label for="pi_other_cost" class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-300">Lain-lain</label>
-                    <input id="pi_other_cost" name="other_cost" type="number" min="0" step="1" value="{{ old('other_cost', 0) }}" oninput="recalculatePi()"
-                        class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200">
-                </div>
-                <div class="md:col-span-2">
-                    <input name="other_cost_note" type="text" placeholder="Keterangan biaya lain-lain (opsional)" value="{{ old('other_cost_note') }}"
-                        class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200">
-                </div>
-            </div>
+            </section>
 
-            <div class="px-5 py-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between bg-blue-50 dark:bg-blue-900/20">
-                <span class="font-bold text-blue-700 dark:text-blue-400">Grand Total</span>
-                <span id="piGrandTotal" class="text-lg font-bold text-blue-600 dark:text-blue-400">Rp 0</span>
-            </div>
+            {{-- Sidebar total --}}
+            <aside class="xl:sticky xl:top-24 xl:h-fit">
+                <div class="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800 overflow-hidden">
+                    <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-700">
+                        <h2 class="font-bold text-slate-800 dark:text-white">Ringkasan</h2>
+                    </div>
 
-            <div class="px-5 py-4 flex justify-end gap-2">
-                <a href="{{ route('sales-orders.show', $salesOrder) }}" class="rounded-xl border border-slate-200 dark:border-slate-600 px-4 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">Batal</a>
-                <button type="submit" class="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">Terbitkan</button>
-            </div>
+                    <div class="divide-y divide-slate-100 dark:divide-slate-700/60 text-sm">
+                        <div class="flex items-center justify-between gap-3 px-5 py-3">
+                            <span class="text-slate-500 dark:text-slate-400 shrink-0">Subtotal</span>
+                            <span id="piSummarySubtotal" class="font-semibold text-slate-700 dark:text-slate-200">Rp 0</span>
+                        </div>
+
+                        <div class="flex items-center gap-3 px-5 py-3">
+                            <label for="pi_ppn_rate" class="shrink-0 text-slate-500 dark:text-slate-400 w-20">PPN (%)</label>
+                            <input id="pi_ppn_rate" name="ppn_rate" type="number" min="0" max="100" step="0.01"
+                                value="{{ old('ppn_rate', $defaultPpnRate) }}" oninput="recalculatePi()"
+                                class="w-20 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200">
+                            <span id="piSummaryPpn" class="shrink-0 flex-1 text-right font-semibold text-slate-700 dark:text-slate-200">Rp 0</span>
+                        </div>
+
+                        <div class="flex items-center gap-3 px-5 py-3">
+                            <label for="pi_shipping_cost" class="shrink-0 text-slate-500 dark:text-slate-400 w-20">Ongkir</label>
+                            <div class="relative flex-1">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">Rp</span>
+                                <input id="pi_shipping_cost" name="shipping_cost" type="number" min="0" step="1"
+                                    value="{{ old('shipping_cost', 0) }}" oninput="recalculatePi()"
+                                    class="w-full rounded-lg border border-slate-200 bg-slate-50 pl-8 pr-3 py-1.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200">
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3 px-5 py-3">
+                            <label for="pi_admin_fee" class="shrink-0 text-slate-500 dark:text-slate-400 w-20">Biaya Admin</label>
+                            <div class="relative flex-1">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">Rp</span>
+                                <input id="pi_admin_fee" name="admin_fee" type="number" min="0" step="1"
+                                    value="{{ old('admin_fee', 0) }}" oninput="recalculatePi()"
+                                    class="w-full rounded-lg border border-slate-200 bg-slate-50 pl-8 pr-3 py-1.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200">
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3 px-5 py-3">
+                            <label for="pi_other_cost" class="shrink-0 text-slate-500 dark:text-slate-400 w-20">Lain-lain</label>
+                            <div class="relative flex-1">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">Rp</span>
+                                <input id="pi_other_cost" name="other_cost" type="number" min="0" step="1"
+                                    value="{{ old('other_cost', 0) }}" oninput="recalculatePi()"
+                                    class="w-full rounded-lg border border-slate-200 bg-slate-50 pl-8 pr-3 py-1.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200">
+                            </div>
+                        </div>
+                        <div class="px-5 pb-3 -mt-2">
+                            <input name="other_cost_note" type="text" placeholder="Keterangan biaya lain-lain (opsional)"
+                                value="{{ old('other_cost_note') }}"
+                                class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                        </div>
+
+                        <div class="flex items-center justify-between gap-3 px-5 py-4 bg-blue-50 dark:bg-blue-900/20">
+                            <span class="font-bold text-blue-700 dark:text-blue-400">Grand Total</span>
+                            <span id="piGrandTotal" class="text-lg font-bold text-blue-600 dark:text-blue-400">Rp 0</span>
+                        </div>
+                    </div>
+
+                    <div class="px-5 py-4 flex flex-col gap-2">
+                        <button type="submit"
+                            class="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition-colors hover:bg-blue-700">
+                            <i data-lucide="save" class="h-4 w-4"></i>
+                            Terbitkan
+                        </button>
+                        <a href="{{ route('sales-orders.show', $salesOrder) }}"
+                            class="inline-flex h-11 w-full items-center justify-center rounded-xl border border-slate-200 dark:border-slate-600 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">
+                            Batal
+                        </a>
+                    </div>
+                </div>
+            </aside>
         </form>
     </main>
 @endsection
@@ -106,7 +150,9 @@
             const otherCost    = Math.max(0, Number(document.getElementById('pi_other_cost')?.value || 0));
             const grandTotal   = subtotal + ppnAmount + shippingCost + adminFee + otherCost;
 
-            document.getElementById('piGrandTotal').textContent = 'Rp ' + grandTotal.toLocaleString('id-ID');
+            document.getElementById('piSummarySubtotal').textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
+            document.getElementById('piSummaryPpn').textContent      = 'Rp ' + ppnAmount.toLocaleString('id-ID');
+            document.getElementById('piGrandTotal').textContent      = 'Rp ' + grandTotal.toLocaleString('id-ID');
         }
 
         document.addEventListener('DOMContentLoaded', recalculatePi);
