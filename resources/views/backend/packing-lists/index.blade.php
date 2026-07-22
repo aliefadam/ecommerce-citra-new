@@ -31,7 +31,10 @@
                                 <td class="px-4 py-3 text-right text-slate-600 dark:text-slate-300">{{ number_format($pl->total_weight_grams / 1000, 2) }} kg</td>
                                 <td class="px-4 py-3 text-right text-slate-600 dark:text-slate-300">{{ $pl->total_packages ?? '-' }}</td>
                                 <td class="px-4 py-3">
-                                    <a href="{{ route('delivery-notes.show', $pl->delivery_note_id) }}" class="text-blue-600 hover:underline text-xs font-semibold">Lihat Detail</a>
+                                    @include('backend.partials.row-actions-dropdown', ['actions' => [
+                                        ['label' => 'Buka Detail', 'url' => route('delivery-notes.show', $pl->delivery_note_id), 'icon' => 'eye'],
+                                        ['label' => 'Cetak', 'url' => route('delivery-notes.print', $pl->delivery_note_id), 'icon' => 'printer', 'target' => '_blank'],
+                                    ]])
                                 </td>
                             </tr>
                         @empty

@@ -65,7 +65,10 @@
                                     <span class="px-2.5 py-1 rounded-full text-xs font-semibold {{ $statusColor }}">{{ ucfirst(str_replace('_', ' ', $invoice->status)) }}</span>
                                 </td>
                                 <td class="px-4 py-3">
-                                    <a href="{{ route('b2b-invoices.show', $invoice) }}" class="text-blue-600 hover:underline text-xs font-semibold">Lihat Detail</a>
+                                    @include('backend.partials.row-actions-dropdown', ['actions' => [
+                                        ['label' => 'Buka Detail', 'url' => route('b2b-invoices.show', $invoice), 'icon' => 'eye'],
+                                        ['label' => 'Cetak', 'url' => route('b2b-invoices.print', $invoice), 'icon' => 'printer', 'target' => '_blank'],
+                                    ]])
                                 </td>
                             </tr>
                         @empty

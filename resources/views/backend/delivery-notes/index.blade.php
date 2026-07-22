@@ -61,7 +61,10 @@
                                     <span class="px-2.5 py-1 rounded-full text-xs font-semibold {{ $statusColor }}">{{ ucfirst($dn->status) }}</span>
                                 </td>
                                 <td class="px-4 py-3">
-                                    <a href="{{ route('delivery-notes.show', $dn) }}" class="text-blue-600 hover:underline text-xs font-semibold">Lihat Detail</a>
+                                    @include('backend.partials.row-actions-dropdown', ['actions' => [
+                                        ['label' => 'Buka Detail', 'url' => route('delivery-notes.show', $dn), 'icon' => 'eye'],
+                                        ['label' => 'Cetak', 'url' => route('delivery-notes.print', $dn), 'icon' => 'printer', 'target' => '_blank'],
+                                    ]])
                                 </td>
                             </tr>
                         @empty

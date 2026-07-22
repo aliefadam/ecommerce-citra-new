@@ -69,7 +69,10 @@
                                     <span class="px-2.5 py-1 rounded-full text-xs font-semibold {{ $statusColor }}">{{ ucfirst(str_replace('_', ' ', $quotation->status)) }}</span>
                                 </td>
                                 <td class="px-4 py-3">
-                                    <a href="{{ route('quotations.show', $quotation) }}" class="text-blue-600 hover:underline text-xs font-semibold">Lihat Detail</a>
+                                    @include('backend.partials.row-actions-dropdown', ['actions' => [
+                                        ['label' => 'Buka Detail', 'url' => route('quotations.show', $quotation), 'icon' => 'eye'],
+                                        ['label' => 'Cetak', 'url' => route('quotations.print', $quotation), 'icon' => 'printer', 'target' => '_blank'],
+                                    ]])
                                 </td>
                             </tr>
                         @empty
