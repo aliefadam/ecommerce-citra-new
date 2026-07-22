@@ -343,6 +343,15 @@
                                 </div>
                                 Riwayat Pesanan
                             </a>
+                            @if ($authUser?->canAccessAdminPanel())
+                                <a href="{{ route('pages.index') }}"
+                                    class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                                    <div class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center">
+                                        <i class="fi fi-rr-dashboard text-[13px] text-slate-500 leading-none"></i>
+                                    </div>
+                                    Kembali ke Admin Dashboard
+                                </a>
+                            @endif
                             <div class="border-t border-slate-100 mt-1 pt-1">
                                 <form action="{{ route('logout') }}" method="POST">
                                     @csrf
