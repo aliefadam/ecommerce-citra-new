@@ -82,4 +82,31 @@ class SalesOrderDetail extends Model
     {
         return max(0, (int) $this->quantity - $this->quantityReservedOrShipped());
     }
+
+    /**
+     * Qty already billed to the customer via any active (non-cancelled) Invoice —
+     * either the normal flow (through a Delivery Note detail) or the direct flow
+     * (straight from this Sales Order detail, before shipment). Used to gate the
+     * "Buat Invoice Langsung" button/validation so the same qty can't be billed
+     * twice through either flow.
+     */
+    public function quantityInvoiced(): int
+    {
+        $viaDirect = B2bInvoiceDetail::query()
+            ->where('sales_order_detail_id', $this->id)
+            ->whereHas('b2bInvoice', fn ($q) => $q->where('status', '!=', B2bInvoice::STATUS_CANCELLED))
+            ->sum('quantity');
+
+        $viaShipment = B2bInvoiceDetail::query()
+            ->whereHas('deliveryNoteDetail', fn ($q) => $q->where('sales_order_detail_id', $this->id))
+            ->whereHas('b2bInvoice', fn ($q) => $q->where('status', '!=', B2bInvoice::STATUS_CANCELLED))
+            ->sum('quantity');
+
+        return (int) ($viaDirect + $viaShipment);
+    }
+
+    public function remainingToInvoiceDirect(): int
+    {
+        return max(0, (int) $this->quantity - $this->quantityInvoiced());
+    }
 }

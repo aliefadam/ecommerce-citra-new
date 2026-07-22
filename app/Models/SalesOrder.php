@@ -124,6 +124,19 @@ class SalesOrder extends Model
             ->get();
     }
 
+    /**
+     * Whether any item still has qty that hasn't been billed via an active Invoice
+     * yet (normal flow via Delivery Note, or direct flow straight from Sales Order
+     * detail) — gates the "Buat Invoice Langsung" button so it disappears once
+     * everything on this Sales Order has already been invoiced one way or another.
+     */
+    public function hasRemainingQtyToInvoiceDirect(): bool
+    {
+        $this->loadMissing('details');
+
+        return $this->details->sum(fn (SalesOrderDetail $detail) => $detail->remainingToInvoiceDirect()) > 0;
+    }
+
     public function isFullyInvoiced(): bool
     {
         return $this->uninvoicedDeliveryNotes()->isEmpty()

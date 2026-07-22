@@ -91,7 +91,7 @@
             </a>
         @endif
 
-        @if ($canSeePricing && $salesOrder->status !== 'cancelled')
+        @if ($canSeePricing && $salesOrder->status !== 'cancelled' && $salesOrder->hasRemainingQtyToInvoiceDirect())
             <a href="{{ route('b2b-invoices.create-direct-form', $salesOrder) }}"
                class="inline-flex items-center gap-2 rounded-xl bg-purple-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-purple-800">
                 <i data-lucide="zap"></i> Buat Invoice Langsung

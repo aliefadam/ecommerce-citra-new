@@ -35,24 +35,26 @@
                             <tr>
                                 <th class="text-left px-4 py-3 text-slate-500">Produk</th>
                                 <th class="text-right px-4 py-3 text-slate-500">Harga</th>
-                                <th class="text-right px-4 py-3 text-slate-500">Qty Order</th>
+                                <th class="text-right px-4 py-3 text-slate-500">Sisa Belum Ter-invoice</th>
                                 <th class="text-right px-4 py-3 text-slate-500 w-32">Qty Ditagihkan</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
                             @foreach ($salesOrder->details as $detail)
+                                @php $remaining = $detail->remainingToInvoiceDirect(); @endphp
                                 <tr>
                                     <td class="px-4 py-3">
                                         <p class="font-semibold text-slate-800 dark:text-slate-200">{{ $detail->product_name }}</p>
                                         <p class="text-xs text-slate-400">{{ $detail->variant_name }}</p>
                                     </td>
                                     <td class="px-4 py-3 text-right text-slate-600 dark:text-slate-300">Rp {{ number_format($detail->price, 0, ',', '.') }}</td>
-                                    <td class="px-4 py-3 text-right text-slate-600 dark:text-slate-300">{{ $detail->quantity }}</td>
+                                    <td class="px-4 py-3 text-right text-slate-600 dark:text-slate-300">{{ $remaining }} / {{ $detail->quantity }}</td>
                                     <td class="px-4 py-3 text-right">
                                         <input type="hidden" name="items[{{ $loop->index }}][sales_order_detail_id]" value="{{ $detail->id }}">
-                                        <input type="number" name="items[{{ $loop->index }}][qty]" min="0" max="{{ $detail->quantity }}" value="{{ $detail->quantity }}"
+                                        <input type="number" name="items[{{ $loop->index }}][qty]" min="0" max="{{ $remaining }}" value="{{ $remaining }}"
                                             data-price="{{ $detail->price }}" oninput="recalculateInvbDirect()"
-                                            class="invbd-qty w-24 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-right text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200">
+                                            {{ $remaining < 1 ? 'readonly' : '' }}
+                                            class="invbd-qty w-24 rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-right text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:text-slate-200 {{ $remaining < 1 ? 'bg-slate-100 dark:bg-slate-800 cursor-not-allowed' : 'bg-white dark:bg-slate-700' }}">
                                     </td>
                                 </tr>
                             @endforeach

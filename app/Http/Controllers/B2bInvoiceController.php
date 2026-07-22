@@ -175,6 +175,10 @@ class B2bInvoiceController extends Controller
 
         $salesOrder->load('details');
 
+        if (! $salesOrder->hasRemainingQtyToInvoiceDirect()) {
+            return redirect()->route('sales-orders.show', $salesOrder)->withErrors(['sales_order' => 'Semua item pada Sales Order ini sudah ter-invoice.']);
+        }
+
         return view('backend.b2b-invoices.create-direct', [
             'salesOrder' => $salesOrder,
             'defaultPpnRate' => DocumentFinancials::defaultPpnRate($salesOrder->company_id),
@@ -223,8 +227,9 @@ class B2bInvoiceController extends Controller
                 }
 
                 $qty = (int) $item['qty'];
-                if ($qty > $detail->quantity) {
-                    throw ValidationException::withMessages(['items' => 'Qty untuk "'.$detail->product_name.'" melebihi qty pada Sales Order ('.$detail->quantity.').']);
+                $remaining = $detail->remainingToInvoiceDirect();
+                if ($qty > $remaining) {
+                    throw ValidationException::withMessages(['items' => 'Qty untuk "'.$detail->product_name.'" melebihi sisa yang belum ter-invoice ('.$remaining.').']);
                 }
 
                 $subtotal += $qty * $detail->price;
