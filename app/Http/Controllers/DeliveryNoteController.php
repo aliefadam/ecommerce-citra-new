@@ -133,6 +133,14 @@ class DeliveryNoteController extends Controller
                 'total_packages' => $validated['total_packages'] ?? null,
             ]);
 
+            // Auto-attach ke Invoice jalur "langsung dari Sales Order" yang sudah terbit
+            // lebih dulu (sebelum ada Surat Jalan sama sekali), FIFO jika lebih dari satu
+            // (lihat PRD §5 Behavior).
+            $directInvoice = $locked->firstActiveDirectInvoice();
+            if ($directInvoice) {
+                $directInvoice->deliveryNotes()->attach($deliveryNote->id);
+            }
+
             return $deliveryNote;
         });
 

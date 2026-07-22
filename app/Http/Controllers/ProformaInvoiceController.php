@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Concerns\ScopesToActiveCompany;
 use App\Models\ProformaInvoice;
 use App\Models\SalesOrder;
+use App\Services\DocumentFinancials;
 use App\Services\DocumentNumberGenerator;
 use App\Services\DocumentPaymentService;
 use Illuminate\Http\Request;
@@ -48,7 +49,10 @@ class ProformaInvoiceController extends Controller
 
         $salesOrder->load('details');
 
-        return view('backend.proforma-invoices.create', compact('salesOrder'));
+        return view('backend.proforma-invoices.create', [
+            'salesOrder' => $salesOrder,
+            'defaultPpnRate' => DocumentFinancials::defaultPpnRate($salesOrder->company_id),
+        ]);
     }
 
     public function store(Request $request, SalesOrder $salesOrder)
@@ -59,6 +63,11 @@ class ProformaInvoiceController extends Controller
             'items' => ['required', 'array', 'min:1'],
             'items.*.sales_order_detail_id' => ['required', 'integer'],
             'items.*.qty' => ['required', 'integer', 'min:0'],
+            'ppn_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'shipping_cost' => ['nullable', 'integer', 'min:0'],
+            'admin_fee' => ['nullable', 'integer', 'min:0'],
+            'other_cost' => ['nullable', 'integer', 'min:0'],
+            'other_cost_note' => ['nullable', 'string', 'max:255'],
         ]);
 
         $proformaInvoice = DB::transaction(function () use ($request, $validated, $salesOrder) {
@@ -102,6 +111,14 @@ class ProformaInvoiceController extends Controller
             }
 
             $companyId = $locked->company_id;
+            $financials = DocumentFinancials::compute(
+                $subtotal,
+                0,
+                (float) ($validated['ppn_rate'] ?? 0),
+                max(0, (int) ($validated['shipping_cost'] ?? 0)),
+                max(0, (int) ($validated['admin_fee'] ?? 0)),
+                max(0, (int) ($validated['other_cost'] ?? 0)),
+            );
 
             $proformaInvoice = ProformaInvoice::create([
                 'company_id' => $companyId,
@@ -113,9 +130,10 @@ class ProformaInvoiceController extends Controller
                 'manual_customer_email' => $locked->manual_customer_email,
                 'status' => ProformaInvoice::STATUS_ISSUED,
                 'subtotal_amount' => $subtotal,
-                'grand_total' => $subtotal,
+                ...$financials,
+                'other_cost_note' => $validated['other_cost_note'] ?? null,
                 'paid_amount' => 0,
-                'outstanding_amount' => $subtotal,
+                'outstanding_amount' => $financials['grand_total'],
                 'issued_at' => now(),
                 'created_by_admin_id' => $request->user()?->id,
             ]);

@@ -178,7 +178,12 @@
                 </div>
                 <div class="divide-y divide-slate-100 dark:divide-slate-700/60 text-sm">
                     <div class="flex items-center justify-between px-5 py-3">
-                        <span class="text-slate-500 dark:text-slate-400">Grand Total</span>
+                        <span class="text-slate-500 dark:text-slate-400">Subtotal</span>
+                        <span class="font-semibold text-slate-700 dark:text-slate-200">Rp {{ number_format($proformaInvoice->subtotal_amount, 0, ',', '.') }}</span>
+                    </div>
+                    @include('backend.partials.financial-breakdown', ['document' => $proformaInvoice])
+                    <div class="flex items-center justify-between px-5 py-3 bg-blue-50/60 dark:bg-blue-900/10">
+                        <span class="font-bold text-slate-700 dark:text-slate-200">Grand Total</span>
                         <span class="font-semibold text-slate-700 dark:text-slate-200">Rp {{ number_format($proformaInvoice->grand_total, 0, ',', '.') }}</span>
                     </div>
                     <div class="flex items-center justify-between px-5 py-3">

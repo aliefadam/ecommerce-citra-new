@@ -24,6 +24,12 @@ class SalesOrder extends Model
         'status',
         'subtotal_amount',
         'discount_amount',
+        'ppn_rate',
+        'ppn_amount',
+        'shipping_cost',
+        'admin_fee',
+        'other_cost',
+        'other_cost_note',
         'grand_total',
         'created_by_admin_id',
         'cancelled_by_admin_id',
@@ -33,6 +39,11 @@ class SalesOrder extends Model
     protected $casts = [
         'subtotal_amount' => 'integer',
         'discount_amount' => 'integer',
+        'ppn_rate' => 'float',
+        'ppn_amount' => 'integer',
+        'shipping_cost' => 'integer',
+        'admin_fee' => 'integer',
+        'other_cost' => 'integer',
         'grand_total' => 'integer',
         'cancelled_at' => 'datetime',
     ];
@@ -117,6 +128,24 @@ class SalesOrder extends Model
     {
         return $this->uninvoicedDeliveryNotes()->isEmpty()
             && $this->deliveryNotes()->whereIn('status', [DeliveryNote::STATUS_SHIPPED, DeliveryNote::STATUS_DELIVERED])->exists();
+    }
+
+    /**
+     * Earliest still-active Invoice issued via the "direct from Sales Order" path
+     * that doesn't have a Delivery Note attached yet — used to auto-attach a newly
+     * created Delivery Note to it. Excluding invoices that already have one keeps
+     * multiple direct invoices on the same Sales Order each getting exactly one
+     * Delivery Note attached in FIFO order (see PRD §5 Behavior), instead of all
+     * new Delivery Notes piling onto the very first invoice.
+     */
+    public function firstActiveDirectInvoice(): ?B2bInvoice
+    {
+        return $this->b2bInvoices()
+            ->where('source', B2bInvoice::SOURCE_DIRECT)
+            ->where('status', '!=', B2bInvoice::STATUS_CANCELLED)
+            ->whereDoesntHave('deliveryNotes')
+            ->oldest()
+            ->first();
     }
 
     /**

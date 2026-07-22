@@ -87,7 +87,14 @@
         @if ($canSeePricing && $salesOrder->uninvoicedDeliveryNotes()->isNotEmpty())
             <a href="{{ route('b2b-invoices.create-form', $salesOrder) }}"
                class="inline-flex items-center gap-2 rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-800">
-                <i data-lucide="receipt-text"></i> Buat Invoice B2B
+                <i data-lucide="receipt-text"></i> Buat Invoice dari Surat Jalan
+            </a>
+        @endif
+
+        @if ($canSeePricing && $salesOrder->status !== 'cancelled')
+            <a href="{{ route('b2b-invoices.create-direct-form', $salesOrder) }}"
+               class="inline-flex items-center gap-2 rounded-xl bg-purple-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-purple-800">
+                <i data-lucide="zap"></i> Buat Invoice Langsung
             </a>
         @endif
     </div>
@@ -143,13 +150,18 @@
     @if ($canSeePricing && $salesOrder->b2bInvoices->isNotEmpty())
         <div class="mb-6 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden">
             <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-700">
-                <h2 class="font-bold text-slate-800 dark:text-white">Invoice B2B</h2>
+                <h2 class="font-bold text-slate-800 dark:text-white">Invoice</h2>
             </div>
             <div class="divide-y divide-slate-100 dark:divide-slate-700">
                 @foreach ($salesOrder->b2bInvoices as $invoice)
                     <a href="{{ route('b2b-invoices.show', $invoice) }}" class="flex items-center justify-between px-5 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/40">
                         <div>
-                            <p class="font-semibold text-slate-800 dark:text-slate-200">{{ $invoice->b2b_invoice_no }}</p>
+                            <p class="font-semibold text-slate-800 dark:text-slate-200">
+                                {{ $invoice->b2b_invoice_no }}
+                                @if ($invoice->source === \App\Models\B2bInvoice::SOURCE_DIRECT)
+                                    <span class="ml-1 rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-semibold text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">Langsung</span>
+                                @endif
+                            </p>
                             <p class="text-xs text-slate-400">Outstanding: Rp {{ number_format($invoice->outstanding_amount, 0, ',', '.') }} / Rp {{ number_format($invoice->grand_total, 0, ',', '.') }}</p>
                         </div>
                         <span class="text-xs font-semibold {{ $invoice->status === 'cancelled' ? 'text-red-500' : ($invoice->status === 'paid' ? 'text-emerald-600' : 'text-amber-600') }}">{{ ucfirst(str_replace('_', ' ', $invoice->status)) }}{{ $invoice->isOverdue() ? ' — Overdue' : '' }}</span>
@@ -243,6 +255,7 @@
                             <span class="text-slate-500 dark:text-slate-400">Subtotal</span>
                             <span class="font-semibold text-slate-700 dark:text-slate-200">Rp {{ number_format($salesOrder->subtotal_amount, 0, ',', '.') }}</span>
                         </div>
+                        @include('backend.partials.financial-breakdown', ['document' => $salesOrder])
                         <div class="flex items-center justify-between px-5 py-4 bg-blue-50 dark:bg-blue-900/20">
                             <span class="font-bold text-blue-700 dark:text-blue-400">Grand Total</span>
                             <span class="text-lg font-bold text-blue-600 dark:text-blue-400">Rp {{ number_format($salesOrder->grand_total, 0, ',', '.') }}</span>

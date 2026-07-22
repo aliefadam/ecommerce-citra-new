@@ -12,6 +12,9 @@ Keputusan utama:
 - Satu Quotation dapat dipakai berkali-kali menjadi beberapa Sales Order (pembelian dicicil/parsial dalam beberapa PO terpisah selama quotation masih berlaku), bukan hanya sekali konversi.
 - **Sales Order adalah dokumen internal yang selalu dibuat** setiap kali Quotation dikonversi — merepresentasikan komitmen order yang menggerakkan fulfillment (Surat Jalan/Packing List), lepas dari apakah ada kebutuhan DP atau tidak.
 - **[Update 2026-07-22] Sales Order juga bisa dibuat langsung tanpa Quotation.** Tidak semua order butuh proses negosiasi harga formal — customer baru maupun lama yang order langsung dengan harga yang sudah disepakati di luar sistem (telepon/chat) bisa langsung dibuatkan Sales Order tanpa Quotation lebih dulu. `quotation_id` pada Sales Order bersifat nullable: `NULL` untuk order langsung, terisi untuk hasil convert Quotation. Kedua jalur menghasilkan Sales Order yang identik secara struktur & berjalan di alur fulfillment (Proforma Invoice/Surat Jalan/Invoice B2B) yang sama persis — perbedaannya murni di titik masuk pembuatan.
+- **[Update 2026-07-22 v2] PPN dan biaya lain (ongkir/biaya admin/lain-lain) ditambahkan ke Quotation, Sales Order, Proforma Invoice, dan Invoice** sebagai kolom independen per dokumen (bukan diwariskan/dibagi proporsional dari dokumen induk), mengikuti pola `ppn_rate` yang sudah ada di transaksi manual retail (`AdminManualTransactionController`) dan default rate dari `CompanySetting::taxSettings()` per perusahaan. `grand_total` tiap dokumen = `(subtotal - discount) + ppn_amount + shipping_cost + admin_fee + other_cost`. **PPh (potongan pajak oleh customer) sengaja ditunda ke fase berikutnya** — mekanismenya lebih rumit (tergantung jenis PPh 22/23 dan status PKP customer) dan butuh keputusan bisnis lebih matang.
+- **[Update 2026-07-22 v2] Invoice bisa diterbitkan langsung dari Sales Order tanpa menunggu Surat Jalan lebih dulu**, untuk kasus "bayar/tagih dulu, kirim belakangan". Item Invoice pada jalur ini bersumber dari `sales_order_detail_id` (bukan `delivery_note_detail_id`). Saat Surat Jalan dibuat kemudian untuk Sales Order yang sama, sistem otomatis menghubungkannya (attach ke pivot `b2b_invoice_delivery_note`) ke Invoice "langsung" yang sudah ada, supaya tetap ada jejak pengiriman mana yang meng-cover invoice tersebut — jalur existing (Invoice dari Surat Jalan yang sudah `shipped`) tetap ada apa adanya untuk kasus normal (kirim dulu, baru tagih).
+- **[Update 2026-07-22 v2] Menu/label "Invoice B2B" di sidebar & judul halaman diganti menjadi "Invoice" saja** (nama tabel/model `b2b_invoices`/`B2bInvoice` tidak diubah, murni perubahan label yang tampil ke user, supaya konsisten dengan istilah "Invoice" yang dipakai di §Alur Dokumen sejak awal).
 - **Proforma Invoice bersifat opsional**, hanya diterbitkan untuk customer yang butuh dokumen tagihan sementara/DP sebelum barang dikirim. Fulfillment (Surat Jalan) tidak bergantung pada keberadaan Proforma Invoice — keduanya ditarik langsung dari Sales Order.
 - Satu Sales Order dapat dipecah menjadi beberapa Surat Jalan + Packing List (pengiriman parsial/bertahap), dan hasil pengirimannya digabung menjadi satu atau lebih Invoice final.
 - **Invoice B2B dan Proforma Invoice merepresentasikan piutang (receivable)**, bukan sekadar status lunas/belum — pelunasannya dicatat lewat ledger pembayaran (`document_payments`) yang mendukung pembayaran bertahap/cicilan, dan DP yang sudah dibayar di Proforma Invoice otomatis jadi kredit pengurang piutang saat Invoice B2B diterbitkan.
@@ -98,7 +101,7 @@ Dokumen rincian isi kemasan/paket untuk satu pengiriman, dibuat berpasangan deng
 
 ### Invoice (B2B)
 
-Dokumen tagihan final/resmi secara internal untuk satu atau lebih Surat Jalan yang sudah terkirim dari satu Sales Order. Merepresentasikan piutang (receivable) ke customer, punya tanggal jatuh tempo, dan dilunasi lewat satu atau lebih catatan Pembayaran (termasuk kredit otomatis dari DP yang sudah dibayar di Proforma Invoice terkait, jika ada). Entitas ini terpisah dari `Transaction`/invoice retail yang sudah ada di sistem.
+Dokumen tagihan final/resmi secara internal untuk satu Sales Order — bisa mencakup satu atau lebih Surat Jalan yang sudah terkirim (jalur normal: kirim dulu baru tagih), **atau diterbitkan langsung dari item Sales Order sebelum ada Surat Jalan sama sekali** (jalur "tagih dulu, kirim belakangan"; lihat §5 Scope Functional). Merepresentasikan piutang (receivable) ke customer, punya tanggal jatuh tempo, dan dilunasi lewat satu atau lebih catatan Pembayaran (termasuk kredit otomatis dari DP yang sudah dibayar di Proforma Invoice terkait, jika ada). Entitas ini terpisah dari `Transaction`/invoice retail yang sudah ada di sistem. Nama model/tabel tetap `B2bInvoice`/`b2b_invoices`, tapi label yang tampil ke user cukup "Invoice" (bukan "Invoice B2B").
 
 ## Alur Dokumen (Ringkasan)
 
@@ -130,11 +133,14 @@ Packing List (mengikuti status Surat Jalan pasangannya)
    | convert (satu atau gabungan beberapa Surat Jalan per Sales Order)
    | -- DP dari Proforma Invoice (jika ada & belum terpakai) otomatis jadi kredit awal
    v
-Invoice B2B (draft/issued/partially_paid/paid/cancelled, due_date untuk piutang jatuh tempo)
+Invoice (draft/issued/partially_paid/paid/cancelled, due_date untuk piutang jatuh tempo)
+   ^
+   |-- ATAU diterbitkan langsung dari item Sales Order SEBELUM ada Surat Jalan ("tagih dulu, kirim belakangan"):
+   |     Surat Jalan yang dibuat belakangan untuk SO yang sama otomatis di-attach ke Invoice ini
    |
    | catat Pembayaran (nominal/tanggal/catatan/bukti opsional), bisa berkali-kali
    v
-Pembayaran (ledger, N per Invoice B2B)
+Pembayaran (ledger, N per Invoice)
 ```
 
 Catatan alur:
@@ -144,7 +150,7 @@ Catatan alur:
 - Sales Order -> Proforma Invoice: **0..N, opsional**. Sales Order tidak wajib punya Proforma Invoice. Jika diterbitkan, Proforma Invoice hanya berfungsi sebagai dokumen tagihan/DP, tidak menjadi prasyarat untuk membuat Surat Jalan — tidak ada flag "DP wajib" pada fase pertama (lihat Rekomendasi MVP).
 - Sales Order -> Surat Jalan: 1:N (pengiriman bertahap), dengan validasi qty per item tidak boleh melebihi sisa qty yang belum dikirim di Sales Order.
 - Surat Jalan -> Packing List: 1:1, dibuat dalam satu aksi yang sama.
-- Sales Order -> Invoice B2B: 1:N (via Surat Jalan), tetapi setiap Invoice hanya boleh mencakup Surat Jalan yang sudah berstatus terkirim dan belum pernah ditagih di Invoice lain.
+- Sales Order -> Invoice: **dua jalur**. (a) Normal — 1:N via Surat Jalan yang sudah `shipped`/`delivered` dan belum pernah ditagih di Invoice lain. (b) **[Baru]** Langsung dari item Sales Order tanpa menunggu Surat Jalan — dipakai saat customer perlu ditagih/bayar dulu sebelum barang dikirim. Surat Jalan yang dibuat kemudian untuk Sales Order yang sama otomatis terhubung (attach) ke Invoice jalur (b) yang masih aktif (belum `cancelled`), murni sebagai jejak "pengiriman mana yang meng-cover invoice ini" — tidak ada validasi qty invoice vs qty terkirim harus sama persis pada fase pertama.
 - Proforma Invoice -> Pembayaran: 1:N (pelunasan DP bisa dicicil beberapa kali pembayaran).
 - Invoice B2B -> Pembayaran: 1:N (pelunasan piutang bisa dicicil beberapa kali pembayaran), termasuk baris kredit otomatis dari DP Proforma Invoice jika ada.
 
@@ -188,13 +194,15 @@ Field:
 - Customer: user terdaftar (`user_id`) atau input manual (`manual_customer_name`, `manual_customer_phone`, `manual_customer_email`).
 - Daftar item: produk/varian, qty, harga katalog (`original_price`, referensi), harga final (`price`, bisa diedit manual), catatan per item, serta qty yang sudah ditarik ke Sales Order (`quantity_converted`, kolom turunan).
 - `valid_until` (tanggal kedaluwarsa).
+- **[Baru]** `ppn_rate` (persentase, default dari `CompanySetting::taxSettings()` perusahaan aktif, bisa diubah manual per Quotation), `ppn_amount` (turunan, disnapshot saat simpan).
+- **[Baru]** `shipping_cost` (biaya ongkir, opsional), `admin_fee` (biaya admin/materai, opsional), `other_cost` + `other_cost_note` (biaya lain-lain freeform + keterangan, opsional).
 - Catatan umum, syarat & ketentuan (opsional, teks bebas).
 - Status: `draft`, `sent`, `accepted`, `partially_converted`, `rejected`, `expired`, `closed`.
 - Dibuat oleh admin (`created_by_admin_id`).
 
 Behavior:
 
-- Total dihitung otomatis dari item (subtotal, diskon jika ada, grand total), mengikuti pola perhitungan `Transaction`.
+- Total dihitung otomatis dari item (subtotal, diskon jika ada), lalu ditambah `ppn_amount` (dihitung dari `(subtotal - discount) * ppn_rate / 100`) dan `shipping_cost + admin_fee + other_cost` untuk `grand_total` akhir, mengikuti pola perhitungan `Transaction`/transaksi manual retail.
 - Harga per item bisa diedit manual oleh admin (tidak wajib sama dengan harga produk saat itu).
 - Perubahan status dicatat ke `quotation_status_histories`.
 - Status berubah otomatis menjadi `expired` melalui scheduled job jika `valid_until` terlewati dan status masih `draft`/`sent`/`accepted`/`partially_converted` (belum semua qty terpakai/`closed`).
@@ -211,14 +219,15 @@ Field:
 - Nomor Sales Order (`sales_order_no`, auto-generate).
 - Referensi ke Quotation asal (`quotation_id`, **nullable** — kosong jika Sales Order dibuat langsung tanpa Quotation).
 - Snapshot data customer, item, qty, harga (dari Quotation saat convert, atau input langsung admin jika tanpa Quotation).
+- **[Baru]** `ppn_rate`/`ppn_amount`, `shipping_cost`, `admin_fee`, `other_cost`+`other_cost_note` — dientri ulang/fresh di tahap Sales Order (tidak diwariskan dari Quotation asal, konsisten dengan `discount_amount` yang juga sudah tidak diwariskan saat convert saat ini), karena ongkir/biaya bisa berbeda per pengiriman/PO meski dari Quotation yang sama.
 - Status: `draft`, `confirmed`, `partially_fulfilled`, `fulfilled`, `cancelled`.
 - Kolom qty terkirim per item (turunan dari Surat Jalan terkait, untuk tracking sisa qty).
 
 Behavior:
 
-- Convert dari Quotation menyalin item & qty yang dipilih admin saat itu (bisa sebagian dari sisa qty Quotation), dengan harga hasil nego tetap dipakai apa adanya (tidak di-refresh ke harga katalog terbaru).
+- Convert dari Quotation menyalin item & qty yang dipilih admin saat itu (bisa sebagian dari sisa qty Quotation), dengan harga hasil nego tetap dipakai apa adanya (tidak di-refresh ke harga katalog terbaru). Form convert menambahkan input PPN & biaya lain sendiri untuk Sales Order yang dihasilkan.
 - Setiap convert memvalidasi qty per item terhadap sisa qty Quotation (`quantity` dikurangi `quantity_converted` berjalan), dengan row lock untuk mencegah race condition jika ada dua Sales Order dibuat bersamaan dari Quotation yang sama.
-- **Sales Order juga bisa dibuat langsung** (`sales-orders.create`/`store`) tanpa Quotation, lewat form input item yang sama polanya dengan form Quotation (pilih customer existing/manual, pilih produk/varian, qty, harga manual per baris, diskon) — bukan hasil convert, jadi tidak ada validasi sisa qty terhadap dokumen lain. `quotation_id` dan `quotation_detail_id` pada baris detail disimpan `NULL`.
+- **Sales Order juga bisa dibuat langsung** (`sales-orders.create`/`store`) tanpa Quotation, lewat form input item yang sama polanya dengan form Quotation (pilih customer existing/manual, pilih produk/varian, qty, harga manual per baris, diskon, PPN, biaya lain) — bukan hasil convert, jadi tidak ada validasi sisa qty terhadap dokumen lain. `quotation_id` dan `quotation_detail_id` pada baris detail disimpan `NULL`.
 - Sales Order berstatus `confirmed` begitu dibuat (baik lewat convert Quotation maupun langsung), dianggap komitmen order yang sah, siap dijadikan acuan Surat Jalan kapan saja tanpa menunggu dokumen lain.
 - Status berubah otomatis menjadi `partially_fulfilled` ketika ada Surat Jalan pertama dibuat, dan `fulfilled` ketika seluruh qty di semua item sudah tercakup oleh Surat Jalan yang tidak dibatalkan.
 - Admin bisa membatalkan Sales Order selama belum ada Surat Jalan aktif terkait (status `draft`/`confirmed` tanpa Surat Jalan). Jika berasal dari convert Quotation, qty yang dibatalkan dikembalikan sebagai sisa qty yang bisa ditarik ulang dari Quotation asal; jika `quotation_id` NULL (dibuat langsung), tidak ada Quotation yang perlu dibuka kembali (no-op, lihat `reopenQuotationIfNeeded()`).
@@ -231,7 +240,8 @@ Field:
 - Nomor Proforma Invoice (`proforma_invoice_no`, auto-generate).
 - Referensi ke Sales Order asal (`sales_order_id`).
 - Snapshot data customer, item/qty yang ditagihkan (bisa mencakup seluruh atau sebagian item Sales Order, sesuai kebutuhan penagihan DP), harga.
-- `grand_total` (nominal yang ditagihkan), `paid_amount` (turunan, jumlah seluruh Pembayaran terkait), `outstanding_amount` (turunan, `grand_total` - `paid_amount`).
+- **[Baru]** `ppn_rate`/`ppn_amount`, `shipping_cost`, `admin_fee`, `other_cost`+`other_cost_note` — dientri fresh saat menerbitkan Proforma Invoice (independen dari Sales Order asal), karena DP biasanya hanya menagih sebagian nominal sehingga PPN/biaya lain perlu dihitung ulang sesuai porsi yang ditagihkan saat itu.
+- `grand_total` (nominal yang ditagihkan = `(subtotal - discount) + ppn_amount + shipping_cost + admin_fee + other_cost`), `paid_amount` (turunan, jumlah seluruh Pembayaran terkait), `outstanding_amount` (turunan, `grand_total` - `paid_amount`).
 - Status: `draft`, `issued`, `partially_paid`, `paid`, `cancelled`.
 
 Behavior:
@@ -268,22 +278,24 @@ Behavior:
 - Status `delivered` diubah manual oleh staff gudang/admin setelah barang sampai (konfirmasi non-otomatis pada fase pertama).
 - Pembatalan Surat Jalan (`cancelled`) hanya bisa dilakukan selama masih berstatus `draft` (belum `shipped`), tidak memerlukan pengembalian stok karena belum dipotong. **Setelah `shipped`, tidak ada aksi pembatalan tersedia pada fase pertama** — alur retur/pengembalian stok pasca-`shipped` ditunda ke fase berikutnya (lihat Rekomendasi MVP).
 
-### 5. Invoice B2B
+### 5. Invoice (label tampilan; model/tabel tetap `B2bInvoice`/`b2b_invoices`)
 
 Field:
 
 - Nomor Invoice (`b2b_invoice_no`, auto-generate, terpisah dari `transactions.invoice_no`).
-- Referensi ke Sales Order (`sales_order_id`) dan ke satu atau lebih Surat Jalan (`b2b_invoice_delivery_note` pivot).
-- Snapshot item gabungan dari Surat Jalan terkait (bisa berbeda granularitas dari Sales Order asal jika dipecah).
+- Referensi ke Sales Order (`sales_order_id`) dan ke nol atau lebih Surat Jalan (`b2b_invoice_delivery_note` pivot — nol jika berasal dari jalur "langsung dari Sales Order", lihat Behavior).
+- Snapshot item: dari Surat Jalan terkait (`delivery_note_detail_id`) untuk jalur normal, **atau** langsung dari item Sales Order (`sales_order_detail_id`, kolom baru di `b2b_invoice_details`, nullable) untuk jalur "Invoice langsung". Salah satu dari kedua kolom FK ini terisi per baris, tidak pernah keduanya.
+- **[Baru]** `ppn_rate`/`ppn_amount`, `shipping_cost`, `admin_fee`, `other_cost`+`other_cost_note` — dientri fresh saat menerbitkan Invoice.
 - `due_date` (tanggal jatuh tempo, term pembayaran seperti NET 30/60, diisi admin saat terbit).
-- `grand_total`, `paid_amount` (turunan, jumlah seluruh Pembayaran + kredit DP terkait), `outstanding_amount` (turunan).
+- `grand_total` (= `(subtotal - discount) + ppn_amount + shipping_cost + admin_fee + other_cost`), `paid_amount` (turunan, jumlah seluruh Pembayaran + kredit DP terkait), `outstanding_amount` (turunan).
 - Status: `draft`, `issued`, `partially_paid`, `paid`, `cancelled`.
 
 Behavior:
 
-- Admin memilih satu Sales Order, lalu memilih Surat Jalan berstatus `shipped`/`delivered` yang belum pernah ditagih di Invoice lain, untuk digabung menjadi satu Invoice.
-- Satu Surat Jalan hanya boleh masuk ke satu Invoice (tidak boleh dobel tagih).
-- Jika Sales Order asal punya Proforma Invoice berstatus `partially_paid`/`paid` yang DP-nya belum pernah dikreditkan ke Invoice B2B manapun, sistem otomatis membuat baris Pembayaran kredit (mis. `source = dp_credit`) sebesar total Pembayaran DP tersebut saat Invoice B2B pertama dari Sales Order itu diterbitkan, mengurangi `outstanding_amount` sejak awal.
+- **Jalur normal (kirim dulu, tagih belakangan)**: admin memilih satu Sales Order, lalu memilih Surat Jalan berstatus `shipped`/`delivered` yang belum pernah ditagih di Invoice aktif lain, untuk digabung menjadi satu Invoice. Satu Surat Jalan hanya boleh masuk ke satu Invoice aktif (tidak boleh dobel tagih; Surat Jalan yang invoice-nya `cancelled` boleh ditagih ulang, lihat catatan bug di Edge Cases).
+- **[Baru] Jalur langsung (tagih/bayar dulu, kirim belakangan)**: admin memilih satu Sales Order dan memilih item + qty langsung dari `sales_order_detail_id` (mirip pola pemilihan item Proforma Invoice), tanpa perlu ada Surat Jalan sama sekali saat Invoice diterbitkan. Tidak ada validasi qty invoice terhadap qty yang nantinya benar-benar dikirim pada fase pertama (rekonsiliasi jumlah ditunda ke fase berikutnya) — validasi qty yang ada hanya terhadap qty pada Sales Order itu sendiri (tidak boleh melebihi `quantity` per item).
+- **[Baru]** Saat Surat Jalan dibuat untuk Sales Order yang punya Invoice aktif hasil jalur langsung (belum `cancelled`), sistem otomatis meng-attach Surat Jalan baru tersebut ke pivot `b2b_invoice_delivery_note` milik Invoice itu (tanpa membuat Invoice baru), supaya ada jejak "Surat Jalan mana yang meng-cover Invoice yang sudah terbit duluan". Jika ada lebih dari satu Invoice aktif jalur langsung untuk Sales Order yang sama, Surat Jalan baru di-attach ke yang paling awal diterbitkan (FIFO).
+- Jika Sales Order asal punya Proforma Invoice berstatus `partially_paid`/`paid` yang DP-nya belum pernah dikreditkan ke Invoice manapun, sistem otomatis membuat baris Pembayaran kredit (mis. `source = dp_credit`) sebesar total Pembayaran DP tersebut saat Invoice pertama dari Sales Order itu diterbitkan (jalur normal maupun langsung), mengurangi `outstanding_amount` sejak awal.
 - Setelah semua Surat Jalan pada satu Sales Order sudah ter-invoice, Sales Order tersebut dianggap selesai secara penagihan (indikator terpisah dari status `fulfilled` pengiriman).
 - Invoice dianggap jatuh tempo (`overdue`, indikator tampilan, bukan status tersimpan) ketika `due_date` terlewati dan status masih `issued`/`partially_paid`.
 
@@ -336,7 +348,9 @@ Rekomendasi teknis: penomoran invoice existing sudah diduplikasi identik di 4 co
 - `user_id` (nullable)
 - `manual_customer_name`, `manual_customer_phone`, `manual_customer_email`
 - `status`
-- `subtotal_amount`, `discount_amount`, `grand_total`
+- `subtotal_amount`, `discount_amount`
+- **[Baru]** `ppn_rate` (decimal), `ppn_amount`, `shipping_cost`, `admin_fee`, `other_cost`, `other_cost_note` (nullable)
+- `grand_total` (= `subtotal_amount - discount_amount + ppn_amount + shipping_cost + admin_fee + other_cost`)
 - `valid_until`
 - `note`
 - `created_by_admin_id`
@@ -360,7 +374,9 @@ Rekomendasi teknis: penomoran invoice existing sudah diduplikasi identik di 4 co
 - `id`, `company_id` (FK `companies`, NOT NULL, diwarisi dari `quotation.company_id` saat convert atau dari perusahaan aktif saat dibuat langsung), `sales_order_no`, `quotation_id` (**nullable** — banyak Sales Order bisa menunjuk ke Quotation yang sama, atau NULL jika dibuat langsung tanpa Quotation)
 - Snapshot customer (sama pola dengan `quotations`)
 - `status`
-- `subtotal_amount`, `discount_amount`, `grand_total`
+- `subtotal_amount`, `discount_amount`
+- **[Baru]** `ppn_rate`, `ppn_amount`, `shipping_cost`, `admin_fee`, `other_cost`, `other_cost_note` (nullable) — dientri fresh, tidak diwariskan dari Quotation
+- `grand_total` (= `subtotal_amount - discount_amount + ppn_amount + shipping_cost + admin_fee + other_cost`)
 - `created_by_admin_id`, `created_at`, `updated_at`
 
 ### Tabel `sales_order_details`
@@ -378,7 +394,9 @@ Rekomendasi teknis: penomoran invoice existing sudah diduplikasi identik di 4 co
 - `id`, `company_id` (FK `companies`, NOT NULL, diwarisi dari `sales_order.company_id`), `proforma_invoice_no`, `sales_order_id`
 - Snapshot customer (sama pola dengan `sales_orders`)
 - `status`
-- `subtotal_amount`, `grand_total` (nominal yang ditagihkan, bisa sebagian dari total Sales Order)
+- `subtotal_amount` (tidak ada kolom `discount_amount` di dokumen ini, konsisten dengan desain awal — DP/Invoice tidak mendukung diskon, hanya Quotation/Sales Order)
+- **[Baru]** `ppn_rate`, `ppn_amount`, `shipping_cost`, `admin_fee`, `other_cost`, `other_cost_note` (nullable)
+- `grand_total` (= `subtotal_amount + ppn_amount + shipping_cost + admin_fee + other_cost`; nominal yang ditagihkan, bisa sebagian dari total Sales Order)
 - `paid_amount`, `outstanding_amount` (turunan, dihitung ulang setiap ada Pembayaran)
 - `issued_at`
 - `created_by_admin_id`, `created_at`, `updated_at`
@@ -410,16 +428,27 @@ Rekomendasi teknis: penomoran invoice existing sudah diduplikasi identik di 4 co
 ### Tabel `b2b_invoices`
 
 - `id`, `company_id` (FK `companies`, NOT NULL, diwarisi dari `sales_order.company_id`), `b2b_invoice_no`, `sales_order_id`
+- **[Baru]** `source` (`shipment` untuk jalur normal dari Surat Jalan, `direct` untuk jalur langsung dari item Sales Order) — dipakai `DeliveryNoteController::store()` untuk menentukan Invoice mana yang perlu di-attach otomatis saat Surat Jalan baru dibuat.
 - `status`
-- `subtotal_amount`, `grand_total`
+- `subtotal_amount`
+- **[Baru]** `ppn_rate`, `ppn_amount`, `shipping_cost`, `admin_fee`, `other_cost`, `other_cost_note` (nullable)
+- `grand_total` (= `subtotal_amount + ppn_amount + shipping_cost + admin_fee + other_cost`)
 - `paid_amount`, `outstanding_amount` (turunan, dihitung ulang setiap ada Pembayaran)
 - `due_date`, `issued_at`
 - `created_by_admin_id`, `created_at`, `updated_at`
+
+### Tabel `b2b_invoice_details`
+
+- `id`, `b2b_invoice_id`
+- `delivery_note_detail_id` (nullable, FK `delivery_note_details`, terisi untuk item hasil jalur normal dari Surat Jalan)
+- **[Baru]** `sales_order_detail_id` (nullable, FK `sales_order_details`, terisi untuk item hasil jalur "Invoice langsung dari Sales Order" — lihat §5 Scope Functional). Tepat satu dari kedua kolom FK ini terisi per baris.
+- `product_name`, `variant_name`, `sku`, `price`, `quantity`
 
 ### Tabel pivot `b2b_invoice_delivery_note`
 
 - `id`, `b2b_invoice_id`, `delivery_note_id`
 - Unique key **komposit** `[b2b_invoice_id, delivery_note_id]` (bukan unique tunggal di `delivery_note_id`) — lihat catatan bug di Edge Cases soal kenapa unique tunggal salah.
+- **[Baru]** Untuk Invoice hasil jalur langsung, baris pivot ini awalnya kosong (belum ada Surat Jalan) dan terisi belakangan secara otomatis saat Surat Jalan pertama untuk Sales Order yang sama dibuat (lihat §5 Behavior).
 
 ### Tabel `document_payments` (ledger Pembayaran, polymorphic)
 
@@ -498,7 +527,9 @@ Kebutuhan role baru:
 - Tutup manual Quotation: hanya bisa dilakukan setelah minimal satu Sales Order pernah dibuat dari Quotation tersebut, dan status belum `closed`/`rejected`/`expired`.
 - Terbitkan Proforma Invoice: Sales Order harus berstatus `confirmed`/`partially_fulfilled` (belum `cancelled`), item/qty yang ditagihkan tidak boleh melebihi qty pada Sales Order.
 - Surat Jalan: qty per item wajib > 0 dan <= sisa qty belum terkirim pada Sales Order terkait; validasi ulang stok varian saat submit (row lock). Tidak ada validasi terhadap status Proforma Invoice pada fase pertama.
-- Invoice B2B: Surat Jalan yang dipilih wajib berstatus `shipped`/`delivered` dan belum terkait Invoice B2B lain manapun.
+- Invoice (jalur normal): Surat Jalan yang dipilih wajib berstatus `shipped`/`delivered` dan belum terkait Invoice aktif lain manapun.
+- Invoice (jalur langsung dari Sales Order): item minimal 1, qty > 0, qty per item <= `quantity` pada Sales Order detail terkait. Tidak divalidasi terhadap sisa qty yang belum dikirim (beda dari Surat Jalan) karena justru dipakai sebelum ada pengiriman sama sekali.
+- PPN & biaya lain (semua dokumen): `ppn_rate` >= 0 dan <= 100, `shipping_cost`/`admin_fee`/`other_cost` >= 0. `ppn_amount` dihitung otomatis dari `(subtotal - discount) * ppn_rate / 100` (dibulatkan ke rupiah terdekat), bukan input manual.
 - Pembayaran: `amount` wajib > 0 dan tidak boleh melebihi `outstanding_amount` dokumen terkait pada saat pencatatan (row lock saat hitung ulang); `payment_date` wajib diisi; `proof_path` opsional (tidak wajib).
 - Batalkan Proforma Invoice/Invoice B2B: ditolak (403/422) jika dokumen tersebut masih memiliki minimal satu baris `document_payments` aktif (termasuk `dp_credit`). Admin harus menghapus/mengoreksi seluruh baris Pembayaran dokumen tsb terlebih dahulu.
 - Batalkan Sales Order: ditolak jika masih ada Surat Jalan aktif terkait (status selain `cancelled`); tidak divalidasi terhadap status Proforma Invoice (PI yang sudah `issued`/`paid` tetap ada, tidak ikut dibatalkan — lihat Edge Cases).
@@ -518,14 +549,18 @@ Kebutuhan role baru:
 - Surat Jalan dan Packing List dibuat sekaligus dalam satu aksi.
 - Stok varian berkurang otomatis saat Surat Jalan berstatus `shipped`, tercatat di `stock_movements`.
 - Sales Order otomatis berubah status sesuai progres pengiriman (`partially_fulfilled`/`fulfilled`).
-- Admin bisa membuat Invoice B2B dari satu atau lebih Surat Jalan yang sudah terkirim dan belum ditagih.
-- Satu Surat Jalan tidak bisa masuk ke lebih dari satu Invoice B2B.
-- Admin/finance bisa mencatat Pembayaran (nominal, tanggal, catatan, bukti opsional) terhadap Proforma Invoice maupun Invoice B2B, termasuk pelunasan bertahap/cicilan.
-- Status Proforma Invoice/Invoice B2B otomatis berubah (`partially_paid`/`paid`) mengikuti total Pembayaran yang tercatat dibanding `grand_total`.
-- Saat Invoice B2B pertama dari sebuah Sales Order diterbitkan, DP yang sudah dibayar di Proforma Invoice terkait (jika ada) otomatis jadi kredit pengurang `outstanding_amount` Invoice B2B tersebut.
-- Invoice B2B yang `due_date`-nya terlewati dan belum lunas ditandai sebagai jatuh tempo (`overdue`) di tampilan admin.
+- Admin bisa membuat Invoice dari satu atau lebih Surat Jalan yang sudah terkirim dan belum ditagih (jalur normal).
+- **[Baru]** Admin bisa membuat Invoice langsung dari item Sales Order tanpa menunggu Surat Jalan (jalur langsung), untuk kasus tagih/bayar dulu baru kirim.
+- **[Baru]** Saat Surat Jalan dibuat belakangan untuk Sales Order yang punya Invoice aktif hasil jalur langsung, Surat Jalan tersebut otomatis ter-attach ke Invoice itu tanpa aksi manual tambahan.
+- Satu Surat Jalan tidak bisa masuk ke lebih dari satu Invoice aktif.
+- **[Baru]** Setiap dokumen (Quotation, Sales Order, Proforma Invoice, Invoice) punya breakdown PPN dan biaya lain (ongkir/admin/lain-lain) sendiri yang terlihat jelas di halaman detail & cetak, dengan `grand_total` yang mencerminkan seluruh komponen tersebut.
+- Admin/finance bisa mencatat Pembayaran (nominal, tanggal, catatan, bukti opsional) terhadap Proforma Invoice maupun Invoice, termasuk pelunasan bertahap/cicilan.
+- Status Proforma Invoice/Invoice otomatis berubah (`partially_paid`/`paid`) mengikuti total Pembayaran yang tercatat dibanding `grand_total`.
+- Saat Invoice pertama dari sebuah Sales Order diterbitkan (jalur normal maupun langsung), DP yang sudah dibayar di Proforma Invoice terkait (jika ada) otomatis jadi kredit pengurang `outstanding_amount` Invoice tersebut.
+- Invoice yang `due_date`-nya terlewati dan belum lunas ditandai sebagai jatuh tempo (`overdue`) di tampilan admin.
 - Setiap dokumen bisa dicetak dan menampilkan histori status.
-- Staff gudang tidak bisa mengakses data harga/komersial (Quotation, Sales Order harga, Proforma Invoice, Invoice B2B).
+- Staff gudang tidak bisa mengakses data harga/komersial (Quotation, Sales Order harga, Proforma Invoice, Invoice).
+- Menu/label "Invoice B2B" di sidebar dan judul halaman tampil sebagai "Invoice" saja.
 - Fitur ini tidak mengubah data atau logic `Transaction`/`TransactionDetail` yang sudah ada.
 
 ## Edge Cases
@@ -548,6 +583,9 @@ Kebutuhan role baru:
 - Admin salah input nominal Pembayaran (lebih besar dari yang diterima) — perlu kemampuan koreksi/hapus baris Pembayaran manual (bukan `dp_credit`), dengan status dokumen dihitung ulang otomatis.
 - Invoice B2B dibatalkan (`cancelled`) padahal sudah ada Pembayaran tercatat — **pembatalan diblokir total** selama masih ada Pembayaran aktif; admin harus koreksi/hapus baris Pembayaran dulu (lihat Keputusan Terkonfirmasi).
 - **[Bug ditemukan & diperbaiki saat QC E2E]** Invoice B2B salah buat (misal salah pilih Surat Jalan/salah due date) lalu dibatalkan sebelum ada Pembayaran — Surat Jalan yang terlanjur terikat ke invoice yang dibatalkan tersebut **wajib bisa ditagih ulang** ke Invoice B2B baru. Implementasi awal salah di dua lapis sekaligus: (1) query kandidat `SalesOrder::uninvoicedDeliveryNotes()` dan pengecekan duplikat di `B2bInvoiceController::store()` memakai `whereDoesntHave('b2bInvoices')` tanpa filter status, sehingga Surat Jalan yang invoice-nya sudah `cancelled` tetap dianggap "sudah ter-invoice" selamanya; (2) migration tabel pivot `b2b_invoice_delivery_note` memberi unique constraint **tunggal** di kolom `delivery_note_id` (bukan komposit `[b2b_invoice_id, delivery_note_id]`), yang secara skema database membatasi satu Surat Jalan hanya boleh terikat ke SATU Invoice B2B sepanjang riwayatnya — mencoba menagih ulang setelah perbaikan query di poin (1) akan langsung menyebabkan `500 Internal Server Error` (`UniqueConstraintViolationException`) alih-alih redirect sukses. Dampak bisnis: setiap kesalahan input saat membuat Invoice B2B yang lalu dibatalkan membuat pengiriman tersebut **tidak akan pernah bisa ditagih ke customer melalui aplikasi** (kebocoran pendapatan permanen). Diperbaiki dengan menambahkan filter status `!= cancelled` pada kedua query di atas, dan mengganti unique constraint pivot menjadi komposit `[b2b_invoice_id, delivery_note_id]`. Sudah diverifikasi ulang end-to-end (createForm menampilkan kembali Surat Jalan sebagai kandidat, penagihan ulang berhasil tanpa error).
+- **[Ditambahkan 2026-07-22 v2]** Invoice jalur langsung dibuat untuk qty tertentu, tapi qty yang benar-benar bisa dikirim ternyata lebih sedikit (mis. stok kurang) atau dipecah jadi beberapa Surat Jalan — **tidak ada validasi/blocking qty invoice vs qty terkirim pada fase pertama**. Auto-attach Surat Jalan ke Invoice jalur langsung murni menghubungkan record (jejak dokumen), bukan rekonsiliasi nominal/qty otomatis; selisih (kurang/lebih kirim dari yang sudah ditagih) direkonsiliasi manual oleh admin di luar sistem, sama seperti pola "DP yang sudah dibayar untuk qty yang batal" di atas.
+- **[Ditambahkan 2026-07-22 v2]** Satu Sales Order punya lebih dari satu Invoice aktif hasil jalur langsung (misal ditagih bertahap sebelum ada pengiriman sama sekali), lalu Surat Jalan pertama dibuat — sistem meng-attach Surat Jalan itu ke Invoice jalur langsung yang **paling awal diterbitkan** (FIFO), bukan ke semuanya sekaligus. Surat Jalan berikutnya (jika ada Invoice jalur langsung lain yang masih aktif) di-attach ke Invoice aktif berikutnya secara berurutan.
+- **[Ditambahkan 2026-07-22 v2]** PPh (potongan pajak oleh customer/buyer) sengaja tidak diimplementasikan pada fase ini — grand_total Invoice tidak memperhitungkan potongan PPh yang biasanya dilakukan customer saat membayar (PPh 22/23 tergantung jenis barang/jasa dan status PKP customer). Jika customer membayar lebih kecil dari `grand_total` karena memotong PPh, admin mencatatnya sebagai nominal Pembayaran aktual yang diterima (lebih kecil dari `outstanding_amount`) dan menyimpan bukti potong PPh secara manual di luar sistem untuk sementara.
 
 ## Open Questions
 

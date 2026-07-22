@@ -15,16 +15,26 @@ class B2bInvoice extends Model
     public const STATUS_PAID = 'paid';
     public const STATUS_CANCELLED = 'cancelled';
 
+    public const SOURCE_SHIPMENT = 'shipment';
+    public const SOURCE_DIRECT = 'direct';
+
     protected $fillable = [
         'company_id',
         'b2b_invoice_no',
         'sales_order_id',
+        'source',
         'user_id',
         'manual_customer_name',
         'manual_customer_phone',
         'manual_customer_email',
         'status',
         'subtotal_amount',
+        'ppn_rate',
+        'ppn_amount',
+        'shipping_cost',
+        'admin_fee',
+        'other_cost',
+        'other_cost_note',
         'grand_total',
         'paid_amount',
         'outstanding_amount',
@@ -37,6 +47,11 @@ class B2bInvoice extends Model
 
     protected $casts = [
         'subtotal_amount' => 'integer',
+        'ppn_rate' => 'float',
+        'ppn_amount' => 'integer',
+        'shipping_cost' => 'integer',
+        'admin_fee' => 'integer',
+        'other_cost' => 'integer',
         'grand_total' => 'integer',
         'paid_amount' => 'integer',
         'outstanding_amount' => 'integer',

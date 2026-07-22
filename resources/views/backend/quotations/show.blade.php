@@ -209,12 +209,7 @@
                         <span class="text-slate-500 dark:text-slate-400">Subtotal</span>
                         <span class="font-semibold text-slate-700 dark:text-slate-200">Rp {{ number_format($quotation->subtotal_amount, 0, ',', '.') }}</span>
                     </div>
-                    @if ($quotation->discount_amount > 0)
-                        <div class="flex items-center justify-between px-5 py-3">
-                            <span class="text-slate-500 dark:text-slate-400">Diskon</span>
-                            <span class="font-semibold text-emerald-600">- Rp {{ number_format($quotation->discount_amount, 0, ',', '.') }}</span>
-                        </div>
-                    @endif
+                    @include('backend.partials.financial-breakdown', ['document' => $quotation])
                     <div class="flex items-center justify-between px-5 py-4 bg-blue-50 dark:bg-blue-900/20">
                         <span class="font-bold text-blue-700 dark:text-blue-400">Grand Total</span>
                         <span class="text-lg font-bold text-blue-600 dark:text-blue-400">Rp {{ number_format($quotation->grand_total, 0, ',', '.') }}</span>

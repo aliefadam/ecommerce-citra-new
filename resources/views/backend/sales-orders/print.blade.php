@@ -78,6 +78,11 @@
 
         <table>
             <tr>
+                <td>Subtotal</td>
+                <td class="right">Rp {{ number_format($salesOrder->subtotal_amount, 0, ',', '.') }}</td>
+            </tr>
+            @include('backend.partials.financial-breakdown-print', ['document' => $salesOrder])
+            <tr>
                 <td><strong>Grand Total</strong></td>
                 <td class="right total">Rp {{ number_format($salesOrder->grand_total, 0, ',', '.') }}</td>
             </tr>

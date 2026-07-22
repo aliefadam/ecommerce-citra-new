@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Detail Invoice B2B')
+@section('title', 'Detail Invoice')
 
 @section('content')
 <main class="flex-1 p-4 sm:p-6 mt-6">
@@ -18,7 +18,7 @@
     <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
             <a href="{{ route('b2b-invoices.index') }}" class="inline-flex items-center gap-1 text-sm font-semibold text-blue-600 hover:underline">
-                <i data-lucide="arrow-left" class="h-3.5 w-3.5"></i> Kembali ke Invoice B2B
+                <i data-lucide="arrow-left" class="h-3.5 w-3.5"></i> Kembali ke Invoice
             </a>
             <div class="mt-2 flex flex-wrap items-center gap-3">
                 <h1 class="text-2xl font-bold text-slate-800 dark:text-white">{{ $b2bInvoice->b2b_invoice_no }}</h1>
@@ -29,6 +29,11 @@
                 @if ($b2bInvoice->isOverdue())
                     <span class="inline-flex items-center gap-1 rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
                         <i data-lucide="alert-triangle" class="h-3.5 w-3.5"></i> Overdue
+                    </span>
+                @endif
+                @if ($b2bInvoice->source === \App\Models\B2bInvoice::SOURCE_DIRECT)
+                    <span class="inline-flex items-center gap-1 rounded-full bg-purple-100 px-3 py-1 text-xs font-semibold text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
+                        <i data-lucide="zap" class="h-3.5 w-3.5"></i> Langsung dari Sales Order
                     </span>
                 @endif
             </div>
@@ -62,7 +67,7 @@
 
     @if ($b2bInvoice->canBeCancelled())
         <div class="mb-6">
-            <form method="POST" action="{{ route('b2b-invoices.cancel', $b2bInvoice) }}" onsubmit="return confirm('Batalkan Invoice B2B ini?')">
+            <form method="POST" action="{{ route('b2b-invoices.cancel', $b2bInvoice) }}" onsubmit="return confirm('Batalkan Invoice ini?')">
                 @csrf
                 <button type="submit" class="inline-flex items-center gap-2 rounded-xl border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50">
                     <i data-lucide="ban"></i> Batalkan
@@ -199,7 +204,12 @@
                 </div>
                 <div class="divide-y divide-slate-100 dark:divide-slate-700/60 text-sm">
                     <div class="flex items-center justify-between px-5 py-3">
-                        <span class="text-slate-500 dark:text-slate-400">Grand Total</span>
+                        <span class="text-slate-500 dark:text-slate-400">Subtotal</span>
+                        <span class="font-semibold text-slate-700 dark:text-slate-200">Rp {{ number_format($b2bInvoice->subtotal_amount, 0, ',', '.') }}</span>
+                    </div>
+                    @include('backend.partials.financial-breakdown', ['document' => $b2bInvoice])
+                    <div class="flex items-center justify-between px-5 py-3 bg-blue-50/60 dark:bg-blue-900/10">
+                        <span class="font-bold text-slate-700 dark:text-slate-200">Grand Total</span>
                         <span class="font-semibold text-slate-700 dark:text-slate-200">Rp {{ number_format($b2bInvoice->grand_total, 0, ',', '.') }}</span>
                     </div>
                     <div class="flex items-center justify-between px-5 py-3">

@@ -10,6 +10,7 @@ use App\Models\QuotationStatusHistory;
 use App\Models\SalesOrder;
 use App\Models\SalesOrderStatusHistory;
 use App\Models\User;
+use App\Services\DocumentFinancials;
 use App\Services\DocumentNumberGenerator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -53,7 +54,9 @@ class QuotationController extends Controller
 
     public function create()
     {
-        return view('backend.quotations.create');
+        return view('backend.quotations.create', [
+            'defaultPpnRate' => DocumentFinancials::defaultPpnRate($this->activeCompanyId()),
+        ]);
     }
 
     public function store(Request $request)
@@ -66,7 +69,14 @@ class QuotationController extends Controller
 
             $subtotal = collect($items)->sum('subtotal');
             $discountAmount = min($subtotal, max(0, (int) ($validated['discount_amount'] ?? 0)));
-            $grandTotal = max(0, $subtotal - $discountAmount);
+            $financials = DocumentFinancials::compute(
+                $subtotal,
+                $discountAmount,
+                (float) ($validated['ppn_rate'] ?? 0),
+                max(0, (int) ($validated['shipping_cost'] ?? 0)),
+                max(0, (int) ($validated['admin_fee'] ?? 0)),
+                max(0, (int) ($validated['other_cost'] ?? 0)),
+            );
             $customerMode = (string) $validated['customer_mode'];
 
             $quotation = Quotation::create([
@@ -79,7 +89,8 @@ class QuotationController extends Controller
                 'status' => Quotation::STATUS_DRAFT,
                 'subtotal_amount' => $subtotal,
                 'discount_amount' => $discountAmount,
-                'grand_total' => $grandTotal,
+                ...$financials,
+                'other_cost_note' => $validated['other_cost_note'] ?? null,
                 'valid_until' => $validated['valid_until'],
                 'note' => $validated['note'] ?? null,
                 'created_by_admin_id' => $request->user()?->id,
@@ -150,10 +161,18 @@ class QuotationController extends Controller
                 $items = $this->prepareItems($validated['items'], $quotation->company_id);
                 $subtotal = collect($items)->sum('subtotal');
                 $discountAmount = min($subtotal, max(0, (int) ($validated['discount_amount'] ?? 0)));
+                $financials = DocumentFinancials::compute(
+                    $subtotal,
+                    $discountAmount,
+                    (float) ($validated['ppn_rate'] ?? 0),
+                    max(0, (int) ($validated['shipping_cost'] ?? 0)),
+                    max(0, (int) ($validated['admin_fee'] ?? 0)),
+                    max(0, (int) ($validated['other_cost'] ?? 0)),
+                );
 
                 $updates['subtotal_amount'] = $subtotal;
                 $updates['discount_amount'] = $discountAmount;
-                $updates['grand_total'] = max(0, $subtotal - $discountAmount);
+                $updates = [...$updates, ...$financials, 'other_cost_note' => $validated['other_cost_note'] ?? null];
 
                 $quotation->details()->delete();
                 foreach ($items as $item) {
@@ -235,7 +254,10 @@ class QuotationController extends Controller
 
         $quotation->load('details');
 
-        return view('backend.quotations.convert', compact('quotation'));
+        return view('backend.quotations.convert', [
+            'quotation' => $quotation,
+            'defaultPpnRate' => DocumentFinancials::defaultPpnRate($quotation->company_id),
+        ]);
     }
 
     public function convert(Request $request, Quotation $quotation)
@@ -246,6 +268,11 @@ class QuotationController extends Controller
             'items' => ['required', 'array', 'min:1'],
             'items.*.quotation_detail_id' => ['required', 'integer'],
             'items.*.qty' => ['required', 'integer', 'min:0'],
+            'ppn_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'shipping_cost' => ['nullable', 'integer', 'min:0'],
+            'admin_fee' => ['nullable', 'integer', 'min:0'],
+            'other_cost' => ['nullable', 'integer', 'min:0'],
+            'other_cost_note' => ['nullable', 'string', 'max:255'],
         ]);
 
         $salesOrder = DB::transaction(function () use ($request, $validated, $quotation) {
@@ -297,6 +324,14 @@ class QuotationController extends Controller
             }
 
             $companyId = $locked->company_id;
+            $financials = DocumentFinancials::compute(
+                $subtotal,
+                0,
+                (float) ($validated['ppn_rate'] ?? 0),
+                max(0, (int) ($validated['shipping_cost'] ?? 0)),
+                max(0, (int) ($validated['admin_fee'] ?? 0)),
+                max(0, (int) ($validated['other_cost'] ?? 0)),
+            );
 
             $salesOrder = SalesOrder::create([
                 'company_id' => $companyId,
@@ -309,7 +344,8 @@ class QuotationController extends Controller
                 'status' => SalesOrder::STATUS_CONFIRMED,
                 'subtotal_amount' => $subtotal,
                 'discount_amount' => 0,
-                'grand_total' => $subtotal,
+                ...$financials,
+                'other_cost_note' => $validated['other_cost_note'] ?? null,
                 'created_by_admin_id' => $request->user()?->id,
             ]);
 
@@ -404,6 +440,11 @@ class QuotationController extends Controller
             'items.*.price' => ['required', 'integer', 'min:0'],
             'items.*.note' => ['nullable', 'string', 'max:500'],
             'discount_amount' => ['nullable', 'integer', 'min:0'],
+            'ppn_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'shipping_cost' => ['nullable', 'integer', 'min:0'],
+            'admin_fee' => ['nullable', 'integer', 'min:0'],
+            'other_cost' => ['nullable', 'integer', 'min:0'],
+            'other_cost_note' => ['nullable', 'string', 'max:255'],
             'valid_until' => ['required', 'date', 'after:today'],
             'note' => ['nullable', 'string', 'max:2000'],
         ]);

@@ -82,12 +82,7 @@
                 <td>Subtotal</td>
                 <td class="right">Rp {{ number_format($quotation->subtotal_amount, 0, ',', '.') }}</td>
             </tr>
-            @if ($quotation->discount_amount > 0)
-                <tr>
-                    <td>Diskon</td>
-                    <td class="right">- Rp {{ number_format($quotation->discount_amount, 0, ',', '.') }}</td>
-                </tr>
-            @endif
+            @include('backend.partials.financial-breakdown-print', ['document' => $quotation])
             <tr>
                 <td><strong>Grand Total</strong></td>
                 <td class="right total">Rp {{ number_format($quotation->grand_total, 0, ',', '.') }}</td>

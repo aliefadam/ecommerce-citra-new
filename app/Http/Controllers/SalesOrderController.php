@@ -8,6 +8,7 @@ use App\Models\Quotation;
 use App\Models\QuotationStatusHistory;
 use App\Models\SalesOrder;
 use App\Models\SalesOrderStatusHistory;
+use App\Services\DocumentFinancials;
 use App\Services\DocumentNumberGenerator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -117,7 +118,9 @@ class SalesOrderController extends Controller
      */
     public function create()
     {
-        return view('backend.sales-orders.create');
+        return view('backend.sales-orders.create', [
+            'defaultPpnRate' => DocumentFinancials::defaultPpnRate($this->activeCompanyId()),
+        ]);
     }
 
     public function store(Request $request)
@@ -133,6 +136,11 @@ class SalesOrderController extends Controller
             'items.*.qty' => ['required', 'integer', 'min:1'],
             'items.*.price' => ['required', 'integer', 'min:0'],
             'discount_amount' => ['nullable', 'integer', 'min:0'],
+            'ppn_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'shipping_cost' => ['nullable', 'integer', 'min:0'],
+            'admin_fee' => ['nullable', 'integer', 'min:0'],
+            'other_cost' => ['nullable', 'integer', 'min:0'],
+            'other_cost_note' => ['nullable', 'string', 'max:255'],
             'note' => ['nullable', 'string', 'max:2000'],
         ]);
 
@@ -142,7 +150,14 @@ class SalesOrderController extends Controller
 
             $subtotal = collect($items)->sum('subtotal');
             $discountAmount = min($subtotal, max(0, (int) ($validated['discount_amount'] ?? 0)));
-            $grandTotal = max(0, $subtotal - $discountAmount);
+            $financials = DocumentFinancials::compute(
+                $subtotal,
+                $discountAmount,
+                (float) ($validated['ppn_rate'] ?? 0),
+                max(0, (int) ($validated['shipping_cost'] ?? 0)),
+                max(0, (int) ($validated['admin_fee'] ?? 0)),
+                max(0, (int) ($validated['other_cost'] ?? 0)),
+            );
             $customerMode = (string) $validated['customer_mode'];
 
             $salesOrder = SalesOrder::create([
@@ -156,7 +171,8 @@ class SalesOrderController extends Controller
                 'status' => SalesOrder::STATUS_CONFIRMED,
                 'subtotal_amount' => $subtotal,
                 'discount_amount' => $discountAmount,
-                'grand_total' => $grandTotal,
+                ...$financials,
+                'other_cost_note' => $validated['other_cost_note'] ?? null,
                 'created_by_admin_id' => $request->user()?->id,
             ]);
 

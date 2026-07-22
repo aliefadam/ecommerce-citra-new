@@ -10,6 +10,7 @@ class B2bInvoiceDetail extends Model
     protected $fillable = [
         'b2b_invoice_id',
         'delivery_note_detail_id',
+        'sales_order_detail_id',
         'product_name',
         'variant_name',
         'sku',
@@ -30,5 +31,10 @@ class B2bInvoiceDetail extends Model
     public function deliveryNoteDetail(): BelongsTo
     {
         return $this->belongsTo(DeliveryNoteDetail::class);
+    }
+
+    public function salesOrderDetail(): BelongsTo
+    {
+        return $this->belongsTo(SalesOrderDetail::class);
     }
 }

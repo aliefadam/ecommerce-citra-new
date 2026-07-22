@@ -235,6 +235,8 @@ Route::middleware(['auth', 'admin', 'company.scope'])->group(function () {
 
         Route::get('sales-orders/{sales_order}/b2b-invoice/create', [B2bInvoiceController::class, 'createForm'])->name('b2b-invoices.create-form')->middleware('admin.permission:b2b_invoices.create');
         Route::post('sales-orders/{sales_order}/b2b-invoice', [B2bInvoiceController::class, 'store'])->name('b2b-invoices.store')->middleware('admin.permission:b2b_invoices.create');
+        Route::get('sales-orders/{sales_order}/b2b-invoice/create-direct', [B2bInvoiceController::class, 'createDirectForm'])->name('b2b-invoices.create-direct-form')->middleware('admin.permission:b2b_invoices.create');
+        Route::post('sales-orders/{sales_order}/b2b-invoice-direct', [B2bInvoiceController::class, 'storeDirect'])->name('b2b-invoices.store-direct')->middleware('admin.permission:b2b_invoices.create');
         Route::get('b2b-invoices/{b2b_invoice}/print', [B2bInvoiceController::class, 'print'])->name('b2b-invoices.print')->middleware('admin.permission:b2b_invoices.show');
         Route::post('b2b-invoices/{b2b_invoice}/payments', [B2bInvoiceController::class, 'recordPayment'])->name('b2b-invoices.record-payment')->middleware('admin.permission:b2b_invoices.record_payment');
         Route::post('b2b-invoices/{b2b_invoice}/cancel', [B2bInvoiceController::class, 'cancel'])->name('b2b-invoices.cancel')->middleware('admin.permission:b2b_invoices.cancel');

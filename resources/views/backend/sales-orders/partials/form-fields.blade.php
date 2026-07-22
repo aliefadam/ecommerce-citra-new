@@ -109,6 +109,49 @@
                 <span id="soSummaryDiscount" class="shrink-0 w-24 text-right font-semibold text-emerald-600">- Rp 0</span>
             </div>
 
+            <div class="flex items-center gap-3 px-5 py-3">
+                <label for="so_ppn_rate" class="shrink-0 text-slate-500 dark:text-slate-400 w-20">PPN (%)</label>
+                <input id="so_ppn_rate" name="ppn_rate" type="number" min="0" max="100" step="0.01"
+                    value="{{ old('ppn_rate', $defaultPpnRate ?? 0) }}" oninput="recalculateSalesOrder()"
+                    class="w-20 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200">
+                <span id="soSummaryPpn" class="shrink-0 flex-1 text-right font-semibold text-slate-700 dark:text-slate-200">Rp 0</span>
+            </div>
+
+            <div class="flex items-center gap-3 px-5 py-3">
+                <label for="so_shipping_cost" class="shrink-0 text-slate-500 dark:text-slate-400 w-20">Ongkir</label>
+                <div class="relative flex-1">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">Rp</span>
+                    <input id="so_shipping_cost" name="shipping_cost" type="number" min="0" step="1"
+                        value="{{ old('shipping_cost', 0) }}" oninput="recalculateSalesOrder()"
+                        class="w-full rounded-lg border border-slate-200 bg-slate-50 pl-8 pr-3 py-1.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200">
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 px-5 py-3">
+                <label for="so_admin_fee" class="shrink-0 text-slate-500 dark:text-slate-400 w-20">Biaya Admin</label>
+                <div class="relative flex-1">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">Rp</span>
+                    <input id="so_admin_fee" name="admin_fee" type="number" min="0" step="1"
+                        value="{{ old('admin_fee', 0) }}" oninput="recalculateSalesOrder()"
+                        class="w-full rounded-lg border border-slate-200 bg-slate-50 pl-8 pr-3 py-1.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200">
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 px-5 py-3">
+                <label for="so_other_cost" class="shrink-0 text-slate-500 dark:text-slate-400 w-20">Lain-lain</label>
+                <div class="relative flex-1">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">Rp</span>
+                    <input id="so_other_cost" name="other_cost" type="number" min="0" step="1"
+                        value="{{ old('other_cost', 0) }}" oninput="recalculateSalesOrder()"
+                        class="w-full rounded-lg border border-slate-200 bg-slate-50 pl-8 pr-3 py-1.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200">
+                </div>
+            </div>
+            <div class="px-5 pb-3 -mt-2">
+                <input name="other_cost_note" type="text" placeholder="Keterangan biaya lain-lain (opsional)"
+                    value="{{ old('other_cost_note') }}"
+                    class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300">
+            </div>
+
             <div class="flex items-center justify-between gap-3 px-5 py-4 bg-blue-50 dark:bg-blue-900/20">
                 <span class="font-bold text-blue-700 dark:text-blue-400">Grand Total</span>
                 <span id="soSummaryGrandTotal" class="text-lg font-bold text-blue-600 dark:text-blue-400">Rp 0</span>

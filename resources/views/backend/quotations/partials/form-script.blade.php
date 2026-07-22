@@ -164,10 +164,17 @@
         });
 
         const discountAmount = Math.min(subtotal, moneyValue(document.getElementById('discount_amount')));
-        const grandTotal     = Math.max(0, subtotal - discountAmount);
+        const taxable        = Math.max(0, subtotal - discountAmount);
+        const ppnRate         = Math.max(0, Math.min(100, parseFloat(document.getElementById('ppn_rate')?.value || 0)));
+        const ppnAmount       = Math.round(taxable * ppnRate / 100);
+        const shippingCost    = moneyValue(document.getElementById('shipping_cost'));
+        const adminFee        = moneyValue(document.getElementById('admin_fee'));
+        const otherCost       = moneyValue(document.getElementById('other_cost'));
+        const grandTotal      = taxable + ppnAmount + shippingCost + adminFee + otherCost;
 
         document.getElementById('summarySubtotal').textContent   = formatRupiah(subtotal);
         document.getElementById('summaryDiscount').textContent   = discountAmount > 0 ? '- ' + formatRupiah(discountAmount) : 'Rp 0';
+        if (document.getElementById('summaryPpn')) document.getElementById('summaryPpn').textContent = formatRupiah(ppnAmount);
         document.getElementById('summaryGrandTotal').textContent = formatRupiah(grandTotal);
     }
 </script>

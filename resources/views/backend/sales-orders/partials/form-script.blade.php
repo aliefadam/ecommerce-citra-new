@@ -139,10 +139,17 @@
         });
 
         const discountAmount = Math.min(subtotal, soMoneyValue(document.getElementById('so_discount_amount')));
-        const grandTotal     = Math.max(0, subtotal - discountAmount);
+        const taxable        = Math.max(0, subtotal - discountAmount);
+        const ppnRate         = Math.max(0, Math.min(100, parseFloat(document.getElementById('so_ppn_rate')?.value || 0)));
+        const ppnAmount       = Math.round(taxable * ppnRate / 100);
+        const shippingCost    = soMoneyValue(document.getElementById('so_shipping_cost'));
+        const adminFee        = soMoneyValue(document.getElementById('so_admin_fee'));
+        const otherCost       = soMoneyValue(document.getElementById('so_other_cost'));
+        const grandTotal      = taxable + ppnAmount + shippingCost + adminFee + otherCost;
 
         document.getElementById('soSummarySubtotal').textContent   = soFormatRupiah(subtotal);
         document.getElementById('soSummaryDiscount').textContent   = discountAmount > 0 ? '- ' + soFormatRupiah(discountAmount) : 'Rp 0';
+        document.getElementById('soSummaryPpn').textContent        = soFormatRupiah(ppnAmount);
         document.getElementById('soSummaryGrandTotal').textContent = soFormatRupiah(grandTotal);
     }
 </script>

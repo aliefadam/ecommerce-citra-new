@@ -1,12 +1,12 @@
 @extends('layouts.app')
 
-@section('title', 'Invoice B2B')
+@section('title', 'Invoice')
 
 @section('content')
     <main class="flex-1 p-4 sm:p-6 mt-6">
         <div class="mb-6">
-            <h1 class="text-2xl font-bold text-slate-800 dark:text-white">Invoice B2B</h1>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Tagihan final gabungan dari Surat Jalan yang sudah terkirim.</p>
+            <h1 class="text-2xl font-bold text-slate-800 dark:text-white">Invoice</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Tagihan final dari Surat Jalan yang sudah terkirim, atau langsung dari Sales Order.</p>
         </div>
 
         @if (session('success'))
@@ -70,7 +70,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="px-4 py-8 text-center text-slate-400">Belum ada Invoice B2B.</td>
+                                <td colspan="7" class="px-4 py-8 text-center text-slate-400">Belum ada Invoice.</td>
                             </tr>
                         @endforelse
                     </tbody>

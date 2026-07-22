@@ -8,6 +8,7 @@ use App\Models\DeliveryNote;
 use App\Models\DocumentPayment;
 use App\Models\ProformaInvoice;
 use App\Models\SalesOrder;
+use App\Services\DocumentFinancials;
 use App\Services\DocumentNumberGenerator;
 use App\Services\DocumentPaymentService;
 use Illuminate\Http\Request;
@@ -55,6 +56,7 @@ class B2bInvoiceController extends Controller
         return view('backend.b2b-invoices.create', [
             'salesOrder' => $salesOrder,
             'candidates' => $candidates,
+            'defaultPpnRate' => DocumentFinancials::defaultPpnRate($salesOrder->company_id),
         ]);
     }
 
@@ -66,6 +68,11 @@ class B2bInvoiceController extends Controller
             'delivery_note_ids' => ['required', 'array', 'min:1'],
             'delivery_note_ids.*' => ['integer'],
             'due_date' => ['required', 'date', 'after_or_equal:today'],
+            'ppn_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'shipping_cost' => ['nullable', 'integer', 'min:0'],
+            'admin_fee' => ['nullable', 'integer', 'min:0'],
+            'other_cost' => ['nullable', 'integer', 'min:0'],
+            'other_cost_note' => ['nullable', 'string', 'max:255'],
         ]);
 
         $b2bInvoice = DB::transaction(function () use ($request, $validated, $salesOrder) {
@@ -106,20 +113,30 @@ class B2bInvoiceController extends Controller
             }
 
             $companyId = $locked->company_id;
+            $financials = DocumentFinancials::compute(
+                $subtotal,
+                0,
+                (float) ($validated['ppn_rate'] ?? 0),
+                max(0, (int) ($validated['shipping_cost'] ?? 0)),
+                max(0, (int) ($validated['admin_fee'] ?? 0)),
+                max(0, (int) ($validated['other_cost'] ?? 0)),
+            );
 
             $b2bInvoice = B2bInvoice::create([
                 'company_id' => $companyId,
                 'b2b_invoice_no' => $this->documentNumberGenerator->generate(B2bInvoice::class, 'INVB', $companyId),
                 'sales_order_id' => $locked->id,
+                'source' => B2bInvoice::SOURCE_SHIPMENT,
                 'user_id' => $locked->user_id,
                 'manual_customer_name' => $locked->manual_customer_name,
                 'manual_customer_phone' => $locked->manual_customer_phone,
                 'manual_customer_email' => $locked->manual_customer_email,
                 'status' => B2bInvoice::STATUS_ISSUED,
                 'subtotal_amount' => $subtotal,
-                'grand_total' => $subtotal,
+                ...$financials,
+                'other_cost_note' => $validated['other_cost_note'] ?? null,
                 'paid_amount' => 0,
-                'outstanding_amount' => $subtotal,
+                'outstanding_amount' => $financials['grand_total'],
                 'due_date' => $validated['due_date'],
                 'issued_at' => now(),
                 'created_by_admin_id' => $request->user()?->id,
@@ -138,7 +155,132 @@ class B2bInvoiceController extends Controller
             return $b2bInvoice;
         });
 
-        return redirect()->route('b2b-invoices.show', $b2bInvoice)->with('success', 'Invoice B2B berhasil dibuat.');
+        return redirect()->route('b2b-invoices.show', $b2bInvoice)->with('success', 'Invoice berhasil dibuat.');
+    }
+
+    /**
+     * Jalur "Invoice langsung dari Sales Order" — dipakai saat customer perlu
+     * ditagih/bayar dulu sebelum barang dikirim (lihat PRD §5 Behavior). Item
+     * bersumber dari SalesOrderDetail, bukan DeliveryNoteDetail; Surat Jalan yang
+     * dibuat kemudian untuk Sales Order yang sama otomatis di-attach ke Invoice ini
+     * (lihat DeliveryNoteController::store()).
+     */
+    public function createDirectForm(SalesOrder $salesOrder)
+    {
+        $this->guardCompanyOwnership($salesOrder->company_id);
+
+        if ($salesOrder->status === SalesOrder::STATUS_CANCELLED) {
+            return redirect()->route('sales-orders.show', $salesOrder)->withErrors(['sales_order' => 'Sales Order ini sudah dibatalkan.']);
+        }
+
+        $salesOrder->load('details');
+
+        return view('backend.b2b-invoices.create-direct', [
+            'salesOrder' => $salesOrder,
+            'defaultPpnRate' => DocumentFinancials::defaultPpnRate($salesOrder->company_id),
+        ]);
+    }
+
+    public function storeDirect(Request $request, SalesOrder $salesOrder)
+    {
+        $this->guardCompanyOwnership($salesOrder->company_id);
+
+        $validated = $request->validate([
+            'items' => ['required', 'array', 'min:1'],
+            'items.*.sales_order_detail_id' => ['required', 'integer'],
+            'items.*.qty' => ['required', 'integer', 'min:0'],
+            'due_date' => ['required', 'date', 'after_or_equal:today'],
+            'ppn_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'shipping_cost' => ['nullable', 'integer', 'min:0'],
+            'admin_fee' => ['nullable', 'integer', 'min:0'],
+            'other_cost' => ['nullable', 'integer', 'min:0'],
+            'other_cost_note' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $b2bInvoice = DB::transaction(function () use ($request, $validated, $salesOrder) {
+            $locked = SalesOrder::query()->lockForUpdate()->findOrFail($salesOrder->id);
+
+            if ($locked->status === SalesOrder::STATUS_CANCELLED) {
+                throw ValidationException::withMessages(['sales_order' => 'Sales Order ini sudah dibatalkan.']);
+            }
+
+            $isFirstInvoiceForSalesOrder = $locked->b2bInvoices()->count() === 0;
+
+            $selectedItems = collect($validated['items'])->filter(fn ($item) => (int) $item['qty'] > 0)->values();
+            if ($selectedItems->isEmpty()) {
+                throw ValidationException::withMessages(['items' => 'Pilih minimal satu item dengan qty lebih dari 0.']);
+            }
+
+            $details = $locked->details()->whereIn('id', $selectedItems->pluck('sales_order_detail_id'))->get()->keyBy('id');
+
+            $detailsData = [];
+            $subtotal = 0;
+
+            foreach ($selectedItems as $item) {
+                $detail = $details->get((int) $item['sales_order_detail_id']);
+                if (! $detail) {
+                    throw ValidationException::withMessages(['items' => 'Item Sales Order tidak ditemukan.']);
+                }
+
+                $qty = (int) $item['qty'];
+                if ($qty > $detail->quantity) {
+                    throw ValidationException::withMessages(['items' => 'Qty untuk "'.$detail->product_name.'" melebihi qty pada Sales Order ('.$detail->quantity.').']);
+                }
+
+                $subtotal += $qty * $detail->price;
+
+                $detailsData[] = [
+                    'sales_order_detail_id' => $detail->id,
+                    'product_name' => $detail->product_name,
+                    'variant_name' => $detail->variant_name,
+                    'sku' => $detail->sku,
+                    'price' => $detail->price,
+                    'quantity' => $qty,
+                ];
+            }
+
+            $companyId = $locked->company_id;
+            $financials = DocumentFinancials::compute(
+                $subtotal,
+                0,
+                (float) ($validated['ppn_rate'] ?? 0),
+                max(0, (int) ($validated['shipping_cost'] ?? 0)),
+                max(0, (int) ($validated['admin_fee'] ?? 0)),
+                max(0, (int) ($validated['other_cost'] ?? 0)),
+            );
+
+            $b2bInvoice = B2bInvoice::create([
+                'company_id' => $companyId,
+                'b2b_invoice_no' => $this->documentNumberGenerator->generate(B2bInvoice::class, 'INVB', $companyId),
+                'sales_order_id' => $locked->id,
+                'source' => B2bInvoice::SOURCE_DIRECT,
+                'user_id' => $locked->user_id,
+                'manual_customer_name' => $locked->manual_customer_name,
+                'manual_customer_phone' => $locked->manual_customer_phone,
+                'manual_customer_email' => $locked->manual_customer_email,
+                'status' => B2bInvoice::STATUS_ISSUED,
+                'subtotal_amount' => $subtotal,
+                ...$financials,
+                'other_cost_note' => $validated['other_cost_note'] ?? null,
+                'paid_amount' => 0,
+                'outstanding_amount' => $financials['grand_total'],
+                'due_date' => $validated['due_date'],
+                'issued_at' => now(),
+                'created_by_admin_id' => $request->user()?->id,
+            ]);
+
+            foreach ($detailsData as $data) {
+                $b2bInvoice->details()->create($data);
+            }
+
+            if ($isFirstInvoiceForSalesOrder) {
+                $this->applyDpCreditIfAny($locked, $b2bInvoice, $request->user()?->id);
+            }
+
+            return $b2bInvoice;
+        });
+
+        return redirect()->route('b2b-invoices.show', $b2bInvoice)->with('success', 'Invoice berhasil dibuat langsung dari Sales Order.');
     }
 
     public function show(B2bInvoice $b2bInvoice)
@@ -170,7 +312,7 @@ class B2bInvoiceController extends Controller
         $this->guardCompanyOwnership($b2bInvoice->company_id);
 
         if (! $b2bInvoice->canBeCancelled()) {
-            throw ValidationException::withMessages(['b2b_invoice' => 'Invoice B2B ini tidak bisa dibatalkan (sudah ada Pembayaran tercatat atau sudah dibatalkan).']);
+            throw ValidationException::withMessages(['b2b_invoice' => 'Invoice ini tidak bisa dibatalkan (sudah ada Pembayaran tercatat atau sudah dibatalkan).']);
         }
 
         $b2bInvoice->update([
@@ -179,7 +321,7 @@ class B2bInvoiceController extends Controller
             'cancelled_by_admin_id' => $request->user()?->id,
         ]);
 
-        return back()->with('success', 'Invoice B2B berhasil dibatalkan.');
+        return back()->with('success', 'Invoice berhasil dibatalkan.');
     }
 
     public function print(B2bInvoice $b2bInvoice)

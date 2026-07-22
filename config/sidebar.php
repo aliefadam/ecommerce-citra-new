@@ -129,7 +129,7 @@ return [
                 'permission' => 'packing_lists.index',
             ],
             [
-                'name' => 'Invoice B2B',
+                'name' => 'Invoice',
                 'route' => 'b2b-invoices.index',
                 'active' => 'b2b-invoices.*',
                 'icon' => 'receipt-text',
