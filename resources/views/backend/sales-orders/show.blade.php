@@ -99,75 +99,79 @@
         @endif
     </div>
 
-    {{-- Surat Jalan terkait --}}
-    @if ($salesOrder->deliveryNotes->isNotEmpty())
-        <div class="mb-6 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden">
-            <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-700">
-                <h2 class="font-bold text-slate-800 dark:text-white">Surat Jalan</h2>
-            </div>
-            <div class="divide-y divide-slate-100 dark:divide-slate-700">
-                @foreach ($salesOrder->deliveryNotes as $dn)
-                    @php
-                        $dnColor = match ($dn->status) {
-                            'draft' => 'text-slate-500',
-                            'shipped' => 'text-blue-600',
-                            'delivered' => 'text-emerald-600',
-                            'cancelled' => 'text-red-500',
-                            default => 'text-slate-500',
-                        };
-                    @endphp
-                    <a href="{{ route('delivery-notes.show', $dn) }}" class="flex items-center justify-between px-5 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/40">
-                        <div>
-                            <p class="font-semibold text-slate-800 dark:text-slate-200">{{ $dn->delivery_note_no }}</p>
-                            <p class="text-xs text-slate-400">{{ $dn->created_at->format('d M Y, H:i') }}</p>
-                        </div>
-                        <span class="text-xs font-semibold {{ $dnColor }}">{{ ucfirst($dn->status) }}</span>
-                    </a>
-                @endforeach
-            </div>
-        </div>
-    @endif
+    @if ($salesOrder->deliveryNotes->isNotEmpty() || ($canSeePricing && ($salesOrder->proformaInvoices->isNotEmpty() || $salesOrder->b2bInvoices->isNotEmpty())))
+        <div class="mb-6 grid gap-6 lg:grid-cols-3">
+            {{-- Surat Jalan terkait --}}
+            @if ($salesOrder->deliveryNotes->isNotEmpty())
+                <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden">
+                    <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-700">
+                        <h2 class="font-bold text-slate-800 dark:text-white">Surat Jalan</h2>
+                    </div>
+                    <div class="divide-y divide-slate-100 dark:divide-slate-700">
+                        @foreach ($salesOrder->deliveryNotes as $dn)
+                            @php
+                                $dnColor = match ($dn->status) {
+                                    'draft' => 'text-slate-500',
+                                    'shipped' => 'text-blue-600',
+                                    'delivered' => 'text-emerald-600',
+                                    'cancelled' => 'text-red-500',
+                                    default => 'text-slate-500',
+                                };
+                            @endphp
+                            <a href="{{ route('delivery-notes.show', $dn) }}" class="flex items-center justify-between px-5 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/40">
+                                <div>
+                                    <p class="font-semibold text-slate-800 dark:text-slate-200">{{ $dn->delivery_note_no }}</p>
+                                    <p class="text-xs text-slate-400">{{ $dn->created_at->format('d M Y, H:i') }}</p>
+                                </div>
+                                <span class="text-xs font-semibold {{ $dnColor }}">{{ ucfirst($dn->status) }}</span>
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
 
-    @if ($canSeePricing && $salesOrder->proformaInvoices->isNotEmpty())
-        <div class="mb-6 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden">
-            <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-700">
-                <h2 class="font-bold text-slate-800 dark:text-white">Proforma Invoice</h2>
-            </div>
-            <div class="divide-y divide-slate-100 dark:divide-slate-700">
-                @foreach ($salesOrder->proformaInvoices as $pi)
-                    <a href="{{ route('proforma-invoices.show', $pi) }}" class="flex items-center justify-between px-5 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/40">
-                        <div>
-                            <p class="font-semibold text-slate-800 dark:text-slate-200">{{ $pi->proforma_invoice_no }}</p>
-                            <p class="text-xs text-slate-400">Outstanding: Rp {{ number_format($pi->outstanding_amount, 0, ',', '.') }} / Rp {{ number_format($pi->grand_total, 0, ',', '.') }}</p>
-                        </div>
-                        <span class="text-xs font-semibold {{ $pi->status === 'cancelled' ? 'text-red-500' : ($pi->status === 'paid' ? 'text-emerald-600' : 'text-amber-600') }}">{{ ucfirst(str_replace('_', ' ', $pi->status)) }}</span>
-                    </a>
-                @endforeach
-            </div>
-        </div>
-    @endif
+            @if ($canSeePricing && $salesOrder->proformaInvoices->isNotEmpty())
+                <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden">
+                    <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-700">
+                        <h2 class="font-bold text-slate-800 dark:text-white">Proforma Invoice</h2>
+                    </div>
+                    <div class="divide-y divide-slate-100 dark:divide-slate-700">
+                        @foreach ($salesOrder->proformaInvoices as $pi)
+                            <a href="{{ route('proforma-invoices.show', $pi) }}" class="flex items-center justify-between px-5 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/40">
+                                <div>
+                                    <p class="font-semibold text-slate-800 dark:text-slate-200">{{ $pi->proforma_invoice_no }}</p>
+                                    <p class="text-xs text-slate-400">Outstanding: Rp {{ number_format($pi->outstanding_amount, 0, ',', '.') }} / Rp {{ number_format($pi->grand_total, 0, ',', '.') }}</p>
+                                </div>
+                                <span class="text-xs font-semibold {{ $pi->status === 'cancelled' ? 'text-red-500' : ($pi->status === 'paid' ? 'text-emerald-600' : 'text-amber-600') }}">{{ ucfirst(str_replace('_', ' ', $pi->status)) }}</span>
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
 
-    @if ($canSeePricing && $salesOrder->b2bInvoices->isNotEmpty())
-        <div class="mb-6 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden">
-            <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-700">
-                <h2 class="font-bold text-slate-800 dark:text-white">Invoice</h2>
-            </div>
-            <div class="divide-y divide-slate-100 dark:divide-slate-700">
-                @foreach ($salesOrder->b2bInvoices as $invoice)
-                    <a href="{{ route('b2b-invoices.show', $invoice) }}" class="flex items-center justify-between px-5 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/40">
-                        <div>
-                            <p class="font-semibold text-slate-800 dark:text-slate-200">
-                                {{ $invoice->b2b_invoice_no }}
-                                @if ($invoice->source === \App\Models\B2bInvoice::SOURCE_DIRECT)
-                                    <span class="ml-1 rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-semibold text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">Langsung</span>
-                                @endif
-                            </p>
-                            <p class="text-xs text-slate-400">Outstanding: Rp {{ number_format($invoice->outstanding_amount, 0, ',', '.') }} / Rp {{ number_format($invoice->grand_total, 0, ',', '.') }}</p>
-                        </div>
-                        <span class="text-xs font-semibold {{ $invoice->status === 'cancelled' ? 'text-red-500' : ($invoice->status === 'paid' ? 'text-emerald-600' : 'text-amber-600') }}">{{ ucfirst(str_replace('_', ' ', $invoice->status)) }}{{ $invoice->isOverdue() ? ' — Overdue' : '' }}</span>
-                    </a>
-                @endforeach
-            </div>
+            @if ($canSeePricing && $salesOrder->b2bInvoices->isNotEmpty())
+                <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden">
+                    <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-700">
+                        <h2 class="font-bold text-slate-800 dark:text-white">Invoice</h2>
+                    </div>
+                    <div class="divide-y divide-slate-100 dark:divide-slate-700">
+                        @foreach ($salesOrder->b2bInvoices as $invoice)
+                            <a href="{{ route('b2b-invoices.show', $invoice) }}" class="flex items-center justify-between px-5 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/40">
+                                <div>
+                                    <p class="font-semibold text-slate-800 dark:text-slate-200">
+                                        {{ $invoice->b2b_invoice_no }}
+                                        @if ($invoice->source === \App\Models\B2bInvoice::SOURCE_DIRECT)
+                                            <span class="ml-1 rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-semibold text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">Langsung</span>
+                                        @endif
+                                    </p>
+                                    <p class="text-xs text-slate-400">Outstanding: Rp {{ number_format($invoice->outstanding_amount, 0, ',', '.') }} / Rp {{ number_format($invoice->grand_total, 0, ',', '.') }}</p>
+                                </div>
+                                <span class="text-xs font-semibold {{ $invoice->status === 'cancelled' ? 'text-red-500' : ($invoice->status === 'paid' ? 'text-emerald-600' : 'text-amber-600') }}">{{ ucfirst(str_replace('_', ' ', $invoice->status)) }}{{ $invoice->isOverdue() ? ' — Overdue' : '' }}</span>
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
         </div>
     @endif
 
