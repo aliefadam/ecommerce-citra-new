@@ -53,6 +53,8 @@ use App\Http\Controllers\VariantController;
 use App\Http\Controllers\WishlistController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/docs/api-catalog', [ApiDocController::class, 'publicIndex'])->name('api-docs.public');
+
 Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register'])->name('register.attempt');

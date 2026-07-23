@@ -19,12 +19,36 @@ class ApiDocController extends Controller
             ->orderBy('name')
             ->get(['id', 'name', 'slug', 'is_active']);
 
-        return view('backend.api-docs.index', [
+        return view('backend.api-docs.index', $this->viewData($companies));
+    }
+
+    /**
+     * Versi publik (tanpa login) dari halaman yang sama, untuk dibagikan
+     * ke developer/website eksternal yang mengonsumsi Open Catalog API.
+     * Hanya menampilkan perusahaan aktif (yang memang bisa diakses via API).
+     */
+    public function publicIndex()
+    {
+        $companies = Company::query()
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get(['id', 'name', 'slug']);
+
+        return view('public.api-docs.index', $this->viewData($companies));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function viewData($companies): array
+    {
+        return [
             'companies' => $companies,
             'baseUrl' => rtrim(url('/api/v1/companies'), '/'),
-            'sampleSlug' => $companies->firstWhere('is_active', true)?->slug ?? 'company-slug',
+            'sampleSlug' => $companies->first()?->slug ?? 'company-slug',
             'endpoints' => $this->endpoints(),
-        ]);
+        ];
     }
 
     /**
