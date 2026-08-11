@@ -1314,6 +1314,7 @@
             const res = await fetch(url, {
                 method: 'PATCH',
                 headers: {
+                    'Accept': 'application/json',
                     'X-CSRF-TOKEN': csrfToken,
                     'X-Requested-With': 'XMLHttpRequest',
                 },
@@ -1401,6 +1402,7 @@
             const res = await fetch(tx.verify_payment_url, {
                 method: 'PATCH',
                 headers: {
+                    'Accept': 'application/json',
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': csrfToken,
                     'X-Requested-With': 'XMLHttpRequest',
@@ -1439,6 +1441,7 @@
             const res = await fetch(url, {
                 method: 'PATCH',
                 headers: {
+                    'Accept': 'application/json',
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': csrfToken,
                     'X-Requested-With': 'XMLHttpRequest',

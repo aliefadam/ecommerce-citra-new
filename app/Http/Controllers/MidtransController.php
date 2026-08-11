@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\HandlesGuestCheckout;
 use App\Mail\InvoiceOrder;
-use App\Models\Address;
 use App\Models\CompanySetting;
 use App\Models\Coupon;
 use App\Models\StoreSetting;
@@ -31,6 +30,69 @@ class MidtransController extends Controller
     use HandlesGuestCheckout;
 
     public function __construct(private readonly DocumentNumberGenerator $documentNumberGenerator) {}
+
+    public function notification(Request $request)
+    {
+        $validated = $request->validate([
+            'order_id' => ['required', 'string', 'max:255'],
+            'status_code' => ['required', 'string', 'max:10'],
+            'gross_amount' => ['required'],
+            'signature_key' => ['required', 'string', 'size:128'],
+            'transaction_status' => ['required', 'string', 'max:50'],
+            'transaction_id' => ['nullable', 'string', 'max:255'],
+            'payment_type' => ['nullable', 'string', 'max:50'],
+            'fraud_status' => ['nullable', 'string', 'max:50'],
+        ]);
+
+        $serverKey = (string) config('services.midtrans.server_key', '');
+        if ($serverKey === '') {
+            Log::error('Midtrans notification rejected because server key is not configured.');
+
+            return response()->json(['message' => 'Midtrans belum dikonfigurasi.'], 503);
+        }
+
+        $expectedSignature = hash(
+            'sha512',
+            (string) $validated['order_id']
+                .(string) $validated['status_code']
+                .(string) $validated['gross_amount']
+                .$serverKey,
+        );
+
+        if (! hash_equals($expectedSignature, strtolower((string) $validated['signature_key']))) {
+            Log::warning('Midtrans notification rejected due to invalid signature.', [
+                'order_id' => (string) $validated['order_id'],
+            ]);
+
+            return response()->json(['message' => 'Signature tidak valid.'], 401);
+        }
+
+        $transaction = Transaction::query()
+            ->where('order_id', (string) $validated['order_id'])
+            ->first();
+
+        if (! $transaction) {
+            return response()->json(['message' => 'Transaksi tidak ditemukan.'], 404);
+        }
+
+        $incomingStatus = strtolower((string) $validated['transaction_status']);
+        $fraudStatus = strtolower((string) ($validated['fraud_status'] ?? 'accept'));
+
+        if ($incomingStatus === 'capture' && $fraudStatus === 'challenge') {
+            $incomingStatus = 'pending';
+        } elseif ($incomingStatus === 'capture' && $fraudStatus === 'deny') {
+            $incomingStatus = 'deny';
+        }
+
+        $transaction->forceFill([
+            'midtrans_transaction_id' => $validated['transaction_id'] ?? $transaction->midtrans_transaction_id,
+            'payment_type' => $validated['payment_type'] ?? $transaction->payment_type,
+        ])->save();
+
+        $this->syncTransactionStatus((string) $validated['order_id'], $incomingStatus);
+
+        return response()->json(['ok' => true]);
+    }
 
     public function createCharge(Request $request, CheckoutTaxCalculator $taxCalculator)
     {
@@ -66,12 +128,12 @@ class MidtransController extends Controller
         $guest = $this->guestCheckoutData($request, $validated);
 
         try {
-            $serverKey = (string) env('MIDTRANS_SERVER_KEY', '');
+            $serverKey = (string) config('services.midtrans.server_key', '');
             if ($serverKey === '') {
                 throw new RuntimeException('MIDTRANS_SERVER_KEY belum dikonfigurasi.');
             }
 
-            $isProduction = filter_var(env('MIDTRANS_IS_PRODUCTION', false), FILTER_VALIDATE_BOOLEAN);
+            $isProduction = (bool) config('services.midtrans.is_production', false);
             $baseUrl = $isProduction
                 ? 'https://api.midtrans.com/v2/charge'
                 : 'https://api.sandbox.midtrans.com/v2/charge';
@@ -244,23 +306,7 @@ class MidtransController extends Controller
                 ];
             })->values()->all();
 
-            $addressSnapshot = $guest['address_snapshot'] ?? [];
-            if (! $guest && ! empty($validated['address_id'])) {
-                $addr = Address::query()
-                    ->where('id', $validated['address_id'])
-                    ->where('user_id', $request->user()?->id)
-                    ->first();
-                if ($addr) {
-                    $addressSnapshot = [
-                        'shipping_recipient_name' => $addr->recipient_name,
-                        'shipping_phone' => trim(($addr->phone_country_code ?? '').$addr->phone_number),
-                        'shipping_address_line' => $addr->address_line,
-                        'shipping_city' => $addr->city,
-                        'shipping_province' => $addr->province,
-                        'shipping_postal_code' => $addr->postal_code,
-                    ];
-                }
-            }
+            $addressSnapshot = $this->checkoutAddressSnapshot($request, $validated, $guest);
 
             $paymentSummary = [
                 'order_id' => $orderId,
@@ -417,7 +463,7 @@ class MidtransController extends Controller
                 ]);
             }
 
-            $isProduction = filter_var(env('MIDTRANS_IS_PRODUCTION', false), FILTER_VALIDATE_BOOLEAN);
+            $isProduction = (bool) config('services.midtrans.is_production', false);
 
             $sessionData = session('checkout_waiting.'.$orderId);
             if (
@@ -436,7 +482,7 @@ class MidtransController extends Controller
                 ]);
             }
 
-            $serverKey = (string) env('MIDTRANS_SERVER_KEY', '');
+            $serverKey = (string) config('services.midtrans.server_key', '');
             if ($serverKey === '') {
                 throw new RuntimeException('MIDTRANS_SERVER_KEY belum dikonfigurasi.');
             }
@@ -583,7 +629,7 @@ class MidtransController extends Controller
         ]);
 
         try {
-            $isProduction = filter_var(env('MIDTRANS_IS_PRODUCTION', false), FILTER_VALIDATE_BOOLEAN);
+            $isProduction = (bool) config('services.midtrans.is_production', false);
             if ($isProduction) {
                 throw new RuntimeException('Simulasi hanya tersedia di mode sandbox.');
             }
@@ -599,7 +645,7 @@ class MidtransController extends Controller
             }
 
             // Validasi order memang ada di Midtrans
-            $serverKey = (string) env('MIDTRANS_SERVER_KEY', '');
+            $serverKey = (string) config('services.midtrans.server_key', '');
             if ($serverKey === '') {
                 throw new RuntimeException('MIDTRANS_SERVER_KEY belum dikonfigurasi.');
             }
@@ -796,12 +842,12 @@ class MidtransController extends Controller
 
     private function cancelMidtransTransaction(string $orderId): void
     {
-        $serverKey = (string) env('MIDTRANS_SERVER_KEY', '');
+        $serverKey = (string) config('services.midtrans.server_key', '');
         if ($serverKey === '') {
             throw new RuntimeException('MIDTRANS_SERVER_KEY belum dikonfigurasi.');
         }
 
-        $isProduction = filter_var(env('MIDTRANS_IS_PRODUCTION', false), FILTER_VALIDATE_BOOLEAN);
+        $isProduction = (bool) config('services.midtrans.is_production', false);
         $url = $isProduction
             ? 'https://api.midtrans.com/v2/'.$orderId.'/cancel'
             : 'https://api.sandbox.midtrans.com/v2/'.$orderId.'/cancel';
@@ -960,61 +1006,97 @@ class MidtransController extends Controller
 
     private function syncTransactionStatus(string $orderId, string $status): void
     {
-        $tx = Transaction::query()->where('order_id', $orderId)->first();
-        if (! $tx) {
-            return;
-        }
+        $incomingStatus = strtolower(trim($status));
+        $paidStatuses = ['settlement', 'capture', 'paid'];
+        $cancelledStatuses = ['cancel', 'expire', 'deny', 'failure'];
 
-        // Jangan overwrite status yang sudah dikelola admin (process/kirim)
-        $adminManagedStatuses = ['process', 'kirim'];
-        if (in_array(strtolower((string) $tx->status), $adminManagedStatuses, true)) {
-            return;
-        }
+        DB::transaction(function () use ($orderId, $incomingStatus, $paidStatuses, $cancelledStatuses): void {
+            $tx = Transaction::query()
+                ->where('order_id', $orderId)
+                ->lockForUpdate()
+                ->first();
 
-        $prevStatus = (string) $tx->status;
-        $isPaid = in_array(strtolower($status), ['settlement', 'capture', 'paid'], true);
-        $isCancelled = in_array(strtolower($status), ['cancel', 'expire', 'deny'], true);
-
-        if ($isCancelled) {
-            $tx->status = 'dibatalkan';
-            if (! $tx->cancelled_at) {
-                $tx->cancelled_at = now();
+            if (! $tx) {
+                return;
             }
-            if (! $tx->cancel_reason) {
-                $tx->cancel_reason = strtolower($status) === 'expire' ? 'Transaksi kadaluarsa (tidak dibayar tepat waktu)' : 'Dibatalkan oleh sistem';
+
+            $currentStatus = strtolower(trim((string) $tx->status));
+
+            // Status operasional dikelola admin dan tidak boleh diturunkan oleh
+            // callback pembayaran yang terlambat atau dikirim ulang.
+            if (in_array($currentStatus, ['process', 'kirim', 'selesai', 'completed'], true)) {
+                return;
             }
-            app(LoyaltyPointService::class)->releaseRedeemReservation($tx);
-        } else {
-            $tx->status = $status;
-        }
 
-        if ($isPaid && ! $tx->paid_at) {
-            $tx->paid_at = now();
-        }
-        $tx->save();
+            // Provider dapat mengirim notification out-of-order. Status paid
+            // maupun cancelled tidak boleh kembali menjadi pending/authorize.
+            if (
+                (in_array($currentStatus, $paidStatuses, true)
+                    || in_array($currentStatus, ['dibatalkan', ...$cancelledStatuses], true))
+                && in_array($incomingStatus, ['pending', 'authorize'], true)
+            ) {
+                return;
+            }
 
-        if ($prevStatus !== (string) $tx->status) {
-            TransactionStatusHistory::create([
-                'transaction_id' => $tx->id,
-                'user_id' => null,
-                'from_status' => $prevStatus,
-                'to_status' => (string) $tx->status,
-                'type' => 'payment_status_sync',
-                'note' => 'Sinkronisasi status pembayaran.',
-            ]);
-        }
+            // Setelah pembayaran terkonfirmasi, notification cancel/expire/deny
+            // yang terlambat tidak boleh membatalkan transaksi lokal.
+            if (in_array($currentStatus, $paidStatuses, true) && in_array($incomingStatus, $cancelledStatuses, true)) {
+                return;
+            }
 
-        if ($isPaid && ! in_array(strtolower($prevStatus), ['settlement', 'capture', 'paid'], true) && $tx->user_id) {
-            app(LoyaltyPointService::class)->finalizeRedeemReservation($tx);
+            $previousStatus = (string) $tx->status;
+            $wasPaid = in_array($currentStatus, $paidStatuses, true);
+            $isPaid = in_array($incomingStatus, $paidStatuses, true);
+            $isCancelled = in_array($incomingStatus, $cancelledStatuses, true);
 
-            UserNotification::create([
-                'user_id' => $tx->user_id,
-                'type' => 'payment_received',
-                'title' => 'Pembayaran Dikonfirmasi',
-                'body' => 'Pembayaran untuk pesanan '.$tx->invoice_no.' telah berhasil dikonfirmasi. Pesanan sedang disiapkan.',
-                'url' => route('frontend.profil').'?tab=pesanan',
-            ]);
-        }
+            if ($isCancelled) {
+                $tx->status = 'dibatalkan';
+                $tx->payment_status = 'cancelled';
+                $tx->cancelled_at ??= now();
+                $tx->cancel_reason ??= $incomingStatus === 'expire'
+                    ? 'Transaksi kadaluarsa (tidak dibayar tepat waktu)'
+                    : 'Dibatalkan oleh sistem';
+                app(LoyaltyPointService::class)->releaseRedeemReservation($tx);
+            } else {
+                $tx->status = $incomingStatus;
+            }
+
+            if ($isPaid) {
+                $tx->paid_at ??= now();
+                $tx->payment_paid_at ??= $tx->paid_at;
+                $tx->payment_status = 'paid';
+                $tx->payment_amount = (int) $tx->grand_total;
+                $tx->cancelled_at = null;
+                $tx->cancel_reason = null;
+            } elseif ($incomingStatus === 'pending' && blank($tx->payment_status)) {
+                $tx->payment_status = 'unpaid';
+            }
+
+            $tx->save();
+
+            if ($previousStatus !== (string) $tx->status) {
+                TransactionStatusHistory::create([
+                    'transaction_id' => $tx->id,
+                    'user_id' => null,
+                    'from_status' => $previousStatus,
+                    'to_status' => (string) $tx->status,
+                    'type' => 'payment_status_sync',
+                    'note' => 'Sinkronisasi status pembayaran.',
+                ]);
+            }
+
+            if ($isPaid && ! $wasPaid && $tx->user_id) {
+                app(LoyaltyPointService::class)->finalizeRedeemReservation($tx);
+
+                UserNotification::create([
+                    'user_id' => $tx->user_id,
+                    'type' => 'payment_received',
+                    'title' => 'Pembayaran Dikonfirmasi',
+                    'body' => 'Pembayaran untuk pesanan '.$tx->invoice_no.' telah berhasil dikonfirmasi. Pesanan sedang disiapkan.',
+                    'url' => route('frontend.profil').'?tab=pesanan',
+                ]);
+            }
+        });
     }
 
     private function shouldBypassExpiryForStatus(string $status): bool

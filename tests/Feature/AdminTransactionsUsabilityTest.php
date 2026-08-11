@@ -9,6 +9,7 @@ use App\Models\ProductVariant;
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
 use App\Models\User;
+use App\Models\UserNotification;
 use App\Models\Variant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
@@ -735,6 +736,38 @@ class AdminTransactionsUsabilityTest extends TestCase
         $this->assertSame('paid', $transaction->fresh()->status);
     }
 
+    public function test_manual_transfer_approval_is_idempotent(): void
+    {
+        $this->actingAs($this->makeAdminUser());
+        $transaction = $this->makeTransaction([
+            'status' => 'menunggu_verifikasi',
+            'payment_type' => 'manual_transfer',
+            'payment_method' => 'Transfer Manual',
+            'payment_status' => 'unpaid',
+        ]);
+        $payload = [
+            'action' => 'approve',
+            'payment_admin_note' => 'Pembayaran cocok.',
+        ];
+
+        $this->patch(route('transactions.verify-payment', $transaction), $payload)->assertRedirect();
+        $verifiedAt = $transaction->fresh()->payment_verified_at;
+        $this->patch(route('transactions.verify-payment', $transaction), $payload)
+            ->assertRedirect()
+            ->assertSessionHas('success', 'Pembayaran manual sudah disetujui sebelumnya.');
+
+        $transaction->refresh();
+        $this->assertSame('paid', $transaction->status);
+        $this->assertSame('paid', $transaction->payment_status);
+        $this->assertSame((int) $transaction->grand_total, (int) $transaction->payment_amount);
+        $this->assertTrue($verifiedAt->equalTo($transaction->payment_verified_at));
+        $this->assertSame(1, $transaction->statusHistories()->where('type', 'payment_verification')->count());
+        $this->assertSame(1, UserNotification::query()
+            ->where('user_id', $transaction->user_id)
+            ->where('type', 'payment_received')
+            ->count());
+    }
+
     public function test_paid_transaction_can_be_processed(): void
     {
         $this->actingAs($this->makeAdminUser());
@@ -744,6 +777,37 @@ class AdminTransactionsUsabilityTest extends TestCase
 
         $response->assertOk()->assertJson(['ok' => true]);
         $this->assertSame('process', $transaction->fresh()->status);
+    }
+
+    public function test_checkout_transaction_cannot_be_processed_twice(): void
+    {
+        $this->actingAs($this->makeAdminUser());
+        $productVariant = $this->makeProductVariant();
+        $transaction = $this->makeTransaction([
+            'source' => 'checkout',
+            'status' => 'paid',
+        ]);
+        $transaction->details()->create([
+            'product_id' => $productVariant->product_id,
+            'product_variant_id' => $productVariant->id,
+            'product_name' => $productVariant->product->name,
+            'variant_name' => 'Test Variant',
+            'price' => 100000,
+            'quantity' => 2,
+            'subtotal' => 200000,
+        ]);
+        $initialStock = (int) $productVariant->stock;
+
+        $this->patchJson(route('transactions.process', $transaction))->assertOk();
+        $this->patchJson(route('transactions.process', $transaction))->assertUnprocessable();
+
+        $this->assertSame($initialStock - 2, (int) $productVariant->fresh()->stock);
+        $this->assertDatabaseCount('stock_movements', 1);
+        $this->assertSame(1, $transaction->statusHistories()->where('type', 'order_processed')->count());
+        $this->assertSame(1, UserNotification::query()
+            ->where('user_id', $transaction->user_id)
+            ->where('type', 'order_processed')
+            ->count());
     }
 
     public function test_process_transaction_can_be_shipped(): void
@@ -761,6 +825,30 @@ class AdminTransactionsUsabilityTest extends TestCase
         $fresh = $transaction->fresh();
         $this->assertSame('kirim', $fresh->status);
         $this->assertSame('RESI-123', $fresh->tracking_number);
+    }
+
+    public function test_shipping_the_same_order_twice_is_idempotent(): void
+    {
+        $this->actingAs($this->makeAdminUser());
+        $transaction = $this->makeTransaction(['status' => 'process']);
+        $payload = [
+            'tracking_number' => 'RESI-IDEMPOTENT',
+            'shipping_label' => 'JNE REG',
+            'shipping_note' => 'Fragile',
+        ];
+
+        $this->patchJson(route('transactions.ship', $transaction), $payload)->assertOk();
+        $shippedAt = $transaction->fresh()->shipped_at;
+        $this->patchJson(route('transactions.ship', $transaction), $payload)
+            ->assertOk()
+            ->assertJsonPath('message', 'Pesanan sudah dikirim dengan data resi yang sama.');
+
+        $this->assertTrue($shippedAt->equalTo($transaction->fresh()->shipped_at));
+        $this->assertSame(1, $transaction->statusHistories()->where('type', 'order_shipped')->count());
+        $this->assertSame(1, UserNotification::query()
+            ->where('user_id', $transaction->user_id)
+            ->where('type', 'order_shipped')
+            ->count());
     }
 
     public function test_single_shipping_label_still_renders(): void
@@ -843,7 +931,10 @@ class AdminTransactionsUsabilityTest extends TestCase
 
     private function makeAdminUser(): User
     {
-        return User::factory()->create(['role' => 'admin']);
+        return User::factory()->create([
+            'name' => 'Admin Transaction Test',
+            'role' => 'admin',
+        ]);
     }
 
     private function makeTransaction(array $overrides = []): Transaction

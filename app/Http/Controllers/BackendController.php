@@ -67,6 +67,20 @@ class BackendController extends Controller
         return $query;
     }
 
+    private function transactionQuery()
+    {
+        return Transaction::query()->where('company_id', $this->activeCompanyId());
+    }
+
+    private function monthBucketExpression(): string
+    {
+        return match (DB::connection()->getDriverName()) {
+            'sqlite' => "strftime('%Y-%m', created_at)",
+            'pgsql' => "TO_CHAR(created_at, 'YYYY-MM')",
+            default => "DATE_FORMAT(created_at, '%Y-%m')",
+        };
+    }
+
     private function orderStatusCards(array $period)
     {
         $cards = [
@@ -105,7 +119,7 @@ class BackendController extends Controller
         ];
 
         return collect($cards)->map(function ($card) use ($period) {
-            $summary = $this->applyPeriod(Transaction::query(), $period)
+            $summary = $this->applyPeriod($this->transactionQuery(), $period)
                 ->whereIn(DB::raw('LOWER(status)'), $card['statuses'])
                 ->selectRaw('COUNT(*) as total_count, COALESCE(SUM(grand_total), 0) as total_amount')
                 ->first();
@@ -119,9 +133,9 @@ class BackendController extends Controller
 
     private function actionCards(array $period)
     {
-        $waitingProcess = $this->applyPeriod(Transaction::query(), $period)
+        $waitingProcess = $this->applyPeriod($this->transactionQuery(), $period)
             ->whereIn(DB::raw('LOWER(status)'), ['paid', 'settlement', 'capture']);
-        $pendingPayment = $this->applyPeriod(Transaction::query(), $period)
+        $pendingPayment = $this->applyPeriod($this->transactionQuery(), $period)
             ->whereIn(DB::raw('LOWER(status)'), ['pending', 'menunggu']);
         $lowStockCount = ProductVariant::whereColumn('stock', '<=', 'low_stock_threshold')
             ->whereHas('product', fn ($q) => $q->where('company_id', $this->activeCompanyId()))
@@ -163,42 +177,44 @@ class BackendController extends Controller
         $period = $this->dashboardPeriod($request);
         $paidStatuses = ['paid', 'settlement', 'capture', 'process', 'processing', 'kirim', 'shipping', 'shipped', 'selesai', 'completed', 'delivered'];
 
-        $totalRevenue = $this->applyPeriod(Transaction::query(), $period)
+        $totalRevenue = $this->applyPeriod($this->transactionQuery(), $period)
             ->whereIn(DB::raw('LOWER(status)'), $paidStatuses)
             ->sum('grand_total');
-        $totalOrders = $this->applyPeriod(Transaction::query(), $period)->count();
+        $totalOrders = $this->applyPeriod($this->transactionQuery(), $period)->count();
         $totalUsers = User::where('role', 'user')->count();
         $totalProducts = Product::where('company_id', $this->activeCompanyId())->count();
 
         $thisMonth = now()->startOfMonth();
         $lastMonthStart = now()->subMonth()->startOfMonth();
-        $thisMonthRevenue = Transaction::whereIn(DB::raw('LOWER(status)'), $paidStatuses)
+        $thisMonthRevenue = $this->transactionQuery()->whereIn(DB::raw('LOWER(status)'), $paidStatuses)
             ->whereBetween('created_at', [$thisMonth, now()])->sum('grand_total');
-        $lastMonthRevenue = Transaction::whereIn(DB::raw('LOWER(status)'), $paidStatuses)
+        $lastMonthRevenue = $this->transactionQuery()->whereIn(DB::raw('LOWER(status)'), $paidStatuses)
             ->whereBetween('created_at', [$lastMonthStart, $thisMonth])->sum('grand_total');
 
-        $pendingOrders = $this->applyPeriod(Transaction::query(), $period)
+        $pendingOrders = $this->applyPeriod($this->transactionQuery(), $period)
             ->whereIn(DB::raw('LOWER(status)'), ['paid', 'settlement', 'capture'])
             ->count();
 
-        $revenueByMonth = Transaction::whereIn(DB::raw('LOWER(status)'), $paidStatuses)
+        $monthBucket = $this->monthBucketExpression();
+        $revenueByMonth = $this->transactionQuery()->whereIn(DB::raw('LOWER(status)'), $paidStatuses)
             ->where('created_at', '>=', now()->subMonths(11)->startOfMonth())
-            ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, SUM(grand_total) as total")
+            ->selectRaw("{$monthBucket} as month, SUM(grand_total) as total")
             ->groupBy('month')->orderBy('month')
             ->pluck('total', 'month');
 
-        $ordersByStatus = $this->applyPeriod(Transaction::query(), $period)
+        $ordersByStatus = $this->applyPeriod($this->transactionQuery(), $period)
             ->selectRaw('status, COUNT(*) as count')
             ->groupBy('status')->pluck('count', 'status');
 
         $topProducts = TransactionDetail::selectRaw('product_name, SUM(quantity) as total_qty, SUM(subtotal) as total_revenue')
             ->whereHas('transaction', function ($query) use ($period, $paidStatuses) {
                 $this->applyPeriod($query, $period)
+                    ->where('company_id', $this->activeCompanyId())
                     ->whereIn(DB::raw('LOWER(status)'), $paidStatuses);
             })
             ->groupBy('product_name')->orderByDesc('total_qty')->take(5)->get();
 
-        $recentTransactions = $this->applyPeriod(Transaction::with('user'), $period)
+        $recentTransactions = $this->applyPeriod($this->transactionQuery()->with('user'), $period)
             ->latest()->take(7)->get();
 
         $lowStockProducts = ProductVariant::with(['product', 'variant', 'attributeValues.definition'])

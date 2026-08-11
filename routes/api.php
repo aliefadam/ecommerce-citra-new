@@ -2,7 +2,12 @@
 
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\ProductController;
+use App\Http\Controllers\MidtransController;
 use Illuminate\Support\Facades\Route;
+
+Route::post('midtrans/notification', [MidtransController::class, 'notification'])
+    ->middleware('throttle:120,1')
+    ->name('midtrans.notification');
 
 /*
 |--------------------------------------------------------------------------

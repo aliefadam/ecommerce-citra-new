@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Models\Variant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -71,6 +72,23 @@ class GuestCheckoutEndToEndTest extends TestCase
             'shipping_postal_code' => '12910',
             'shipping_destination_id' => 99,
         ], $overrides);
+    }
+
+    private function makeMemberAddress(User $user): Address
+    {
+        return Address::create([
+            'user_id' => $user->id,
+            'label' => 'Kantor',
+            'recipient_name' => $user->name,
+            'phone_country_code' => '+62',
+            'phone_number' => '8123456789',
+            'province' => 'DKI Jakarta',
+            'city' => 'Jakarta Selatan',
+            'district' => 'Setiabudi',
+            'postal_code' => '12910',
+            'address_line' => 'Jl. Member E2E No. 10',
+            'is_primary' => true,
+        ]);
     }
 
     public function test_guest_manual_checkout_runs_from_buy_now_through_proof_upload(): void
@@ -132,7 +150,8 @@ class GuestCheckoutEndToEndTest extends TestCase
         Mail::fake();
         $variant = $this->makeProductVariant();
         $user = User::factory()->create(['email' => 'existing-member@example.test']);
-        $payload = $this->checkoutPayload($variant);
+        $address = $this->makeMemberAddress($user);
+        $payload = $this->checkoutPayload($variant, ['address_id' => $address->id]);
         unset(
             $payload['guest_name'],
             $payload['guest_email'],
@@ -216,12 +235,16 @@ class GuestCheckoutEndToEndTest extends TestCase
                 'url' => 'https://example.test/member-qr.png',
             ]],
         ])]);
-        $oldServerKey = getenv('MIDTRANS_SERVER_KEY');
-        putenv('MIDTRANS_SERVER_KEY=test-server-key');
+        Config::set('services.midtrans.server_key', 'test-server-key');
+        Config::set('services.midtrans.is_production', false);
 
         $variant = $this->makeProductVariant();
         $user = User::factory()->create(['email' => 'member-midtrans@example.test']);
-        $payload = $this->checkoutPayload($variant, ['payment_method' => 'qris']);
+        $address = $this->makeMemberAddress($user);
+        $payload = $this->checkoutPayload($variant, [
+            'payment_method' => 'qris',
+            'address_id' => $address->id,
+        ]);
         unset(
             $payload['guest_name'],
             $payload['guest_email'],
@@ -234,17 +257,11 @@ class GuestCheckoutEndToEndTest extends TestCase
             $payload['shipping_destination_id'],
         );
 
-        try {
-            $this->actingAs($user)
-                ->withSession(['checkout' => ['source' => 'buy_now', 'items' => $payload['items']]])
-                ->postJson(route('frontend.checkout.midtrans.charge'), $payload)
-                ->assertOk()
-                ->assertJsonStructure(['order_id', 'redirect_url']);
-        } finally {
-            $oldServerKey === false
-                ? putenv('MIDTRANS_SERVER_KEY')
-                : putenv('MIDTRANS_SERVER_KEY='.$oldServerKey);
-        }
+        $this->actingAs($user)
+            ->withSession(['checkout' => ['source' => 'buy_now', 'items' => $payload['items']]])
+            ->postJson(route('frontend.checkout.midtrans.charge'), $payload)
+            ->assertOk()
+            ->assertJsonStructure(['order_id', 'redirect_url']);
 
         $transaction = Transaction::query()->firstOrFail();
         $this->assertSame($user->id, $transaction->user_id);
@@ -255,8 +272,8 @@ class GuestCheckoutEndToEndTest extends TestCase
     public function test_expired_guest_midtrans_order_is_cancelled_when_waiting_page_is_opened(): void
     {
         Http::fake(['*' => Http::response(['status_code' => '200'])]);
-        $oldServerKey = getenv('MIDTRANS_SERVER_KEY');
-        putenv('MIDTRANS_SERVER_KEY=test-server-key');
+        Config::set('services.midtrans.server_key', 'test-server-key');
+        Config::set('services.midtrans.is_production', false);
 
         $transaction = Transaction::create([
             'company_id' => Company::query()->value('id'),
@@ -281,18 +298,12 @@ class GuestCheckoutEndToEndTest extends TestCase
             'subtotal' => 50000,
         ]);
 
-        try {
-            $this->withSession([
-                'checkout' => ['source' => 'buy_now', 'items' => []],
-                'guest_owned_orders' => [$transaction->order_id],
-            ])->get(route('frontend.checkout.waiting', $transaction->order_id))
-                ->assertOk()
-                ->assertSee('DIBATALKAN');
-        } finally {
-            $oldServerKey === false
-                ? putenv('MIDTRANS_SERVER_KEY')
-                : putenv('MIDTRANS_SERVER_KEY='.$oldServerKey);
-        }
+        $this->withSession([
+            'checkout' => ['source' => 'buy_now', 'items' => []],
+            'guest_owned_orders' => [$transaction->order_id],
+        ])->get(route('frontend.checkout.waiting', $transaction->order_id))
+            ->assertOk()
+            ->assertSee('DIBATALKAN');
 
         $transaction->refresh();
         $this->assertSame('dibatalkan', $transaction->status);

@@ -41,6 +41,12 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    'midtrans' => [
+        'client_key' => env('MIDTRANS_CLIENT_KEY', ''),
+        'server_key' => env('MIDTRANS_SERVER_KEY', ''),
+        'is_production' => filter_var(env('MIDTRANS_IS_PRODUCTION', false), FILTER_VALIDATE_BOOLEAN),
+    ],
+
     'wa_gateway' => [
         'url' => env('WA_GATEWAY_URL', 'https://wa-gateway.dokterkoding.my.id'),
         'token' => env('WA_GATEWAY_TOKEN', ''),

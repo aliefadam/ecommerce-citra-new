@@ -8,6 +8,7 @@ use App\Models\Coupon;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
@@ -165,24 +166,13 @@ class GuestCheckoutDataTest extends TestCase
             ]),
         ]);
 
-        $oldServerKey = getenv('MIDTRANS_SERVER_KEY');
-        $oldProduction = getenv('MIDTRANS_IS_PRODUCTION');
-        putenv('MIDTRANS_SERVER_KEY=test-server-key');
-        putenv('MIDTRANS_IS_PRODUCTION=false');
+        Config::set('services.midtrans.server_key', 'test-server-key');
+        Config::set('services.midtrans.is_production', false);
 
-        try {
-            $response = $this->withSession($this->guestSession())
-                ->postJson(route('frontend.checkout.midtrans.charge'), $this->guestPayload([
-                    'payment_method' => 'qris',
-                ]));
-        } finally {
-            $oldServerKey === false
-                ? putenv('MIDTRANS_SERVER_KEY')
-                : putenv('MIDTRANS_SERVER_KEY='.$oldServerKey);
-            $oldProduction === false
-                ? putenv('MIDTRANS_IS_PRODUCTION')
-                : putenv('MIDTRANS_IS_PRODUCTION='.$oldProduction);
-        }
+        $response = $this->withSession($this->guestSession())
+            ->postJson(route('frontend.checkout.midtrans.charge'), $this->guestPayload([
+                'payment_method' => 'qris',
+            ]));
 
         $response->assertOk()->assertJsonStructure(['order_id', 'redirect_url']);
         $transaction = Transaction::query()->firstOrFail();

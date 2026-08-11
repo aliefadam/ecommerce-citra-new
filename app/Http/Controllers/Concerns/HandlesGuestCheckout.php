@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Concerns;
 
+use App\Models\Address;
 use App\Models\ProductVariant;
 use App\Models\User;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -69,6 +70,50 @@ trait HandlesGuestCheckout
                 'shipping_province' => trim((string) $validated['shipping_province']),
                 'shipping_postal_code' => trim((string) $validated['shipping_postal_code']),
             ],
+        ];
+    }
+
+    protected function checkoutAddressSnapshot(Request $request, array $validated, ?array $guest): array
+    {
+        if ($guest) {
+            return $guest['address_snapshot'];
+        }
+
+        $shippingLabel = strtolower(trim((string) ($validated['shipping_label'] ?? '')));
+        if (
+            str_contains($shippingLabel, 'ambil sendiri')
+            || str_contains($shippingLabel, 'pickup')
+            || str_contains($shippingLabel, 'pick up')
+        ) {
+            return [];
+        }
+
+        $addressId = (int) ($validated['address_id'] ?? 0);
+        if ($addressId < 1) {
+            throw ValidationException::withMessages([
+                'address_id' => 'Pilih alamat pengiriman sebelum melanjutkan pembayaran.',
+            ]);
+        }
+
+        $address = Address::query()
+            ->whereKey($addressId)
+            ->where('user_id', $request->user()?->id)
+            ->first();
+
+        if (! $address) {
+            throw ValidationException::withMessages([
+                'address_id' => 'Alamat pengiriman tidak valid atau bukan milik akun ini.',
+            ]);
+        }
+
+        return [
+            'shipping_recipient_name' => $address->recipient_name,
+            'shipping_phone' => trim(($address->phone_country_code ?? '').$address->phone_number),
+            'shipping_address_line' => $address->address_line,
+            'shipping_city' => $address->city,
+            'shipping_district' => $address->district,
+            'shipping_province' => $address->province,
+            'shipping_postal_code' => $address->postal_code,
         ];
     }
 

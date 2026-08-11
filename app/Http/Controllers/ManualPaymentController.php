@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\HandlesGuestCheckout;
 use App\Mail\InvoiceOrder;
-use App\Models\Address;
 use App\Models\Cart;
 use App\Models\Coupon;
 use App\Models\Transaction;
@@ -88,23 +87,7 @@ class ManualPaymentController extends Controller
             }
             $tax = $taxCalculator->calculate($subtotal, $discountAmount, $shippingCost, companyId: $companyId);
 
-            $snapshot = $guest['address_snapshot'] ?? [];
-            if (! $guest && ! empty($validated['address_id'])) {
-                $addr = Address::query()
-                    ->where('id', $validated['address_id'])
-                    ->where('user_id', $request->user()?->id)
-                    ->first();
-                if ($addr) {
-                    $snapshot = [
-                        'shipping_recipient_name' => $addr->recipient_name,
-                        'shipping_phone' => trim(($addr->phone_country_code ?? '').$addr->phone_number),
-                        'shipping_address_line' => $addr->address_line,
-                        'shipping_city' => $addr->city,
-                        'shipping_province' => $addr->province,
-                        'shipping_postal_code' => $addr->postal_code,
-                    ];
-                }
-            }
+            $snapshot = $this->checkoutAddressSnapshot($request, $validated, $guest);
 
             $transaction = Transaction::create([
                 'company_id' => $companyId,

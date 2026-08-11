@@ -36,17 +36,21 @@ class TransactionController extends Controller
 
     public function process(Request $request, Transaction $transaction)
     {
-        if (!in_array(strtolower((string) $transaction->status), ['paid', 'settlement', 'capture'], true)) {
-            return response()->json(['message' => 'Transaksi belum bisa diproses.'], 422);
-        }
-
         try {
-            DB::transaction(function () use ($transaction, $request) {
-                $transaction->loadMissing('details');
-                $oldStatus = (string) $transaction->status;
+            $transaction = DB::transaction(function () use ($transaction, $request) {
+                $lockedTransaction = Transaction::query()
+                    ->with('details')
+                    ->lockForUpdate()
+                    ->findOrFail($transaction->id);
 
-                if ($transaction->normalizedSource() !== Transaction::SOURCE_MANUAL) {
-                    foreach ($transaction->details as $detail) {
+                if (!in_array(strtolower((string) $lockedTransaction->status), ['paid', 'settlement', 'capture'], true)) {
+                    throw new \RuntimeException('Transaksi belum bisa diproses.');
+                }
+
+                $oldStatus = (string) $lockedTransaction->status;
+
+                if ($lockedTransaction->normalizedSource() !== Transaction::SOURCE_MANUAL) {
+                    foreach ($lockedTransaction->details as $detail) {
                         $variantId = (int) ($detail->product_variant_id ?? 0);
                         $qty = (int) ($detail->quantity ?? 0);
                         if ($variantId <= 0 || $qty <= 0) {
@@ -81,11 +85,13 @@ class TransactionController extends Controller
                     }
                 }
 
-                $transaction->status = 'process';
-                $transaction->processed_at = now();
-                $transaction->save();
+                $lockedTransaction->status = 'process';
+                $lockedTransaction->processed_at = now();
+                $lockedTransaction->save();
 
-                $this->recordHistory($transaction, $oldStatus, 'process', 'order_processed', 'Admin memproses pesanan.', $request->user()?->id);
+                $this->recordHistory($lockedTransaction, $oldStatus, 'process', 'order_processed', 'Admin memproses pesanan.', $request->user()?->id);
+
+                return $lockedTransaction;
             });
         } catch (\RuntimeException $e) {
             return response()->json(['message' => $e->getMessage()], 422);
@@ -112,21 +118,52 @@ class TransactionController extends Controller
             'shipping_note' => ['nullable', 'string', 'max:500'],
         ]);
 
-        if (!in_array(strtolower((string) $transaction->status), ['process', 'processing', 'kirim'], true)) {
-            return response()->json(['message' => 'Transaksi belum bisa dikirim.'], 422);
+        try {
+            $result = DB::transaction(function () use ($transaction, $validated, $request): array {
+                $lockedTransaction = Transaction::query()->lockForUpdate()->findOrFail($transaction->id);
+                $currentStatus = strtolower((string) $lockedTransaction->status);
+
+                if (!in_array($currentStatus, ['process', 'processing', 'kirim'], true)) {
+                    throw new \RuntimeException('Transaksi belum bisa dikirim.');
+                }
+
+                $trackingNumber = (string) $validated['tracking_number'];
+                $shippingLabel = !empty($validated['shipping_label'])
+                    ? (string) $validated['shipping_label']
+                    : (string) $lockedTransaction->shipping_label;
+                $shippingNote = $validated['shipping_note'] ?? $lockedTransaction->shipping_note;
+
+                if (
+                    $currentStatus === 'kirim'
+                    && (string) $lockedTransaction->tracking_number === $trackingNumber
+                    && (string) $lockedTransaction->shipping_label === $shippingLabel
+                    && (string) ($lockedTransaction->shipping_note ?? '') === (string) ($shippingNote ?? '')
+                ) {
+                    return ['transaction' => $lockedTransaction, 'duplicate' => true];
+                }
+
+                $oldStatus = (string) $lockedTransaction->status;
+                $lockedTransaction->status = 'kirim';
+                $lockedTransaction->tracking_number = $trackingNumber;
+                $lockedTransaction->shipping_label = $shippingLabel;
+                $lockedTransaction->shipping_note = $shippingNote;
+                $lockedTransaction->shipped_at = $lockedTransaction->shipped_at ?: now();
+                $lockedTransaction->save();
+
+                $this->recordHistory($lockedTransaction, $oldStatus, 'kirim', 'order_shipped', 'Resi: ' . $trackingNumber, $request->user()?->id);
+
+                return ['transaction' => $lockedTransaction, 'duplicate' => false];
+            });
+        } catch (\RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
         }
 
-        $oldStatus = (string) $transaction->status;
-        $transaction->status = 'kirim';
-        $transaction->tracking_number = (string) $validated['tracking_number'];
-        if (!empty($validated['shipping_label'])) {
-            $transaction->shipping_label = (string) $validated['shipping_label'];
-        }
-        $transaction->shipping_note = $validated['shipping_note'] ?? $transaction->shipping_note;
-        $transaction->shipped_at = $transaction->shipped_at ?: now();
-        $transaction->save();
+        /** @var Transaction $transaction */
+        $transaction = $result['transaction'];
 
-        $this->recordHistory($transaction, $oldStatus, 'kirim', 'order_shipped', 'Resi: ' . $validated['tracking_number'], $request->user()?->id);
+        if ($result['duplicate']) {
+            return response()->json(['ok' => true, 'message' => 'Pesanan sudah dikirim dengan data resi yang sama.']);
+        }
 
         if ($transaction->user_id) {
             UserNotification::create([
@@ -148,33 +185,77 @@ class TransactionController extends Controller
             'payment_admin_note' => ['nullable', 'string', 'max:500'],
         ]);
 
-        if ($transaction->payment_type !== 'manual_transfer') {
-            return back()->withErrors(['payment' => 'Transaksi ini bukan pembayaran manual.']);
+        try {
+            $result = DB::transaction(function () use ($transaction, $validated, $request, $loyaltyPointService): array {
+                $lockedTransaction = Transaction::query()->lockForUpdate()->findOrFail($transaction->id);
+
+                if ($lockedTransaction->payment_type !== 'manual_transfer') {
+                    throw new \RuntimeException('Transaksi ini bukan pembayaran manual.');
+                }
+
+                $oldStatus = (string) $lockedTransaction->status;
+                if (
+                    $validated['action'] === 'approve'
+                    && strtolower($oldStatus) === 'paid'
+                    && $lockedTransaction->payment_verified_at
+                ) {
+                    return [
+                        'transaction' => $lockedTransaction,
+                        'duplicate' => true,
+                        'message' => 'Pembayaran manual sudah disetujui sebelumnya.',
+                    ];
+                }
+                if (
+                    $validated['action'] === 'reject'
+                    && strtolower($oldStatus) === 'menunggu_verifikasi'
+                    && $lockedTransaction->payment_rejected_at
+                ) {
+                    return [
+                        'transaction' => $lockedTransaction,
+                        'duplicate' => true,
+                        'message' => 'Bukti pembayaran sudah ditolak sebelumnya.',
+                    ];
+                }
+
+                if ($validated['action'] === 'approve') {
+                    $lockedTransaction->status = 'paid';
+                    $lockedTransaction->payment_status = 'paid';
+                    $lockedTransaction->paid_at = $lockedTransaction->paid_at ?: now();
+                    $lockedTransaction->payment_paid_at = $lockedTransaction->payment_paid_at ?: $lockedTransaction->paid_at;
+                    $lockedTransaction->payment_amount = (int) $lockedTransaction->grand_total;
+                    $lockedTransaction->payment_verified_at = now();
+                    $lockedTransaction->payment_rejected_at = null;
+                    $lockedTransaction->payment_admin_note = $validated['payment_admin_note'] ?? null;
+                    $message = 'Pembayaran manual disetujui.';
+                } else {
+                    $lockedTransaction->status = 'menunggu_verifikasi';
+                    $lockedTransaction->payment_rejected_at = now();
+                    $lockedTransaction->payment_admin_note = $validated['payment_admin_note'] ?? 'Bukti transfer ditolak.';
+                    $message = 'Bukti pembayaran ditolak.';
+                }
+                $lockedTransaction->save();
+
+                if ($validated['action'] === 'approve') {
+                    $loyaltyPointService->finalizeRedeemReservation($lockedTransaction);
+                }
+
+                $this->recordHistory($lockedTransaction, $oldStatus, (string) $lockedTransaction->status, 'payment_verification', $message, $request->user()?->id);
+
+                return ['transaction' => $lockedTransaction, 'duplicate' => false, 'message' => $message];
+            });
+        } catch (\RuntimeException $e) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => $e->getMessage()], 422);
+            }
+
+            return back()->withErrors(['payment' => $e->getMessage()]);
         }
 
-        $oldStatus = (string) $transaction->status;
-        if ($validated['action'] === 'approve') {
-            $transaction->status = 'paid';
-            $transaction->paid_at = $transaction->paid_at ?: now();
-            $transaction->payment_verified_at = now();
-            $transaction->payment_rejected_at = null;
-            $transaction->payment_admin_note = $validated['payment_admin_note'] ?? null;
-            $message = 'Pembayaran manual disetujui.';
-        } else {
-            $transaction->status = 'menunggu_verifikasi';
-            $transaction->payment_rejected_at = now();
-            $transaction->payment_admin_note = $validated['payment_admin_note'] ?? 'Bukti transfer ditolak.';
-            $message = 'Bukti pembayaran ditolak.';
-        }
-        $transaction->save();
+        /** @var Transaction $transaction */
+        $transaction = $result['transaction'];
+        $message = $result['message'];
 
-        if ($validated['action'] === 'approve') {
-            $loyaltyPointService->finalizeRedeemReservation($transaction);
-        }
-
-        $this->recordHistory($transaction, $oldStatus, (string) $transaction->status, 'payment_verification', $message, $request->user()?->id);
-
-        if ($transaction->user_id) {
+        if (!$result['duplicate'] && $transaction->user_id) {
             UserNotification::create([
                 'user_id' => $transaction->user_id,
                 'type' => $validated['action'] === 'approve' ? 'payment_received' : 'payment_rejected',
@@ -182,6 +263,10 @@ class TransactionController extends Controller
                 'body' => $message . ' Pesanan ' . $transaction->invoice_no . '.',
                 'url' => route('frontend.profil') . '?tab=pesanan',
             ]);
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json(['ok' => true, 'message' => $message]);
         }
 
         return back()->with('success', $message);
