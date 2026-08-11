@@ -35,6 +35,10 @@
                     <input name="ends_at" type="datetime-local" class="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm dark:text-slate-200">
                 </div>
                 <label class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300"><input type="checkbox" name="is_active" value="1" checked> Aktif</label>
+                <label class="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-300">
+                    <input type="checkbox" name="is_member_only" value="1" class="mt-0.5">
+                    <span>Khusus member <span class="block text-xs text-slate-400">Voucher tidak dapat digunakan saat checkout tanpa login.</span></span>
+                </label>
                 <button class="w-full rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">Simpan Voucher</button>
             </form>
 
@@ -57,6 +61,9 @@
                                     <td class="px-4 py-3 font-semibold text-slate-800 dark:text-slate-200">
                                         {{ $coupon->code }}
                                         <p class="text-xs font-normal text-slate-400">{{ $coupon->name }}</p>
+                                        @if ($coupon->is_member_only)
+                                            <span class="mt-1 inline-flex rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700">Khusus member</span>
+                                        @endif
                                     </td>
                                     <td class="px-4 py-3 text-slate-600 dark:text-slate-300">
                                         {{ $coupon->type === 'percent' ? $coupon->value . '%' : 'Rp ' . number_format($coupon->value, 0, ',', '.') }}

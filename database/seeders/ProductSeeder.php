@@ -2,8 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\CategoryDetail;
 use App\Models\AttributeDefinition;
+use App\Models\CategoryDetail;
+use App\Models\Company;
 use App\Models\MainCategory;
 use App\Models\Product;
 use App\Models\ProductVariant;
@@ -15,6 +16,12 @@ class ProductSeeder extends Seeder
 {
     public function run(): void
     {
+        $companyId = Company::query()->orderBy('id')->value('id');
+
+        if (! $companyId) {
+            throw new \RuntimeException('Perusahaan utama belum tersedia untuk ProductSeeder.');
+        }
+
         $products = [
             [
                 'old_slug' => 'kemeja-oxford-slim-fit',
@@ -162,7 +169,7 @@ class ProductSeeder extends Seeder
         $details = CategoryDetail::query()->get()->groupBy('main_category_id');
         $variants = Variant::query()
             ->get()
-            ->keyBy(fn (Variant $v) => $v->name . '::' . $v->value);
+            ->keyBy(fn (Variant $v) => $v->name.'::'.$v->value);
         $attributeDefinitions = AttributeDefinition::query()
             ->get()
             ->keyBy('code');
@@ -173,23 +180,27 @@ class ProductSeeder extends Seeder
             $detail = $mainCategory
                 ? ($details->get($mainCategory->id)?->firstWhere('name', $product['category_detail']) ?? null)
                 : null;
-            if (!$detail && $mainCategory) {
+            if (! $detail && $mainCategory) {
                 $detail = CategoryDetail::query()->firstOrCreate(
                     ['main_category_id' => $mainCategory->id, 'name' => $product['category_detail']],
-                    ['slug' => Str::slug($mainCategory->name . '-' . $product['category_detail'])]
+                    ['slug' => Str::slug($mainCategory->name.'-'.$product['category_detail'])]
                 );
             }
 
             $savedProduct = Product::query()
-                ->where('slug', $product['old_slug'])
-                ->orWhere('slug', $slug)
+                ->where('company_id', $companyId)
+                ->where(function ($query) use ($product, $slug) {
+                    $query->where('slug', $product['old_slug'])
+                        ->orWhere('slug', $slug);
+                })
                 ->first();
 
-            if (!$savedProduct) {
-                $savedProduct = new Product();
+            if (! $savedProduct) {
+                $savedProduct = new Product;
             }
 
             $savedProduct->fill([
+                'company_id' => $companyId,
                 'name' => $product['name'],
                 'slug' => $slug,
                 'main_category_id' => $mainCategory?->id,
@@ -217,9 +228,9 @@ class ProductSeeder extends Seeder
             $keptVariantIds = [];
 
             foreach ($productVariants as $productVariant) {
-                $variantKey = $productVariant['variant']['name'] . '::' . $productVariant['variant']['value'];
+                $variantKey = $productVariant['variant']['name'].'::'.$productVariant['variant']['value'];
                 $variant = $variants->get($variantKey);
-                if (!$variant) {
+                if (! $variant) {
                     continue;
                 }
 
@@ -383,7 +394,7 @@ class ProductSeeder extends Seeder
                     return [
                         'variant' => [
                             'name' => 'Varian SKU',
-                            'value' => $diameter . ' x ' . $panjang . ' - ' . $tipeDrat,
+                            'value' => $diameter.' x '.$panjang.' - '.$tipeDrat,
                         ],
                         'price' => $this->estimateBautMurPrice($diameter, $panjang, $tipeDrat),
                         'stock' => $this->estimateBautMurStock($diameter, $panjang),
@@ -490,7 +501,7 @@ class ProductSeeder extends Seeder
 
         foreach ($attributes as $code => $value) {
             $definition = $attributeDefinitions->get($code);
-            if (!$definition) {
+            if (! $definition) {
                 continue;
             }
 
@@ -525,7 +536,7 @@ class ProductSeeder extends Seeder
 
     private function generateSku(string $productName, string $variantName, string $variantValue): string
     {
-        $descriptor = trim($variantName === 'Varian SKU' ? $variantValue : trim($variantName . ' ' . $variantValue));
+        $descriptor = trim($variantName === 'Varian SKU' ? $variantValue : trim($variantName.' '.$variantValue));
 
         $parts = [
             Str::upper(Str::slug($productName, '-')),

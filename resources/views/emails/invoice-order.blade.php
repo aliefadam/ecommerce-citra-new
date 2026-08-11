@@ -130,7 +130,7 @@
                         </td>
                         <td style="padding:14px 18px;width:50%;vertical-align:top;">
                             <p class="label" style="font-size:11px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:#94a3b8;margin:0 0 4px;">Nama Pemesan</p>
-                            <p class="value" style="font-size:14px;font-weight:500;color:#1e293b;margin:0;">{{ $transaction->user->name ?? '-' }}</p>
+                            <p class="value" style="font-size:14px;font-weight:500;color:#1e293b;margin:0;">{{ $transaction->customerDisplayName() }}</p>
                         </td>
                     </tr>
                 </table>
@@ -256,6 +256,20 @@
                         </td>
                     </tr>
                 </table>
+
+                @if ($transaction->user_id === null)
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:24px;">
+                        <tr>
+                            <td style="text-align:center;">
+                                <a href="{{ route('frontend.order-tracking.index', ['order_id' => $transaction->order_id]) }}"
+                                    style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;font-size:14px;font-weight:700;padding:13px 24px;border-radius:10px;">
+                                    Lihat Status Pesanan
+                                </a>
+                                <p style="font-size:12px;color:#94a3b8;line-height:1.6;margin:10px 0 0;">Konfirmasikan email pemesan untuk melihat status atau mengunggah bukti transfer.</p>
+                            </td>
+                        </tr>
+                    </table>
+                @endif
 
             </td>
         </tr>

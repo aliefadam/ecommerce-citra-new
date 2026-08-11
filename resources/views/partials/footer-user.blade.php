@@ -179,6 +179,11 @@
             <div class="col-span-1 md:col-span-3">
                 <h4 class="text-white font-semibold text-sm uppercase tracking-wider mb-5">Bantuan</h4>
                 <ul class="space-y-3">
+                    <li><a href="{{ route('frontend.order-tracking.index') }}"
+                            class="text-sm text-slate-400 hover:text-blue-400 transition-colors flex items-center gap-1.5 group">
+                            <span
+                                class="w-1 h-1 rounded-full bg-slate-600 group-hover:bg-blue-500 transition-colors flex-shrink-0"></span>Lacak
+                            Pesanan</a></li>
                     <li><button onclick="footerModalOpen('modal-pusat-bantuan')"
                             class="text-sm text-slate-400 hover:text-blue-400 transition-colors flex items-center gap-1.5 group cursor-pointer">
                             <span

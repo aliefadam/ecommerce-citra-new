@@ -1611,15 +1611,6 @@
                 showToast('Stok produk ini sedang habis.');
                 return false;
             }
-            if (!isAuthenticated) {
-                savePendingAuthAction({
-                    type: 'buy_now',
-                    product_variant_id: variantId,
-                    quantity: qty,
-                });
-                window.location.href = getLoginRedirectUrl();
-                return false;
-            }
             const form = document.getElementById('buyNowForm');
             const variantInput = document.getElementById('buyNowVariantId');
             const qtyInput = document.getElementById('buyNowQty');

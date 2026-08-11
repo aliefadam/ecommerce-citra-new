@@ -6,6 +6,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\AdminOnly;
 use App\Http\Middleware\AdminPermission;
 use App\Http\Middleware\CompanyScope;
+use App\Http\Middleware\EnsureCheckoutAccess;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -20,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => AdminOnly::class,
             'admin.permission' => AdminPermission::class,
             'company.scope' => CompanyScope::class,
+            'checkout.access' => EnsureCheckoutAccess::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

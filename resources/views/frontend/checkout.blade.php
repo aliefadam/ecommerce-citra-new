@@ -207,6 +207,7 @@
 @section('content')
     @php
         $isRedeemCheckout = ($checkoutSource ?? 'cart_all') === 'redeem_point';
+        $isGuestCheckout = !auth()->check();
         $checkoutTaxProfilesPayload = ($taxProfiles ?? collect())
             ->map(fn($profile) => [
                 'id' => (int) $profile->id,
@@ -225,6 +226,21 @@
 
             <!-- LEFT COL -->
             <div class="lg:col-span-2 space-y-6">
+
+                @if ($isGuestCheckout)
+                    <div class="relative overflow-hidden rounded-2xl border border-blue-200 bg-blue-50 px-5 py-4">
+                        <div class="absolute -right-8 -top-10 h-28 w-28 rounded-full bg-blue-100/80"></div>
+                        <div class="relative flex items-start gap-3">
+                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-blue-600 shadow-sm">
+                                <i class="ri-user-smile-line text-lg"></i>
+                            </span>
+                            <div>
+                                <p class="text-sm font-semibold text-slate-800">Checkout cepat tanpa akun</p>
+                                <p class="mt-0.5 text-xs leading-5 text-slate-600">Sudah punya akun? <a href="{{ route('login') }}" class="font-semibold text-blue-700 hover:underline">Login untuk memakai alamat tersimpan dan poin member.</a></p>
+                            </div>
+                        </div>
+                    </div>
+                @endif
 
                 <!-- CART ITEMS (dikelompokkan per perusahaan) -->
                 <div class="flex items-center justify-between px-1">
@@ -250,14 +266,20 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
-                            Alamat Pengiriman
+                            {{ $isGuestCheckout ? 'Data Pengiriman' : 'Alamat Pengiriman' }}
                         </h2>
-                        <button type="button" onclick="showAddressModal()"
-                            class="text-blue-600 text-sm font-medium hover:text-blue-700">
-                            Tambah Alamat
-                        </button>
+                        @unless ($isGuestCheckout)
+                            <button type="button" onclick="showAddressModal()"
+                                class="text-blue-600 text-sm font-medium hover:text-blue-700">
+                                Tambah Alamat
+                            </button>
+                        @endunless
                     </div>
                     <div class="checkout-card-body p-6 space-y-3" id="addressList">
+                        @if ($isGuestCheckout)
+                            <p class="mb-4 text-sm leading-6 text-slate-500">Isi data penerima untuk pesanan ini. Alamat tidak akan disimpan sebagai alamat akun.</p>
+                            <div id="guestShippingFormHost"></div>
+                        @else
                         @forelse(($addresses ?? collect()) as $address)
                             <label
                                 class="address-card flex items-start gap-3 p-4 border-2 {{ $address->is_primary ? 'border-blue-400 bg-blue-50' : 'border-slate-200' }} rounded-xl cursor-pointer hover:border-slate-300 transition-colors">
@@ -287,6 +309,7 @@
                                 Belum ada alamat tersimpan. Silakan tambahkan alamat di halaman profil.
                             </div>
                         @endforelse
+                        @endif
                     </div>
                 </div>
 
@@ -444,6 +467,7 @@
                                     class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none">
                             </div>
                         </div>
+                        @unless ($isGuestCheckout)
                         <div class="flex flex-col gap-2 rounded-xl bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between">
                             <label class="inline-flex items-center gap-2 text-sm text-slate-600">
                                 <input id="saveTaxProfile" type="checkbox" class="accent-blue-500">
@@ -454,6 +478,7 @@
                                 Jadikan default
                             </label>
                         </div>
+                        @endunless
                     </div>
                 </div>
 
@@ -544,6 +569,15 @@
                 <input type="hidden" id="checkoutDistrictId" />
                 <input type="hidden" id="checkoutSubdistrictId" />
                 <input type="hidden" id="checkoutDestinationId" />
+
+                @if ($isGuestCheckout)
+                    <div>
+                        <label class="text-xs font-medium text-slate-600 mb-1 block">Email *</label>
+                        <input id="guestEmail" type="email" autocomplete="email" placeholder="nama@email.com"
+                            class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400" />
+                        <p class="mt-1.5 text-xs text-slate-400">Konfirmasi dan status pesanan akan dikirim ke email ini.</p>
+                    </div>
+                @endif
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
@@ -700,11 +734,13 @@
                 </div>
 
                 <div class="flex gap-3 pt-2">
-                    <button type="button" onclick="closeAddressModal()"
-                        class="flex-1 border border-slate-200 text-slate-600 font-semibold py-3 rounded-xl hover:bg-slate-50 transition-colors">Batal</button>
-                    <button type="button" onclick="saveAddress()"
+                    @unless ($isGuestCheckout)
+                        <button type="button" onclick="closeAddressModal()"
+                            class="flex-1 border border-slate-200 text-slate-600 font-semibold py-3 rounded-xl hover:bg-slate-50 transition-colors">Batal</button>
+                    @endunless
+                    <button type="button" onclick="{{ $isGuestCheckout ? 'useGuestShippingData()' : 'saveAddress()' }}"
                         class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-xl transition-colors">Simpan
-                        Alamat</button>
+                        {{ $isGuestCheckout ? 'Data Pengiriman' : 'Alamat' }}</button>
                 </div>
             </form>
         </div>
@@ -775,6 +811,7 @@
     <script>
         let cartItems = @json($checkoutItems ?? []);
         const checkoutSource = @json($checkoutSource ?? 'cart_all');
+        const isGuestCheckout = @json($isGuestCheckout);
         const isRedeemCheckout = checkoutSource === 'redeem_point';
         const taxSettingsByCompany = @json($taxSettingsByCompany ?? []);
         function taxSettingsFor(companyId) {
@@ -991,7 +1028,9 @@
         function updateSummary() {
             const groups = buildGroups();
             const totalItems = cartItems.reduce((s, i) => s + i.qty, 0);
-            const hasSelectedAddress = !!document.querySelector('input[name="address"]:checked');
+            const hasSelectedAddress = isGuestCheckout
+                ? Number(document.getElementById('checkoutDestinationId')?.value || 0) > 0
+                : !!document.querySelector('input[name="address"]:checked');
             document.getElementById('itemCountText').textContent = totalItems + ' item';
             document.getElementById('sumItems').textContent = totalItems + ' item dari ' + groups.length + ' toko';
 
@@ -1178,7 +1217,9 @@
 
         async function loadShippingOptions() {
             const checkedAddress = document.querySelector('input[name="address"]:checked');
-            const destinationId = Number(checkedAddress?.dataset?.destinationId || 0);
+            const destinationId = isGuestCheckout
+                ? Number(document.getElementById('checkoutDestinationId')?.value || 0)
+                : Number(checkedAddress?.dataset?.destinationId || 0);
             const groups = buildGroups();
 
             for (const group of groups) {
@@ -1187,7 +1228,7 @@
                 if (!container) continue;
 
                 if (!destinationId) {
-                    container.innerHTML = `<div class="text-sm text-slate-500">Anda belum mengatur alamat pengiriman, Silahkan atur dibagian profil</div>`;
+                    container.innerHTML = `<div class="text-sm text-slate-500">${isGuestCheckout ? 'Lengkapi data pengiriman lalu klik Simpan Data Pengiriman.' : 'Anda belum mengatur alamat pengiriman. Silakan atur di bagian profil.'}</div>`;
                     state.shippingCost = null;
                     state.shippingLabel = '-';
                     continue;
@@ -1437,7 +1478,11 @@
             const input = byCheckoutField('checkoutProvinceInput');
             const selected = roProvinces.find((item) => String(item.label || item.name || '') === String(input?.value ||
                 '').trim());
-            byCheckoutField('checkoutProvinceId').value = selected?.id ? String(selected.id) : '';
+            const provinceIdInput = byCheckoutField('checkoutProvinceId');
+            const selectedId = selected?.id ? String(selected.id) : '';
+            if (selectedId && provinceIdInput.value === selectedId &&
+                (roCities.length || byCheckoutField('checkoutCityInput')?.disabled)) return;
+            provinceIdInput.value = selectedId;
             resetCheckoutLocationFields('province');
             if (!selected?.id) return;
             _coSetLoading('checkoutCityInput', true);
@@ -1460,7 +1505,11 @@
             const input = byCheckoutField('checkoutCityInput');
             const selected = roCities.find((item) => String(item.label || item.name || '') === String(input?.value ||
                 '').trim());
-            byCheckoutField('checkoutCityId').value = selected?.id ? String(selected.id) : '';
+            const cityIdInput = byCheckoutField('checkoutCityId');
+            const selectedId = selected?.id ? String(selected.id) : '';
+            if (selectedId && cityIdInput.value === selectedId &&
+                (roDistricts.length || byCheckoutField('checkoutDistrictInput')?.disabled)) return;
+            cityIdInput.value = selectedId;
             resetCheckoutLocationFields('city');
             if (!selected?.id) return;
             _coSetLoading('checkoutDistrictInput', true);
@@ -1483,7 +1532,11 @@
             const input = byCheckoutField('checkoutDistrictInput');
             const selected = roDistricts.find((item) => String(item.label || item.name || '') === String(input?.value ||
                 '').trim());
-            byCheckoutField('checkoutDistrictId').value = selected?.id ? String(selected.id) : '';
+            const districtIdInput = byCheckoutField('checkoutDistrictId');
+            const selectedId = selected?.id ? String(selected.id) : '';
+            if (selectedId && districtIdInput.value === selectedId &&
+                (roSubdistricts.length || byCheckoutField('checkoutSubdistrictInput')?.disabled)) return;
+            districtIdInput.value = selectedId;
             resetCheckoutLocationFields('district');
             if (!selected?.id) return;
             _coSetLoading('checkoutSubdistrictInput', true);
@@ -1576,6 +1629,48 @@
             }
         }
 
+        function buildGuestCheckoutPayload() {
+            if (!isGuestCheckout) return {};
+
+            const payload = {
+                guest_name: byCheckoutField('checkoutRecipientName')?.value.trim() || '',
+                guest_email: byCheckoutField('guestEmail')?.value.trim().toLowerCase() || '',
+                guest_phone: byCheckoutField('checkoutPhoneNumber')?.value.trim() || '',
+                shipping_address_line: byCheckoutField('checkoutAddressLine')?.value.trim() || '',
+                shipping_city: byCheckoutField('checkoutCityInput')?.value.trim() || '',
+                shipping_district: byCheckoutField('checkoutDistrictInput')?.value.trim() || '',
+                shipping_province: byCheckoutField('checkoutProvinceInput')?.value.trim() || '',
+                shipping_postal_code: byCheckoutField('checkoutPostalCode')?.value.trim() || '',
+                shipping_destination_id: Number(byCheckoutField('checkoutDestinationId')?.value || 0) || null,
+            };
+
+            if (!payload.guest_name || !payload.guest_email || !payload.guest_phone ||
+                !payload.shipping_address_line || !payload.shipping_city || !payload.shipping_province ||
+                !payload.shipping_postal_code || !payload.shipping_destination_id) {
+                throw new Error('Lengkapi nama, email, nomor HP, dan seluruh alamat pengiriman terlebih dahulu.');
+            }
+
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.guest_email)) {
+                throw new Error('Format email belum valid.');
+            }
+
+            if (!/^[0-9+().\s-]{8,20}$/.test(payload.guest_phone)) {
+                throw new Error('Format nomor HP belum valid.');
+            }
+
+            return payload;
+        }
+
+        async function useGuestShippingData() {
+            try {
+                buildGuestCheckoutPayload();
+                await loadShippingOptions();
+                document.getElementById('guestShippingStatus')?.classList.remove('hidden');
+            } catch (error) {
+                alert(error?.message || 'Data pengiriman belum lengkap.');
+            }
+        }
+
         function generateOrderNum() {
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
             let result = '';
@@ -1643,8 +1738,10 @@
                 return;
             }
             let taxInvoicePayload = { requested: false };
+            let guestCheckoutPayload = {};
             try {
                 taxInvoicePayload = buildTaxInvoicePayload();
+                guestCheckoutPayload = buildGuestCheckoutPayload();
             } catch (error) {
                 alert(error?.message || 'Data faktur pajak belum lengkap.');
                 return;
@@ -1684,6 +1781,7 @@
                     address_id: selectedAddressId || null,
                     payment_method: selectedPayment,
                     tax_invoice: taxInvoicePayload,
+                    ...guestCheckoutPayload,
                 };
 
                 try {
@@ -1697,14 +1795,23 @@
                         body: JSON.stringify(payload),
                     });
                     const json = await res.json().catch(() => ({}));
+                    if (json?.requires_login && json?.login_url) {
+                        window.location.href = json.login_url;
+                        return;
+                    }
                     if (!res.ok) throw new Error(json?.message || `Gagal membuat pesanan untuk ${group.companyName}.`);
-                    successes.push({ companyName: group.companyName, orderId: json?.order_id || '' });
+                    successes.push({ companyName: group.companyName, orderId: json?.order_id || '', redirectUrl: json?.redirect_url || '' });
                 } catch (e) {
                     failures.push({ companyName: group.companyName, message: e?.message || 'Terjadi kesalahan.' });
                 }
             }
 
             if (successes.length > 0) {
+                if (isGuestCheckout) {
+                    window.location.href = successes[0].redirectUrl;
+                    return;
+                }
+
                 await fetch(completeCheckoutUrl, {
                     method: 'POST',
                     headers: {
@@ -1751,12 +1858,23 @@
         }
 
         renderCart();
+        if (isGuestCheckout) {
+            const host = document.getElementById('guestShippingFormHost');
+            const form = document.getElementById('checkoutAddressForm');
+            if (host && form) {
+                host.appendChild(form);
+                form.insertAdjacentHTML('beforeend', '<div id="guestShippingStatus" class="hidden rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">Data lengkap. Pilihan ongkir sudah diperbarui.</div>');
+            }
+        }
         setPaymentTab('qris');
         setPayment('qris', 'QRIS');
         _coSetup('checkoutProvinceInput', 'checkoutProvinceDropdown');
         _coSetup('checkoutCityInput', 'checkoutCityDropdown');
         _coSetup('checkoutDistrictInput', 'checkoutDistrictDropdown');
         _coSetup('checkoutSubdistrictInput', 'checkoutSubdistrictDropdown');
+        if (isGuestCheckout) {
+            loadCheckoutProvinces().catch(() => {});
+        }
         document.getElementById('checkoutProvinceInput')?.addEventListener('change', onCheckoutProvinceChange);
         document.getElementById('checkoutCityInput')?.addEventListener('change', onCheckoutCityChange);
         document.getElementById('checkoutDistrictInput')?.addEventListener('change', onCheckoutDistrictChange);
@@ -1771,4 +1889,3 @@
         loadShippingOptions();
     </script>
 @endsection
-

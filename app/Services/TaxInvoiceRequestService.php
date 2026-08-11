@@ -19,7 +19,7 @@ class TaxInvoiceRequestService
         return filter_var(Arr::get($payload, 'requested', false), FILTER_VALIDATE_BOOLEAN);
     }
 
-    public function requestForTransaction(Transaction $transaction, User $user, array $payload): ?TransactionTaxInvoice
+    public function requestForTransaction(Transaction $transaction, ?User $user, array $payload): ?TransactionTaxInvoice
     {
         if (! $this->payloadRequestsTaxInvoice($payload)) {
             return null;
@@ -42,14 +42,14 @@ class TaxInvoiceRequestService
             $data = $this->validatedTaxpayerData($user, $payload);
             $now = now();
 
-            if (filter_var(Arr::get($payload, 'save_profile', false), FILTER_VALIDATE_BOOLEAN)) {
+            if ($user && filter_var(Arr::get($payload, 'save_profile', false), FILTER_VALIDATE_BOOLEAN)) {
                 $this->saveProfile($user, $data, filter_var(Arr::get($payload, 'set_default_profile', false), FILTER_VALIDATE_BOOLEAN));
             }
 
             return TransactionTaxInvoice::query()->updateOrCreate(
                 ['transaction_id' => $freshTransaction->id],
                 [
-                    'requested_by_user_id' => $user->id,
+                    'requested_by_user_id' => $user?->id,
                     'status' => TransactionTaxInvoice::STATUS_REQUESTED,
                     'taxpayer_name' => $data['taxpayer_name'],
                     'taxpayer_number' => $data['taxpayer_number'],
@@ -66,10 +66,10 @@ class TaxInvoiceRequestService
         });
     }
 
-    public function validatedTaxpayerData(User $user, array $payload): array
+    public function validatedTaxpayerData(?User $user, array $payload): array
     {
         $profileId = (int) Arr::get($payload, 'profile_id', 0);
-        $profile = $profileId > 0
+        $profile = $user && $profileId > 0
             ? UserTaxProfile::query()->where('user_id', $user->id)->whereKey($profileId)->first()
             : null;
 

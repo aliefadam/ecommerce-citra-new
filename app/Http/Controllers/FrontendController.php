@@ -748,12 +748,12 @@ class FrontendController extends Controller
 
     public function checkout()
     {
-        abort_unless(auth()->check(), 403);
-
         $addresses = auth()->check()
             ? auth()->user()->addresses()->orderByDesc('is_primary')->latest()->get()
             : collect();
-        $taxProfiles = auth()->user()->taxProfiles()->orderByDesc('is_default')->latest()->get();
+        $taxProfiles = auth()->check()
+            ? auth()->user()->taxProfiles()->orderByDesc('is_default')->latest()->get()
+            : collect();
 
         $checkout = session('checkout', []);
         $source = (string) ($checkout['source'] ?? '');

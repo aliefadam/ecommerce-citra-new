@@ -22,12 +22,14 @@ class Coupon extends Model
         'starts_at',
         'ends_at',
         'is_active',
+        'is_member_only',
     ];
 
     protected $casts = [
         'starts_at' => 'datetime',
         'ends_at' => 'datetime',
         'is_active' => 'boolean',
+        'is_member_only' => 'boolean',
     ];
 
     public function company()
@@ -37,7 +39,7 @@ class Coupon extends Model
 
     public function isUsableFor(int $subtotal): bool
     {
-        if (!$this->is_active || $subtotal < (int) $this->min_purchase) {
+        if (! $this->is_active || $subtotal < (int) $this->min_purchase) {
             return false;
         }
 
@@ -59,7 +61,7 @@ class Coupon extends Model
 
     public function discountFor(int $subtotal): int
     {
-        if (!$this->isUsableFor($subtotal)) {
+        if (! $this->isUsableFor($subtotal)) {
             return 0;
         }
 

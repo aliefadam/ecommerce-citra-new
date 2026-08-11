@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\HandlesGuestCheckout;
 use App\Mail\InvoiceOrder;
 use App\Models\Address;
 use App\Models\Cart;
@@ -19,12 +20,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class ManualPaymentController extends Controller
 {
+    use HandlesGuestCheckout;
+
     public function checkout(Request $request, LoyaltyPointService $loyaltyPointService, CheckoutTaxCalculator $taxCalculator, TaxInvoiceRequestService $taxInvoiceService, DocumentNumberGenerator $documentNumberGenerator)
     {
-        $validated = $request->validate([
+        $validated = $request->validate(array_merge([
             'items' => ['required', 'array', 'min:1'],
             'items.*.id' => ['required'],
             'items.*.productVariantId' => ['nullable', 'integer'],
@@ -50,15 +54,19 @@ class ManualPaymentController extends Controller
             'tax_invoice.customer_note' => ['nullable', 'string', 'max:1000'],
             'tax_invoice.save_profile' => ['nullable', 'boolean'],
             'tax_invoice.set_default_profile' => ['nullable', 'boolean'],
-        ]);
+        ], $this->guestCheckoutRules($request)));
 
-        $orderId = 'MAN-'.now()->format('YmdHis').'-'.random_int(1000, 9999);
+        $guest = $this->guestCheckoutData($request, $validated);
 
-        $transaction = DB::transaction(function () use ($request, $validated, $orderId, $loyaltyPointService, $taxCalculator, $taxInvoiceService, $documentNumberGenerator) {
+        $orderId = 'MAN-'.now()->format('YmdHis').'-'.Str::upper(Str::random(10));
+
+        $transaction = DB::transaction(function () use ($request, $validated, $guest, $orderId, $loyaltyPointService, $taxCalculator, $taxInvoiceService, $documentNumberGenerator) {
             $companyId = (int) $validated['company_id'];
             $items = collect($validated['items'])->values();
 
-            $hasMixedCompanyItems = $items->contains(fn ($item) => !empty($item['companyId']) && (int) $item['companyId'] !== $companyId);
+            $this->ensureCheckoutItemsAvailable($items->all(), $companyId);
+
+            $hasMixedCompanyItems = $items->contains(fn ($item) => ! empty($item['companyId']) && (int) $item['companyId'] !== $companyId);
             if ($hasMixedCompanyItems) {
                 abort(422, 'Item di keranjang berasal dari lebih dari satu perusahaan. Checkout lintas perusahaan belum didukung dalam satu transaksi.');
             }
@@ -71,7 +79,7 @@ class ManualPaymentController extends Controller
 
             if ($couponCode !== '') {
                 $coupon = Coupon::query()->where('code', $couponCode)->first();
-                if (! $coupon || (int) $coupon->company_id !== $companyId || ! $coupon->isUsableFor($subtotal)) {
+                if (! $coupon || (int) $coupon->company_id !== $companyId || ($guest && $coupon->is_member_only) || ! $coupon->isUsableFor($subtotal)) {
                     unset($couponsByCompany[$companyId]);
                     session(['checkout_coupon' => $couponsByCompany]);
                     abort(422, 'Voucher tidak valid atau sudah tidak bisa digunakan.');
@@ -80,8 +88,8 @@ class ManualPaymentController extends Controller
             }
             $tax = $taxCalculator->calculate($subtotal, $discountAmount, $shippingCost, companyId: $companyId);
 
-            $snapshot = [];
-            if (! empty($validated['address_id'])) {
+            $snapshot = $guest['address_snapshot'] ?? [];
+            if (! $guest && ! empty($validated['address_id'])) {
                 $addr = Address::query()
                     ->where('id', $validated['address_id'])
                     ->where('user_id', $request->user()?->id)
@@ -101,6 +109,9 @@ class ManualPaymentController extends Controller
             $transaction = Transaction::create([
                 'company_id' => $companyId,
                 'user_id' => $request->user()?->id,
+                'manual_customer_name' => $guest['name'] ?? null,
+                'manual_customer_phone' => $guest['phone'] ?? null,
+                'manual_customer_email' => $guest['email'] ?? null,
                 'source' => Transaction::SOURCE_CHECKOUT,
                 'invoice_no' => $documentNumberGenerator->generate(Transaction::class, 'INV', $companyId),
                 'order_id' => $orderId,
@@ -121,6 +132,7 @@ class ManualPaymentController extends Controller
                 'shipping_phone' => (string) ($snapshot['shipping_phone'] ?? ''),
                 'shipping_address_line' => (string) ($snapshot['shipping_address_line'] ?? ''),
                 'shipping_city' => (string) ($snapshot['shipping_city'] ?? ''),
+                'shipping_district' => (string) ($snapshot['shipping_district'] ?? ''),
                 'shipping_province' => (string) ($snapshot['shipping_province'] ?? ''),
                 'shipping_postal_code' => (string) ($snapshot['shipping_postal_code'] ?? ''),
                 'expires_at' => now()->addDay(),
@@ -170,21 +182,34 @@ class ManualPaymentController extends Controller
             return $transaction;
         });
 
-        $checkout = session('checkout', []);
-        if (($checkout['source'] ?? '') === 'cart_selected') {
-            $ids = collect($checkout['cart_ids'] ?? [])->map(fn ($id) => (int) $id)->filter()->values()->all();
-            if (! empty($ids)) {
-                Cart::query()->where('user_id', $request->user()->id)->whereIn('id', $ids)->delete();
-            }
-        } elseif (! in_array(($checkout['source'] ?? ''), ['buy_now', 'redeem_point'], true)) {
-            Cart::query()->where('user_id', $request->user()->id)->delete();
+        if ($guest) {
+            $ownedOrders = collect(session('guest_owned_orders', []))
+                ->push($transaction->order_id)
+                ->unique()
+                ->values()
+                ->all();
+            session(['guest_owned_orders' => $ownedOrders]);
         }
 
-        session()->forget(['checkout', 'checkout_coupon']);
+        $checkout = session('checkout', []);
+        if ($request->user() && ($checkout['source'] ?? '') === 'cart_selected') {
+            $ids = collect($checkout['cart_ids'] ?? [])->map(fn ($id) => (int) $id)->filter()->values()->all();
+            if (! empty($ids)) {
+                Cart::query()->where('user_id', $request->user()?->id)->whereIn('id', $ids)->delete();
+            }
+        } elseif ($request->user() && ! in_array(($checkout['source'] ?? ''), ['buy_now', 'redeem_point'], true)) {
+            Cart::query()->where('user_id', $request->user()?->id)->delete();
+        }
 
-        if ($request->user()?->email) {
+        if ($request->user()) {
+            session()->forget('checkout');
+        }
+        session()->forget('checkout_coupon');
+
+        $recipientEmail = $request->user()?->email ?: ($guest['email'] ?? null);
+        if ($recipientEmail) {
             try {
-                Mail::to($request->user()->email)->send(new InvoiceOrder($transaction->load('details', 'user')));
+                Mail::to($recipientEmail)->send(new InvoiceOrder($transaction->load('details', 'user')));
             } catch (\Throwable $e) {
                 Log::warning('Invoice email failed after manual checkout.', [
                     'transaction_id' => $transaction->id,
@@ -194,13 +219,15 @@ class ManualPaymentController extends Controller
             }
         }
 
-        UserNotification::create([
-            'user_id' => $request->user()->id,
-            'type' => 'transaction_created',
-            'title' => 'Pesanan Berhasil Dibuat',
-            'body' => 'Upload bukti transfer untuk pesanan '.$transaction->invoice_no.' agar pembayaran bisa diverifikasi.',
-            'url' => route('frontend.checkout.waiting', ['orderId' => $transaction->order_id]),
-        ]);
+        if ($request->user()) {
+            UserNotification::create([
+                'user_id' => $request->user()?->id,
+                'type' => 'transaction_created',
+                'title' => 'Pesanan Berhasil Dibuat',
+                'body' => 'Upload bukti transfer untuk pesanan '.$transaction->invoice_no.' agar pembayaran bisa diverifikasi.',
+                'url' => route('frontend.checkout.waiting', ['orderId' => $transaction->order_id]),
+            ]);
+        }
 
         return response()->json([
             'ok' => true,
@@ -212,7 +239,18 @@ class ManualPaymentController extends Controller
 
     public function uploadProof(Request $request, Transaction $transaction, ImageOptimizer $imageOptimizer)
     {
-        abort_unless((int) $transaction->user_id === (int) $request->user()->id, 403);
+        if ($transaction->user_id !== null) {
+            abort_unless($request->user() && (int) $transaction->user_id === (int) $request->user()->id, 403);
+        } else {
+            $accessibleOrders = array_merge(
+                session('guest_owned_orders', []),
+                session('verified_orders', [])
+            );
+            abort_unless(in_array((string) $transaction->order_id, $accessibleOrders, true), 403);
+        }
+
+        abort_unless((string) $transaction->payment_type === 'manual_transfer', 422);
+        abort_unless(in_array(strtolower((string) $transaction->status), ['pending', 'menunggu_verifikasi'], true), 422);
 
         $validated = $request->validate([
             'payment_proof' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
@@ -233,7 +271,7 @@ class ManualPaymentController extends Controller
 
         TransactionStatusHistory::create([
             'transaction_id' => $transaction->id,
-            'user_id' => $request->user()->id,
+            'user_id' => $request->user()?->id,
             'from_status' => $oldStatus,
             'to_status' => 'menunggu_verifikasi',
             'type' => 'payment_proof_uploaded',
@@ -242,5 +280,4 @@ class ManualPaymentController extends Controller
 
         return back()->with('success', 'Bukti transfer berhasil diupload. Admin akan memverifikasi pembayaran.');
     }
-
 }

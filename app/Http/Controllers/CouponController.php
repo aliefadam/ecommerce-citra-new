@@ -62,9 +62,11 @@ class CouponController extends Controller
             'starts_at' => ['nullable', 'date'],
             'ends_at' => ['nullable', 'date', 'after_or_equal:starts_at'],
             'is_active' => ['nullable', 'boolean'],
+            'is_member_only' => ['nullable', 'boolean'],
         ]);
 
         $validated['is_active'] = (bool) ($validated['is_active'] ?? false);
+        $validated['is_member_only'] = (bool) ($validated['is_member_only'] ?? false);
         $validated['min_purchase'] = (int) ($validated['min_purchase'] ?? 0);
         $validated['max_discount'] = ($validated['max_discount'] ?? null) !== null ? (int) $validated['max_discount'] : null;
         $validated['usage_limit'] = ($validated['usage_limit'] ?? null) !== null ? (int) $validated['usage_limit'] : null;

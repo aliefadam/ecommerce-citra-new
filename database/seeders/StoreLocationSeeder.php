@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Company;
 use App\Models\StoreLocation;
 use Illuminate\Database\Seeder;
 
@@ -12,8 +13,14 @@ class StoreLocationSeeder extends Seeder
      */
     public function run(): void
     {
+        $companyId = Company::query()->orderBy('id')->value('id');
+
+        if (! $companyId) {
+            throw new \RuntimeException('Perusahaan utama belum tersedia untuk StoreLocationSeeder.');
+        }
+
         StoreLocation::updateOrCreate(
-            ['label' => 'Lokasi Toko Utama'],
+            ['company_id' => $companyId, 'label' => 'Lokasi Toko Utama'],
             [
                 'province_id' => 18,
                 'city_id' => 577,
@@ -24,4 +31,3 @@ class StoreLocationSeeder extends Seeder
         );
     }
 }
-

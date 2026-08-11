@@ -72,8 +72,8 @@
                 <div class="w-full max-w-md">
                     <div class="flex items-center justify-between mb-6">
                         <div>
-                            <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Register</h2>
-                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Masukkan data akun Anda.</p>
+                            <h2 class="text-2xl font-bold text-slate-800 dark:text-white">{{ $checkoutTransaction ? 'Simpan Pesananmu' : 'Register' }}</h2>
+                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ $checkoutTransaction ? 'Buat akun dan lanjutkan dari pesanan terakhir.' : 'Masukkan data akun Anda.' }}</p>
                         </div>
                     </div>
 
@@ -84,21 +84,35 @@
                         </div>
                     @endif
 
+                    @if ($checkoutTransaction)
+                        <div class="mb-4 overflow-hidden rounded-2xl border border-blue-200 bg-blue-50 p-4 dark:border-blue-900/60 dark:bg-blue-950/30">
+                            <p class="text-[10px] font-extrabold uppercase tracking-widest text-blue-600 dark:text-blue-400">Pesanan siap dihubungkan</p>
+                            <div class="mt-2 flex items-center justify-between gap-3">
+                                <span class="font-mono text-sm font-bold text-slate-800 dark:text-slate-100">{{ $checkoutTransaction->order_id }}</span>
+                                <span class="rounded-full bg-white px-2.5 py-1 text-[10px] font-bold text-emerald-700 shadow-sm dark:bg-slate-800 dark:text-emerald-400">Terverifikasi</span>
+                            </div>
+                        </div>
+                    @endif
+
                     <div
                         class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-sm">
                         <form action="{{ route('register.attempt') }}" method="POST" class="space-y-4">
                             @csrf
+                            @if ($checkoutTransaction)
+                                <input type="hidden" name="checkout_order" value="{{ $checkoutTransaction->order_id }}">
+                            @endif
                             <div>
                                 <label
                                     class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Nama</label>
-                                <input type="text" name="name" value="{{ old('name') }}"
+                                <input type="text" name="name" value="{{ old('name', $checkoutTransaction?->manual_customer_name) }}"
                                     placeholder="Nama lengkap"
                                     class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200 placeholder-slate-400" />
                             </div>
                             <div>
                                 <label
                                     class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Email</label>
-                                <input type="email" name="email" value="{{ old('email') }}"
+                                <input type="email" name="email" value="{{ old('email', $checkoutTransaction?->manual_customer_email) }}"
+                                    @if ($checkoutTransaction) readonly @endif
                                     placeholder="you@example.com"
                                     class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200 placeholder-slate-400" />
                             </div>
@@ -118,7 +132,7 @@
 
                             <button type="submit"
                                 class="w-full inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-lg shadow-blue-200 dark:shadow-blue-900/40">
-                                Register
+                                {{ $checkoutTransaction ? 'Buat Akun & Simpan Pesanan' : 'Register' }}
                             </button>
                         </form>
 

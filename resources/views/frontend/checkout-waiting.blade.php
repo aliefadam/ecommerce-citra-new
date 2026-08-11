@@ -140,10 +140,12 @@
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
                     <div class="px-6 pt-5 pb-2 flex items-center justify-between">
                         <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Informasi Pembayaran</h2>
-                        <button id="openSimulateModalBtn" type="button"
-                            class="text-xs px-3 py-1.5 rounded-full border border-indigo-200 text-indigo-600 font-semibold hover:bg-indigo-50 transition-colors">
-                            Simulasi
-                        </button>
+                        @auth
+                            <button id="openSimulateModalBtn" type="button"
+                                class="text-xs px-3 py-1.5 rounded-full border border-indigo-200 text-indigo-600 font-semibold hover:bg-indigo-50 transition-colors">
+                                Simulasi
+                            </button>
+                        @endauth
                     </div>
                     <p id="simulateInlineMsg" class="hidden"></p>
 
@@ -300,7 +302,7 @@
                             </svg>
                             Kembali Belanja
                         </a>
-                        <a href="{{ route('frontend.profil', ['tab' => 'pesanan']) }}"
+                        <a href="{{ auth()->check() ? route('frontend.profil', ['tab' => 'pesanan']) : route('frontend.order-tracking.index', ['order_id' => $payment['order_id']]) }}"
                             class="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3.5 rounded-2xl transition-colors text-sm shadow-sm">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                 stroke-width="2">
@@ -318,6 +320,21 @@
                         Batalkan Transaksi
                     </button>
                 </div>
+
+                @guest
+                    <div class="relative overflow-hidden rounded-3xl border border-sky-200 bg-sky-50 p-5 shadow-sm">
+                        <div class="absolute -right-8 -top-10 h-28 w-28 rounded-full bg-blue-200/50 blur-2xl"></div>
+                        <div class="relative">
+                            <span class="inline-flex rounded-full bg-white px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-widest text-blue-700 shadow-sm">Simpan pesanan</span>
+                            <h3 class="mt-3 text-base font-extrabold text-slate-900">Buat akun tanpa isi data ulang</h3>
+                            <p class="mt-1 text-xs leading-5 text-slate-600">Pesanan ini dan pesanan guest lain dengan email yang sama akan langsung masuk ke riwayat akunmu.</p>
+                            <a href="{{ route('register', ['checkout_order' => $payment['order_id']]) }}"
+                                class="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-blue-700">
+                                Buat Akun Saya
+                            </a>
+                        </div>
+                    </div>
+                @endguest
             </div>
 
         </div>
@@ -424,7 +441,7 @@
             </div>
 
             <div class="flex flex-col sm:flex-row gap-3">
-                <a href="{{ route('frontend.profil', ['tab' => 'pesanan']) }}"
+                <a href="{{ auth()->check() ? route('frontend.profil', ['tab' => 'pesanan']) : route('frontend.order-tracking.index', ['order_id' => $payment['order_id']]) }}"
                     class="flex-1 border-2 border-blue-400 text-blue-600 font-semibold py-3 rounded-xl hover:bg-blue-50 transition-colors text-sm">Lihat
                     Pesanan</a>
                 <a href="{{ route('frontend.index') }}"
@@ -468,7 +485,7 @@
             if (!btn) return;
             btn.textContent = 'Transaksi Saya';
             btn.onclick = () => {
-                window.location.href = @json(route('frontend.profil', ['tab' => 'pesanan']));
+                window.location.href = @json(auth()->check() ? route('frontend.profil', ['tab' => 'pesanan']) : route('frontend.order-tracking.index', ['order_id' => $payment['order_id']]));
             };
         }
 

@@ -2,24 +2,33 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
 {
-    public function showRegister()
+    public function showRegister(Request $request)
     {
-        return view('auth.register');
+        $checkoutOrderId = strtoupper(trim((string) $request->query('checkout_order', '')));
+        $checkoutTransaction = $checkoutOrderId !== ''
+            ? $this->guestCheckoutTransaction($request, $checkoutOrderId)
+            : null;
+
+        return view('auth.register', compact('checkoutTransaction'));
     }
 
     public function showLogin()
     {
         $this->storeIntendedFromRedirectQuery(request());
+
         return view('auth.login');
     }
 
@@ -27,18 +36,70 @@ class AuthController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if (User::query()->whereRaw('LOWER(email) = ?', [strtolower(trim((string) $value))])->exists()) {
+                        $fail('Email sudah terdaftar. Silakan masuk ke akun Anda.');
+                    }
+                },
+            ],
             'password' => ['required', 'string', 'min:6', 'confirmed'],
+            'checkout_order' => ['nullable', 'string', 'max:100'],
         ]);
 
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => $validated['password'],
-            'role' => 'user',
-        ]);
+        $email = strtolower(trim((string) $validated['email']));
+        $checkoutOrderId = strtoupper(trim((string) ($validated['checkout_order'] ?? '')));
+        $checkoutTransaction = $checkoutOrderId !== ''
+            ? $this->guestCheckoutTransaction($request, $checkoutOrderId)
+            : null;
+
+        if ($checkoutOrderId !== '' && ! $checkoutTransaction) {
+            throw ValidationException::withMessages([
+                'checkout_order' => 'Sesi checkout tidak valid. Buka kembali tautan dari halaman pesanan Anda.',
+            ]);
+        }
+
+        if ($checkoutTransaction && strtolower(trim((string) $checkoutTransaction->manual_customer_email)) !== $email) {
+            throw ValidationException::withMessages([
+                'email' => 'Gunakan email yang sama dengan email pemesan.',
+            ]);
+        }
+
+        [$user, $claimedOrders] = DB::transaction(function () use ($request, $validated, $email, $checkoutTransaction): array {
+            $user = User::create([
+                'name' => $validated['name'],
+                'email' => $email,
+                'password' => $validated['password'],
+                'role' => 'user',
+            ]);
+
+            $claimedOrders = 0;
+            if ($checkoutTransaction) {
+                $authorizedOrders = $this->authorizedGuestOrders($request);
+                $claimedOrders = Transaction::query()
+                    ->whereNull('user_id')
+                    ->where('source', Transaction::SOURCE_CHECKOUT)
+                    ->whereIn('order_id', $authorizedOrders)
+                    ->whereRaw('LOWER(manual_customer_email) = ?', [$email])
+                    ->update(['user_id' => $user->id]);
+            }
+
+            return [$user, $claimedOrders];
+        });
+
         Auth::login($user);
         $request->session()->regenerate();
+
+        if ($claimedOrders > 0) {
+            $request->session()->forget(['guest_owned_orders', 'verified_orders']);
+
+            return redirect()
+                ->route('frontend.profil', ['tab' => 'pesanan'])
+                ->with('success', "Akun berhasil dibuat. {$claimedOrders} pesanan sudah tersimpan di akun Anda.");
+        }
 
         return $this->redirectByRole($user);
     }
@@ -52,7 +113,7 @@ class AuthController extends Controller
 
         $remember = $request->boolean('remember');
 
-        if (!Auth::attempt($credentials, $remember)) {
+        if (! Auth::attempt($credentials, $remember)) {
             return back()
                 ->withErrors(['email' => 'Email atau password tidak valid.'])
                 ->onlyInput('email');
@@ -84,7 +145,7 @@ class AuthController extends Controller
         ]);
 
         $exists = User::query()->where('email', $validated['email'])->exists();
-        if (!$exists) {
+        if (! $exists) {
             return back()
                 ->withErrors(['email' => 'Email tidak ditemukan.'])
                 ->withInput();
@@ -94,6 +155,7 @@ class AuthController extends Controller
             $status = Password::sendResetLink(['email' => $validated['email']]);
         } catch (\Throwable $e) {
             report($e);
+
             return back()
                 ->withErrors(['email' => 'Gagal mengirim email reset password. Periksa konfigurasi email SMTP Anda.'])
                 ->withInput();
@@ -145,6 +207,7 @@ class AuthController extends Controller
     public function redirectToGoogle()
     {
         $this->storeIntendedFromRedirectQuery(request());
+
         return Socialite::driver('google')->redirect();
     }
 
@@ -166,7 +229,7 @@ class AuthController extends Controller
         }
 
         $user = User::query()->where('email', $email)->first();
-        if (!$user) {
+        if (! $user) {
             $user = User::create([
                 'name' => (string) ($googleUser->getName() ?? 'Google User'),
                 'email' => $email,
@@ -179,7 +242,7 @@ class AuthController extends Controller
         } else {
             $user->google_id = (string) $googleUser->getId();
             $user->avatar = (string) ($googleUser->getAvatar() ?? '');
-            if (!$user->email_verified_at) {
+            if (! $user->email_verified_at) {
                 $user->email_verified_at = now();
             }
             $user->save();
@@ -213,22 +276,48 @@ class AuthController extends Controller
         }
 
         $target = null;
-        if (!isset($parsed['scheme']) && !isset($parsed['host'])) {
+        if (! isset($parsed['scheme']) && ! isset($parsed['host'])) {
             $target = $redirect;
         } else {
             $currentHost = parse_url(url('/'), PHP_URL_HOST);
             if (($parsed['host'] ?? null) === $currentHost) {
                 $target = ($parsed['path'] ?? '/');
-                if (!empty($parsed['query'])) {
-                    $target .= '?' . $parsed['query'];
+                if (! empty($parsed['query'])) {
+                    $target .= '?'.$parsed['query'];
                 }
             }
         }
 
-        if (!$target || !str_starts_with($target, '/')) {
+        if (! $target || ! str_starts_with($target, '/')) {
             return;
         }
 
         $request->session()->put('url.intended', $target);
+    }
+
+    private function guestCheckoutTransaction(Request $request, string $orderId): ?Transaction
+    {
+        $authorizedOrders = $this->authorizedGuestOrders($request);
+        if (! in_array($orderId, $authorizedOrders, true)) {
+            return null;
+        }
+
+        return Transaction::query()
+            ->whereNull('user_id')
+            ->where('source', Transaction::SOURCE_CHECKOUT)
+            ->where('order_id', $orderId)
+            ->first();
+    }
+
+    /** @return array<int, string> */
+    private function authorizedGuestOrders(Request $request): array
+    {
+        return collect($request->session()->get('guest_owned_orders', []))
+            ->merge($request->session()->get('verified_orders', []))
+            ->map(fn ($orderId) => strtoupper(trim((string) $orderId)))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
     }
 }

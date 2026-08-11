@@ -3,15 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cart;
-use App\Models\FlashSaleItem;
 use App\Models\Coupon;
+use App\Models\FlashSaleItem;
 use App\Models\ProductVariant;
-use App\Models\TransactionStatusHistory;
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
+use App\Models\User;
 use App\Services\DocumentNumberGenerator;
-use Illuminate\Http\Request;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -167,14 +167,16 @@ class CartController extends Controller
 
         $product = $variant->product;
         abort_unless($product && $product->status === 'active', 404);
+        $this->ensureVariantCanBePurchased($variant, (int) $validated['quantity']);
 
         $basePrice = (int) $variant->price;
         $flashItem = $variant->flashSaleItems->first(function (FlashSaleItem $item) {
             $sale = $item->flashSale;
-            if (!$sale || !$item->is_active || $sale->status !== 'active') {
+            if (! $sale || ! $item->is_active || $sale->status !== 'active') {
                 return false;
             }
             $now = now();
+
             return $sale->start_at && $sale->end_at && $now->between($sale->start_at, $sale->end_at);
         });
         $salePrice = $flashItem ? (int) $flashItem->discount_price : $basePrice;
@@ -237,8 +239,8 @@ class CartController extends Controller
 
         $orderId = (string) ($validated['order_id'] ?? '');
         if ($orderId !== '') {
-            $payment = session('checkout_waiting.' . $orderId, []);
-            if (is_array($payment) && !empty($payment)) {
+            $payment = session('checkout_waiting.'.$orderId, []);
+            if (is_array($payment) && ! empty($payment)) {
                 $this->recordTransactionFromPayment($payment);
             }
         }
@@ -251,7 +253,7 @@ class CartController extends Controller
                 ->filter()
                 ->values()
                 ->all();
-            if (!empty($ids)) {
+            if (! empty($ids)) {
                 Cart::query()
                     ->where('user_id', auth()->id())
                     ->whereIn('id', $ids)
@@ -262,12 +264,12 @@ class CartController extends Controller
         session()->forget('checkout');
         session()->forget('checkout_coupon');
         if ($orderId !== '') {
-            session()->forget('checkout_waiting.' . $orderId);
+            session()->forget('checkout_waiting.'.$orderId);
         }
 
         return response()->json([
             'ok' => true,
-            'cartCount' => $this->countValue(auth()->id()),
+            'cartCount' => auth()->check() ? $this->countValue((int) auth()->id()) : 0,
         ]);
     }
 
@@ -289,18 +291,19 @@ class CartController extends Controller
         return $rows->map(function (Cart $row) {
             $variant = $row->productVariant;
             $product = $variant?->product;
-            if (!$variant || !$product || $product->status !== 'active' || (int) $variant->stock < 1) {
+            if (! $variant || ! $product || $product->status !== 'active' || (int) $variant->stock < 1) {
                 return null;
             }
 
             $basePrice = (int) $variant->price;
             $flashItem = $variant->flashSaleItems->first(function (FlashSaleItem $item) {
                 $sale = $item->flashSale;
-                if (!$sale || !$item->is_active || $sale->status !== 'active') {
+                if (! $sale || ! $item->is_active || $sale->status !== 'active') {
                     return false;
                 }
 
                 $now = now();
+
                 return $sale->start_at && $sale->end_at && $now->between($sale->start_at, $sale->end_at);
             });
 
@@ -343,7 +346,7 @@ class CartController extends Controller
             return $image;
         }
 
-        return asset('storage/' . ltrim($image, '/'));
+        return asset('storage/'.ltrim($image, '/'));
     }
 
     private function recordTransactionFromPayment(array $payment): void
@@ -385,12 +388,13 @@ class CartController extends Controller
                 'grand_total' => $grandTotal,
                 'shipping_label' => (string) ($payment['shipping_label'] ?? ''),
                 'paid_at' => now(),
-                'expires_at' => !empty($payment['expires_at']) ? $payment['expires_at'] : null,
+                'expires_at' => ! empty($payment['expires_at']) ? $payment['expires_at'] : null,
             ]);
 
             $detailRows = $items->map(function ($item) use ($transaction) {
                 $qty = (int) ($item['qty'] ?? 0);
                 $price = (int) ($item['price'] ?? 0);
+
                 return [
                     'transaction_id' => $transaction->id,
                     'product_id' => isset($item['id']) ? (int) $item['id'] : null,
@@ -407,7 +411,7 @@ class CartController extends Controller
                 ];
             })->all();
 
-            if (!empty($detailRows)) {
+            if (! empty($detailRows)) {
                 TransactionDetail::query()->insert($detailRows);
             }
 
@@ -430,7 +434,7 @@ class CartController extends Controller
     {
         $product = $variant->product;
 
-        if (!$product || $product->status !== 'active') {
+        if (! $product || $product->status !== 'active') {
             $this->abortJson(422, 'Produk ini sudah tidak tersedia.');
         }
 
@@ -440,7 +444,7 @@ class CartController extends Controller
         }
 
         if ($requestedQuantity > $stock) {
-            $this->abortJson(422, 'Jumlah melebihi stok yang tersedia. Stok saat ini: ' . $stock . '.');
+            $this->abortJson(422, 'Jumlah melebihi stok yang tersedia. Stok saat ini: '.$stock.'.');
         }
     }
 
@@ -449,7 +453,7 @@ class CartController extends Controller
         $product = $variant->product;
         abort_unless($product && $product->status === 'active', 404);
 
-        if (!(bool) $product->is_redeem_product || (int) ($product->redeem_points ?? 0) < 1) {
+        if (! (bool) $product->is_redeem_product || (int) ($product->redeem_points ?? 0) < 1) {
             $this->abortJson(422, 'Produk ini belum tersedia untuk redeem point.');
         }
 
@@ -488,18 +492,18 @@ class CartController extends Controller
         if ($pointBalance === null) {
             $pointBalance = (int) optional(auth()->user())->point_balance;
             if ((int) optional(auth()->user())->id !== $userId) {
-                $pointBalance = (int) \App\Models\User::query()->where('id', $userId)->value('point_balance');
+                $pointBalance = (int) User::query()->where('id', $userId)->value('point_balance');
             }
         }
 
         if ($pointBalance < $requiredPoints) {
-            $this->abortJson(422, 'Point kamu tidak cukup. Dibutuhkan ' . number_format($requiredPoints, 0, ',', '.') . ' point.');
+            $this->abortJson(422, 'Point kamu tidak cukup. Dibutuhkan '.number_format($requiredPoints, 0, ',', '.').' point.');
         }
     }
 
     private function abortJson(int $status, string $message): never
     {
-        if (!request()->expectsJson()) {
+        if (! request()->expectsJson()) {
             throw ValidationException::withMessages([
                 'checkout' => $message,
             ]);
@@ -509,5 +513,4 @@ class CartController extends Controller
             'message' => $message,
         ], $status));
     }
-
 }

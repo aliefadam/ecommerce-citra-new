@@ -8,18 +8,21 @@ use App\Http\Controllers\AdminRoleController;
 use App\Http\Controllers\AdminTaxInvoiceController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AdminWhatsappGatewayController;
+use App\Http\Controllers\ApiDocController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\B2bInvoiceController;
 use App\Http\Controllers\BackendController;
 use App\Http\Controllers\BannerController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryDetailController;
 use App\Http\Controllers\CheckoutCouponController;
-use App\Http\Controllers\ApiDocController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\ContentPageController;
 use App\Http\Controllers\CouponController;
 use App\Http\Controllers\CustomerOrderController;
 use App\Http\Controllers\CustomerTaxInvoiceController;
+use App\Http\Controllers\DeliveryNoteController;
+use App\Http\Controllers\DocumentPaymentController;
 use App\Http\Controllers\FlashSaleController;
 use App\Http\Controllers\FrontendContentController;
 use App\Http\Controllers\FrontendController;
@@ -30,11 +33,9 @@ use App\Http\Controllers\MemberTierController;
 use App\Http\Controllers\MidtransController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\NewsletterSubscriberController;
-use App\Http\Controllers\ProductController;
-use App\Http\Controllers\B2bInvoiceController;
-use App\Http\Controllers\DeliveryNoteController;
-use App\Http\Controllers\DocumentPaymentController;
+use App\Http\Controllers\OrderTrackingController;
 use App\Http\Controllers\PackingListController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProformaInvoiceController;
 use App\Http\Controllers\PromoPageController;
@@ -302,22 +303,14 @@ Route::name('frontend.')->group(function () {
     Route::get('/pencarian', [FrontendController::class, 'search'])->name('search');
     Route::get('/kategori', [FrontendController::class, 'kategori'])->name('kategori');
     Route::get('/detail-produk/{slug?}', [FrontendController::class, 'detailProduk'])->name('detail-produk');
+    Route::get('/lacak-pesanan', [OrderTrackingController::class, 'index'])->name('order-tracking.index');
+    Route::post('/lacak-pesanan', [OrderTrackingController::class, 'verify'])->name('order-tracking.verify');
 
-    Route::middleware('auth')->group(function () {
-        Route::get('/profil', [FrontendController::class, 'profil'])->name('profil');
+    Route::post('/checkout/buy-now', [CartController::class, 'buyNow'])->name('checkout.buy-now');
+
+    Route::middleware('checkout.access')->group(function () {
         Route::get('/checkout', [FrontendController::class, 'checkout'])->name('checkout');
-        Route::get('/cart', [CartController::class, 'index'])->name('cart');
-        Route::get('/cart/count', [CartController::class, 'count'])->name('cart.count');
-        Route::get('/cart/items', [CartController::class, 'items'])->name('cart.items');
-        Route::post('/cart', [CartController::class, 'store'])->name('cart.store');
-        Route::post('/cart/checkout', [CartController::class, 'prepareCheckout'])->name('cart.prepare-checkout');
-        Route::patch('/cart/{cart}', [CartController::class, 'update'])->name('cart.update');
-        Route::delete('/cart/{cart}', [CartController::class, 'destroy'])->name('cart.destroy');
-        Route::delete('/cart', [CartController::class, 'clear'])->name('cart.clear');
-        Route::post('/redeem-point/checkout', [CartController::class, 'prepareRedeemCheckout'])->name('redeem.prepare-checkout');
-        Route::post('/checkout/buy-now', [CartController::class, 'buyNow'])->name('checkout.buy-now');
         Route::post('/checkout/complete', [CartController::class, 'completeCheckout'])->name('checkout.complete');
-        Route::get('/checkout/orders', [FrontendController::class, 'checkoutOrders'])->name('checkout.orders');
         Route::post('/checkout/manual-payment', [ManualPaymentController::class, 'checkout'])->name('checkout.manual-payment');
         Route::post('/checkout/coupon/apply', [CheckoutCouponController::class, 'apply'])->name('checkout.coupon.apply');
         Route::delete('/checkout/coupon', [CheckoutCouponController::class, 'remove'])->name('checkout.coupon.remove');
@@ -330,6 +323,20 @@ Route::name('frontend.')->group(function () {
         Route::get('/checkout/waiting/{orderId}', [MidtransController::class, 'waiting'])->name('checkout.waiting');
         Route::get('/checkout/midtrans/status/{orderId}', [MidtransController::class, 'status'])->name('checkout.midtrans.status');
         Route::post('/checkout/midtrans/cancel/{orderId}', [MidtransController::class, 'cancel'])->name('checkout.midtrans.cancel');
+    });
+
+    Route::middleware('auth')->group(function () {
+        Route::get('/profil', [FrontendController::class, 'profil'])->name('profil');
+        Route::get('/cart', [CartController::class, 'index'])->name('cart');
+        Route::get('/cart/count', [CartController::class, 'count'])->name('cart.count');
+        Route::get('/cart/items', [CartController::class, 'items'])->name('cart.items');
+        Route::post('/cart', [CartController::class, 'store'])->name('cart.store');
+        Route::post('/cart/checkout', [CartController::class, 'prepareCheckout'])->name('cart.prepare-checkout');
+        Route::patch('/cart/{cart}', [CartController::class, 'update'])->name('cart.update');
+        Route::delete('/cart/{cart}', [CartController::class, 'destroy'])->name('cart.destroy');
+        Route::delete('/cart', [CartController::class, 'clear'])->name('cart.clear');
+        Route::post('/redeem-point/checkout', [CartController::class, 'prepareRedeemCheckout'])->name('redeem.prepare-checkout');
+        Route::get('/checkout/orders', [FrontendController::class, 'checkoutOrders'])->name('checkout.orders');
         Route::post('/checkout/midtrans/simulate', [MidtransController::class, 'simulate'])->name('checkout.midtrans.simulate');
         Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
         Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
@@ -344,5 +351,5 @@ Route::name('frontend.')->group(function () {
 });
 
 Route::get('/invoice/{transaction}', [InvoiceController::class, 'show'])->name('invoice.show')->middleware('auth');
-Route::post('/manual-payment/{transaction}/proof', [ManualPaymentController::class, 'uploadProof'])->name('manual-payment.proof')->middleware('auth');
+Route::post('/manual-payment/{transaction}/proof', [ManualPaymentController::class, 'uploadProof'])->name('manual-payment.proof');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');

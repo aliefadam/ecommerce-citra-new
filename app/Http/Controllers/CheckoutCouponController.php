@@ -20,7 +20,12 @@ class CheckoutCouponController extends Controller
             ->whereRaw('UPPER(code) = ?', [strtoupper(trim((string) $validated['code']))])
             ->first();
 
-        if (!$coupon || (int) $coupon->company_id !== $companyId || !$coupon->isUsableFor((int) $validated['subtotal'])) {
+        if (
+            ! $coupon
+            || (int) $coupon->company_id !== $companyId
+            || (! $request->user() && $coupon->is_member_only)
+            || ! $coupon->isUsableFor((int) $validated['subtotal'])
+        ) {
             return response()->json(['message' => 'Voucher tidak valid, belum aktif, sudah habis, atau minimal belanja belum terpenuhi.'], 422);
         }
 

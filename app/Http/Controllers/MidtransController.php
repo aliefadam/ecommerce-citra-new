@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\HandlesGuestCheckout;
 use App\Mail\InvoiceOrder;
 use App\Models\Address;
 use App\Models\CompanySetting;
@@ -27,11 +28,13 @@ use Throwable;
 
 class MidtransController extends Controller
 {
+    use HandlesGuestCheckout;
+
     public function __construct(private readonly DocumentNumberGenerator $documentNumberGenerator) {}
 
     public function createCharge(Request $request, CheckoutTaxCalculator $taxCalculator)
     {
-        $validated = $request->validate([
+        $validated = $request->validate(array_merge([
             'items' => ['required', 'array', 'min:1'],
             'items.*.id' => ['required'],
             'items.*.productVariantId' => ['nullable', 'integer'],
@@ -58,7 +61,9 @@ class MidtransController extends Controller
             'tax_invoice.customer_note' => ['nullable', 'string', 'max:1000'],
             'tax_invoice.save_profile' => ['nullable', 'boolean'],
             'tax_invoice.set_default_profile' => ['nullable', 'boolean'],
-        ]);
+        ], $this->guestCheckoutRules($request)));
+
+        $guest = $this->guestCheckoutData($request, $validated);
 
         try {
             $serverKey = (string) env('MIDTRANS_SERVER_KEY', '');
@@ -72,8 +77,10 @@ class MidtransController extends Controller
                 : 'https://api.sandbox.midtrans.com/v2/charge';
 
             $companyId = (int) $validated['company_id'];
+            $this->ensureCheckoutItemsAvailable($validated['items'], $companyId);
+
             $hasMixedCompanyItems = collect($validated['items'])
-                ->contains(fn ($item) => !empty($item['companyId']) && (int) $item['companyId'] !== $companyId);
+                ->contains(fn ($item) => ! empty($item['companyId']) && (int) $item['companyId'] !== $companyId);
             if ($hasMixedCompanyItems) {
                 throw new RuntimeException('Item di keranjang berasal dari lebih dari satu perusahaan. Checkout lintas perusahaan belum didukung dalam satu transaksi.');
             }
@@ -96,7 +103,7 @@ class MidtransController extends Controller
 
             if ($couponCode !== '') {
                 $coupon = Coupon::query()->where('code', $couponCode)->first();
-                if ($coupon && (int) $coupon->company_id === $companyId && $coupon->isUsableFor((int) $subtotal)) {
+                if ($coupon && (int) $coupon->company_id === $companyId && ! ($guest && $coupon->is_member_only) && $coupon->isUsableFor((int) $subtotal)) {
                     $discountAmount = $coupon->discountFor((int) $subtotal);
                 } else {
                     unset($couponsByCompany[$companyId]);
@@ -133,7 +140,7 @@ class MidtransController extends Controller
             }
 
             $grossAmount = (int) $tax['grand_total'];
-            $orderId = 'ORD-'.now()->format('YmdHis').'-'.random_int(1000, 9999);
+            $orderId = 'ORD-'.now()->format('YmdHis').'-'.Str::upper(Str::random(10));
 
             $customer = $request->user();
             $payload = [
@@ -148,10 +155,10 @@ class MidtransController extends Controller
                 ],
                 'item_details' => $itemDetails,
                 'customer_details' => [
-                    'first_name' => (string) ($customer->first_name ?: $customer->name ?: 'Customer'),
-                    'last_name' => (string) ($customer->last_name ?? ''),
-                    'email' => (string) ($customer->email ?? 'customer@example.com'),
-                    'phone' => trim(((string) ($customer->phone_country_code ?? '+62')).((string) ($customer->phone_number ?? ''))),
+                    'first_name' => (string) ($guest['name'] ?? ($customer?->first_name ?: $customer?->name ?: 'Customer')),
+                    'last_name' => (string) ($customer?->last_name ?? ''),
+                    'email' => (string) ($guest['email'] ?? $customer?->email ?? 'customer@example.com'),
+                    'phone' => (string) ($guest['phone'] ?? trim(((string) ($customer?->phone_country_code ?? '+62')).((string) ($customer?->phone_number ?? '')))),
                 ],
             ];
 
@@ -237,8 +244,8 @@ class MidtransController extends Controller
                 ];
             })->values()->all();
 
-            $addressSnapshot = [];
-            if (! empty($validated['address_id'])) {
+            $addressSnapshot = $guest['address_snapshot'] ?? [];
+            if (! $guest && ! empty($validated['address_id'])) {
                 $addr = Address::query()
                     ->where('id', $validated['address_id'])
                     ->where('user_id', $request->user()?->id)
@@ -279,11 +286,20 @@ class MidtransController extends Controller
                 'created_at' => now()->toIso8601String(),
                 'expires_at' => now()->addMinutes(30)->toIso8601String(),
                 'address_snapshot' => $addressSnapshot,
+                'guest_data' => $guest,
                 'tax_invoice' => $validated['tax_invoice'] ?? [],
             ];
 
             session()->put('checkout_waiting.'.$orderId, $paymentSummary);
             $this->upsertTransactionFromPayment($request, $paymentSummary);
+            if ($guest) {
+                $ownedOrders = collect(session('guest_owned_orders', []))
+                    ->push($orderId)
+                    ->unique()
+                    ->values()
+                    ->all();
+                session(['guest_owned_orders' => $ownedOrders]);
+            }
 
             return response()->json([
                 'order_id' => $orderId,
@@ -837,9 +853,13 @@ class MidtransController extends Controller
             }
 
             $snapshot = $payment['address_snapshot'] ?? [];
+            $guest = $payment['guest_data'] ?? [];
             $transaction->fill([
                 'company_id' => (int) ($payment['company_id'] ?? 0) ?: null,
                 'user_id' => $request->user()?->id,
+                'manual_customer_name' => $guest['name'] ?? null,
+                'manual_customer_phone' => $guest['phone'] ?? null,
+                'manual_customer_email' => $guest['email'] ?? null,
                 'source' => Transaction::SOURCE_CHECKOUT,
                 'midtrans_transaction_id' => (string) ($payment['transaction_id'] ?? ''),
                 'payment_type' => (string) ($payment['payment_type'] ?? ''),
@@ -862,6 +882,7 @@ class MidtransController extends Controller
                 'shipping_phone' => (string) ($snapshot['shipping_phone'] ?? ''),
                 'shipping_address_line' => (string) ($snapshot['shipping_address_line'] ?? ''),
                 'shipping_city' => (string) ($snapshot['shipping_city'] ?? ''),
+                'shipping_district' => (string) ($snapshot['shipping_district'] ?? ''),
                 'shipping_province' => (string) ($snapshot['shipping_province'] ?? ''),
                 'shipping_postal_code' => (string) ($snapshot['shipping_postal_code'] ?? ''),
                 'expires_at' => ! empty($payment['expires_at']) ? $payment['expires_at'] : null,
@@ -903,7 +924,7 @@ class MidtransController extends Controller
                     Coupon::query()->where('code', (string) $payment['coupon_code'])->increment('used_count');
                 }
                 $userId = $request->user()?->id;
-                $userEmail = $request->user()?->email;
+                $userEmail = $request->user()?->email ?: ($guest['email'] ?? null);
                 if ($userEmail) {
                     $transaction->load('details', 'user');
                     try {
@@ -1004,5 +1025,4 @@ class MidtransController extends Controller
             true
         );
     }
-
 }
