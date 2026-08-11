@@ -134,13 +134,22 @@ class AdminTransactionsUsabilityTest extends TestCase
         $response->assertOk();
         $response->assertSee('Buat Transaksi Manual', false);
         $response->assertSee('Manual Admin', false);
-        $response->assertSee('Customer Manual', false);
-        $response->assertSee('manual-customer@example.test', false);
-        $response->assertSee($productVariant->product->name, false);
-        $response->assertSee('manualProducts', false);
-        $response->assertSee('manualCustomers', false);
+        $response->assertSee(route('transactions.create-manual.search-customers'), false);
+        $response->assertSee(route('transactions.create-manual.search-products'), false);
         $response->assertSee('summaryGrandTotal', false);
         $response->assertSee(route('transactions.store-manual'), false);
+
+        $this->getJson(route('transactions.create-manual.search-customers', ['q' => 'manual-customer']))
+            ->assertOk()
+            ->assertJsonPath('results.0.id', $customer->id)
+            ->assertJsonPath('results.0.name', 'Customer Manual')
+            ->assertJsonPath('results.0.email', 'manual-customer@example.test')
+            ->assertJsonPath('results.0.address.city', 'Jakarta');
+
+        $this->getJson(route('transactions.create-manual.search-products', ['q' => $productVariant->product->name]))
+            ->assertOk()
+            ->assertJsonPath('results.0.id', $productVariant->id)
+            ->assertJsonPath('results.0.product_name', $productVariant->product->name);
     }
 
     public function test_manual_transaction_store_route_creates_transaction_and_reduces_stock(): void

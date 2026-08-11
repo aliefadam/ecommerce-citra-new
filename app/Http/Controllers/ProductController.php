@@ -18,8 +18,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
-use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use App\Exports\ProductImportTemplateExport;
 
 class ProductController extends Controller
@@ -165,7 +166,22 @@ class ProductController extends Controller
 
     public function downloadImportTemplate()
     {
-        return Excel::download(new ProductImportTemplateExport(), 'product-import-template.xlsx');
+        $spreadsheet = new Spreadsheet();
+        $spreadsheet->getActiveSheet()->fromArray(
+            (new ProductImportTemplateExport())->array(),
+            null,
+            'A1',
+        );
+        $writer = new Xlsx($spreadsheet);
+
+        return response()->streamDownload(
+            function () use ($writer, $spreadsheet): void {
+                $writer->save('php://output');
+                $spreadsheet->disconnectWorksheets();
+            },
+            'product-import-template.xlsx',
+            ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+        );
     }
 
     public function import(Request $request)

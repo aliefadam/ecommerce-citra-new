@@ -2,9 +2,7 @@
 
 namespace App\Exports;
 
-use Maatwebsite\Excel\Concerns\FromArray;
-
-class ProductImportTemplateExport implements FromArray
+class ProductImportTemplateExport
 {
     public function array(): array
     {

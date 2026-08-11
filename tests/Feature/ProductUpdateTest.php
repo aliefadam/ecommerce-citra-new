@@ -12,11 +12,44 @@ use App\Models\User;
 use App\Models\Variant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 use Tests\TestCase;
 
 class ProductUpdateTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_product_import_template_downloads_a_valid_xlsx_file(): void
+    {
+        $this->actingAs($this->makeAdminUser());
+
+        $response = $this->get(route('products.import-template'));
+
+        $response->assertOk();
+        $response->assertHeader(
+            'content-type',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        );
+
+        $content = $response->streamedContent();
+        $this->assertStringStartsWith('PK', $content);
+
+        $temporaryFile = tempnam(sys_get_temp_dir(), 'product-template-');
+
+        try {
+            file_put_contents($temporaryFile, $content);
+            $spreadsheet = IOFactory::load($temporaryFile);
+
+            $this->assertSame('product_name', $spreadsheet->getActiveSheet()->getCell('A1')->getValue());
+            $this->assertSame('Baut Hex M8 x 25mm Galvanis', $spreadsheet->getActiveSheet()->getCell('A2')->getValue());
+
+            $spreadsheet->disconnectWorksheets();
+        } finally {
+            if (is_string($temporaryFile) && file_exists($temporaryFile)) {
+                unlink($temporaryFile);
+            }
+        }
+    }
 
     public function test_edit_product_can_add_a_new_variant_without_replacing_existing_variant_ids(): void
     {
