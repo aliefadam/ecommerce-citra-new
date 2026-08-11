@@ -8,12 +8,13 @@ use RuntimeException;
 class RajaOngkirService
 {
     private string $baseUrl;
+
     private string $apiKey;
 
     public function __construct()
     {
-        $this->baseUrl = rtrim((string) env('RAJAONGKIR_BASE_URL', 'https://rajaongkir.komerce.id/api/v1'), '/');
-        $this->apiKey = (string) (env('RAJAONGKIR_API_KEY') ?: env('API_KEY_RAJAONGKIR', ''));
+        $this->baseUrl = rtrim((string) config('services.rajaongkir.base_url'), '/');
+        $this->apiKey = (string) config('services.rajaongkir.api_key', '');
     }
 
     public function provinces(): array
@@ -23,17 +24,17 @@ class RajaOngkirService
 
     public function cities(int $provinceId): array
     {
-        return $this->get('/destination/city/' . $provinceId);
+        return $this->get('/destination/city/'.$provinceId);
     }
 
     public function districts(int $cityId): array
     {
-        return $this->get('/destination/district/' . $cityId);
+        return $this->get('/destination/district/'.$cityId);
     }
 
     public function subdistricts(int $districtId): array
     {
-        return $this->get('/destination/sub-district/' . $districtId);
+        return $this->get('/destination/sub-district/'.$districtId);
     }
 
     public function domesticDestination(string $query): array
@@ -54,12 +55,27 @@ class RajaOngkirService
         ]);
     }
 
+    public function trackWaybill(string $awb, string $courier): array
+    {
+        $query = http_build_query([
+            'awb' => trim($awb),
+            'courier' => strtolower(trim($courier)),
+        ]);
+
+        $response = Http::timeout(20)
+            ->withHeaders($this->headers())
+            ->acceptJson()
+            ->post($this->baseUrl.'/track/waybill?'.$query);
+
+        return $this->parse($response->status(), $response->json());
+    }
+
     private function get(string $path, array $query = []): array
     {
         $response = Http::timeout(20)
             ->withHeaders($this->headers())
             ->acceptJson()
-            ->get($this->baseUrl . $path, $query);
+            ->get($this->baseUrl.$path, $query);
 
         return $this->parse($response->status(), $response->json());
     }
@@ -69,7 +85,7 @@ class RajaOngkirService
         $response = Http::timeout(20)
             ->withHeaders($this->headers())
             ->asForm()
-            ->post($this->baseUrl . $path, $payload);
+            ->post($this->baseUrl.$path, $payload);
 
         return $this->parse($response->status(), $response->json());
     }
@@ -87,19 +103,19 @@ class RajaOngkirService
 
     private function parse(int $status, mixed $json): array
     {
-        if (!is_array($json)) {
+        if (! is_array($json)) {
             throw new RuntimeException('Respon RajaOngkir tidak valid.');
         }
 
         $meta = $json['meta'] ?? [];
         $ok = $status >= 200 && $status < 300 && (($meta['status'] ?? '') === 'success' || ($meta['code'] ?? 0) === 200);
-        if (!$ok) {
+        if (! $ok) {
             $message = (string) ($meta['message'] ?? 'Gagal memproses RajaOngkir');
             throw new RuntimeException($message);
         }
 
         $data = $json['data'] ?? [];
+
         return is_array($data) ? $data : [];
     }
 }
-

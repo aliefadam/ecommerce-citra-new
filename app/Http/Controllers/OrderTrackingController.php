@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Transaction;
+use App\Services\ShipmentTrackingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -10,20 +11,25 @@ use Illuminate\View\View;
 
 class OrderTrackingController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request, ShipmentTrackingService $shipmentTrackingService): View
     {
         $orderId = strtoupper(trim((string) $request->query('order_id', '')));
         $verifiedOrders = session('verified_orders', []);
         $transaction = null;
+        $shipmentTracking = null;
 
         if ($orderId !== '' && in_array($orderId, $verifiedOrders, true)) {
             $transaction = Transaction::query()
                 ->with(['details', 'company'])
                 ->where('order_id', $orderId)
                 ->first();
+
+            if ($transaction) {
+                $shipmentTracking = $shipmentTrackingService->forTransaction($transaction);
+            }
         }
 
-        return view('frontend.order-tracking', compact('orderId', 'transaction'));
+        return view('frontend.order-tracking', compact('orderId', 'transaction', 'shipmentTracking'));
     }
 
     public function verify(Request $request): RedirectResponse

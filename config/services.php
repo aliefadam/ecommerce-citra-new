@@ -49,4 +49,11 @@ return [
         'retry_sleep' => (int) env('WA_GATEWAY_RETRY_SLEEP', 200),
     ],
 
+    'rajaongkir' => [
+        'base_url' => env('RAJAONGKIR_BASE_URL', 'https://rajaongkir.komerce.id/api/v1'),
+        'api_key' => env('RAJAONGKIR_API_KEY', env('API_KEY_RAJAONGKIR', '')),
+        'couriers' => env('RAJAONGKIR_COURIERS', 'jne:sicepat:jnt'),
+        'tracking_cache_minutes' => (int) env('RAJAONGKIR_TRACKING_CACHE_MINUTES', 15),
+    ],
+
 ];

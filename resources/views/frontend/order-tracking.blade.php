@@ -162,6 +162,75 @@
                         @endguest
                     </div>
                 </div>
+
+                @if ($shipmentTracking)
+                    <section class="mt-6 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                        <div class="flex flex-col gap-4 border-b border-slate-100 px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-7">
+                            <div>
+                                <p class="text-xs font-extrabold uppercase tracking-widest text-blue-600">Tracking resi</p>
+                                <h3 class="mt-1 text-lg font-extrabold text-slate-900">
+                                    {{ $shipmentTracking['courier_name'] ?: 'Ekspedisi' }}
+                                    @if (!empty($shipmentTracking['service']))
+                                        <span class="text-slate-400">{{ $shipmentTracking['service'] }}</span>
+                                    @endif
+                                </h3>
+                                <p class="mt-1 font-mono text-sm text-slate-500">{{ $shipmentTracking['awb'] }}</p>
+                            </div>
+                            @if (!empty($shipmentTracking['status']))
+                                <span class="inline-flex w-fit items-center gap-2 rounded-full border {{ !empty($shipmentTracking['delivered']) ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-blue-200 bg-blue-50 text-blue-700' }} px-3 py-1.5 text-xs font-bold">
+                                    <span class="h-2 w-2 rounded-full {{ !empty($shipmentTracking['delivered']) ? 'bg-emerald-500' : 'bg-blue-500' }}"></span>
+                                    {{ $shipmentTracking['status'] }}
+                                </span>
+                            @endif
+                        </div>
+
+                        @if (empty($shipmentTracking['available']))
+                            <div class="px-6 py-5 text-sm leading-6 text-amber-700 sm:px-7">
+                                {{ $shipmentTracking['message'] }}
+                            </div>
+                        @else
+                            @if (!empty($shipmentTracking['origin']) || !empty($shipmentTracking['destination']))
+                                <div class="grid gap-3 border-b border-slate-100 bg-slate-50/70 px-6 py-4 text-xs sm:grid-cols-2 sm:px-7">
+                                    <div><span class="font-bold text-slate-400">Dari</span><p class="mt-1 font-semibold text-slate-700">{{ $shipmentTracking['origin'] ?: '-' }}</p></div>
+                                    <div><span class="font-bold text-slate-400">Tujuan</span><p class="mt-1 font-semibold text-slate-700">{{ $shipmentTracking['destination'] ?: '-' }}</p></div>
+                                </div>
+                            @endif
+
+                            @if (!empty($shipmentTracking['events']))
+                                <div class="px-6 py-6 sm:px-7">
+                                    <div class="space-y-0">
+                                        @foreach ($shipmentTracking['events'] as $event)
+                                            <div class="relative flex gap-4 pb-6 last:pb-0">
+                                                @unless ($loop->last)
+                                                    <span class="absolute left-[7px] top-4 h-full w-px bg-slate-200"></span>
+                                                @endunless
+                                                <span class="relative mt-1.5 h-4 w-4 shrink-0 rounded-full border-4 {{ $loop->first ? 'border-blue-100 bg-blue-600' : 'border-slate-100 bg-slate-400' }}"></span>
+                                                <div class="min-w-0 flex-1">
+                                                    <p class="text-sm font-bold leading-6 text-slate-800">{{ $event['description'] }}</p>
+                                                    <p class="mt-1 text-xs text-slate-400">
+                                                        {{ trim($event['date'].' '.$event['time']) ?: 'Waktu belum tersedia' }}
+                                                        @if (!empty($event['city']))
+                                                            <span class="mx-1">&middot;</span>{{ $event['city'] }}
+                                                        @endif
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @else
+                                <div class="px-6 py-5 text-sm text-slate-500 sm:px-7">Belum ada riwayat perjalanan dari ekspedisi.</div>
+                            @endif
+
+                            @if (!empty($shipmentTracking['delivered']) && !empty($shipmentTracking['pod_receiver']))
+                                <div class="border-t border-emerald-100 bg-emerald-50 px-6 py-4 text-sm text-emerald-800 sm:px-7">
+                                    Paket diterima oleh <span class="font-bold">{{ $shipmentTracking['pod_receiver'] }}</span>
+                                    {{ trim(($shipmentTracking['pod_date'] ?? '').' '.($shipmentTracking['pod_time'] ?? '')) }}.
+                                </div>
+                            @endif
+                        @endif
+                    </section>
+                @endif
             @endif
         </div>
     </main>

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Company;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Services\ShipmentTrackingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\RateLimiter;
@@ -143,6 +144,51 @@ class OrderTrackingTest extends TestCase
             ->assertOk()
             ->assertSee('Bukti pembayaran sudah diterima')
             ->assertDontSee('name="payment_proof"', false);
+    }
+
+    public function test_verified_shipped_order_shows_rajaongkir_tracking_timeline(): void
+    {
+        $transaction = $this->makeTransaction([
+            'status' => 'kirim',
+            'tracking_number' => 'JNE123456',
+            'shipping_label' => 'JNE REG',
+        ]);
+
+        $this->mock(ShipmentTrackingService::class)
+            ->shouldReceive('forTransaction')
+            ->once()
+            ->andReturn([
+                'available' => true,
+                'awb' => 'JNE123456',
+                'courier_code' => 'jne',
+                'courier_name' => 'JNE',
+                'service' => 'REG',
+                'status' => 'ON PROCESS',
+                'delivered' => false,
+                'origin' => 'Surabaya',
+                'destination' => 'Jakarta',
+                'receiver_name' => 'Tamu Pelacak',
+                'pod_receiver' => '',
+                'pod_date' => '',
+                'pod_time' => '',
+                'message' => null,
+                'events' => [[
+                    'code' => '101',
+                    'description' => 'Paket tiba di fasilitas sortir',
+                    'date' => '2026-08-11',
+                    'time' => '10:15',
+                    'city' => 'Jakarta',
+                ]],
+            ]);
+
+        $this->withSession(['verified_orders' => [$transaction->order_id]])
+            ->get(route('frontend.order-tracking.index', ['order_id' => $transaction->order_id]))
+            ->assertOk()
+            ->assertSee('Tracking resi')
+            ->assertSee('JNE123456')
+            ->assertSee('ON PROCESS')
+            ->assertSee('Paket tiba di fasilitas sortir')
+            ->assertSee('Jakarta');
     }
 
     public function test_fresh_guest_session_can_verify_from_tracking_then_upload_proof(): void

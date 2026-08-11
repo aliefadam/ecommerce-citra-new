@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\RajaOngkirService;
 use App\Models\StoreLocation;
+use App\Services\RajaOngkirService;
 use Illuminate\Http\Request;
-use Throwable;
 use RuntimeException;
+use Throwable;
 
 class RajaOngkirController extends Controller
 {
@@ -83,7 +83,7 @@ class RajaOngkirController extends Controller
                 ->latest('id')
                 ->first();
             $originId = (int) ($storeLocation?->city_id ?? 0);
-            $couriers = (string) env('RAJAONGKIR_COURIERS', 'jne:sicepat:jnt');
+            $couriers = (string) config('services.rajaongkir.couriers', 'jne:sicepat:jnt');
             if ($originId <= 0) {
                 throw new RuntimeException('Store location belum dikonfigurasi di admin.');
             }
@@ -110,9 +110,9 @@ class RajaOngkirController extends Controller
                         return true;
                     }
 
-                    return !str_contains($haystack, 'truck')
-                        && !str_contains($haystack, 'trucking')
-                        && !str_contains($haystack, 'cargo');
+                    return ! str_contains($haystack, 'truck')
+                        && ! str_contains($haystack, 'trucking')
+                        && ! str_contains($haystack, 'cargo');
                 })
                 ->values()
                 ->all();
