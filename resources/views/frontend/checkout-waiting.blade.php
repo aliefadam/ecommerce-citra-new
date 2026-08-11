@@ -221,6 +221,9 @@
                                     <label class="text-sm font-semibold text-slate-700 block">Upload Bukti Transfer</label>
                                     <input type="file" name="payment_proof" accept="image/*" required
                                         class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-400">
+                                    @error('payment_proof')
+                                        <p class="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">{{ $message }}</p>
+                                    @enderror
                                     <button class="w-full rounded-xl bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">Kirim Bukti Pembayaran</button>
                                 </form>
                             @endif

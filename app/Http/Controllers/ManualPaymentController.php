@@ -254,6 +254,11 @@ class ManualPaymentController extends Controller
 
         $validated = $request->validate([
             'payment_proof' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+        ], [
+            'payment_proof.required' => 'Bukti pembayaran wajib dipilih.',
+            'payment_proof.image' => 'Bukti pembayaran harus berupa gambar.',
+            'payment_proof.mimes' => 'Format bukti pembayaran harus JPG, PNG, atau WebP.',
+            'payment_proof.max' => 'Ukuran bukti pembayaran maksimal 4 MB.',
         ]);
 
         $oldProof = (string) $transaction->payment_proof_path;
