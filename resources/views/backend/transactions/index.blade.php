@@ -380,7 +380,7 @@
                     'detail_url' => route('transactions.show', ['transaction' => $tx->id]),
                     'verify_payment_url' => route('transactions.verify-payment', ['transaction' => $tx->id]),
                     'payment_type_raw' => (string) ($tx->payment_type ?? ''),
-                    'payment_proof_url' => $tx->payment_proof_path ? asset(ltrim((string) $tx->payment_proof_path, '/')) : '',
+                    'payment_proof_url' => $tx->paymentProofUrl(true) ?? '',
                     'payment_admin_note' => (string) ($tx->payment_admin_note ?? ''),
                     'tracking_number' => $tx->tracking_number,
                     'shipping_recipient_name' => $tx->shipping_recipient_name ?? '',

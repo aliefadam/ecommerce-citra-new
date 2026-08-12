@@ -102,6 +102,15 @@ class Transaction extends Model
         });
     }
 
+    public function paymentProofUrl(bool $admin = false): ?string
+    {
+        if (! $this->payment_proof_path) {
+            return null;
+        }
+
+        return route($admin ? 'transactions.payment-proof' : 'payment-proof.show', ['transaction' => $this->id]);
+    }
+
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);

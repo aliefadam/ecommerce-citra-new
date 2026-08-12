@@ -38,6 +38,11 @@ class WaGatewayService
         return $this->baseUrl !== '' && $this->token !== '';
     }
 
+    public function mode(): string
+    {
+        return strtolower((string) config('services.wa_gateway.mode', 'sandbox'));
+    }
+
     public function prepareStore(string $name, string $storeId, array $limits): array
     {
         return $this->request('post', '/api/stores', [
@@ -78,7 +83,7 @@ class WaGatewayService
 
     public function qrRaw(string $storeId): Response
     {
-        $response = $this->client()
+        $response = $this->client(retryable: true)
             ->accept('*/*')
             ->get($this->url("/api/stores/{$this->encodeStoreId($storeId)}/whatsapp/qr/raw"));
 
@@ -96,7 +101,7 @@ class WaGatewayService
 
     private function request(string $method, string $path, array $payload = [], bool $allowConflict = false): array
     {
-        $response = $this->client()->{$method}($this->url($path), $payload);
+        $response = $this->client(retryable: strtolower($method) === 'get')->{$method}($this->url($path), $payload);
 
         if ($allowConflict && $response->status() === 409) {
             return [
@@ -117,19 +122,23 @@ class WaGatewayService
         return $json;
     }
 
-    private function client(): PendingRequest
+    private function client(bool $retryable = false): PendingRequest
     {
         if (! $this->configured()) {
             throw new RuntimeException('WA Gateway belum dikonfigurasi. Isi WA_GATEWAY_URL dan WA_GATEWAY_TOKEN di ENV.');
         }
 
-        return Http::timeout($this->timeout)
-            ->retry($this->retryTimes, $this->retrySleep)
+        $request = Http::connectTimeout(min(5, $this->timeout))
+            ->timeout($this->timeout)
             ->acceptJson()
             ->asJson()
             ->withHeaders([
                 'X-Internal-Token' => $this->token,
             ]);
+
+        return $retryable && $this->retryTimes > 0
+            ? $request->retry($this->retryTimes + 1, $this->retrySleep)
+            : $request;
     }
 
     private function url(string $path): string
@@ -148,7 +157,9 @@ class WaGatewayService
         if (is_array($json)) {
             $message = $json['message'] ?? $json['error'] ?? null;
             if (is_string($message) && $message !== '') {
-                return $message;
+                $message = trim(preg_replace('/[\x00-\x1F\x7F]+/', ' ', $message) ?? '');
+
+                return mb_substr($message, 0, 300);
             }
         }
 

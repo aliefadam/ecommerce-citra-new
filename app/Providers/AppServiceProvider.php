@@ -23,6 +23,10 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(120)->by($request->ip());
         });
 
+        RateLimiter::for('login', fn (Request $request) => Limit::perMinute(5)->by(strtolower((string) $request->input('email')).'|'.$request->ip()));
+        RateLimiter::for('password-reset', fn (Request $request) => Limit::perMinute(3)->by(strtolower((string) $request->input('email')).'|'.$request->ip()));
+        RateLimiter::for('payment-proof', fn (Request $request) => Limit::perMinute(5)->by(($request->user()?->id ?? $request->ip()).'|'.$request->route('transaction')));
+
         $storeSettings = StoreSetting::defaults();
         try {
             if (Schema::hasTable('store_settings')) {
@@ -35,7 +39,7 @@ class AppServiceProvider extends ServiceProvider
         $storeLogoPath = trim((string) ($storeSettings['store_logo_path'] ?? ''));
         View::share('appStoreSettings', $storeSettings);
         View::share('appStoreName', (string) ($storeSettings['store_name'] ?? 'Ecommerce Citra'));
-        View::share('appStoreLogoUrl', $storeLogoPath !== '' ? asset('storage/' . ltrim($storeLogoPath, '/')) : null);
+        View::share('appStoreLogoUrl', $storeLogoPath !== '' ? asset('storage/'.ltrim($storeLogoPath, '/')) : null);
 
         View::composer('partials.topbar', function ($view) {
             try {
@@ -50,19 +54,22 @@ class AppServiceProvider extends ServiceProvider
                         $isPaid = in_array($status, ['paid', 'settlement', 'capture'], true);
 
                         if ($isPaid) {
-                            $icon = 'paid'; $color = 'emerald';
+                            $icon = 'paid';
+                            $color = 'emerald';
                             $title = 'Pembayaran diterima';
-                            $body = 'Order ' . $tx->invoice_no . ' dari ' . ($tx->user?->name ?? 'Guest') . ' sudah dibayar.';
+                            $body = 'Order '.$tx->invoice_no.' dari '.($tx->user?->name ?? 'Guest').' sudah dibayar.';
                             $time = $tx->updated_at;
                         } elseif ($isNew) {
-                            $icon = 'new'; $color = 'blue';
+                            $icon = 'new';
+                            $color = 'blue';
                             $title = 'Pesanan baru masuk';
-                            $body = 'Order ' . $tx->invoice_no . ' dari ' . ($tx->user?->name ?? 'Guest') . '.';
+                            $body = 'Order '.$tx->invoice_no.' dari '.($tx->user?->name ?? 'Guest').'.';
                             $time = $tx->created_at;
                         } else {
-                            $icon = 'info'; $color = 'slate';
-                            $title = 'Status: ' . $tx->status;
-                            $body = 'Order ' . $tx->invoice_no . ' — ' . ($tx->user?->name ?? 'Guest') . '.';
+                            $icon = 'info';
+                            $color = 'slate';
+                            $title = 'Status: '.$tx->status;
+                            $body = 'Order '.$tx->invoice_no.' — '.($tx->user?->name ?? 'Guest').'.';
                             $time = $tx->updated_at;
                         }
 

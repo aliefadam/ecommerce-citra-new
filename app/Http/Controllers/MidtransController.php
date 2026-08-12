@@ -16,6 +16,7 @@ use App\Services\DocumentNumberGenerator;
 use App\Services\LoyaltyPointService;
 use App\Services\TaxInvoiceRequestService;
 use Carbon\Carbon;
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -133,7 +134,7 @@ class MidtransController extends Controller
                 throw new RuntimeException('MIDTRANS_SERVER_KEY belum dikonfigurasi.');
             }
 
-            $isProduction = (bool) config('services.midtrans.is_production', false);
+            $isProduction = $this->midtransIsProduction();
             $baseUrl = $isProduction
                 ? 'https://api.midtrans.com/v2/charge'
                 : 'https://api.sandbox.midtrans.com/v2/charge';
@@ -235,7 +236,7 @@ class MidtransController extends Controller
             }
 
             $auth = base64_encode($serverKey.':');
-            $response = Http::timeout(30)
+            $response = $this->midtransRequest()
                 ->withHeaders([
                     'Accept' => 'application/json',
                     'Content-Type' => 'application/json',
@@ -244,7 +245,7 @@ class MidtransController extends Controller
                 ->post($baseUrl, $payload);
 
             if (! $response->successful()) {
-                throw new RuntimeException('Gagal membuat transaksi Midtrans: '.$response->body());
+                throw new RuntimeException('Gagal membuat transaksi Midtrans. HTTP '.$response->status().'.');
             }
 
             $json = $response->json();
@@ -463,7 +464,7 @@ class MidtransController extends Controller
                 ]);
             }
 
-            $isProduction = (bool) config('services.midtrans.is_production', false);
+            $isProduction = $this->midtransIsProduction();
 
             $sessionData = session('checkout_waiting.'.$orderId);
             if (
@@ -492,7 +493,7 @@ class MidtransController extends Controller
                 : 'https://api.sandbox.midtrans.com/v2/'.$orderId.'/status';
 
             $auth = base64_encode($serverKey.':');
-            $response = Http::timeout(30)
+            $response = $this->midtransRequest(safeToRetry: true)
                 ->withHeaders([
                     'Accept' => 'application/json',
                     'Authorization' => 'Basic '.$auth,
@@ -629,7 +630,7 @@ class MidtransController extends Controller
         ]);
 
         try {
-            $isProduction = (bool) config('services.midtrans.is_production', false);
+            $isProduction = $this->midtransIsProduction();
             if ($isProduction) {
                 throw new RuntimeException('Simulasi hanya tersedia di mode sandbox.');
             }
@@ -650,7 +651,7 @@ class MidtransController extends Controller
                 throw new RuntimeException('MIDTRANS_SERVER_KEY belum dikonfigurasi.');
             }
             $auth = base64_encode($serverKey.':');
-            $statusRes = Http::timeout(30)
+            $statusRes = $this->midtransRequest(safeToRetry: true)
                 ->withHeaders([
                     'Accept' => 'application/json',
                     'Authorization' => 'Basic '.$auth,
@@ -695,7 +696,7 @@ class MidtransController extends Controller
                 $statusTarget = $midtransTransactionId !== '' ? $midtransTransactionId : $orderId;
                 $maxTries = 8;
                 for ($i = 0; $i < $maxTries; $i++) {
-                    $statusRes = Http::timeout(30)
+                    $statusRes = $this->midtransRequest(safeToRetry: true)
                         ->withHeaders([
                             'Accept' => 'application/json',
                             'Authorization' => 'Basic '.$auth,
@@ -847,17 +848,39 @@ class MidtransController extends Controller
             throw new RuntimeException('MIDTRANS_SERVER_KEY belum dikonfigurasi.');
         }
 
-        $isProduction = (bool) config('services.midtrans.is_production', false);
+        $isProduction = $this->midtransIsProduction();
         $url = $isProduction
             ? 'https://api.midtrans.com/v2/'.$orderId.'/cancel'
             : 'https://api.sandbox.midtrans.com/v2/'.$orderId.'/cancel';
 
         $auth = base64_encode($serverKey.':');
-        Http::timeout(30)
+        $this->midtransRequest()
             ->withHeaders([
                 'Accept' => 'application/json',
                 'Authorization' => 'Basic '.$auth,
             ])->post($url);
+    }
+
+    private function midtransIsProduction(): bool
+    {
+        $mode = strtolower(trim((string) config('services.midtrans.mode', '')));
+        if (in_array($mode, ['fake', 'sandbox', 'production'], true)) {
+            return $mode === 'production';
+        }
+
+        return (bool) config('services.midtrans.is_production', false);
+    }
+
+    private function midtransRequest(bool $safeToRetry = false): PendingRequest
+    {
+        $connectTimeout = max(1, (int) config('services.midtrans.connect_timeout', 5));
+        $timeout = max($connectTimeout, (int) config('services.midtrans.timeout', 30));
+        $request = Http::connectTimeout($connectTimeout)->timeout($timeout);
+        $retryTimes = max(0, (int) config('services.midtrans.retry_times', 2));
+
+        return $safeToRetry && $retryTimes > 0
+            ? $request->retry($retryTimes + 1, max(0, (int) config('services.midtrans.retry_sleep', 250)))
+            : $request;
     }
 
     private function isExpired(array $payment): bool

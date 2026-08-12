@@ -132,7 +132,7 @@
                                 @if ($transaction->payment_proof_path)
                                     <p class="text-sm font-bold text-blue-900">Bukti pembayaran sudah diterima</p>
                                     <p class="mt-1 text-xs leading-5 text-blue-700">Admin sedang memverifikasi bukti transfer kamu.</p>
-                                    <a href="{{ asset(ltrim($transaction->payment_proof_path, '/')) }}" target="_blank" class="mt-3 inline-flex text-xs font-bold text-blue-700 underline">Lihat bukti transfer</a>
+                                    <a href="{{ $transaction->paymentProofUrl() }}" target="_blank" class="mt-3 inline-flex text-xs font-bold text-blue-700 underline">Lihat bukti transfer</a>
                                 @else
                                     <p class="text-sm font-bold text-blue-900">Upload bukti transfer</p>
                                     <p class="mt-1 text-xs leading-5 text-blue-700">Format JPG, PNG, atau WebP dengan ukuran maksimal 4 MB.</p>

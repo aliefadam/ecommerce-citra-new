@@ -1337,7 +1337,7 @@
                         'return_deadline' => $returnDeadline ? $returnDeadline->translatedFormat('d M Y') : '',
                         'invoice_url' => route('invoice.show', ['transaction' => $tx->id]),
                         'complete_url' => route('frontend.profil.orders.complete', ['transaction' => $tx->id]),
-                        'payment_proof_url' => $tx->payment_proof_path ? asset(ltrim((string) $tx->payment_proof_path, '/')) : '',
+                        'payment_proof_url' => $tx->paymentProofUrl() ?? '',
                         'payment_admin_note' => (string) ($tx->payment_admin_note ?? ''),
                         'payment_proof_upload_url' => route('manual-payment.proof', ['transaction' => $tx->id]),
                         'tax_invoice_request_url' => route('frontend.profil.orders.tax-invoice.store', ['transaction' => $tx->id]),
@@ -2928,4 +2928,3 @@
         });
     </script>
 @endsection
-

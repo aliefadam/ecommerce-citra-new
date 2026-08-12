@@ -209,7 +209,7 @@
                             @if (!empty($payment['payment_proof_path']))
                                 <div class="p-4 rounded-2xl border border-emerald-100 bg-emerald-50 text-sm text-emerald-700">
                                     Bukti transfer sudah diupload. Status akan berubah setelah admin memverifikasi.
-                                    <a href="{{ asset(ltrim($payment['payment_proof_path'], '/')) }}" target="_blank" class="font-semibold underline ml-1">Lihat bukti</a>
+                                    <a href="{{ route('payment-proof.show', ['transaction' => $payment['transaction_db_id']]) }}" target="_blank" class="font-semibold underline ml-1">Lihat bukti</a>
                                     @if (!empty($payment['payment_admin_note']))
                                         <p class="mt-2 text-emerald-800">Catatan admin: {{ $payment['payment_admin_note'] }}</p>
                                     @endif

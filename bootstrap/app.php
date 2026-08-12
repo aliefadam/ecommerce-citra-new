@@ -1,12 +1,16 @@
 <?php
 
-use Illuminate\Foundation\Application;
-use Illuminate\Foundation\Configuration\Exceptions;
-use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\AdminOnly;
 use App\Http\Middleware\AdminPermission;
 use App\Http\Middleware\CompanyScope;
 use App\Http\Middleware\EnsureCheckoutAccess;
+use App\Http\Middleware\RequestContext;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Foundation\Application;
+use Illuminate\Foundation\Configuration\Exceptions;
+use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -17,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->append(RequestContext::class);
         $middleware->alias([
             'admin' => AdminOnly::class,
             'admin.permission' => AdminPermission::class,
@@ -27,15 +32,15 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions): void {
         // Open Catalog API: selalu balas JSON bersih & konsisten (tanpa stack
         // trace / nama model internal), baik saat debug maupun produksi.
-        $exceptions->render(function (\Throwable $e, $request) {
+        $exceptions->render(function (Throwable $e, $request) {
             if (! $request->is('api/*')) {
                 return null;
             }
 
             $status = match (true) {
-                $e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface => $e->getStatusCode(),
-                $e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException => 404,
-                $e instanceof \Illuminate\Validation\ValidationException => 422,
+                $e instanceof HttpExceptionInterface => $e->getStatusCode(),
+                $e instanceof ModelNotFoundException => 404,
+                $e instanceof ValidationException => 422,
                 default => 500,
             };
 
@@ -47,7 +52,7 @@ return Application::configure(basePath: dirname(__DIR__))
             };
 
             $payload = ['message' => $message];
-            if ($e instanceof \Illuminate\Validation\ValidationException) {
+            if ($e instanceof ValidationException) {
                 $payload['errors'] = $e->errors();
             }
 

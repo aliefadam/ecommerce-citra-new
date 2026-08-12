@@ -245,7 +245,7 @@ class ManualPaymentController extends Controller
         ]);
 
         $oldProof = (string) $transaction->payment_proof_path;
-        $path = $imageOptimizer->storeWebp($validated['payment_proof'], 'payment-proofs', 1400, 1400, 82, true);
+        $path = $imageOptimizer->storeWebp($validated['payment_proof'], 'payment-proofs', 1400, 1400, 82, true, 'local');
         $oldStatus = (string) $transaction->status;
         $transaction->update([
             'payment_proof_path' => $path,
@@ -255,7 +255,7 @@ class ManualPaymentController extends Controller
             'status' => 'menunggu_verifikasi',
         ]);
 
-        $imageOptimizer->deletePublicFile($oldProof);
+        $imageOptimizer->deleteStoredFile($oldProof);
 
         TransactionStatusHistory::create([
             'transaction_id' => $transaction->id,

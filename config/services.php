@@ -42,12 +42,18 @@ return [
     ],
 
     'midtrans' => [
+        'mode' => env('MIDTRANS_MODE', filter_var(env('MIDTRANS_IS_PRODUCTION', false), FILTER_VALIDATE_BOOLEAN) ? 'production' : 'sandbox'),
         'client_key' => env('MIDTRANS_CLIENT_KEY', ''),
         'server_key' => env('MIDTRANS_SERVER_KEY', ''),
         'is_production' => filter_var(env('MIDTRANS_IS_PRODUCTION', false), FILTER_VALIDATE_BOOLEAN),
+        'connect_timeout' => (int) env('MIDTRANS_CONNECT_TIMEOUT', 5),
+        'timeout' => (int) env('MIDTRANS_TIMEOUT', 30),
+        'retry_times' => (int) env('MIDTRANS_SAFE_RETRY_TIMES', 2),
+        'retry_sleep' => (int) env('MIDTRANS_SAFE_RETRY_SLEEP', 250),
     ],
 
     'wa_gateway' => [
+        'mode' => env('WA_GATEWAY_MODE', 'sandbox'),
         'url' => env('WA_GATEWAY_URL', 'https://wa-gateway.dokterkoding.my.id'),
         'token' => env('WA_GATEWAY_TOKEN', ''),
         'timeout' => (int) env('WA_GATEWAY_TIMEOUT', 10),
@@ -56,10 +62,21 @@ return [
     ],
 
     'rajaongkir' => [
+        'mode' => env('RAJAONGKIR_MODE', 'sandbox'),
         'base_url' => env('RAJAONGKIR_BASE_URL', 'https://rajaongkir.komerce.id/api/v1'),
         'api_key' => env('RAJAONGKIR_API_KEY', env('API_KEY_RAJAONGKIR', '')),
         'couriers' => env('RAJAONGKIR_COURIERS', 'jne:sicepat:jnt'),
         'tracking_cache_minutes' => (int) env('RAJAONGKIR_TRACKING_CACHE_MINUTES', 15),
+        'connect_timeout' => (int) env('RAJAONGKIR_CONNECT_TIMEOUT', 5),
+        'timeout' => (int) env('RAJAONGKIR_TIMEOUT', 20),
+        'retry_times' => (int) env('RAJAONGKIR_SAFE_RETRY_TIMES', 2),
+        'retry_sleep' => (int) env('RAJAONGKIR_SAFE_RETRY_SLEEP', 250),
+    ],
+
+    'integration_certification' => [
+        'email_allowlist' => array_values(array_filter(array_map('trim', explode(',', (string) env('INTEGRATION_SMOKE_EMAIL_ALLOWLIST', ''))))),
+        'whatsapp_allowlist' => array_values(array_filter(array_map('trim', explode(',', (string) env('INTEGRATION_SMOKE_WHATSAPP_ALLOWLIST', ''))))),
+        'allow_production' => filter_var(env('INTEGRATION_SMOKE_ALLOW_PRODUCTION', false), FILTER_VALIDATE_BOOLEAN),
     ],
 
 ];

@@ -13,6 +13,7 @@ class WaGatewayServiceTest extends TestCase
     {
         config()->set('services.wa_gateway.url', 'https://wa.example.test');
         config()->set('services.wa_gateway.token', 'secret-token');
+        config()->set('services.wa_gateway.retry_times', 0);
 
         Http::fake([
             'https://wa.example.test/api/stores' => Http::response([
@@ -67,6 +68,7 @@ class WaGatewayServiceTest extends TestCase
     {
         config()->set('services.wa_gateway.url', 'https://wa.example.test');
         config()->set('services.wa_gateway.token', 'secret-token');
+        config()->set('services.wa_gateway.retry_times', 0);
 
         Http::fake([
             'https://wa.example.test/api/stores/boq-ecommerce/whatsapp/status' => Http::sequence()
@@ -94,5 +96,40 @@ class WaGatewayServiceTest extends TestCase
 
         $this->assertTrue($result['connected']);
         Http::assertSentCount(3);
+    }
+
+    public function test_mutating_request_is_not_retried(): void
+    {
+        config()->set('services.wa_gateway.url', 'https://wa.example.test');
+        config()->set('services.wa_gateway.token', 'secret-token');
+        config()->set('services.wa_gateway.retry_times', 3);
+        Http::fake(['*' => Http::response(['message' => 'temporary failure'], 503)]);
+
+        try {
+            app(WaGatewayService::class)->connect('store-1');
+            $this->fail('Expected gateway failure.');
+        } catch (\RuntimeException $exception) {
+            $this->assertSame('temporary failure', $exception->getMessage());
+        }
+
+        Http::assertSentCount(1);
+    }
+
+    public function test_safe_status_request_retries_and_recovers(): void
+    {
+        config()->set('services.wa_gateway.url', 'https://wa.example.test');
+        config()->set('services.wa_gateway.token', 'secret-token');
+        config()->set('services.wa_gateway.retry_times', 1);
+        config()->set('services.wa_gateway.retry_sleep', 0);
+        Http::fake([
+            '*' => Http::sequence()
+                ->push(['message' => 'temporary failure'], 503)
+                ->push(['connected' => true], 200),
+        ]);
+
+        $result = app(WaGatewayService::class)->status('store-1');
+
+        $this->assertTrue($result['connected']);
+        Http::assertSentCount(2);
     }
 }

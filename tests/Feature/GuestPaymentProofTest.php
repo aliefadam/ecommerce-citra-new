@@ -14,6 +14,24 @@ class GuestPaymentProofTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_private_payment_proof_requires_order_ownership(): void
+    {
+        Storage::fake('local');
+        Storage::disk('local')->put('payment-proofs/proof.webp', 'private-proof');
+        $transaction = $this->makeManualTransaction([
+            'payment_proof_path' => 'private/payment-proofs/proof.webp',
+        ]);
+
+        $this->get(route('payment-proof.show', $transaction))->assertForbidden();
+
+        $response = $this->withSession(['verified_orders' => [$transaction->order_id]])
+            ->get(route('payment-proof.show', $transaction))
+            ->assertOk();
+        $cacheControl = (string) $response->headers->get('Cache-Control');
+        $this->assertStringContainsString('private', $cacheControl);
+        $this->assertStringContainsString('no-store', $cacheControl);
+    }
+
     private function makeManualTransaction(array $overrides = []): Transaction
     {
         return Transaction::create(array_merge([

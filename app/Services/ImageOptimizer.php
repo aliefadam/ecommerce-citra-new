@@ -14,7 +14,8 @@ class ImageOptimizer
         int $maxWidth = 1200,
         int $maxHeight = 1200,
         int $quality = 82,
-        bool $withStoragePrefix = false
+        bool $withStoragePrefix = false,
+        string $disk = 'public'
     ): string {
         $image = $this->createImage($file);
         $image = $this->applyOrientation($image, $file);
@@ -37,10 +38,12 @@ class ImageOptimizer
         imagedestroy($image);
         imagedestroy($canvas);
 
-        $path = trim($directory, '/') . '/' . Str::uuid() . '.webp';
-        Storage::disk('public')->put($path, $contents);
+        $path = trim($directory, '/').'/'.Str::uuid().'.webp';
+        Storage::disk($disk)->put($path, $contents);
 
-        return $withStoragePrefix ? 'storage/' . $path : $path;
+        return $withStoragePrefix
+            ? ($disk === 'public' ? 'storage/'.$path : 'private/'.$path)
+            : $path;
     }
 
     public function deletePublicFile(?string $path): void
@@ -57,6 +60,18 @@ class ImageOptimizer
         }
     }
 
+    public function deleteStoredFile(?string $path): void
+    {
+        $path = trim((string) $path);
+        if (str_starts_with($path, 'private/')) {
+            Storage::disk('local')->delete(substr($path, 8));
+
+            return;
+        }
+
+        $this->deletePublicFile($path);
+    }
+
     private function createImage(UploadedFile $file): \GdImage
     {
         $contents = file_get_contents($file->getRealPath());
@@ -64,7 +79,7 @@ class ImageOptimizer
         // decode the image, but emits a warning that Laravel may convert to an exception.
         $image = $contents !== false ? @imagecreatefromstring($contents) : false;
 
-        if (!$image instanceof \GdImage) {
+        if (! $image instanceof \GdImage) {
             throw new \RuntimeException('File gambar tidak bisa diproses.');
         }
 
@@ -73,7 +88,7 @@ class ImageOptimizer
 
     private function applyOrientation(\GdImage $image, UploadedFile $file): \GdImage
     {
-        if (!function_exists('exif_read_data') || !in_array($file->getMimeType(), ['image/jpeg', 'image/jpg'], true)) {
+        if (! function_exists('exif_read_data') || ! in_array($file->getMimeType(), ['image/jpeg', 'image/jpg'], true)) {
             return $image;
         }
 

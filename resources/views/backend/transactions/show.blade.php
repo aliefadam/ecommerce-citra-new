@@ -344,9 +344,9 @@
                 <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
                     <h3 class="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">Bukti Transfer</h3>
                     @if ($transaction->payment_proof_path)
-                        <a href="{{ asset(ltrim($transaction->payment_proof_path, '/')) }}" target="_blank"
+                        <a href="{{ $transaction->paymentProofUrl(true) }}" target="_blank"
                            class="block mb-3 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-600 hover:opacity-90 transition-opacity">
-                            <img src="{{ asset(ltrim($transaction->payment_proof_path, '/')) }}"
+                            <img src="{{ $transaction->paymentProofUrl(true) }}"
                                  class="w-full max-h-48 object-cover" alt="Bukti transfer">
                         </a>
                     @else
@@ -528,7 +528,7 @@
                                 <input name="payment_proof" type="file" accept="image/*,.pdf"
                                        class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-slate-600 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:file:bg-slate-600 dark:file:text-slate-200">
                                 @if ($transaction->payment_proof_path)
-                                    <a href="{{ asset(ltrim($transaction->payment_proof_path, '/')) }}" target="_blank" class="mt-1 inline-block text-xs font-semibold text-blue-600 hover:underline">Lihat bukti tersimpan</a>
+                                    <a href="{{ $transaction->paymentProofUrl(true) }}" target="_blank" class="mt-1 inline-block text-xs font-semibold text-blue-600 hover:underline">Lihat bukti tersimpan</a>
                                 @endif
                             </div>
                             <div>

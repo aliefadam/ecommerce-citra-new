@@ -33,8 +33,10 @@ use App\Http\Controllers\MemberTierController;
 use App\Http\Controllers\MidtransController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\NewsletterSubscriberController;
+use App\Http\Controllers\OperationalHealthController;
 use App\Http\Controllers\OrderTrackingController;
 use App\Http\Controllers\PackingListController;
+use App\Http\Controllers\PaymentProofController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProformaInvoiceController;
@@ -55,19 +57,20 @@ use App\Http\Controllers\WishlistController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/docs/api-catalog', [ApiDocController::class, 'publicIndex'])->name('api-docs.public');
+Route::get('/internal/ready', [OperationalHealthController::class, 'readiness'])->name('ops.readiness')->middleware('throttle:30,1');
 
 Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register'])->name('register.attempt');
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [AuthController::class, 'login'])->name('login.attempt');
+    Route::post('/login', [AuthController::class, 'login'])->name('login.attempt')->middleware('throttle:login');
     Route::get('/auth/google/redirect', [AuthController::class, 'redirectToGoogle'])->name('auth.google.redirect');
     Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
 
     Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])->name('password.request');
-    Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name('password.email');
+    Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name('password.email')->middleware('throttle:password-reset');
     Route::get('/reset-password/{token}', [AuthController::class, 'showResetPassword'])->name('password.reset');
-    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update')->middleware('throttle:password-reset');
 });
 
 Route::middleware(['auth', 'admin', 'company.scope'])->group(function () {
@@ -264,6 +267,7 @@ Route::middleware(['auth', 'admin', 'company.scope'])->group(function () {
         Route::resource('transactions', TransactionController::class)->only(['index', 'show'])
             ->middlewareFor(['index'], 'admin.permission:transactions.index')
             ->middlewareFor(['show'], 'admin.permission:transactions.show');
+        Route::get('transactions/{transaction}/payment-proof', [PaymentProofController::class, 'admin'])->name('transactions.payment-proof')->middleware('admin.permission:transactions.show');
         Route::patch('transactions/{transaction}/process', [TransactionController::class, 'process'])->name('transactions.process')->middleware('admin.permission:transactions.edit');
         Route::patch('transactions/{transaction}/ship', [TransactionController::class, 'ship'])->name('transactions.ship')->middleware('admin.permission:transactions.edit');
         Route::get('transactions/{transaction}/shipping-label', [TransactionController::class, 'shippingLabel'])->name('transactions.shipping-label')->middleware('admin.permission:transactions.show');
@@ -351,5 +355,6 @@ Route::name('frontend.')->group(function () {
 });
 
 Route::get('/invoice/{transaction}', [InvoiceController::class, 'show'])->name('invoice.show')->middleware('auth');
-Route::post('/manual-payment/{transaction}/proof', [ManualPaymentController::class, 'uploadProof'])->name('manual-payment.proof');
+Route::post('/manual-payment/{transaction}/proof', [ManualPaymentController::class, 'uploadProof'])->name('manual-payment.proof')->middleware('throttle:payment-proof');
+Route::get('/payment-proof/{transaction}', [PaymentProofController::class, 'customer'])->name('payment-proof.show')->middleware('throttle:60,1');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');

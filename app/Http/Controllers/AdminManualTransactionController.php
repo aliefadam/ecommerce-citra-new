@@ -11,9 +11,11 @@ use App\Models\TransactionStatusHistory;
 use App\Models\TransactionTaxInvoice;
 use App\Models\User;
 use App\Services\DocumentNumberGenerator;
+use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -23,8 +25,7 @@ class AdminManualTransactionController extends Controller
 
     public function __construct(private readonly DocumentNumberGenerator $documentNumberGenerator) {}
 
-
-    public function searchCustomers(Request $request): \Illuminate\Http\JsonResponse
+    public function searchCustomers(Request $request): JsonResponse
     {
         $term = trim((string) ($request->query('q', '')));
         $query = User::query()
@@ -40,34 +41,35 @@ class AdminManualTransactionController extends Controller
 
         if ($term !== '') {
             $query->where(function ($q) use ($term) {
-                $q->where('name', 'like', '%' . $term . '%')
-                  ->orWhere('email', 'like', '%' . $term . '%');
+                $q->where('name', 'like', '%'.$term.'%')
+                    ->orWhere('email', 'like', '%'.$term.'%');
             });
         }
 
         $results = $query->limit(20)->get()->map(function (User $user) {
-            $address    = $user->addresses->first();
+            $address = $user->addresses->first();
             $taxProfile = $user->taxProfiles->first();
+
             return [
-                'id'         => $user->id,
-                'text'       => $user->name . ' — ' . $user->email,
-                'name'       => $user->name,
-                'email'      => $user->email,
-                'phone'      => trim((string) ($user->phone_country_code ?? '') . (string) ($user->phone_number ?? '')),
-                'address'    => $address ? [
+                'id' => $user->id,
+                'text' => $user->name.' — '.$user->email,
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => trim((string) ($user->phone_country_code ?? '').(string) ($user->phone_number ?? '')),
+                'address' => $address ? [
                     'recipient_name' => $address->recipient_name,
-                    'phone'          => trim((string) ($address->phone_country_code ?? '') . (string) ($address->phone_number ?? '')),
-                    'address_line'   => $address->address_line,
-                    'province'       => $address->province,
-                    'city'           => $address->city,
-                    'district'       => $address->district,
-                    'postal_code'    => $address->postal_code,
+                    'phone' => trim((string) ($address->phone_country_code ?? '').(string) ($address->phone_number ?? '')),
+                    'address_line' => $address->address_line,
+                    'province' => $address->province,
+                    'city' => $address->city,
+                    'district' => $address->district,
+                    'postal_code' => $address->postal_code,
                 ] : null,
                 'tax_profile' => $taxProfile ? [
-                    'taxpayer_name'    => $taxProfile->taxpayer_name,
-                    'taxpayer_number'  => $taxProfile->taxpayer_number,
+                    'taxpayer_name' => $taxProfile->taxpayer_name,
+                    'taxpayer_number' => $taxProfile->taxpayer_number,
                     'taxpayer_address' => $taxProfile->taxpayer_address,
-                    'taxpayer_email'   => $taxProfile->taxpayer_email,
+                    'taxpayer_email' => $taxProfile->taxpayer_email,
                 ] : null,
             ];
         });
@@ -75,7 +77,7 @@ class AdminManualTransactionController extends Controller
         return response()->json(['results' => $results]);
     }
 
-    public function searchProducts(Request $request): \Illuminate\Http\JsonResponse
+    public function searchProducts(Request $request): JsonResponse
     {
         $term = trim((string) ($request->query('q', '')));
         $query = ProductVariant::query()
@@ -86,26 +88,27 @@ class AdminManualTransactionController extends Controller
 
         if ($term !== '') {
             $query->where(function ($q) use ($term) {
-                $q->whereHas('product', fn ($pq) => $pq->where('name', 'like', '%' . $term . '%'))
-                  ->orWhere('sku', 'like', '%' . $term . '%');
+                $q->whereHas('product', fn ($pq) => $pq->where('name', 'like', '%'.$term.'%'))
+                    ->orWhere('sku', 'like', '%'.$term.'%');
             });
         }
 
         $results = $query->limit(30)->get()->map(function (ProductVariant $variant) {
             $flags = array_filter([
-                $variant->sku ? 'SKU ' . $variant->sku : '',
-                'Stok ' . (int) $variant->stock,
+                $variant->sku ? 'SKU '.$variant->sku : '',
+                'Stok '.(int) $variant->stock,
                 $variant->product?->status !== 'active' ? 'Nonaktif' : '',
             ]);
+
             return [
-                'id'           => $variant->id,
-                'text'         => ($variant->product?->name ?? 'Produk') . ' - ' . $variant->skuLabel() . ' (' . implode(' | ', $flags) . ')',
+                'id' => $variant->id,
+                'text' => ($variant->product?->name ?? 'Produk').' - '.$variant->skuLabel().' ('.implode(' | ', $flags).')',
                 'product_name' => $variant->product?->name ?? 'Produk',
                 'variant_name' => $variant->skuLabel(),
-                'sku'          => (string) ($variant->sku ?? ''),
-                'price'        => (int) round((float) $variant->price),
-                'stock'        => (int) $variant->stock,
-                'status'       => (string) ($variant->product?->status ?? 'inactive'),
+                'sku' => (string) ($variant->sku ?? ''),
+                'price' => (int) round((float) $variant->price),
+                'stock' => (int) $variant->stock,
+                'status' => (string) ($variant->product?->status ?? 'inactive'),
             ];
         });
 
@@ -168,21 +171,21 @@ class AdminManualTransactionController extends Controller
                     ->lockForUpdate()
                     ->find($item['product_variant_id']);
 
-                if (!$variant || !$variant->product) {
-                    throw ValidationException::withMessages(['items.' . $index . '.product_variant_id' => 'Produk tidak ditemukan.']);
+                if (! $variant || ! $variant->product) {
+                    throw ValidationException::withMessages(['items.'.$index.'.product_variant_id' => 'Produk tidak ditemukan.']);
                 }
 
                 if ((int) $variant->product->company_id !== $companyId) {
-                    throw ValidationException::withMessages(['items.' . $index . '.product_variant_id' => 'Produk "' . $variant->product->name . '" bukan milik perusahaan yang sedang aktif.']);
+                    throw ValidationException::withMessages(['items.'.$index.'.product_variant_id' => 'Produk "'.$variant->product->name.'" bukan milik perusahaan yang sedang aktif.']);
                 }
 
                 if ((string) $variant->product->status !== 'active') {
-                    throw ValidationException::withMessages(['items.' . $index . '.product_variant_id' => 'Produk "' . $variant->product->name . '" tidak aktif.']);
+                    throw ValidationException::withMessages(['items.'.$index.'.product_variant_id' => 'Produk "'.$variant->product->name.'" tidak aktif.']);
                 }
 
                 $stockBefore = (int) $variant->stock;
                 if ($stockBefore < $item['qty']) {
-                    throw ValidationException::withMessages(['items.' . $index . '.qty' => 'Stok "' . $variant->product->name . '" tidak mencukupi.']);
+                    throw ValidationException::withMessages(['items.'.$index.'.qty' => 'Stok "'.$variant->product->name.'" tidak mencukupi.']);
                 }
 
                 $lineGross = $item['qty'] * $item['unit_price'];
@@ -262,7 +265,7 @@ class AdminManualTransactionController extends Controller
                     'stock_before' => $stockBefore,
                     'stock_after' => $stockAfter,
                     'source' => 'manual_transaction',
-                    'description' => 'Transaksi manual admin ' . $transaction->invoice_no,
+                    'description' => 'Transaksi manual admin '.$transaction->invoice_no,
                 ]);
             }
 
@@ -275,7 +278,7 @@ class AdminManualTransactionController extends Controller
                 'note' => 'Transaksi manual dibuat oleh admin.',
             ]);
 
-            if (!empty($validated['request_tax_invoice'])) {
+            if (! empty($validated['request_tax_invoice'])) {
                 TransactionTaxInvoice::create([
                     'transaction_id' => $transaction->id,
                     'requested_by_user_id' => null,
@@ -315,7 +318,7 @@ class AdminManualTransactionController extends Controller
         DB::transaction(function () use ($request, $transaction, $validated) {
             $oldStatus = (string) $transaction->status;
             $paymentStatus = (string) $validated['payment_status'];
-            $paidAt = !empty($validated['payment_paid_at']) ? \Carbon\Carbon::parse($validated['payment_paid_at']) : null;
+            $paidAt = ! empty($validated['payment_paid_at']) ? Carbon::parse($validated['payment_paid_at']) : null;
             $paymentAmount = max(0, (int) ($validated['payment_amount'] ?? 0));
 
             if ($paymentStatus === 'paid') {
@@ -335,12 +338,14 @@ class AdminManualTransactionController extends Controller
 
             if ($request->hasFile('payment_proof')) {
                 $oldProof = (string) ($transaction->payment_proof_path ?? '');
-                $path = $request->file('payment_proof')->store('payment-proofs', 'public');
-                $transaction->payment_proof_path = 'storage/' . $path;
+                $path = $request->file('payment_proof')->store('payment-proofs', 'local');
+                $transaction->payment_proof_path = 'private/'.$path;
                 $transaction->payment_proof_uploaded_at = now();
 
-                if ($oldProof !== '' && str_starts_with($oldProof, 'storage/')) {
-                    Storage::disk('public')->delete(substr($oldProof, strlen('storage/')));
+                if ($oldProof !== '') {
+                    str_starts_with($oldProof, 'private/')
+                        ? Storage::disk('local')->delete(substr($oldProof, 8))
+                        : Storage::disk('public')->delete(preg_replace('#^(?:storage/)+#', '', $oldProof));
                 }
             }
 
@@ -357,7 +362,7 @@ class AdminManualTransactionController extends Controller
                 'from_status' => $oldStatus,
                 'to_status' => (string) $transaction->status,
                 'type' => 'manual_admin_payment_update',
-                'note' => 'Status pembayaran manual: ' . $transaction->paymentStatusLabel() . '.',
+                'note' => 'Status pembayaran manual: '.$transaction->paymentStatusLabel().'.',
             ]);
         });
 
@@ -408,7 +413,7 @@ class AdminManualTransactionController extends Controller
         $courierName = trim((string) ($validated['shipping_courier_name'] ?? ''));
         $service = trim((string) ($validated['shipping_service'] ?? ''));
         $shippingLabel = $courierName !== ''
-            ? trim($courierName . ($service !== '' ? ' ' . $service : ''))
+            ? trim($courierName.($service !== '' ? ' '.$service : ''))
             : $this->shippingTypeLabel($shippingType);
 
         DB::transaction(function () use ($request, $transaction, $validated, $shippingType, $shippingCost, $courierName, $service, $shippingLabel) {
@@ -438,7 +443,7 @@ class AdminManualTransactionController extends Controller
                 'from_status' => $oldStatus,
                 'to_status' => (string) $transaction->status,
                 'type' => 'manual_admin_shipping_update',
-                'note' => 'Data pengiriman manual diperbarui: ' . $transaction->shippingTypeLabel() . '.',
+                'note' => 'Data pengiriman manual diperbarui: '.$transaction->shippingTypeLabel().'.',
             ]);
         });
 
@@ -448,7 +453,7 @@ class AdminManualTransactionController extends Controller
     private function generateManualOrderId(): string
     {
         do {
-            $orderId = 'MAN-' . now()->format('YmdHis') . '-' . strtoupper(bin2hex(random_bytes(3)));
+            $orderId = 'MAN-'.now()->format('YmdHis').'-'.strtoupper(bin2hex(random_bytes(3)));
         } while (Transaction::query()->where('order_id', $orderId)->exists());
 
         return $orderId;

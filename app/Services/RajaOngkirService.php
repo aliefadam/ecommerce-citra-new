@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
@@ -11,10 +12,32 @@ class RajaOngkirService
 
     private string $apiKey;
 
+    private int $connectTimeout;
+
+    private int $timeout;
+
+    private int $retryTimes;
+
+    private int $retrySleep;
+
     public function __construct()
     {
         $this->baseUrl = rtrim((string) config('services.rajaongkir.base_url'), '/');
         $this->apiKey = (string) config('services.rajaongkir.api_key', '');
+        $this->connectTimeout = max(1, (int) config('services.rajaongkir.connect_timeout', 5));
+        $this->timeout = max($this->connectTimeout, (int) config('services.rajaongkir.timeout', 20));
+        $this->retryTimes = max(0, (int) config('services.rajaongkir.retry_times', 2));
+        $this->retrySleep = max(0, (int) config('services.rajaongkir.retry_sleep', 250));
+    }
+
+    public function configured(): bool
+    {
+        return $this->baseUrl !== '' && $this->apiKey !== '';
+    }
+
+    public function mode(): string
+    {
+        return strtolower((string) config('services.rajaongkir.mode', 'sandbox'));
     }
 
     public function provinces(): array
@@ -62,9 +85,7 @@ class RajaOngkirService
             'courier' => strtolower(trim($courier)),
         ]);
 
-        $response = Http::timeout(20)
-            ->withHeaders($this->headers())
-            ->acceptJson()
+        $response = $this->client()
             ->post($this->baseUrl.'/track/waybill?'.$query);
 
         return $this->parse($response->status(), $response->json());
@@ -72,9 +93,7 @@ class RajaOngkirService
 
     private function get(string $path, array $query = []): array
     {
-        $response = Http::timeout(20)
-            ->withHeaders($this->headers())
-            ->acceptJson()
+        $response = $this->client()
             ->get($this->baseUrl.$path, $query);
 
         return $this->parse($response->status(), $response->json());
@@ -82,8 +101,7 @@ class RajaOngkirService
 
     private function post(string $path, array $payload): array
     {
-        $response = Http::timeout(20)
-            ->withHeaders($this->headers())
+        $response = $this->client()
             ->asForm()
             ->post($this->baseUrl.$path, $payload);
 
@@ -101,6 +119,18 @@ class RajaOngkirService
         ];
     }
 
+    private function client(): PendingRequest
+    {
+        $request = Http::connectTimeout($this->connectTimeout)
+            ->timeout($this->timeout)
+            ->withHeaders($this->headers())
+            ->acceptJson();
+
+        return $this->retryTimes > 0
+            ? $request->retry($this->retryTimes + 1, $this->retrySleep)
+            : $request;
+    }
+
     private function parse(int $status, mixed $json): array
     {
         if (! is_array($json)) {
@@ -110,12 +140,19 @@ class RajaOngkirService
         $meta = $json['meta'] ?? [];
         $ok = $status >= 200 && $status < 300 && (($meta['status'] ?? '') === 'success' || ($meta['code'] ?? 0) === 200);
         if (! $ok) {
-            $message = (string) ($meta['message'] ?? 'Gagal memproses RajaOngkir');
+            $message = $this->safeProviderMessage($meta['message'] ?? null, 'Gagal memproses RajaOngkir');
             throw new RuntimeException($message);
         }
 
         $data = $json['data'] ?? [];
 
         return is_array($data) ? $data : [];
+    }
+
+    private function safeProviderMessage(mixed $message, string $fallback): string
+    {
+        $message = is_string($message) ? trim(preg_replace('/[\x00-\x1F\x7F]+/', ' ', $message) ?? '') : '';
+
+        return $message !== '' ? mb_substr($message, 0, 300) : $fallback;
     }
 }

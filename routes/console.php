@@ -1,5 +1,7 @@
 <?php
 
+use App\Console\Commands\CheckOperations;
+use App\Console\Commands\CreateOperationalBackup;
 use App\Console\Commands\ExpireQuotations;
 use App\Console\Commands\SendScheduledNewsletters;
 use Illuminate\Foundation\Inspiring;
@@ -16,3 +18,5 @@ Artisan::command('newsletter:send-scheduled-inline', function () {
 
 Schedule::command(SendScheduledNewsletters::class)->everyMinute();
 Schedule::command(ExpireQuotations::class)->hourly();
+Schedule::command(CreateOperationalBackup::class)->dailyAt('01:30')->withoutOverlapping()->onOneServer();
+Schedule::command(CheckOperations::class)->everyFiveMinutes()->withoutOverlapping();
