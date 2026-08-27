@@ -159,6 +159,15 @@
             scroll-snap-align: start;
         }
 
+        /*
+         * At md and above the main banner and both side banners are all 16:7.
+         * This width accounts for the two side banners plus the 8px gap between
+         * them, so the bottoms stay aligned without stretching the artwork.
+         */
+        .hero-side-banners {
+            width: calc((100% - 26.285714px) / 3);
+        }
+
         .toast {
             animation: slideIn 0.3s ease;
         }
@@ -231,21 +240,21 @@
         if ($sideBanners->isEmpty()) {
             $sideBanners = collect([
                 [
-                    'image' => 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600&h=300&fit=crop&crop=center',
+                    'image' => 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=800&h=350&fit=crop&crop=center',
                     'target_url' => '',
                 ],
                 [
-                    'image' => 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=600&h=300&fit=crop&crop=center',
+                    'image' => 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=350&fit=crop&crop=center',
                     'target_url' => '',
                 ],
             ]);
         }
     @endphp
     <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-3 pb-0">
-        {{-- Wrapper with explicit height so side banners align perfectly --}}
-        <div class="flex gap-2 h-[160px] sm:h-[200px] md:h-[220px] overflow-hidden">
-            {{-- Main slider (left, full width on mobile, ~68% on desktop) --}}
-            <div class="relative rounded-xl overflow-hidden shadow-sm flex-1 min-w-0 h-full" id="heroCarousel">
+        {{-- Every banner uses the same 16:7 artwork ratio. The main banner defines the row height. --}}
+        <div class="flex items-stretch gap-2">
+            {{-- Main slider (full width on mobile, ~68% on desktop) --}}
+            <div class="relative aspect-[16/7] rounded-xl overflow-hidden shadow-sm flex-1 min-w-0" id="heroCarousel">
                 <div id="carouselTrack" class="flex transition-transform duration-600 ease-in-out h-full">
                     @foreach ($heroBanners as $banner)
                         <div class="min-w-full h-full relative overflow-hidden flex-shrink-0">
@@ -280,10 +289,10 @@
                 @endif
             </div>
 
-            {{-- Side banners: 2 stacked, exact same total height as main slider, hidden on mobile --}}
-            <div class="hidden md:flex flex-col gap-2 w-[32%] shrink-0 h-full">
-                @foreach ($sideBanners as $side)
-                    <div class="rounded-xl overflow-hidden shadow-sm flex-1 min-h-0">
+            {{-- Two stacked banners share the main banner height and use the same artwork ratio. --}}
+            <div class="hero-side-banners hidden md:flex flex-col gap-2 shrink-0">
+                @foreach ($sideBanners->take(2) as $side)
+                    <div class="aspect-[16/7] rounded-xl overflow-hidden shadow-sm shrink-0">
                         @if (!empty($side['target_url']))
                             <a href="{{ $side['target_url'] }}" class="block w-full h-full">
                                 <img src="{{ $side['image'] }}" alt="Promo Banner" class="w-full h-full object-cover" />

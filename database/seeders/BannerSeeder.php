@@ -42,7 +42,7 @@ class BannerSeeder extends Seeder
             [
                 'title' => 'Promo Fastener',
                 'type' => 'side',
-                'image' => 'https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=600&h=300&fit=crop&crop=center',
+                'image' => 'https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=800&h=350&fit=crop&crop=center',
                 'target_url' => url('/kategori?parent=mur'),
                 'sort_order' => 1,
                 'is_active' => true,
@@ -50,7 +50,7 @@ class BannerSeeder extends Seeder
             [
                 'title' => 'Paket Perkakas',
                 'type' => 'side',
-                'image' => 'https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?w=600&h=300&fit=crop&crop=center',
+                'image' => 'https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?w=800&h=350&fit=crop&crop=center',
                 'target_url' => url('/kategori?parent=tools-perkakas'),
                 'sort_order' => 2,
                 'is_active' => true,

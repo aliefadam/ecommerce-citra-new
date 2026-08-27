@@ -46,7 +46,7 @@
                         <div class="flex items-center gap-3">
                             <div id="bannerImagePreviewWrap" class="shrink-0">
                                 <img id="bannerImagePreview" src="{{ $imageUrl }}" alt="Preview Banner"
-                                    class="w-14 h-14 object-cover rounded-lg border border-slate-200 dark:border-slate-600" />
+                                    class="w-28 aspect-[16/7] object-cover rounded-lg border border-slate-200 dark:border-slate-600" />
                             </div>
                             <label
                                 class="flex-1 flex items-center gap-2 px-3 py-2.5 rounded-xl border border-dashed border-slate-300 dark:border-slate-500 cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 transition-colors bg-white dark:bg-slate-700/50">
@@ -62,8 +62,11 @@
                             </label>
                         </div>
                         <p id="bannerSizeHint" class="mt-1.5 text-xs text-slate-400 dark:text-slate-500">
-                            Rekomendasi: <span id="bannerSizeHintText">{{ $banner->type === 'side' ? '800 × 250 px (rasio 16:5, untuk banner kanan)' : '1600 × 700 px (rasio 16:4, untuk slider utama)' }}</span> — otomatis dikonversi saat upload.
+                            Gunakan satu master design: <span id="bannerSizeHintText">1600 x 700 px (rasio 16:7)</span>. Sisakan safe area 10% di setiap sisi.
                         </p>
+                        @error('image_file')
+                            <p class="text-xs text-red-500 mt-1.5">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div>
@@ -128,8 +131,8 @@
             const typeSelect = document.querySelector('select[name="type"]');
             const hintText = document.getElementById('bannerSizeHintText');
             const hints = {
-                carousel: '1600 × 700 px (rasio 16:4, untuk slider utama)',
-                side: '800 × 250 px (rasio 16:5, untuk banner kanan)',
+                carousel: '1600 x 700 px (rasio 16:7)',
+                side: '1600 x 700 px (rasio 16:7)',
             };
             if (typeSelect && hintText) {
                 typeSelect.addEventListener('change', function() {

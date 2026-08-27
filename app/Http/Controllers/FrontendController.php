@@ -74,7 +74,7 @@ class FrontendController extends Controller
         };
 
         $banners = $allBanners->where('type', 'carousel')->map($normalizeBanner)->values()->all();
-        $sideBanners = $allBanners->where('type', 'side')->map($normalizeBanner)->values()->all();
+        $sideBanners = $allBanners->where('type', 'side')->take(2)->map($normalizeBanner)->values()->all();
         $latestPosts = ContentPage::query()
             ->published()
             ->where('type', ContentPage::TYPE_POST)

@@ -26,10 +26,12 @@ class BannerController extends Controller
             'title' => ['nullable', 'string', 'max:255'],
             'type' => ['required', 'in:carousel,side'],
             'image_url' => ['nullable', 'string', 'max:2048'],
-            'image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:6144'],
+            'image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'dimensions:ratio=16/7', 'max:6144'],
             'target_url' => ['nullable', 'url', 'max:2048'],
             'sort_order' => ['required', 'integer', 'min:1'],
             'is_active' => ['nullable', 'boolean'],
+        ], [
+            'image_file.dimensions' => 'Gambar banner harus memakai rasio 16:7 (rekomendasi 1600 x 700 px).',
         ]);
 
         $isActiveTarget = (bool) ($validated['is_active'] ?? false);
@@ -43,6 +45,11 @@ class BannerController extends Controller
         if (!$isActiveTarget && $type === 'carousel' && Banner::query()->where('type', 'carousel')->where('is_active', true)->count() === 0) {
             return back()
                 ->withErrors(['is_active' => 'Minimal harus ada 1 banner carousel aktif.'])
+                ->withInput();
+        }
+        if ($isActiveTarget && $type === 'side' && $this->activeSideBannerLimitReached()) {
+            return back()
+                ->withErrors(['is_active' => 'Maksimal hanya 2 banner kanan yang dapat diaktifkan.'])
                 ->withInput();
         }
 
@@ -69,10 +76,12 @@ class BannerController extends Controller
             'title' => ['nullable', 'string', 'max:255'],
             'type' => ['required', 'in:carousel,side'],
             'image_url' => ['nullable', 'string', 'max:2048'],
-            'image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:6144'],
+            'image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'dimensions:ratio=16/7', 'max:6144'],
             'target_url' => ['nullable', 'url', 'max:2048'],
             'sort_order' => ['required', 'integer', 'min:1'],
             'is_active' => ['nullable', 'boolean'],
+        ], [
+            'image_file.dimensions' => 'Gambar banner harus memakai rasio 16:7 (rekomendasi 1600 x 700 px).',
         ]);
 
         $isActiveTarget = (bool) ($validated['is_active'] ?? false);
@@ -80,6 +89,14 @@ class BannerController extends Controller
         if (!$isActiveTarget && $banner->is_active && $banner->type === 'carousel' && !$this->canDeactivate($banner)) {
             return back()
                 ->withErrors(['is_active' => 'Minimal harus ada 1 banner carousel aktif.'])
+                ->withInput();
+        }
+        $becomingActiveSide = $isActiveTarget
+            && $type === 'side'
+            && !($banner->type === 'side' && $banner->is_active);
+        if ($becomingActiveSide && $this->activeSideBannerLimitReached($banner)) {
+            return back()
+                ->withErrors(['is_active' => 'Maksimal hanya 2 banner kanan yang dapat diaktifkan.'])
                 ->withInput();
         }
 
@@ -129,10 +146,21 @@ class BannerController extends Controller
             ->exists();
     }
 
+    private function activeSideBannerLimitReached(?Banner $except = null): bool
+    {
+        return Banner::query()
+            ->where('type', 'side')
+            ->where('is_active', true)
+            ->when($except, fn ($query) => $query->where('id', '!=', $except->getKey()))
+            ->count() >= 2;
+    }
+
     private function resolveImageValue(Request $request, ImageOptimizer $imageOptimizer, string $type, string $imageUrl, ?string $fallback = null): ?string
     {
         if ($request->hasFile('image_file')) {
-            [$w, $h] = $type === 'side' ? [800, 250] : [1600, 700];
+            // Both placements use the same 16:7 design canvas. Side banners only need
+            // a smaller generated file because their rendered width is much smaller.
+            [$w, $h] = $type === 'side' ? [800, 350] : [1600, 700];
             return $imageOptimizer->storeWebp($request->file('image_file'), 'banners', $w, $h, 82);
         }
 
