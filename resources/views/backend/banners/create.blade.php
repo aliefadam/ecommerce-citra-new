@@ -47,11 +47,12 @@
                                     <polyline points="21 15 16 10 5 21" />
                                 </svg>
                                 <span id="bannerImagePreviewLabel" class="text-xs text-slate-400 truncate">Pilih gambar...</span>
-                                <input id="bannerImageFile" type="file" name="image_file" accept="image/*" class="hidden" />
+                                <input id="bannerImageFile" type="file" name="image_file"
+                                    accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" class="hidden" />
                             </label>
                         </div>
                         <p id="bannerSizeHint" class="mt-1.5 text-xs text-slate-400 dark:text-slate-500">
-                            Gunakan satu master design: <span id="bannerSizeHintText">1600 x 700 px (rasio 16:7)</span>. Sisakan safe area 10% di setiap sisi.
+                            Rekomendasi <span id="bannerSizeHintText">1600 x 700 px (rasio 16:7)</span>. JPG/PNG/WebP otomatis di-crop ke 16:7, dikompres, dan disimpan sebagai WebP. Sisakan safe area 10%.
                         </p>
                         @error('image_file')
                             <p class="text-xs text-red-500 mt-1.5">{{ $message }}</p>

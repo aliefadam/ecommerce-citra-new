@@ -26,17 +26,26 @@ class BannerController extends Controller
             'title' => ['nullable', 'string', 'max:255'],
             'type' => ['required', 'in:carousel,side'],
             'image_url' => ['nullable', 'string', 'max:2048'],
-            'image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'dimensions:ratio=16/7', 'max:6144'],
+            'image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
             'target_url' => ['nullable', 'url', 'max:2048'],
             'sort_order' => ['required', 'integer', 'min:1'],
             'is_active' => ['nullable', 'boolean'],
         ], [
-            'image_file.dimensions' => 'Gambar banner harus memakai rasio 16:7 (rekomendasi 1600 x 700 px).',
+            'image_file.mimes' => 'Format gambar harus JPG, PNG, atau WebP.',
+            'image_file.max' => 'Ukuran file gambar maksimal 12 MB sebelum dikompres.',
         ]);
 
         $isActiveTarget = (bool) ($validated['is_active'] ?? false);
         $type = $validated['type'];
-        $image = $this->resolveImageValue($request, $imageOptimizer, $type, (string) ($validated['image_url'] ?? ''));
+        try {
+            $image = $this->resolveImageValue($request, $imageOptimizer, $type, (string) ($validated['image_url'] ?? ''));
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            return back()
+                ->withErrors(['image_file' => 'Gambar gagal diproses. Gunakan file JPG, PNG, atau WebP yang valid.'])
+                ->withInput();
+        }
         if ($image === null) {
             return back()
                 ->withErrors(['image_url' => 'Gambar banner wajib diisi (upload file atau URL).'])
@@ -76,12 +85,13 @@ class BannerController extends Controller
             'title' => ['nullable', 'string', 'max:255'],
             'type' => ['required', 'in:carousel,side'],
             'image_url' => ['nullable', 'string', 'max:2048'],
-            'image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'dimensions:ratio=16/7', 'max:6144'],
+            'image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
             'target_url' => ['nullable', 'url', 'max:2048'],
             'sort_order' => ['required', 'integer', 'min:1'],
             'is_active' => ['nullable', 'boolean'],
         ], [
-            'image_file.dimensions' => 'Gambar banner harus memakai rasio 16:7 (rekomendasi 1600 x 700 px).',
+            'image_file.mimes' => 'Format gambar harus JPG, PNG, atau WebP.',
+            'image_file.max' => 'Ukuran file gambar maksimal 12 MB sebelum dikompres.',
         ]);
 
         $isActiveTarget = (bool) ($validated['is_active'] ?? false);
@@ -101,7 +111,15 @@ class BannerController extends Controller
         }
 
         $oldImage = (string) $banner->image;
-        $image = $this->resolveImageValue($request, $imageOptimizer, $type, (string) ($validated['image_url'] ?? ''), $oldImage);
+        try {
+            $image = $this->resolveImageValue($request, $imageOptimizer, $type, (string) ($validated['image_url'] ?? ''), $oldImage);
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            return back()
+                ->withErrors(['image_file' => 'Gambar gagal diproses. Gunakan file JPG, PNG, atau WebP yang valid.'])
+                ->withInput();
+        }
         if ($image === null) {
             return back()
                 ->withErrors(['image_url' => 'Gambar banner wajib diisi (upload file atau URL).'])
@@ -161,7 +179,7 @@ class BannerController extends Controller
             // Both placements use the same 16:7 design canvas. Side banners only need
             // a smaller generated file because their rendered width is much smaller.
             [$w, $h] = $type === 'side' ? [800, 350] : [1600, 700];
-            return $imageOptimizer->storeWebp($request->file('image_file'), 'banners', $w, $h, 82);
+            return $imageOptimizer->storeWebpCover($request->file('image_file'), 'banners', $w, $h, 82);
         }
 
         $trimmed = trim($imageUrl);
