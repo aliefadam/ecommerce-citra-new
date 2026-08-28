@@ -1,0 +1,380 @@
+[
+  {
+    "filename": "01-beranda",
+    "url": "/",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\01-beranda.png"
+  },
+  {
+    "filename": "02-kategori-produk",
+    "url": "/kategori",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/kategori",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\02-kategori-produk.png"
+  },
+  {
+    "filename": "03-flash-sale",
+    "url": "/flash-sale",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/flash-sale",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\03-flash-sale.png"
+  },
+  {
+    "filename": "04-keranjang",
+    "url": "/cart",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/login",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\04-keranjang.png"
+  },
+  {
+    "filename": "05-lacak-pesanan",
+    "url": "/lacak-pesanan",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/lacak-pesanan",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\05-lacak-pesanan.png"
+  },
+  {
+    "filename": "06-blog",
+    "url": "/blog",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/blog",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\06-blog.png"
+  },
+  {
+    "filename": "07-login",
+    "url": "/login",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/login",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\07-login.png"
+  },
+  {
+    "filename": "08-registrasi",
+    "url": "/register",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/register",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\08-registrasi.png"
+  },
+  {
+    "filename": "09-lupa-password",
+    "url": "/forgot-password",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/forgot-password",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\09-lupa-password.png"
+  },
+  {
+    "filename": "10-api-katalog-publik",
+    "url": "/docs/api-catalog",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/docs/api-catalog",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\10-api-katalog-publik.png"
+  },
+  {
+    "filename": "11-detail-produk",
+    "url": "/detail-produk/baut-hex-m8-x-25mm-galvanis",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/detail-produk/baut-hex-m8-x-25mm-galvanis",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\11-detail-produk.png"
+  },
+  {
+    "filename": "12-profil-pelanggan",
+    "url": "/profil",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/profil",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\12-profil-pelanggan.png"
+  },
+  {
+    "filename": "13-riwayat-pesanan",
+    "url": "/profil?tab=pesanan",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/profil?tab=pesanan",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\13-riwayat-pesanan.png"
+  },
+  {
+    "filename": "14-wishlist",
+    "url": "/wishlist",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/wishlist",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\14-wishlist.png"
+  },
+  {
+    "filename": "15-redeem-poin",
+    "url": "/redeem-point",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/redeem-point",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\15-redeem-poin.png"
+  },
+  {
+    "filename": "16-checkout",
+    "url": "/checkout",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/checkout",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\16-checkout.png"
+  },
+  {
+    "filename": "17-notifikasi",
+    "url": "/notifications",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/notifications",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\17-notifikasi.png"
+  },
+  {
+    "filename": "20-dashboard-admin",
+    "url": "/admin",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\20-dashboard-admin.png"
+  },
+  {
+    "filename": "21-penawaran-b2b",
+    "url": "/admin/quotations",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/quotations",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\21-penawaran-b2b.png"
+  },
+  {
+    "filename": "22-form-penawaran-b2b",
+    "url": "/admin/quotations/create",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/quotations/create",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\22-form-penawaran-b2b.png"
+  },
+  {
+    "filename": "23-sales-order",
+    "url": "/admin/sales-orders",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/sales-orders",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\23-sales-order.png"
+  },
+  {
+    "filename": "24-form-sales-order",
+    "url": "/admin/sales-orders/create",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/sales-orders/create",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\24-form-sales-order.png"
+  },
+  {
+    "filename": "25-proforma-invoice",
+    "url": "/admin/proforma-invoices",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/proforma-invoices",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\25-proforma-invoice.png"
+  },
+  {
+    "filename": "26-surat-jalan",
+    "url": "/admin/delivery-notes",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/delivery-notes",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\26-surat-jalan.png"
+  },
+  {
+    "filename": "27-packing-list",
+    "url": "/admin/packing-lists",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/packing-lists",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\27-packing-list.png"
+  },
+  {
+    "filename": "28-invoice-b2b",
+    "url": "/admin/b2b-invoices",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/b2b-invoices",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\28-invoice-b2b.png"
+  },
+  {
+    "filename": "29-buat-transaksi-manual",
+    "url": "/admin/transactions/create-manual",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/transactions/create-manual",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\29-buat-transaksi-manual.png"
+  },
+  {
+    "filename": "30-transaksi",
+    "url": "/admin/transactions",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/transactions",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\30-transaksi.png"
+  },
+  {
+    "filename": "31-retur",
+    "url": "/admin/return-requests",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/return-requests",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\31-retur.png"
+  },
+  {
+    "filename": "32-faktur-pajak",
+    "url": "/admin/tax-invoices",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/tax-invoices",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\32-faktur-pajak.png"
+  },
+  {
+    "filename": "33-ulasan-produk",
+    "url": "/admin/product-reviews",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/product-reviews",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\33-ulasan-produk.png"
+  },
+  {
+    "filename": "34-pusat-laporan",
+    "url": "/admin/reports",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/reports",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\34-pusat-laporan.png"
+  },
+  {
+    "filename": "35-laporan-penjualan",
+    "url": "/admin/reports/sales",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/reports/sales",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\35-laporan-penjualan.png"
+  },
+  {
+    "filename": "36-pelanggan",
+    "url": "/admin/users",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/users",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\36-pelanggan.png"
+  },
+  {
+    "filename": "37-level-member",
+    "url": "/admin/member-tiers",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/member-tiers",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\37-level-member.png"
+  },
+  {
+    "filename": "38-form-level-member",
+    "url": "/admin/member-tiers/create",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/member-tiers/create",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\38-form-level-member.png"
+  },
+  {
+    "filename": "39-produk",
+    "url": "/admin/products",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/products",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\39-produk.png"
+  },
+  {
+    "filename": "40-form-produk",
+    "url": "/admin/products/create",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/products/create",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\40-form-produk.png"
+  },
+  {
+    "filename": "41-kategori-utama",
+    "url": "/admin/main-categories",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/main-categories",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\41-kategori-utama.png"
+  },
+  {
+    "filename": "42-subkategori",
+    "url": "/admin/category-details",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/category-details",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\42-subkategori.png"
+  },
+  {
+    "filename": "43-varian",
+    "url": "/admin/variants",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/variants",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\43-varian.png"
+  },
+  {
+    "filename": "44-stok",
+    "url": "/admin/stocks",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/stocks",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\44-stok.png"
+  },
+  {
+    "filename": "45-flash-sale-admin",
+    "url": "/admin/flash-sales",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/flash-sales",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\45-flash-sale-admin.png"
+  },
+  {
+    "filename": "46-kupon",
+    "url": "/admin/coupons",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/coupons",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\46-kupon.png"
+  },
+  {
+    "filename": "47-pengaturan-toko",
+    "url": "/admin/settings",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/settings",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\47-pengaturan-toko.png"
+  },
+  {
+    "filename": "48-banner",
+    "url": "/admin/banners",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/banners",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\48-banner.png"
+  },
+  {
+    "filename": "49-newsletter",
+    "url": "/admin/newsletter-subscribers",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/newsletter-subscribers",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\49-newsletter.png"
+  },
+  {
+    "filename": "50-halaman-promo",
+    "url": "/admin/promo-pages",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/promo-pages",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\50-halaman-promo.png"
+  },
+  {
+    "filename": "51-konten-website",
+    "url": "/admin/content-pages",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/content-pages",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\51-konten-website.png"
+  },
+  {
+    "filename": "52-perusahaan",
+    "url": "/admin/companies",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/companies",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\52-perusahaan.png"
+  },
+  {
+    "filename": "53-api-katalog-admin",
+    "url": "/admin/api-docs",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/api-docs",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\53-api-katalog-admin.png"
+  },
+  {
+    "filename": "54-pengguna-admin",
+    "url": "/admin/admin-users",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/admin-users",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\54-pengguna-admin.png"
+  },
+  {
+    "filename": "55-role-izin",
+    "url": "/admin/admin-roles",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/admin-roles",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\55-role-izin.png"
+  },
+  {
+    "filename": "56-ganti-password",
+    "url": "/admin/change-password",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8765/admin/change-password",
+    "target": "C:\\laragon\\www\\ecommerce-citra\\docs\\manual-book\\screenshots\\56-ganti-password.png"
+  }
+]

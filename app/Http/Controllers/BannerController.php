@@ -31,6 +31,7 @@ class BannerController extends Controller
             'sort_order' => ['required', 'integer', 'min:1'],
             'is_active' => ['nullable', 'boolean'],
         ], [
+            'image_file.uploaded' => $this->uploadFailureMessage($request),
             'image_file.mimes' => 'Format gambar harus JPG, PNG, atau WebP.',
             'image_file.max' => 'Ukuran file gambar maksimal 12 MB sebelum dikompres.',
         ]);
@@ -90,6 +91,7 @@ class BannerController extends Controller
             'sort_order' => ['required', 'integer', 'min:1'],
             'is_active' => ['nullable', 'boolean'],
         ], [
+            'image_file.uploaded' => $this->uploadFailureMessage($request),
             'image_file.mimes' => 'Format gambar harus JPG, PNG, atau WebP.',
             'image_file.max' => 'Ukuran file gambar maksimal 12 MB sebelum dikompres.',
         ]);
@@ -188,5 +190,30 @@ class BannerController extends Controller
         }
 
         return $fallback;
+    }
+
+    private function uploadFailureMessage(Request $request): string
+    {
+        $file = $request->file('image_file');
+        if (! $file || $file->isValid()) {
+            return 'File gambar gagal diunggah. Silakan pilih ulang gambar dan coba lagi.';
+        }
+
+        $message = match ($file->getError()) {
+            UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => 'File gambar melebihi batas upload server. Pilih ulang gambar agar dikompres otomatis sebelum dikirim.',
+            UPLOAD_ERR_PARTIAL => 'Upload gambar terputus sebelum selesai. Periksa koneksi lalu coba lagi.',
+            UPLOAD_ERR_NO_TMP_DIR => 'Folder sementara untuk upload belum tersedia di server. Hubungi administrator server.',
+            UPLOAD_ERR_CANT_WRITE => 'Server gagal menulis file upload. Periksa ruang penyimpanan dan izin folder sementara.',
+            UPLOAD_ERR_EXTENSION => 'Upload gambar dihentikan oleh ekstensi PHP pada server.',
+            default => 'File gambar gagal diunggah. Silakan pilih ulang gambar dan coba lagi.',
+        };
+
+        logger()->warning('Banner image upload rejected before processing.', [
+            'error_code' => $file->getError(),
+            'error_message' => $file->getErrorMessage(),
+            'client_name' => $file->getClientOriginalName(),
+        ]);
+
+        return $message;
     }
 }

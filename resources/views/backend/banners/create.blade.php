@@ -9,7 +9,7 @@
             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Tambah banner baru untuk homepage.</p>
         </div>
 
-        <form action="{{ route('banners.store') }}" method="POST" enctype="multipart/form-data">
+        <form id="bannerForm" action="{{ route('banners.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 space-y-4">
@@ -116,42 +116,5 @@
 @endsection
 
 @section('script')
-    <script>
-        (function() {
-            const typeSelect = document.querySelector('select[name="type"]');
-            const hintText = document.getElementById('bannerSizeHintText');
-            const hints = {
-                carousel: '1600 x 700 px (rasio 16:7)',
-                side: '1600 x 700 px (rasio 16:7)',
-            };
-            if (typeSelect && hintText) {
-                typeSelect.addEventListener('change', function() {
-                    hintText.textContent = hints[this.value] || hints.carousel;
-                });
-            }
-
-            const input = document.getElementById('bannerImageFile');
-            const preview = document.getElementById('bannerImagePreview');
-            const wrap = document.getElementById('bannerImagePreviewWrap');
-            const label = document.getElementById('bannerImagePreviewLabel');
-            if (!input || !preview || !wrap || !label) return;
-
-            input.addEventListener('change', function(e) {
-                const file = e.target.files && e.target.files[0] ? e.target.files[0] : null;
-                if (!file) {
-                    preview.src = '';
-                    wrap.classList.add('hidden');
-                    label.textContent = 'Pilih gambar...';
-                    return;
-                }
-                label.textContent = 'Ganti gambar...';
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    preview.src = String(evt.target?.result || '');
-                    wrap.classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
-            });
-        })();
-    </script>
+    @include('backend.banners.partials.image-upload-script', ['emptyLabel' => 'Pilih gambar...'])
 @endsection

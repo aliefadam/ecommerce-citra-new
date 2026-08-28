@@ -19,7 +19,7 @@
             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Perbarui data banner homepage.</p>
         </div>
 
-        <form action="{{ route('banners.update', $banner) }}" method="POST" enctype="multipart/form-data">
+        <form id="bannerForm" action="{{ route('banners.update', $banner) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -127,38 +127,5 @@
 @endsection
 
 @section('script')
-    <script>
-        (function() {
-            const typeSelect = document.querySelector('select[name="type"]');
-            const hintText = document.getElementById('bannerSizeHintText');
-            const hints = {
-                carousel: '1600 x 700 px (rasio 16:7)',
-                side: '1600 x 700 px (rasio 16:7)',
-            };
-            if (typeSelect && hintText) {
-                typeSelect.addEventListener('change', function() {
-                    hintText.textContent = hints[this.value] || hints.carousel;
-                });
-            }
-
-            const input = document.getElementById('bannerImageFile');
-            const preview = document.getElementById('bannerImagePreview');
-            const label = document.getElementById('bannerImagePreviewLabel');
-            if (!input || !preview || !label) return;
-
-            input.addEventListener('change', function(e) {
-                const file = e.target.files && e.target.files[0] ? e.target.files[0] : null;
-                if (!file) {
-                    label.textContent = 'Ganti gambar...';
-                    return;
-                }
-                label.textContent = 'Ganti gambar...';
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    preview.src = String(evt.target?.result || '');
-                };
-                reader.readAsDataURL(file);
-            });
-        })();
-    </script>
+    @include('backend.banners.partials.image-upload-script', ['emptyLabel' => 'Ganti gambar...'])
 @endsection

@@ -1,0 +1,1293 @@
+﻿app\Http\Controllers\AddressController.php-69-    }
+app\Http\Controllers\AddressController.php-70-
+app\Http\Controllers\AddressController.php-71-    private function validateAddress(Request $request): array
+app\Http\Controllers\AddressController.php-72-    {
+app\Http\Controllers\AddressController.php-73-        return $request->validate([
+app\Http\Controllers\AddressController.php:74:            'label' => ['required', Rule::in(['Rumah', 'Kantor', 'Lainnya'])],
+app\Http\Controllers\AddressController.php:75:            'recipient_name' => ['required', 'string', 'max:100'],
+app\Http\Controllers\AddressController.php:76:            'phone_country_code' => ['required', 'string', 'max:8'],
+app\Http\Controllers\AddressController.php:77:            'phone_number' => ['required', 'string', 'max:30'],
+app\Http\Controllers\AddressController.php-78-            'province_id' => ['nullable', 'integer'],
+app\Http\Controllers\AddressController.php-79-            'city_id' => ['nullable', 'integer'],
+app\Http\Controllers\AddressController.php-80-            'district_id' => ['nullable', 'integer'],
+app\Http\Controllers\AddressController.php-81-            'subdistrict_id' => ['nullable', 'integer'],
+app\Http\Controllers\AddressController.php:82:            'province' => ['required', 'string', 'max:100'],
+app\Http\Controllers\AddressController.php:83:            'city' => ['required', 'string', 'max:100'],
+app\Http\Controllers\AddressController.php-84-            'district' => ['nullable', 'string', 'max:100'],
+app\Http\Controllers\AddressController.php-85-            'subdistrict' => ['nullable', 'string', 'max:100'],
+app\Http\Controllers\AddressController.php-86-            'postal_code' => ['nullable', 'string', 'max:12'],
+app\Http\Controllers\AddressController.php-87-            'destination_id' => ['nullable', 'integer'],
+app\Http\Controllers\AddressController.php:88:            'address_line' => ['required', 'string', 'max:1000'],
+app\Http\Controllers\AddressController.php-89-            'is_primary' => ['nullable', 'boolean'],
+app\Http\Controllers\AddressController.php-90-        ]);
+app\Http\Controllers\AddressController.php-91-    }
+app\Http\Controllers\AddressController.php-92-}
+--
+app\Http\Controllers\AdminRoleController.php-88-    {
+app\Http\Controllers\AdminRoleController.php-89-        $availablePermissions = $this->permissionKeys();
+app\Http\Controllers\AdminRoleController.php-90-
+app\Http\Controllers\AdminRoleController.php-91-        return $request->validate([
+app\Http\Controllers\AdminRoleController.php-92-            'name' => [
+app\Http\Controllers\AdminRoleController.php:93:                'required',
+app\Http\Controllers\AdminRoleController.php-94-                'string',
+app\Http\Controllers\AdminRoleController.php-95-                'max:100',
+app\Http\Controllers\AdminRoleController.php-96-                Rule::unique('admin_roles', 'name')->ignore($adminRole?->id),
+app\Http\Controllers\AdminRoleController.php-97-            ],
+app\Http\Controllers\AdminRoleController.php-98-            'description' => ['nullable', 'string', 'max:255'],
+--
+app\Http\Controllers\AdminWhatsappGatewayController.php-12-class AdminWhatsappGatewayController extends Controller
+app\Http\Controllers\AdminWhatsappGatewayController.php-13-{
+app\Http\Controllers\AdminWhatsappGatewayController.php-14-    public function update(Request $request): JsonResponse
+app\Http\Controllers\AdminWhatsappGatewayController.php-15-    {
+app\Http\Controllers\AdminWhatsappGatewayController.php-16-        $validated = $request->validate([
+app\Http\Controllers\AdminWhatsappGatewayController.php:17:            'store_id' => ['required', 'string', 'max:80', 'regex:/^[A-Za-z0-9._-]+$/'],
+app\Http\Controllers\AdminWhatsappGatewayController.php:18:            'per_minute' => ['required', 'integer', 'min:1', 'max:10000'],
+app\Http\Controllers\AdminWhatsappGatewayController.php:19:            'per_day' => ['required', 'integer', 'min:1', 'max:1000000'],
+app\Http\Controllers\AdminWhatsappGatewayController.php:20:            'per_month' => ['required', 'integer', 'min:1', 'max:10000000'],
+app\Http\Controllers\AdminWhatsappGatewayController.php-21-        ]);
+app\Http\Controllers\AdminWhatsappGatewayController.php-22-
+app\Http\Controllers\AdminWhatsappGatewayController.php-23-        StoreSetting::setMany([
+app\Http\Controllers\AdminWhatsappGatewayController.php-24-            'wa_gateway_store_id' => $validated['store_id'],
+app\Http\Controllers\AdminWhatsappGatewayController.php-25-            'wa_gateway_per_minute' => (string) $validated['per_minute'],
+--
+app\Http\Controllers\AdminUserController.php-113-    }
+app\Http\Controllers\AdminUserController.php-114-
+app\Http\Controllers\AdminUserController.php-115-    private function validateAdminUser(Request $request, ?User $adminUser = null): array
+app\Http\Controllers\AdminUserController.php-116-    {
+app\Http\Controllers\AdminUserController.php-117-        $validated = $request->validate([
+app\Http\Controllers\AdminUserController.php:118:            'name' => ['required', 'string', 'max:120'],
+app\Http\Controllers\AdminUserController.php:119:            'email' => ['required', 'email', 'max:120', Rule::unique('users', 'email')->ignore($adminUser?->id)],
+app\Http\Controllers\AdminUserController.php:120:            'account_type' => ['required', Rule::in(['super_admin', 'staff'])],
+app\Http\Controllers\AdminUserController.php-121-            'admin_role_id' => ['nullable', 'integer', Rule::exists('admin_roles', 'id')],
+app\Http\Controllers\AdminUserController.php:122:            'password' => [$adminUser ? 'nullable' : 'required', 'string', 'min:8', 'confirmed'],
+app\Http\Controllers\AdminUserController.php-123-            'company_role_overrides' => ['nullable', 'array'],
+app\Http\Controllers\AdminUserController.php-124-            'company_role_overrides.*' => ['nullable', 'integer', Rule::exists('admin_roles', 'id')],
+app\Http\Controllers\AdminUserController.php-125-        ]);
+app\Http\Controllers\AdminUserController.php-126-
+app\Http\Controllers\AdminUserController.php-127-        if (($validated['account_type'] ?? null) === 'staff') {
+--
+app\Http\Controllers\WishlistController.php-61-    }
+app\Http\Controllers\WishlistController.php-62-
+app\Http\Controllers\WishlistController.php-63-    public function toggle(Request $request)
+app\Http\Controllers\WishlistController.php-64-    {
+app\Http\Controllers\WishlistController.php-65-        $validated = $request->validate([
+app\Http\Controllers\WishlistController.php:66:            'product_id' => ['required', 'integer', 'exists:products,id'],
+app\Http\Controllers\WishlistController.php-67-        ]);
+app\Http\Controllers\WishlistController.php-68-
+app\Http\Controllers\WishlistController.php-69-        $user = $request->user();
+app\Http\Controllers\WishlistController.php-70-        $productId = (int) $validated['product_id'];
+app\Http\Controllers\WishlistController.php-71-        $exists = Wishlist::query()
+--
+app\Http\Controllers\B2bInvoiceController.php-63-    public function store(Request $request, SalesOrder $salesOrder)
+app\Http\Controllers\B2bInvoiceController.php-64-    {
+app\Http\Controllers\B2bInvoiceController.php-65-        $this->guardCompanyOwnership($salesOrder->company_id);
+app\Http\Controllers\B2bInvoiceController.php-66-
+app\Http\Controllers\B2bInvoiceController.php-67-        $validated = $request->validate([
+app\Http\Controllers\B2bInvoiceController.php:68:            'delivery_note_ids' => ['required', 'array', 'min:1'],
+app\Http\Controllers\B2bInvoiceController.php-69-            'delivery_note_ids.*' => ['integer'],
+app\Http\Controllers\B2bInvoiceController.php:70:            'due_date' => ['required', 'date', 'after_or_equal:today'],
+app\Http\Controllers\B2bInvoiceController.php-71-            'ppn_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+app\Http\Controllers\B2bInvoiceController.php-72-            'shipping_cost' => ['nullable', 'integer', 'min:0'],
+app\Http\Controllers\B2bInvoiceController.php-73-            'admin_fee' => ['nullable', 'integer', 'min:0'],
+app\Http\Controllers\B2bInvoiceController.php-74-            'other_cost' => ['nullable', 'integer', 'min:0'],
+app\Http\Controllers\B2bInvoiceController.php-75-            'other_cost_note' => ['nullable', 'string', 'max:255'],
+--
+app\Http\Controllers\B2bInvoiceController.php-188-    public function storeDirect(Request $request, SalesOrder $salesOrder)
+app\Http\Controllers\B2bInvoiceController.php-189-    {
+app\Http\Controllers\B2bInvoiceController.php-190-        $this->guardCompanyOwnership($salesOrder->company_id);
+app\Http\Controllers\B2bInvoiceController.php-191-
+app\Http\Controllers\B2bInvoiceController.php-192-        $validated = $request->validate([
+app\Http\Controllers\B2bInvoiceController.php:193:            'items' => ['required', 'array', 'min:1'],
+app\Http\Controllers\B2bInvoiceController.php:194:            'items.*.sales_order_detail_id' => ['required', 'integer'],
+app\Http\Controllers\B2bInvoiceController.php:195:            'items.*.qty' => ['required', 'integer', 'min:0'],
+app\Http\Controllers\B2bInvoiceController.php:196:            'due_date' => ['required', 'date', 'after_or_equal:today'],
+app\Http\Controllers\B2bInvoiceController.php-197-            'ppn_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+app\Http\Controllers\B2bInvoiceController.php-198-            'shipping_cost' => ['nullable', 'integer', 'min:0'],
+app\Http\Controllers\B2bInvoiceController.php-199-            'admin_fee' => ['nullable', 'integer', 'min:0'],
+app\Http\Controllers\B2bInvoiceController.php-200-            'other_cost' => ['nullable', 'integer', 'min:0'],
+app\Http\Controllers\B2bInvoiceController.php-201-            'other_cost_note' => ['nullable', 'string', 'max:255'],
+--
+app\Http\Controllers\B2bInvoiceController.php-300-    public function recordPayment(Request $request, B2bInvoice $b2bInvoice)
+app\Http\Controllers\B2bInvoiceController.php-301-    {
+app\Http\Controllers\B2bInvoiceController.php-302-        $this->guardCompanyOwnership($b2bInvoice->company_id);
+app\Http\Controllers\B2bInvoiceController.php-303-
+app\Http\Controllers\B2bInvoiceController.php-304-        $validated = $request->validate([
+app\Http\Controllers\B2bInvoiceController.php:305:            'amount' => ['required', 'integer', 'min:1'],
+app\Http\Controllers\B2bInvoiceController.php:306:            'payment_date' => ['required', 'date'],
+app\Http\Controllers\B2bInvoiceController.php-307-            'note' => ['nullable', 'string', 'max:500'],
+app\Http\Controllers\B2bInvoiceController.php-308-        ]);
+app\Http\Controllers\B2bInvoiceController.php-309-
+app\Http\Controllers\B2bInvoiceController.php-310-        $this->paymentService->record($b2bInvoice, $validated, $request->user()?->id);
+app\Http\Controllers\B2bInvoiceController.php-311-
+--
+app\Http\Controllers\VariantController.php-21-    }
+app\Http\Controllers\VariantController.php-22-
+app\Http\Controllers\VariantController.php-23-    public function store(Request $request)
+app\Http\Controllers\VariantController.php-24-    {
+app\Http\Controllers\VariantController.php-25-        $validated = $request->validate([
+app\Http\Controllers\VariantController.php:26:            'name'  => ['required', 'string', 'max:255'],
+app\Http\Controllers\VariantController.php-27-            'value' => [
+app\Http\Controllers\VariantController.php:28:                'required', 'string', 'max:255',
+app\Http\Controllers\VariantController.php-29-                Rule::unique('variants')->where(fn ($q) => $q->where('name', $request->name)),
+app\Http\Controllers\VariantController.php-30-            ],
+app\Http\Controllers\VariantController.php-31-        ]);
+app\Http\Controllers\VariantController.php-32-
+app\Http\Controllers\VariantController.php-33-        Variant::create($validated);
+--
+app\Http\Controllers\VariantController.php-48-    }
+app\Http\Controllers\VariantController.php-49-
+app\Http\Controllers\VariantController.php-50-    public function update(Request $request, Variant $variant)
+app\Http\Controllers\VariantController.php-51-    {
+app\Http\Controllers\VariantController.php-52-        $validated = $request->validate([
+app\Http\Controllers\VariantController.php:53:            'name'  => ['required', 'string', 'max:255'],
+app\Http\Controllers\VariantController.php-54-            'value' => [
+app\Http\Controllers\VariantController.php:55:                'required', 'string', 'max:255',
+app\Http\Controllers\VariantController.php-56-                Rule::unique('variants')
+app\Http\Controllers\VariantController.php-57-                    ->where(fn ($q) => $q->where('name', $request->name))
+app\Http\Controllers\VariantController.php-58-                    ->ignore($variant->id),
+app\Http\Controllers\VariantController.php-59-            ],
+app\Http\Controllers\VariantController.php-60-        ]);
+--
+app\Http\Controllers\VariantController.php-76-    }
+app\Http\Controllers\VariantController.php-77-
+app\Http\Controllers\VariantController.php-78-    public function quickStore(Request $request)
+app\Http\Controllers\VariantController.php-79-    {
+app\Http\Controllers\VariantController.php-80-        $request->validate([
+app\Http\Controllers\VariantController.php:81:            'name'  => ['required', 'string', 'max:255'],
+app\Http\Controllers\VariantController.php:82:            'value' => ['required', 'string', 'max:255'],
+app\Http\Controllers\VariantController.php-83-        ]);
+app\Http\Controllers\VariantController.php-84-
+app\Http\Controllers\VariantController.php-85-        $variant = Variant::firstOrCreate(
+app\Http\Controllers\VariantController.php-86-            ['name' => trim($request->name), 'value' => trim($request->value)]
+app\Http\Controllers\VariantController.php-87-        );
+--
+app\Http\Controllers\CouponController.php-50-    }
+app\Http\Controllers\CouponController.php-51-
+app\Http\Controllers\CouponController.php-52-    private function validated(Request $request, ?Coupon $coupon = null): array
+app\Http\Controllers\CouponController.php-53-    {
+app\Http\Controllers\CouponController.php-54-        $validated = $request->validate([
+app\Http\Controllers\CouponController.php:55:            'code' => ['required', 'string', 'max:50', Rule::unique('coupons', 'code')->ignore($coupon?->id)],
+app\Http\Controllers\CouponController.php:56:            'name' => ['required', 'string', 'max:100'],
+app\Http\Controllers\CouponController.php:57:            'type' => ['required', Rule::in(['percent', 'fixed'])],
+app\Http\Controllers\CouponController.php:58:            'value' => ['required', 'integer', 'min:1'],
+app\Http\Controllers\CouponController.php-59-            'max_discount' => ['nullable', 'integer', 'min:0'],
+app\Http\Controllers\CouponController.php-60-            'min_purchase' => ['nullable', 'integer', 'min:0'],
+app\Http\Controllers\CouponController.php-61-            'usage_limit' => ['nullable', 'integer', 'min:1'],
+app\Http\Controllers\CouponController.php-62-            'starts_at' => ['nullable', 'date'],
+app\Http\Controllers\CouponController.php-63-            'ends_at' => ['nullable', 'date', 'after_or_equal:starts_at'],
+--
+app\Http\Controllers\OrderTrackingController.php-33-    }
+app\Http\Controllers\OrderTrackingController.php-34-
+app\Http\Controllers\OrderTrackingController.php-35-    public function verify(Request $request): RedirectResponse
+app\Http\Controllers\OrderTrackingController.php-36-    {
+app\Http\Controllers\OrderTrackingController.php-37-        $validated = $request->validate([
+app\Http\Controllers\OrderTrackingController.php:38:            'email' => ['required', 'email', 'max:255'],
+app\Http\Controllers\OrderTrackingController.php:39:            'order_id' => ['required', 'string', 'max:100'],
+app\Http\Controllers\OrderTrackingController.php-40-        ]);
+app\Http\Controllers\OrderTrackingController.php-41-
+app\Http\Controllers\OrderTrackingController.php-42-        $email = strtolower(trim((string) $validated['email']));
+app\Http\Controllers\OrderTrackingController.php-43-        $orderId = strtoupper(trim((string) $validated['order_id']));
+app\Http\Controllers\OrderTrackingController.php-44-        $rateLimitKey = $this->rateLimitKey($request, $email);
+--
+app\Http\Controllers\AdminManualTransactionController.php-121-    }
+app\Http\Controllers\AdminManualTransactionController.php-122-
+app\Http\Controllers\AdminManualTransactionController.php-123-    public function store(Request $request)
+app\Http\Controllers\AdminManualTransactionController.php-124-    {
+app\Http\Controllers\AdminManualTransactionController.php-125-        $validated = $request->validate([
+app\Http\Controllers\AdminManualTransactionController.php:126:            'customer_mode' => ['required', 'in:existing,manual'],
+app\Http\Controllers\AdminManualTransactionController.php:127:            'customer_id' => ['nullable', 'required_if:customer_mode,existing', 'integer', 'exists:users,id'],
+app\Http\Controllers\AdminManualTransactionController.php:128:            'manual_customer_name' => ['nullable', 'required_if:customer_mode,manual', 'string', 'max:150'],
+app\Http\Controllers\AdminManualTransactionController.php:129:            'manual_customer_phone' => ['nullable', 'required_if:customer_mode,manual', 'string', 'max:50'],
+app\Http\Controllers\AdminManualTransactionController.php-130-            'manual_customer_email' => ['nullable', 'email', 'max:150'],
+app\Http\Controllers\AdminManualTransactionController.php:131:            'items' => ['required', 'array', 'min:1'],
+app\Http\Controllers\AdminManualTransactionController.php:132:            'items.*.product_variant_id' => ['required', 'integer', 'exists:product_variants,id'],
+app\Http\Controllers\AdminManualTransactionController.php:133:            'items.*.qty' => ['required', 'integer', 'min:1'],
+app\Http\Controllers\AdminManualTransactionController.php:134:            'items.*.unit_price' => ['required', 'integer', 'min:0'],
+app\Http\Controllers\AdminManualTransactionController.php-135-            'items.*.discount_amount' => ['nullable', 'integer', 'min:0'],
+app\Http\Controllers\AdminManualTransactionController.php-136-            'items.*.note' => ['nullable', 'string', 'max:500'],
+app\Http\Controllers\AdminManualTransactionController.php-137-            'discount_amount' => ['nullable', 'integer', 'min:0'],
+app\Http\Controllers\AdminManualTransactionController.php-138-            'shipping_cost' => ['nullable', 'integer', 'min:0'],
+app\Http\Controllers\AdminManualTransactionController.php-139-            'ppn_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+app\Http\Controllers\AdminManualTransactionController.php-140-            'request_tax_invoice' => ['nullable', 'boolean'],
+app\Http\Controllers\AdminManualTransactionController.php:141:            'tax_taxpayer_name' => ['nullable', 'required_if:request_tax_invoice,1', 'string', 'max:200'],
+app\Http\Controllers\AdminManualTransactionController.php:142:            'tax_taxpayer_number' => ['nullable', 'required_if:request_tax_invoice,1', 'string', 'max:50'],
+app\Http\Controllers\AdminManualTransactionController.php:143:            'tax_taxpayer_address' => ['nullable', 'required_if:request_tax_invoice,1', 'string', 'max:500'],
+app\Http\Controllers\AdminManualTransactionController.php-144-            'tax_taxpayer_email' => ['nullable', 'email', 'max:150'],
+app\Http\Controllers\AdminManualTransactionController.php-145-            'tax_customer_note' => ['nullable', 'string', 'max:500'],
+app\Http\Controllers\AdminManualTransactionController.php-146-        ]);
+app\Http\Controllers\AdminManualTransactionController.php-147-
+app\Http\Controllers\AdminManualTransactionController.php-148-        $companyId = $this->activeCompanyId();
+--
+app\Http\Controllers\AdminManualTransactionController.php-305-        if ($transaction->normalizedSource() !== Transaction::SOURCE_MANUAL) {
+app\Http\Controllers\AdminManualTransactionController.php-306-            return back()->withErrors(['payment' => 'Pembayaran manual admin hanya tersedia untuk transaksi manual.']);
+app\Http\Controllers\AdminManualTransactionController.php-307-        }
+app\Http\Controllers\AdminManualTransactionController.php-308-
+app\Http\Controllers\AdminManualTransactionController.php-309-        $validated = $request->validate([
+app\Http\Controllers\AdminManualTransactionController.php:310:            'payment_status' => ['required', Rule::in(['unpaid', 'partial', 'paid', 'cancelled'])],
+app\Http\Controllers\AdminManualTransactionController.php-311-            'payment_method' => ['nullable', 'string', 'max:100'],
+app\Http\Controllers\AdminManualTransactionController.php-312-            'payment_paid_at' => ['nullable', 'date'],
+app\Http\Controllers\AdminManualTransactionController.php-313-            'payment_amount' => ['nullable', 'integer', 'min:0'],
+app\Http\Controllers\AdminManualTransactionController.php-314-            'payment_admin_note' => ['nullable', 'string', 'max:500'],
+app\Http\Controllers\AdminManualTransactionController.php-315-            'payment_proof' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:4096'],
+--
+app\Http\Controllers\AdminManualTransactionController.php-374-        if ($transaction->normalizedSource() !== Transaction::SOURCE_MANUAL) {
+app\Http\Controllers\AdminManualTransactionController.php-375-            return back()->withErrors(['shipping' => 'Pengiriman manual hanya tersedia untuk transaksi manual.']);
+app\Http\Controllers\AdminManualTransactionController.php-376-        }
+app\Http\Controllers\AdminManualTransactionController.php-377-
+app\Http\Controllers\AdminManualTransactionController.php-378-        $validated = $request->validate([
+app\Http\Controllers\AdminManualTransactionController.php:379:            'shipping_type' => ['required', Rule::in(['belum_ditentukan', 'dikirim', 'ambil_sendiri', 'kurir_toko', 'ekspedisi_manual', 'gratis_ongkir'])],
+app\Http\Controllers\AdminManualTransactionController.php-380-            'shipping_recipient_name' => ['nullable', 'string', 'max:150'],
+app\Http\Controllers\AdminManualTransactionController.php-381-            'shipping_phone' => ['nullable', 'string', 'max:50'],
+app\Http\Controllers\AdminManualTransactionController.php-382-            'shipping_address_line' => ['nullable', 'string', 'max:1000'],
+app\Http\Controllers\AdminManualTransactionController.php-383-            'shipping_province' => ['nullable', 'string', 'max:100'],
+app\Http\Controllers\AdminManualTransactionController.php-384-            'shipping_city' => ['nullable', 'string', 'max:100'],
+--
+app\Http\Controllers\AdminTaxInvoiceController.php-98-    }
+app\Http\Controllers\AdminTaxInvoiceController.php-99-
+app\Http\Controllers\AdminTaxInvoiceController.php-100-    public function reject(Request $request, TransactionTaxInvoice $taxInvoice)
+app\Http\Controllers\AdminTaxInvoiceController.php-101-    {
+app\Http\Controllers\AdminTaxInvoiceController.php-102-        $validated = $request->validate([
+app\Http\Controllers\AdminTaxInvoiceController.php:103:            'rejected_reason' => ['required', 'string', 'max:1000'],
+app\Http\Controllers\AdminTaxInvoiceController.php-104-            'admin_note' => ['nullable', 'string', 'max:1000'],
+app\Http\Controllers\AdminTaxInvoiceController.php-105-        ]);
+app\Http\Controllers\AdminTaxInvoiceController.php-106-
+app\Http\Controllers\AdminTaxInvoiceController.php-107-        $this->transitionStatus(
+app\Http\Controllers\AdminTaxInvoiceController.php-108-            $taxInvoice,
+--
+app\Http\Controllers\AdminTaxInvoiceController.php-120-    }
+app\Http\Controllers\AdminTaxInvoiceController.php-121-
+app\Http\Controllers\AdminTaxInvoiceController.php-122-    public function upload(Request $request, TransactionTaxInvoice $taxInvoice, TaxInvoiceDeliveryService $deliveryService)
+app\Http\Controllers\AdminTaxInvoiceController.php-123-    {
+app\Http\Controllers\AdminTaxInvoiceController.php-124-        $validated = $request->validate([
+app\Http\Controllers\AdminTaxInvoiceController.php:125:            'tax_invoice_file' => ['required', 'file', 'mimes:pdf', 'max:10240'],
+app\Http\Controllers\AdminTaxInvoiceController.php-126-            'tax_invoice_number' => ['nullable', 'string', 'max:100'],
+app\Http\Controllers\AdminTaxInvoiceController.php-127-            'tax_invoice_date' => ['nullable', 'date'],
+app\Http\Controllers\AdminTaxInvoiceController.php-128-            'admin_note' => ['nullable', 'string', 'max:1000'],
+app\Http\Controllers\AdminTaxInvoiceController.php-129-            'send_email' => ['nullable', 'boolean'],
+app\Http\Controllers\AdminTaxInvoiceController.php-130-        ]);
+--
+app\Http\Controllers\AuthController.php-33-    }
+app\Http\Controllers\AuthController.php-34-
+app\Http\Controllers\AuthController.php-35-    public function register(Request $request)
+app\Http\Controllers\AuthController.php-36-    {
+app\Http\Controllers\AuthController.php-37-        $validated = $request->validate([
+app\Http\Controllers\AuthController.php:38:            'name' => ['required', 'string', 'max:255'],
+app\Http\Controllers\AuthController.php-39-            'email' => [
+app\Http\Controllers\AuthController.php:40:                'required',
+app\Http\Controllers\AuthController.php-41-                'email',
+app\Http\Controllers\AuthController.php-42-                'max:255',
+app\Http\Controllers\AuthController.php-43-                function (string $attribute, mixed $value, \Closure $fail): void {
+app\Http\Controllers\AuthController.php-44-                    if (User::query()->whereRaw('LOWER(email) = ?', [strtolower(trim((string) $value))])->exists()) {
+app\Http\Controllers\AuthController.php-45-                        $fail('Email sudah terdaftar. Silakan masuk ke akun Anda.');
+app\Http\Controllers\AuthController.php-46-                    }
+app\Http\Controllers\AuthController.php-47-                },
+app\Http\Controllers\AuthController.php-48-            ],
+app\Http\Controllers\AuthController.php:49:            'password' => ['required', 'string', 'min:6', 'confirmed'],
+app\Http\Controllers\AuthController.php-50-            'checkout_order' => ['nullable', 'string', 'max:100'],
+app\Http\Controllers\AuthController.php-51-        ]);
+app\Http\Controllers\AuthController.php-52-
+app\Http\Controllers\AuthController.php-53-        $email = strtolower(trim((string) $validated['email']));
+app\Http\Controllers\AuthController.php-54-        $checkoutOrderId = strtoupper(trim((string) ($validated['checkout_order'] ?? '')));
+--
+app\Http\Controllers\AuthController.php-105-    }
+app\Http\Controllers\AuthController.php-106-
+app\Http\Controllers\AuthController.php-107-    public function login(Request $request)
+app\Http\Controllers\AuthController.php-108-    {
+app\Http\Controllers\AuthController.php-109-        $credentials = $request->validate([
+app\Http\Controllers\AuthController.php:110:            'email' => ['required', 'email'],
+app\Http\Controllers\AuthController.php:111:            'password' => ['required', 'string'],
+app\Http\Controllers\AuthController.php-112-        ]);
+app\Http\Controllers\AuthController.php-113-
+app\Http\Controllers\AuthController.php-114-        $remember = $request->boolean('remember');
+app\Http\Controllers\AuthController.php-115-
+app\Http\Controllers\AuthController.php-116-        if (! Auth::attempt($credentials, $remember)) {
+--
+app\Http\Controllers\AuthController.php-139-    }
+app\Http\Controllers\AuthController.php-140-
+app\Http\Controllers\AuthController.php-141-    public function sendResetLink(Request $request)
+app\Http\Controllers\AuthController.php-142-    {
+app\Http\Controllers\AuthController.php-143-        $validated = $request->validate([
+app\Http\Controllers\AuthController.php:144:            'email' => ['required', 'email'],
+app\Http\Controllers\AuthController.php-145-        ]);
+app\Http\Controllers\AuthController.php-146-
+app\Http\Controllers\AuthController.php-147-        $exists = User::query()->where('email', $validated['email'])->exists();
+app\Http\Controllers\AuthController.php-148-        if (! $exists) {
+app\Http\Controllers\AuthController.php-149-            return back()
+--
+app\Http\Controllers\AuthController.php-178-    }
+app\Http\Controllers\AuthController.php-179-
+app\Http\Controllers\AuthController.php-180-    public function resetPassword(Request $request)
+app\Http\Controllers\AuthController.php-181-    {
+app\Http\Controllers\AuthController.php-182-        $validated = $request->validate([
+app\Http\Controllers\AuthController.php:183:            'token' => ['required', 'string'],
+app\Http\Controllers\AuthController.php:184:            'email' => ['required', 'email'],
+app\Http\Controllers\AuthController.php:185:            'password' => ['required', 'string', 'min:6', 'confirmed'],
+app\Http\Controllers\AuthController.php-186-        ]);
+app\Http\Controllers\AuthController.php-187-
+app\Http\Controllers\AuthController.php-188-        $status = Password::reset(
+app\Http\Controllers\AuthController.php-189-            $validated,
+app\Http\Controllers\AuthController.php-190-            function (User $user, string $password): void {
+--
+app\Http\Controllers\BackendController.php-312-    {
+app\Http\Controllers\BackendController.php-313-        $section = (string) $request->input('section', 'store');
+app\Http\Controllers\BackendController.php-314-
+app\Http\Controllers\BackendController.php-315-        if ($section === 'manual_payment') {
+app\Http\Controllers\BackendController.php-316-            $validated = $request->validate([
+app\Http\Controllers\BackendController.php:317:                'manual_payment_bank_name' => ['required', 'string', 'max:80'],
+app\Http\Controllers\BackendController.php:318:                'manual_payment_account_number' => ['required', 'string', 'max:80'],
+app\Http\Controllers\BackendController.php:319:                'manual_payment_account_name' => ['required', 'string', 'max:120'],
+app\Http\Controllers\BackendController.php-320-                'manual_payment_instruction' => ['nullable', 'string', 'max:1000'],
+app\Http\Controllers\BackendController.php-321-            ]);
+app\Http\Controllers\BackendController.php-322-
+app\Http\Controllers\BackendController.php-323-            CompanySetting::setMany($this->activeCompanyId(), $validated);
+app\Http\Controllers\BackendController.php-324-
+--
+app\Http\Controllers\BackendController.php-326-        }
+app\Http\Controllers\BackendController.php-327-
+app\Http\Controllers\BackendController.php-328-        if ($section === 'tax') {
+app\Http\Controllers\BackendController.php-329-            $validated = $request->validate([
+app\Http\Controllers\BackendController.php-330-                'tax_enabled' => ['nullable', 'boolean'],
+app\Http\Controllers\BackendController.php:331:                'tax_name' => ['required_if:tax_enabled,1', 'nullable', 'string', 'max:30'],
+app\Http\Controllers\BackendController.php:332:                'tax_rate' => ['required', 'numeric', 'min:0', 'max:100', 'regex:/^\d+(\.\d{1,2})?$/'],
+app\Http\Controllers\BackendController.php-333-            ]);
+app\Http\Controllers\BackendController.php-334-
+app\Http\Controllers\BackendController.php-335-            CompanySetting::setMany($this->activeCompanyId(), [
+app\Http\Controllers\BackendController.php-336-                'tax_enabled' => $request->boolean('tax_enabled') ? '1' : '0',
+app\Http\Controllers\BackendController.php-337-                'tax_name' => trim((string) ($validated['tax_name'] ?? 'PPN')),
+--
+app\Http\Controllers\BackendController.php-358-
+app\Http\Controllers\BackendController.php-359-            return redirect()->route('pages.settings', ['tab' => 'social'])->with('success', 'Link social media berhasil disimpan.');
+app\Http\Controllers\BackendController.php-360-        }
+app\Http\Controllers\BackendController.php-361-
+app\Http\Controllers\BackendController.php-362-        $validated = $request->validate([
+app\Http\Controllers\BackendController.php:363:            'store_name' => ['required', 'string', 'max:120'],
+app\Http\Controllers\BackendController.php-364-            'store_logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+app\Http\Controllers\BackendController.php-365-        ]);
+app\Http\Controllers\BackendController.php-366-
+app\Http\Controllers\BackendController.php-367-        $values = [
+app\Http\Controllers\BackendController.php-368-            'store_name' => $validated['store_name'],
+--
+app\Http\Controllers\BackendController.php-387-    public function updatePassword(Request $request)
+app\Http\Controllers\BackendController.php-388-    {
+app\Http\Controllers\BackendController.php-389-        $user = $request->user();
+app\Http\Controllers\BackendController.php-390-
+app\Http\Controllers\BackendController.php-391-        $validated = $request->validate([
+app\Http\Controllers\BackendController.php:392:            'current_password' => ['required', 'string'],
+app\Http\Controllers\BackendController.php:393:            'password' => ['required', 'string', 'min:8', 'confirmed'],
+app\Http\Controllers\BackendController.php-394-        ]);
+app\Http\Controllers\BackendController.php-395-
+app\Http\Controllers\BackendController.php-396-        if (! Hash::check($validated['current_password'], $user->password)) {
+app\Http\Controllers\BackendController.php-397-            return back()->withErrors(['current_password' => 'Password saat ini tidak valid.'])->withInput();
+app\Http\Controllers\BackendController.php-398-        }
+--
+app\Http\Controllers\AdminReturnRequestController.php-20-    }
+app\Http\Controllers\AdminReturnRequestController.php-21-
+app\Http\Controllers\AdminReturnRequestController.php-22-    public function update(Request $request, ReturnRequest $returnRequest)
+app\Http\Controllers\AdminReturnRequestController.php-23-    {
+app\Http\Controllers\AdminReturnRequestController.php-24-        $validated = $request->validate([
+app\Http\Controllers\AdminReturnRequestController.php:25:            'status' => ['required', Rule::in(['menunggu', 'disetujui', 'ditolak', 'diproses', 'selesai'])],
+app\Http\Controllers\AdminReturnRequestController.php-26-            'admin_note' => ['nullable', 'string', 'max:1000'],
+app\Http\Controllers\AdminReturnRequestController.php-27-        ]);
+app\Http\Controllers\AdminReturnRequestController.php-28-
+app\Http\Controllers\AdminReturnRequestController.php-29-        $previousStatus = (string) $returnRequest->status;
+app\Http\Controllers\AdminReturnRequestController.php-30-        $newStatus = (string) $validated['status'];
+--
+app\Http\Controllers\CheckoutCouponController.php-8-class CheckoutCouponController extends Controller
+app\Http\Controllers\CheckoutCouponController.php-9-{
+app\Http\Controllers\CheckoutCouponController.php-10-    public function apply(Request $request)
+app\Http\Controllers\CheckoutCouponController.php-11-    {
+app\Http\Controllers\CheckoutCouponController.php-12-        $validated = $request->validate([
+app\Http\Controllers\CheckoutCouponController.php:13:            'code' => ['required', 'string', 'max:50'],
+app\Http\Controllers\CheckoutCouponController.php:14:            'subtotal' => ['required', 'integer', 'min:0'],
+app\Http\Controllers\CheckoutCouponController.php:15:            'company_id' => ['required', 'integer', 'exists:companies,id'],
+app\Http\Controllers\CheckoutCouponController.php-16-        ]);
+app\Http\Controllers\CheckoutCouponController.php-17-
+app\Http\Controllers\CheckoutCouponController.php-18-        $companyId = (int) $validated['company_id'];
+app\Http\Controllers\CheckoutCouponController.php-19-        $coupon = Coupon::query()
+app\Http\Controllers\CheckoutCouponController.php-20-            ->whereRaw('UPPER(code) = ?', [strtoupper(trim((string) $validated['code']))])
+--
+app\Http\Controllers\CartController.php-29-    }
+app\Http\Controllers\CartController.php-30-
+app\Http\Controllers\CartController.php-31-    public function store(Request $request)
+app\Http\Controllers\CartController.php-32-    {
+app\Http\Controllers\CartController.php-33-        $validated = $request->validate([
+app\Http\Controllers\CartController.php:34:            'product_variant_id' => ['required', 'integer', 'exists:product_variants,id'],
+app\Http\Controllers\CartController.php:35:            'quantity' => ['required', 'integer', 'min:1'],
+app\Http\Controllers\CartController.php-36-        ]);
+app\Http\Controllers\CartController.php-37-
+app\Http\Controllers\CartController.php-38-        $variant = ProductVariant::query()
+app\Http\Controllers\CartController.php-39-            ->with('product')
+app\Http\Controllers\CartController.php-40-            ->findOrFail((int) $validated['product_variant_id']);
+--
+app\Http\Controllers\CartController.php-60-    public function update(Request $request, Cart $cart)
+app\Http\Controllers\CartController.php-61-    {
+app\Http\Controllers\CartController.php-62-        abort_unless($cart->user_id === auth()->id(), 403);
+app\Http\Controllers\CartController.php-63-
+app\Http\Controllers\CartController.php-64-        $validated = $request->validate([
+app\Http\Controllers\CartController.php:65:            'quantity' => ['required', 'integer', 'min:1'],
+app\Http\Controllers\CartController.php-66-        ]);
+app\Http\Controllers\CartController.php-67-
+app\Http\Controllers\CartController.php-68-        $cart->loadMissing('productVariant.product');
+app\Http\Controllers\CartController.php-69-        $this->ensureCartItemCanBePurchased($cart, (int) $validated['quantity']);
+app\Http\Controllers\CartController.php-70-
+--
+app\Http\Controllers\CartController.php-117-    }
+app\Http\Controllers\CartController.php-118-
+app\Http\Controllers\CartController.php-119-    public function prepareCheckout(Request $request)
+app\Http\Controllers\CartController.php-120-    {
+app\Http\Controllers\CartController.php-121-        $validated = $request->validate([
+app\Http\Controllers\CartController.php:122:            'cart_ids' => ['required', 'array', 'min:1'],
+app\Http\Controllers\CartController.php-123-            'cart_ids.*' => ['integer'],
+app\Http\Controllers\CartController.php-124-        ]);
+app\Http\Controllers\CartController.php-125-
+app\Http\Controllers\CartController.php-126-        $cartRows = Cart::query()
+app\Http\Controllers\CartController.php-127-            ->with('productVariant.product')
+--
+app\Http\Controllers\CartController.php-155-    }
+app\Http\Controllers\CartController.php-156-
+app\Http\Controllers\CartController.php-157-    public function buyNow(Request $request)
+app\Http\Controllers\CartController.php-158-    {
+app\Http\Controllers\CartController.php-159-        $validated = $request->validate([
+app\Http\Controllers\CartController.php:160:            'product_variant_id' => ['required', 'integer', 'exists:product_variants,id'],
+app\Http\Controllers\CartController.php:161:            'quantity' => ['required', 'integer', 'min:1'],
+app\Http\Controllers\CartController.php-162-        ]);
+app\Http\Controllers\CartController.php-163-
+app\Http\Controllers\CartController.php-164-        $variant = ProductVariant::query()
+app\Http\Controllers\CartController.php-165-            ->with(['product.productVariants', 'product.company', 'variant', 'attributeValues.definition', 'flashSaleItems.flashSale'])
+app\Http\Controllers\CartController.php-166-            ->findOrFail((int) $validated['product_variant_id']);
+--
+app\Http\Controllers\CartController.php-207-    }
+app\Http\Controllers\CartController.php-208-
+app\Http\Controllers\CartController.php-209-    public function prepareRedeemCheckout(Request $request)
+app\Http\Controllers\CartController.php-210-    {
+app\Http\Controllers\CartController.php-211-        $validated = $request->validate([
+app\Http\Controllers\CartController.php:212:            'product_variant_id' => ['required', 'integer', 'exists:product_variants,id'],
+app\Http\Controllers\CartController.php:213:            'quantity' => ['required', 'integer', 'min:1'],
+app\Http\Controllers\CartController.php-214-        ]);
+app\Http\Controllers\CartController.php-215-
+app\Http\Controllers\CartController.php-216-        $variant = ProductVariant::query()
+app\Http\Controllers\CartController.php-217-            ->with(['product.company', 'variant', 'attributeValues.definition'])
+app\Http\Controllers\CartController.php-218-            ->findOrFail((int) $validated['product_variant_id']);
+--
+app\Http\Controllers\CartController.php-481-        ];
+app\Http\Controllers\CartController.php-482-    }
+app\Http\Controllers\CartController.php-483-
+app\Http\Controllers\CartController.php-484-    private function ensureRedeemItemCanBeProcessed(int $userId, array $item, ?int $knownBalance = null): void
+app\Http\Controllers\CartController.php-485-    {
+app\Http\Controllers\CartController.php:486:        $requiredPoints = ((int) ($item['redeemPoints'] ?? 0)) * ((int) ($item['qty'] ?? 0));
+app\Http\Controllers\CartController.php:487:        if ($requiredPoints < 1) {
+app\Http\Controllers\CartController.php-488-            $this->abortJson(422, 'Produk redeem tidak memiliki nilai point yang valid.');
+app\Http\Controllers\CartController.php-489-        }
+app\Http\Controllers\CartController.php-490-
+app\Http\Controllers\CartController.php-491-        $pointBalance = $knownBalance;
+app\Http\Controllers\CartController.php-492-        if ($pointBalance === null) {
+--
+app\Http\Controllers\CartController.php-494-            if ((int) optional(auth()->user())->id !== $userId) {
+app\Http\Controllers\CartController.php-495-                $pointBalance = (int) User::query()->where('id', $userId)->value('point_balance');
+app\Http\Controllers\CartController.php-496-            }
+app\Http\Controllers\CartController.php-497-        }
+app\Http\Controllers\CartController.php-498-
+app\Http\Controllers\CartController.php:499:        if ($pointBalance < $requiredPoints) {
+app\Http\Controllers\CartController.php:500:            $this->abortJson(422, 'Point kamu tidak cukup. Dibutuhkan '.number_format($requiredPoints, 0, ',', '.').' point.');
+app\Http\Controllers\CartController.php-501-        }
+app\Http\Controllers\CartController.php-502-    }
+app\Http\Controllers\CartController.php-503-
+app\Http\Controllers\CartController.php-504-    private function abortJson(int $status, string $message): never
+app\Http\Controllers\CartController.php-505-    {
+--
+app\Http\Controllers\FlashSaleController.php-117-    }
+app\Http\Controllers\FlashSaleController.php-118-
+app\Http\Controllers\FlashSaleController.php-119-    private function validateFlashSale(Request $request): array
+app\Http\Controllers\FlashSaleController.php-120-    {
+app\Http\Controllers\FlashSaleController.php-121-        return $request->validate([
+app\Http\Controllers\FlashSaleController.php:122:            'name' => ['required', 'string', 'max:255'],
+app\Http\Controllers\FlashSaleController.php:123:            'start_at' => ['required', 'date'],
+app\Http\Controllers\FlashSaleController.php:124:            'end_at' => ['required', 'date', 'after:start_at'],
+app\Http\Controllers\FlashSaleController.php:125:            'status' => ['required', Rule::in(['draft', 'active', 'inactive'])],
+app\Http\Controllers\FlashSaleController.php-126-            'notes' => ['nullable', 'string'],
+app\Http\Controllers\FlashSaleController.php:127:            'items' => ['required', 'array', 'min:1'],
+app\Http\Controllers\FlashSaleController.php:128:            'items.*.product_variant_id' => ['required', 'exists:product_variants,id', 'distinct'],
+app\Http\Controllers\FlashSaleController.php:129:            'items.*.discount_price' => ['required', 'numeric', 'min:0'],
+app\Http\Controllers\FlashSaleController.php:130:            'items.*.quota' => ['required', 'integer', 'min:1'],
+app\Http\Controllers\FlashSaleController.php-131-            'items.*.is_active' => ['nullable', 'boolean'],
+app\Http\Controllers\FlashSaleController.php-132-        ], [
+app\Http\Controllers\FlashSaleController.php:133:            'items.required' => 'Minimal satu item flash sale harus diisi.',
+app\Http\Controllers\FlashSaleController.php-134-            'items.*.product_variant_id.distinct' => 'Item varian dalam flash sale tidak boleh duplikat.',
+app\Http\Controllers\FlashSaleController.php-135-            'end_at.after' => 'Waktu selesai harus lebih besar dari waktu mulai.',
+app\Http\Controllers\FlashSaleController.php-136-        ]);
+app\Http\Controllers\FlashSaleController.php-137-    }
+app\Http\Controllers\FlashSaleController.php-138-}
+--
+app\Http\Controllers\ContentPageController.php-74-    }
+app\Http\Controllers\ContentPageController.php-75-
+app\Http\Controllers\ContentPageController.php-76-    private function validatePayload(Request $request, ?int $ignoreId = null): array
+app\Http\Controllers\ContentPageController.php-77-    {
+app\Http\Controllers\ContentPageController.php-78-        return $request->validate([
+app\Http\Controllers\ContentPageController.php:79:            'type' => ['required', Rule::in([ContentPage::TYPE_PAGE, ContentPage::TYPE_POST])],
+app\Http\Controllers\ContentPageController.php:80:            'title' => ['required', 'string', 'max:255'],
+app\Http\Controllers\ContentPageController.php-81-            'slug' => ['nullable', 'string', 'max:255', Rule::unique('content_pages', 'slug')->ignore($ignoreId)],
+app\Http\Controllers\ContentPageController.php-82-            'excerpt' => ['nullable', 'string', 'max:500'],
+app\Http\Controllers\ContentPageController.php-83-            'content' => ['nullable', 'string'],
+app\Http\Controllers\ContentPageController.php-84-            'hero_image_url' => ['nullable', 'url', 'max:2048'],
+app\Http\Controllers\ContentPageController.php-85-            'hero_image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:6144'],
+--
+app\Http\Controllers\TransactionReviewController.php-11-class TransactionReviewController extends Controller
+app\Http\Controllers\TransactionReviewController.php-12-{
+app\Http\Controllers\TransactionReviewController.php-13-    public function store(Request $request, ImageOptimizer $imageOptimizer)
+app\Http\Controllers\TransactionReviewController.php-14-    {
+app\Http\Controllers\TransactionReviewController.php-15-        $validated = $request->validate([
+app\Http\Controllers\TransactionReviewController.php:16:            'transaction_id' => ['required', 'integer', 'exists:transactions,id'],
+app\Http\Controllers\TransactionReviewController.php:17:            'transaction_detail_id' => ['required', 'integer', 'exists:transaction_details,id'],
+app\Http\Controllers\TransactionReviewController.php:18:            'rating' => ['required', 'integer', 'min:1', 'max:5'],
+app\Http\Controllers\TransactionReviewController.php-19-            'message' => ['nullable', 'string', 'max:2000'],
+app\Http\Controllers\TransactionReviewController.php-20-            'photos' => ['nullable', 'array', 'max:8'],
+app\Http\Controllers\TransactionReviewController.php-21-            'photos.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+app\Http\Controllers\TransactionReviewController.php-22-        ]);
+app\Http\Controllers\TransactionReviewController.php-23-
+--
+app\Http\Controllers\NewsletterSubscriberController.php-198-    }
+app\Http\Controllers\NewsletterSubscriberController.php-199-
+app\Http\Controllers\NewsletterSubscriberController.php-200-    private function validatedPayload(Request $request, bool $strict = true, ?ImageOptimizer $imageOptimizer = null): array
+app\Http\Controllers\NewsletterSubscriberController.php-201-    {
+app\Http\Controllers\NewsletterSubscriberController.php-202-        $rules = [
+app\Http\Controllers\NewsletterSubscriberController.php:203:            'subject' => ['required', 'string', 'max:150'],
+app\Http\Controllers\NewsletterSubscriberController.php:204:            'message' => ['required', 'string', 'max:10000'],
+app\Http\Controllers\NewsletterSubscriberController.php-205-            'cta_label' => ['nullable', 'string', 'max:50'],
+app\Http\Controllers\NewsletterSubscriberController.php-206-            'cta_url' => ['nullable', 'url', 'max:500'],
+app\Http\Controllers\NewsletterSubscriberController.php-207-            'hero_image_url' => ['nullable', 'url', 'max:1000'],
+app\Http\Controllers\NewsletterSubscriberController.php-208-            'hero_image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:6144'],
+app\Http\Controllers\NewsletterSubscriberController.php-209-        ];
+--
+app\Http\Controllers\NewsletterSubscriberController.php-212-            $rules['test_email'] = ['nullable', 'email'];
+app\Http\Controllers\NewsletterSubscriberController.php-213-            $rules['scheduled_at'] = ['nullable', 'date'];
+app\Http\Controllers\NewsletterSubscriberController.php-214-        }
+app\Http\Controllers\NewsletterSubscriberController.php-215-
+app\Http\Controllers\NewsletterSubscriberController.php-216-        $validated = $request->validate($rules, [
+app\Http\Controllers\NewsletterSubscriberController.php:217:            'subject.required' => 'Subject newsletter wajib diisi.',
+app\Http\Controllers\NewsletterSubscriberController.php:218:            'message.required' => 'Isi newsletter wajib diisi.',
+app\Http\Controllers\NewsletterSubscriberController.php-219-            'cta_url.url' => 'Link tombol CTA harus berupa URL yang valid.',
+app\Http\Controllers\NewsletterSubscriberController.php-220-            'hero_image_url.url' => 'Link gambar banner harus berupa URL yang valid.',
+app\Http\Controllers\NewsletterSubscriberController.php-221-        ]);
+app\Http\Controllers\NewsletterSubscriberController.php-222-
+app\Http\Controllers\NewsletterSubscriberController.php-223-        $ctaLabel = trim((string) ($validated['cta_label'] ?? '')) ?: null;
+--
+app\Http\Controllers\RajaOngkirController.php-24-    }
+app\Http\Controllers\RajaOngkirController.php-25-
+app\Http\Controllers\RajaOngkirController.php-26-    public function cities(Request $request)
+app\Http\Controllers\RajaOngkirController.php-27-    {
+app\Http\Controllers\RajaOngkirController.php-28-        $validated = $request->validate([
+app\Http\Controllers\RajaOngkirController.php:29:            'province_id' => ['required', 'integer'],
+app\Http\Controllers\RajaOngkirController.php-30-        ]);
+app\Http\Controllers\RajaOngkirController.php-31-
+app\Http\Controllers\RajaOngkirController.php-32-        try {
+app\Http\Controllers\RajaOngkirController.php-33-            return response()->json([
+app\Http\Controllers\RajaOngkirController.php-34-                'data' => $this->rajaOngkir->cities((int) $validated['province_id']),
+--
+app\Http\Controllers\RajaOngkirController.php-39-    }
+app\Http\Controllers\RajaOngkirController.php-40-
+app\Http\Controllers\RajaOngkirController.php-41-    public function districts(Request $request)
+app\Http\Controllers\RajaOngkirController.php-42-    {
+app\Http\Controllers\RajaOngkirController.php-43-        $validated = $request->validate([
+app\Http\Controllers\RajaOngkirController.php:44:            'city_id' => ['required', 'integer'],
+app\Http\Controllers\RajaOngkirController.php-45-        ]);
+app\Http\Controllers\RajaOngkirController.php-46-
+app\Http\Controllers\RajaOngkirController.php-47-        try {
+app\Http\Controllers\RajaOngkirController.php-48-            return response()->json([
+app\Http\Controllers\RajaOngkirController.php-49-                'data' => $this->rajaOngkir->districts((int) $validated['city_id']),
+--
+app\Http\Controllers\RajaOngkirController.php-54-    }
+app\Http\Controllers\RajaOngkirController.php-55-
+app\Http\Controllers\RajaOngkirController.php-56-    public function subdistricts(Request $request)
+app\Http\Controllers\RajaOngkirController.php-57-    {
+app\Http\Controllers\RajaOngkirController.php-58-        $validated = $request->validate([
+app\Http\Controllers\RajaOngkirController.php:59:            'district_id' => ['required', 'integer'],
+app\Http\Controllers\RajaOngkirController.php-60-        ]);
+app\Http\Controllers\RajaOngkirController.php-61-
+app\Http\Controllers\RajaOngkirController.php-62-        try {
+app\Http\Controllers\RajaOngkirController.php-63-            return response()->json([
+app\Http\Controllers\RajaOngkirController.php-64-                'data' => $this->rajaOngkir->subdistricts((int) $validated['district_id']),
+--
+app\Http\Controllers\RajaOngkirController.php-69-    }
+app\Http\Controllers\RajaOngkirController.php-70-
+app\Http\Controllers\RajaOngkirController.php-71-    public function shippingOptions(Request $request)
+app\Http\Controllers\RajaOngkirController.php-72-    {
+app\Http\Controllers\RajaOngkirController.php-73-        $validated = $request->validate([
+app\Http\Controllers\RajaOngkirController.php:74:            'destination_id' => ['required', 'integer'],
+app\Http\Controllers\RajaOngkirController.php:75:            'weight' => ['required', 'integer', 'min:1'],
+app\Http\Controllers\RajaOngkirController.php:76:            'company_id' => ['required', 'integer', 'exists:companies,id'],
+app\Http\Controllers\RajaOngkirController.php-77-        ]);
+app\Http\Controllers\RajaOngkirController.php-78-
+app\Http\Controllers\RajaOngkirController.php-79-        try {
+app\Http\Controllers\RajaOngkirController.php-80-            $storeLocation = StoreLocation::query()
+app\Http\Controllers\RajaOngkirController.php-81-                ->where('company_id', (int) $validated['company_id'])
+--
+app\Http\Controllers\CategoryController.php-29-    }
+app\Http\Controllers\CategoryController.php-30-
+app\Http\Controllers\CategoryController.php-31-    public function store(Request $request)
+app\Http\Controllers\CategoryController.php-32-    {
+app\Http\Controllers\CategoryController.php-33-        $validated = $request->validate([
+app\Http\Controllers\CategoryController.php:34:            'name' => ['required', 'string', 'max:255'],
+app\Http\Controllers\CategoryController.php-35-            'parent_id' => ['nullable', 'exists:categories,id'],
+app\Http\Controllers\CategoryController.php-36-        ]);
+app\Http\Controllers\CategoryController.php-37-
+app\Http\Controllers\CategoryController.php-38-        Category::create([
+app\Http\Controllers\CategoryController.php-39-            'name' => $validated['name'],
+--
+app\Http\Controllers\CategoryController.php-63-    }
+app\Http\Controllers\CategoryController.php-64-
+app\Http\Controllers\CategoryController.php-65-    public function update(Request $request, Category $category)
+app\Http\Controllers\CategoryController.php-66-    {
+app\Http\Controllers\CategoryController.php-67-        $validated = $request->validate([
+app\Http\Controllers\CategoryController.php:68:            'name' => ['required', 'string', 'max:255'],
+app\Http\Controllers\CategoryController.php-69-            'parent_id' => ['nullable', 'exists:categories,id'],
+app\Http\Controllers\CategoryController.php-70-        ]);
+app\Http\Controllers\CategoryController.php-71-
+app\Http\Controllers\CategoryController.php-72-        $category->update([
+app\Http\Controllers\CategoryController.php-73-            'name' => $validated['name'],
+--
+app\Http\Controllers\CategoryController.php-89-            ->with('success', 'Kategori berhasil dihapus.');
+app\Http\Controllers\CategoryController.php-90-    }
+app\Http\Controllers\CategoryController.php-91-
+app\Http\Controllers\CategoryController.php-92-    public function quickStore(Request $request)
+app\Http\Controllers\CategoryController.php-93-    {
+app\Http\Controllers\CategoryController.php:94:        $request->validate(['name' => ['required', 'string', 'max:255']]);
+app\Http\Controllers\CategoryController.php-95-
+app\Http\Controllers\CategoryController.php-96-        $name = trim((string) $request->name);
+app\Http\Controllers\CategoryController.php-97-        $category = Category::firstOrCreate(
+app\Http\Controllers\CategoryController.php-98-            ['name' => $name, 'parent_id' => null],
+app\Http\Controllers\CategoryController.php-99-            ['slug' => $this->makeUniqueSlug($name)]
+--
+app\Http\Controllers\MainCategoryController.php-22-    }
+app\Http\Controllers\MainCategoryController.php-23-
+app\Http\Controllers\MainCategoryController.php-24-    public function store(Request $request, ImageOptimizer $imageOptimizer)
+app\Http\Controllers\MainCategoryController.php-25-    {
+app\Http\Controllers\MainCategoryController.php-26-        $validated = $request->validate([
+app\Http\Controllers\MainCategoryController.php:27:            'name' => ['required', 'string', 'max:255', Rule::unique('main_categories', 'name')],
+app\Http\Controllers\MainCategoryController.php-28-            'image_url' => ['nullable', 'string', 'max:2048'],
+app\Http\Controllers\MainCategoryController.php-29-            'image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+app\Http\Controllers\MainCategoryController.php-30-        ]);
+app\Http\Controllers\MainCategoryController.php-31-
+app\Http\Controllers\MainCategoryController.php-32-        $image = $this->resolveImageValue($request, $imageOptimizer, (string) ($validated['image_url'] ?? ''));
+--
+app\Http\Controllers\MainCategoryController.php-50-    }
+app\Http\Controllers\MainCategoryController.php-51-
+app\Http\Controllers\MainCategoryController.php-52-    public function update(Request $request, MainCategory $mainCategory, ImageOptimizer $imageOptimizer)
+app\Http\Controllers\MainCategoryController.php-53-    {
+app\Http\Controllers\MainCategoryController.php-54-        $validated = $request->validate([
+app\Http\Controllers\MainCategoryController.php:55:            'name' => ['required', 'string', 'max:255', Rule::unique('main_categories', 'name')->ignore($mainCategory->id)],
+app\Http\Controllers\MainCategoryController.php-56-            'image_url' => ['nullable', 'string', 'max:2048'],
+app\Http\Controllers\MainCategoryController.php-57-            'image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+app\Http\Controllers\MainCategoryController.php-58-        ]);
+app\Http\Controllers\MainCategoryController.php-59-
+app\Http\Controllers\MainCategoryController.php-60-        $oldImage = (string) $mainCategory->image;
+--
+app\Http\Controllers\BannerController.php-22-
+app\Http\Controllers\BannerController.php-23-    public function store(Request $request, ImageOptimizer $imageOptimizer)
+app\Http\Controllers\BannerController.php-24-    {
+app\Http\Controllers\BannerController.php-25-        $validated = $request->validate([
+app\Http\Controllers\BannerController.php-26-            'title' => ['nullable', 'string', 'max:255'],
+app\Http\Controllers\BannerController.php:27:            'type' => ['required', 'in:carousel,side'],
+app\Http\Controllers\BannerController.php-28-            'image_url' => ['nullable', 'string', 'max:2048'],
+app\Http\Controllers\BannerController.php-29-            'image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
+app\Http\Controllers\BannerController.php-30-            'target_url' => ['nullable', 'url', 'max:2048'],
+app\Http\Controllers\BannerController.php:31:            'sort_order' => ['required', 'integer', 'min:1'],
+app\Http\Controllers\BannerController.php-32-            'is_active' => ['nullable', 'boolean'],
+app\Http\Controllers\BannerController.php-33-        ], [
+app\Http\Controllers\BannerController.php-34-            'image_file.mimes' => 'Format gambar harus JPG, PNG, atau WebP.',
+app\Http\Controllers\BannerController.php-35-            'image_file.max' => 'Ukuran file gambar maksimal 12 MB sebelum dikompres.',
+app\Http\Controllers\BannerController.php-36-        ]);
+--
+app\Http\Controllers\BannerController.php-81-
+app\Http\Controllers\BannerController.php-82-    public function update(Request $request, Banner $banner, ImageOptimizer $imageOptimizer)
+app\Http\Controllers\BannerController.php-83-    {
+app\Http\Controllers\BannerController.php-84-        $validated = $request->validate([
+app\Http\Controllers\BannerController.php-85-            'title' => ['nullable', 'string', 'max:255'],
+app\Http\Controllers\BannerController.php:86:            'type' => ['required', 'in:carousel,side'],
+app\Http\Controllers\BannerController.php-87-            'image_url' => ['nullable', 'string', 'max:2048'],
+app\Http\Controllers\BannerController.php-88-            'image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
+app\Http\Controllers\BannerController.php-89-            'target_url' => ['nullable', 'url', 'max:2048'],
+app\Http\Controllers\BannerController.php:90:            'sort_order' => ['required', 'integer', 'min:1'],
+app\Http\Controllers\BannerController.php-91-            'is_active' => ['nullable', 'boolean'],
+app\Http\Controllers\BannerController.php-92-        ], [
+app\Http\Controllers\BannerController.php-93-            'image_file.mimes' => 'Format gambar harus JPG, PNG, atau WebP.',
+app\Http\Controllers\BannerController.php-94-            'image_file.max' => 'Ukuran file gambar maksimal 12 MB sebelum dikompres.',
+app\Http\Controllers\BannerController.php-95-        ]);
+--
+app\Http\Controllers\ProformaInvoiceController.php-58-    public function store(Request $request, SalesOrder $salesOrder)
+app\Http\Controllers\ProformaInvoiceController.php-59-    {
+app\Http\Controllers\ProformaInvoiceController.php-60-        $this->guardCompanyOwnership($salesOrder->company_id);
+app\Http\Controllers\ProformaInvoiceController.php-61-
+app\Http\Controllers\ProformaInvoiceController.php-62-        $validated = $request->validate([
+app\Http\Controllers\ProformaInvoiceController.php:63:            'items' => ['required', 'array', 'min:1'],
+app\Http\Controllers\ProformaInvoiceController.php:64:            'items.*.sales_order_detail_id' => ['required', 'integer'],
+app\Http\Controllers\ProformaInvoiceController.php:65:            'items.*.qty' => ['required', 'integer', 'min:0'],
+app\Http\Controllers\ProformaInvoiceController.php-66-            'ppn_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+app\Http\Controllers\ProformaInvoiceController.php-67-            'shipping_cost' => ['nullable', 'integer', 'min:0'],
+app\Http\Controllers\ProformaInvoiceController.php-68-            'admin_fee' => ['nullable', 'integer', 'min:0'],
+app\Http\Controllers\ProformaInvoiceController.php-69-            'other_cost' => ['nullable', 'integer', 'min:0'],
+app\Http\Controllers\ProformaInvoiceController.php-70-            'other_cost_note' => ['nullable', 'string', 'max:255'],
+--
+app\Http\Controllers\ProformaInvoiceController.php-160-    public function recordPayment(Request $request, ProformaInvoice $proformaInvoice)
+app\Http\Controllers\ProformaInvoiceController.php-161-    {
+app\Http\Controllers\ProformaInvoiceController.php-162-        $this->guardCompanyOwnership($proformaInvoice->company_id);
+app\Http\Controllers\ProformaInvoiceController.php-163-
+app\Http\Controllers\ProformaInvoiceController.php-164-        $validated = $request->validate([
+app\Http\Controllers\ProformaInvoiceController.php:165:            'amount' => ['required', 'integer', 'min:1'],
+app\Http\Controllers\ProformaInvoiceController.php:166:            'payment_date' => ['required', 'date'],
+app\Http\Controllers\ProformaInvoiceController.php-167-            'note' => ['nullable', 'string', 'max:500'],
+app\Http\Controllers\ProformaInvoiceController.php-168-        ]);
+app\Http\Controllers\ProformaInvoiceController.php-169-
+app\Http\Controllers\ProformaInvoiceController.php-170-        $this->paymentService->record($proformaInvoice, $validated, $request->user()?->id);
+app\Http\Controllers\ProformaInvoiceController.php-171-
+--
+app\Http\Controllers\MemberTierController.php-67-    }
+app\Http\Controllers\MemberTierController.php-68-
+app\Http\Controllers\MemberTierController.php-69-    private function validateTier(Request $request, ?MemberTier $memberTier = null): array
+app\Http\Controllers\MemberTierController.php-70-    {
+app\Http\Controllers\MemberTierController.php-71-        return $request->validate([
+app\Http\Controllers\MemberTierController.php:72:            'name' => ['required', 'string', 'max:100', Rule::unique('member_tiers', 'name')->ignore($memberTier?->id)],
+app\Http\Controllers\MemberTierController.php:73:            'minimum_spending' => ['required', 'integer', 'min:0'],
+app\Http\Controllers\MemberTierController.php:74:            'color' => ['required', 'string', 'max:30'],
+app\Http\Controllers\MemberTierController.php-75-            'benefits' => ['nullable', 'string'],
+app\Http\Controllers\MemberTierController.php-76-            'sort_order' => ['nullable', 'integer', 'min:0'],
+app\Http\Controllers\MemberTierController.php-77-        ]);
+app\Http\Controllers\MemberTierController.php-78-    }
+app\Http\Controllers\MemberTierController.php-79-}
+--
+app\Http\Controllers\CategoryDetailController.php-24-    }
+app\Http\Controllers\CategoryDetailController.php-25-
+app\Http\Controllers\CategoryDetailController.php-26-    public function store(Request $request)
+app\Http\Controllers\CategoryDetailController.php-27-    {
+app\Http\Controllers\CategoryDetailController.php-28-        $validated = $request->validate([
+app\Http\Controllers\CategoryDetailController.php:29:            'main_category_id' => ['required', 'exists:main_categories,id'],
+app\Http\Controllers\CategoryDetailController.php:30:            'name' => ['required', 'string', 'max:255'],
+app\Http\Controllers\CategoryDetailController.php-31-        ]);
+app\Http\Controllers\CategoryDetailController.php-32-        CategoryDetail::create([
+app\Http\Controllers\CategoryDetailController.php-33-            'main_category_id' => $validated['main_category_id'],
+app\Http\Controllers\CategoryDetailController.php-34-            'name' => $validated['name'],
+app\Http\Controllers\CategoryDetailController.php-35-            'slug' => $this->uniqueSlug($validated['name']),
+--
+app\Http\Controllers\CategoryDetailController.php-49-    }
+app\Http\Controllers\CategoryDetailController.php-50-
+app\Http\Controllers\CategoryDetailController.php-51-    public function update(Request $request, CategoryDetail $categoryDetail)
+app\Http\Controllers\CategoryDetailController.php-52-    {
+app\Http\Controllers\CategoryDetailController.php-53-        $validated = $request->validate([
+app\Http\Controllers\CategoryDetailController.php:54:            'main_category_id' => ['required', 'exists:main_categories,id'],
+app\Http\Controllers\CategoryDetailController.php:55:            'name' => ['required', 'string', 'max:255', Rule::unique('category_details', 'name')->where('main_category_id', $request->main_category_id)->ignore($categoryDetail->id)],
+app\Http\Controllers\CategoryDetailController.php-56-        ]);
+app\Http\Controllers\CategoryDetailController.php-57-        $categoryDetail->update([
+app\Http\Controllers\CategoryDetailController.php-58-            'main_category_id' => $validated['main_category_id'],
+app\Http\Controllers\CategoryDetailController.php-59-            'name' => $validated['name'],
+app\Http\Controllers\CategoryDetailController.php-60-            'slug' => $this->uniqueSlug($validated['name'], $categoryDetail->id),
+--
+app\Http\Controllers\CategoryDetailController.php-68-        return redirect()->route('category-details.index')->with('success', 'Kategori detail berhasil dihapus.');
+app\Http\Controllers\CategoryDetailController.php-69-    }
+app\Http\Controllers\CategoryDetailController.php-70-
+app\Http\Controllers\CategoryDetailController.php-71-    public function quickStore(Request $request)
+app\Http\Controllers\CategoryDetailController.php-72-    {
+app\Http\Controllers\CategoryDetailController.php:73:        $request->validate(['name' => ['required', 'string', 'max:255']]);
+app\Http\Controllers\CategoryDetailController.php-74-        $mainCategoryId = MainCategory::query()->orderBy('id')->value('id');
+app\Http\Controllers\CategoryDetailController.php-75-        abort_unless($mainCategoryId, 422);
+app\Http\Controllers\CategoryDetailController.php-76-
+app\Http\Controllers\CategoryDetailController.php-77-        $name = trim((string) $request->name);
+app\Http\Controllers\CategoryDetailController.php-78-        $detail = CategoryDetail::firstOrCreate(
+--
+app\Http\Controllers\CompanyController.php-77-    }
+app\Http\Controllers\CompanyController.php-78-
+app\Http\Controllers\CompanyController.php-79-    public function switch(Request $request)
+app\Http\Controllers\CompanyController.php-80-    {
+app\Http\Controllers\CompanyController.php-81-        $validated = $request->validate([
+app\Http\Controllers\CompanyController.php:82:            'company_id' => ['required', 'integer'],
+app\Http\Controllers\CompanyController.php-83-        ]);
+app\Http\Controllers\CompanyController.php-84-
+app\Http\Controllers\CompanyController.php-85-        $companyId = (int) $validated['company_id'];
+app\Http\Controllers\CompanyController.php-86-        $accessible = collect($request->attributes->get('accessible_companies', []));
+app\Http\Controllers\CompanyController.php-87-
+--
+app\Http\Controllers\CompanyController.php-95-    }
+app\Http\Controllers\CompanyController.php-96-
+app\Http\Controllers\CompanyController.php-97-    private function validateCompany(Request $request, ?Company $company = null): array
+app\Http\Controllers\CompanyController.php-98-    {
+app\Http\Controllers\CompanyController.php-99-        $validated = $request->validate([
+app\Http\Controllers\CompanyController.php:100:            'name' => ['required', 'string', 'max:150'],
+app\Http\Controllers\CompanyController.php-101-            'legal_name' => ['nullable', 'string', 'max:150'],
+app\Http\Controllers\CompanyController.php-102-            'address' => ['nullable', 'string', 'max:500'],
+app\Http\Controllers\CompanyController.php-103-            'phone' => ['nullable', 'string', 'max:30'],
+app\Http\Controllers\CompanyController.php-104-            'email' => ['nullable', 'email', 'max:150'],
+app\Http\Controllers\CompanyController.php-105-            'npwp' => ['nullable', 'string', 'max:30'],
+app\Http\Controllers\CompanyController.php-106-            'invoice_prefix' => [
+app\Http\Controllers\CompanyController.php:107:                'required',
+app\Http\Controllers\CompanyController.php-108-                'string',
+app\Http\Controllers\CompanyController.php-109-                'max:20',
+app\Http\Controllers\CompanyController.php-110-                'alpha_dash',
+app\Http\Controllers\CompanyController.php-111-                Rule::unique('companies', 'invoice_prefix')->ignore($company?->id),
+app\Http\Controllers\CompanyController.php-112-            ],
+--
+app\Http\Controllers\DeliveryNoteController.php-53-    public function store(Request $request, SalesOrder $salesOrder)
+app\Http\Controllers\DeliveryNoteController.php-54-    {
+app\Http\Controllers\DeliveryNoteController.php-55-        $this->guardCompanyOwnership($salesOrder->company_id);
+app\Http\Controllers\DeliveryNoteController.php-56-
+app\Http\Controllers\DeliveryNoteController.php-57-        $validated = $request->validate([
+app\Http\Controllers\DeliveryNoteController.php:58:            'recipient_name' => ['required', 'string', 'max:150'],
+app\Http\Controllers\DeliveryNoteController.php:59:            'shipping_address' => ['required', 'string', 'max:500'],
+app\Http\Controllers\DeliveryNoteController.php-60-            'courier_name' => ['nullable', 'string', 'max:100'],
+app\Http\Controllers\DeliveryNoteController.php-61-            'note' => ['nullable', 'string', 'max:500'],
+app\Http\Controllers\DeliveryNoteController.php-62-            'total_packages' => ['nullable', 'integer', 'min:1'],
+app\Http\Controllers\DeliveryNoteController.php:63:            'items' => ['required', 'array', 'min:1'],
+app\Http\Controllers\DeliveryNoteController.php:64:            'items.*.sales_order_detail_id' => ['required', 'integer'],
+app\Http\Controllers\DeliveryNoteController.php:65:            'items.*.qty' => ['required', 'integer', 'min:0'],
+app\Http\Controllers\DeliveryNoteController.php-66-        ]);
+app\Http\Controllers\DeliveryNoteController.php-67-
+app\Http\Controllers\DeliveryNoteController.php-68-        $deliveryNote = DB::transaction(function () use ($request, $validated, $salesOrder) {
+app\Http\Controllers\DeliveryNoteController.php-69-            $locked = SalesOrder::query()->lockForUpdate()->findOrFail($salesOrder->id);
+app\Http\Controllers\DeliveryNoteController.php-70-
+--
+app\Http\Controllers\Concerns\HandlesGuestCheckout.php-12-
+app\Http\Controllers\Concerns\HandlesGuestCheckout.php-13-trait HandlesGuestCheckout
+app\Http\Controllers\Concerns\HandlesGuestCheckout.php-14-{
+app\Http\Controllers\Concerns\HandlesGuestCheckout.php-15-    protected function guestCheckoutRules(Request $request): array
+app\Http\Controllers\Concerns\HandlesGuestCheckout.php-16-    {
+app\Http\Controllers\Concerns\HandlesGuestCheckout.php:17:        $requiredForGuest = Rule::requiredIf($request->user() === null);
+app\Http\Controllers\Concerns\HandlesGuestCheckout.php-18-
+app\Http\Controllers\Concerns\HandlesGuestCheckout.php-19-        return [
+app\Http\Controllers\Concerns\HandlesGuestCheckout.php:20:            'guest_name' => [$requiredForGuest, 'nullable', 'string', 'max:255'],
+app\Http\Controllers\Concerns\HandlesGuestCheckout.php:21:            'guest_email' => [$requiredForGuest, 'nullable', 'email', 'max:255'],
+app\Http\Controllers\Concerns\HandlesGuestCheckout.php:22:            'guest_phone' => [$requiredForGuest, 'nullable', 'string', 'regex:/^[0-9+().\s-]{8,20}$/'],
+app\Http\Controllers\Concerns\HandlesGuestCheckout.php:23:            'shipping_address_line' => [$requiredForGuest, 'nullable', 'string', 'max:2000'],
+app\Http\Controllers\Concerns\HandlesGuestCheckout.php:24:            'shipping_city' => [$requiredForGuest, 'nullable', 'string', 'max:255'],
+app\Http\Controllers\Concerns\HandlesGuestCheckout.php-25-            'shipping_district' => ['nullable', 'string', 'max:255'],
+app\Http\Controllers\Concerns\HandlesGuestCheckout.php:26:            'shipping_province' => [$requiredForGuest, 'nullable', 'string', 'max:255'],
+app\Http\Controllers\Concerns\HandlesGuestCheckout.php:27:            'shipping_postal_code' => [$requiredForGuest, 'nullable', 'string', 'max:20'],
+app\Http\Controllers\Concerns\HandlesGuestCheckout.php:28:            'shipping_destination_id' => [$requiredForGuest, 'nullable', 'integer', 'min:1'],
+app\Http\Controllers\Concerns\HandlesGuestCheckout.php-29-        ];
+app\Http\Controllers\Concerns\HandlesGuestCheckout.php-30-    }
+app\Http\Controllers\Concerns\HandlesGuestCheckout.php-31-
+app\Http\Controllers\Concerns\HandlesGuestCheckout.php-32-    protected function guestCheckoutData(Request $request, array $validated): ?array
+app\Http\Controllers\Concerns\HandlesGuestCheckout.php-33-    {
+--
+app\Http\Controllers\NewsletterController.php-8-class NewsletterController extends Controller
+app\Http\Controllers\NewsletterController.php-9-{
+app\Http\Controllers\NewsletterController.php-10-    public function store(): RedirectResponse
+app\Http\Controllers\NewsletterController.php-11-    {
+app\Http\Controllers\NewsletterController.php-12-        $validated = request()->validate([
+app\Http\Controllers\NewsletterController.php:13:            'email' => ['required', 'string', 'email:rfc,dns', 'max:255'],
+app\Http\Controllers\NewsletterController.php-14-        ], [
+app\Http\Controllers\NewsletterController.php:15:            'email.required' => 'Email wajib diisi.',
+app\Http\Controllers\NewsletterController.php-16-            'email.email' => 'Format email tidak valid.',
+app\Http\Controllers\NewsletterController.php-17-        ]);
+app\Http\Controllers\NewsletterController.php-18-
+app\Http\Controllers\NewsletterController.php-19-        $email = strtolower(trim((string) $validated['email']));
+app\Http\Controllers\NewsletterController.php-20-
+--
+app\Http\Controllers\TransactionController.php-111-    }
+app\Http\Controllers\TransactionController.php-112-
+app\Http\Controllers\TransactionController.php-113-    public function ship(Request $request, Transaction $transaction)
+app\Http\Controllers\TransactionController.php-114-    {
+app\Http\Controllers\TransactionController.php-115-        $validated = $request->validate([
+app\Http\Controllers\TransactionController.php:116:            'tracking_number' => ['required', 'string', 'max:100'],
+app\Http\Controllers\TransactionController.php-117-            'shipping_label' => ['nullable', 'string', 'max:100'],
+app\Http\Controllers\TransactionController.php-118-            'shipping_note' => ['nullable', 'string', 'max:500'],
+app\Http\Controllers\TransactionController.php-119-        ]);
+app\Http\Controllers\TransactionController.php-120-
+app\Http\Controllers\TransactionController.php-121-        try {
+--
+app\Http\Controllers\TransactionController.php-179-    }
+app\Http\Controllers\TransactionController.php-180-
+app\Http\Controllers\TransactionController.php-181-    public function verifyPayment(Request $request, Transaction $transaction, LoyaltyPointService $loyaltyPointService)
+app\Http\Controllers\TransactionController.php-182-    {
+app\Http\Controllers\TransactionController.php-183-        $validated = $request->validate([
+app\Http\Controllers\TransactionController.php:184:            'action' => ['required', 'in:approve,reject'],
+app\Http\Controllers\TransactionController.php-185-            'payment_admin_note' => ['nullable', 'string', 'max:500'],
+app\Http\Controllers\TransactionController.php-186-        ]);
+app\Http\Controllers\TransactionController.php-187-
+app\Http\Controllers\TransactionController.php-188-        try {
+app\Http\Controllers\TransactionController.php-189-            $result = DB::transaction(function () use ($transaction, $validated, $request, $loyaltyPointService): array {
+--
+app\Http\Controllers\QuotationController.php-201-    public function updateStatus(Request $request, Quotation $quotation)
+app\Http\Controllers\QuotationController.php-202-    {
+app\Http\Controllers\QuotationController.php-203-        $this->guardCompanyOwnership($quotation->company_id);
+app\Http\Controllers\QuotationController.php-204-
+app\Http\Controllers\QuotationController.php-205-        $validated = $request->validate([
+app\Http\Controllers\QuotationController.php:206:            'to_status' => ['required', Rule::in([Quotation::STATUS_ACCEPTED, Quotation::STATUS_REJECTED])],
+app\Http\Controllers\QuotationController.php-207-            'note' => ['nullable', 'string', 'max:500'],
+app\Http\Controllers\QuotationController.php-208-        ]);
+app\Http\Controllers\QuotationController.php-209-
+app\Http\Controllers\QuotationController.php-210-        if (! in_array($quotation->status, [Quotation::STATUS_DRAFT, Quotation::STATUS_SENT], true)) {
+app\Http\Controllers\QuotationController.php-211-            throw ValidationException::withMessages(['quotation' => 'Status quotation saat ini tidak bisa diubah ke accepted/rejected.']);
+--
+app\Http\Controllers\QuotationController.php-263-    public function convert(Request $request, Quotation $quotation)
+app\Http\Controllers\QuotationController.php-264-    {
+app\Http\Controllers\QuotationController.php-265-        $this->guardCompanyOwnership($quotation->company_id);
+app\Http\Controllers\QuotationController.php-266-
+app\Http\Controllers\QuotationController.php-267-        $validated = $request->validate([
+app\Http\Controllers\QuotationController.php:268:            'items' => ['required', 'array', 'min:1'],
+app\Http\Controllers\QuotationController.php:269:            'items.*.quotation_detail_id' => ['required', 'integer'],
+app\Http\Controllers\QuotationController.php:270:            'items.*.qty' => ['required', 'integer', 'min:0'],
+app\Http\Controllers\QuotationController.php-271-            'ppn_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+app\Http\Controllers\QuotationController.php-272-            'shipping_cost' => ['nullable', 'integer', 'min:0'],
+app\Http\Controllers\QuotationController.php-273-            'admin_fee' => ['nullable', 'integer', 'min:0'],
+app\Http\Controllers\QuotationController.php-274-            'other_cost' => ['nullable', 'integer', 'min:0'],
+app\Http\Controllers\QuotationController.php-275-            'other_cost_note' => ['nullable', 'string', 'max:255'],
+--
+app\Http\Controllers\QuotationController.php-423-    }
+app\Http\Controllers\QuotationController.php-424-
+app\Http\Controllers\QuotationController.php-425-    private function validateForm(Request $request, bool $requireItems = true): array
+app\Http\Controllers\QuotationController.php-426-    {
+app\Http\Controllers\QuotationController.php-427-        $itemRules = $requireItems
+app\Http\Controllers\QuotationController.php:428:            ? ['required', 'array', 'min:1']
+app\Http\Controllers\QuotationController.php-429-            : ['nullable', 'array'];
+app\Http\Controllers\QuotationController.php-430-
+app\Http\Controllers\QuotationController.php-431-        return $request->validate([
+app\Http\Controllers\QuotationController.php:432:            'customer_mode' => ['required', 'in:existing,manual'],
+app\Http\Controllers\QuotationController.php:433:            'customer_id' => ['nullable', 'required_if:customer_mode,existing', 'integer', 'exists:users,id'],
+app\Http\Controllers\QuotationController.php:434:            'manual_customer_name' => ['nullable', 'required_if:customer_mode,manual', 'string', 'max:150'],
+app\Http\Controllers\QuotationController.php:435:            'manual_customer_phone' => ['nullable', 'required_if:customer_mode,manual', 'string', 'max:50'],
+app\Http\Controllers\QuotationController.php-436-            'manual_customer_email' => ['nullable', 'email', 'max:150'],
+app\Http\Controllers\QuotationController.php-437-            'items' => $itemRules,
+app\Http\Controllers\QuotationController.php:438:            'items.*.product_variant_id' => ['required', 'integer', 'exists:product_variants,id'],
+app\Http\Controllers\QuotationController.php:439:            'items.*.qty' => ['required', 'integer', 'min:1'],
+app\Http\Controllers\QuotationController.php:440:            'items.*.price' => ['required', 'integer', 'min:0'],
+app\Http\Controllers\QuotationController.php-441-            'items.*.note' => ['nullable', 'string', 'max:500'],
+app\Http\Controllers\QuotationController.php-442-            'discount_amount' => ['nullable', 'integer', 'min:0'],
+app\Http\Controllers\QuotationController.php-443-            'ppn_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+app\Http\Controllers\QuotationController.php-444-            'shipping_cost' => ['nullable', 'integer', 'min:0'],
+app\Http\Controllers\QuotationController.php-445-            'admin_fee' => ['nullable', 'integer', 'min:0'],
+app\Http\Controllers\QuotationController.php-446-            'other_cost' => ['nullable', 'integer', 'min:0'],
+app\Http\Controllers\QuotationController.php-447-            'other_cost_note' => ['nullable', 'string', 'max:255'],
+app\Http\Controllers\QuotationController.php:448:            'valid_until' => ['required', 'date', 'after:today'],
+app\Http\Controllers\QuotationController.php-449-            'note' => ['nullable', 'string', 'max:2000'],
+app\Http\Controllers\QuotationController.php-450-        ]);
+app\Http\Controllers\QuotationController.php-451-    }
+app\Http\Controllers\QuotationController.php-452-
+app\Http\Controllers\QuotationController.php-453-    private function prepareItems(array $items, int $companyId): array
+--
+app\Http\Controllers\ManualPaymentController.php-26-    use HandlesGuestCheckout;
+app\Http\Controllers\ManualPaymentController.php-27-
+app\Http\Controllers\ManualPaymentController.php-28-    public function checkout(Request $request, LoyaltyPointService $loyaltyPointService, CheckoutTaxCalculator $taxCalculator, TaxInvoiceRequestService $taxInvoiceService, DocumentNumberGenerator $documentNumberGenerator)
+app\Http\Controllers\ManualPaymentController.php-29-    {
+app\Http\Controllers\ManualPaymentController.php-30-        $validated = $request->validate(array_merge([
+app\Http\Controllers\ManualPaymentController.php:31:            'items' => ['required', 'array', 'min:1'],
+app\Http\Controllers\ManualPaymentController.php:32:            'items.*.id' => ['required'],
+app\Http\Controllers\ManualPaymentController.php-33-            'items.*.productVariantId' => ['nullable', 'integer'],
+app\Http\Controllers\ManualPaymentController.php-34-            'items.*.companyId' => ['nullable', 'integer'],
+app\Http\Controllers\ManualPaymentController.php:35:            'items.*.name' => ['required', 'string'],
+app\Http\Controllers\ManualPaymentController.php-36-            'items.*.variant' => ['nullable', 'string'],
+app\Http\Controllers\ManualPaymentController.php-37-            'items.*.image' => ['nullable', 'string'],
+app\Http\Controllers\ManualPaymentController.php-38-            'items.*.note' => ['nullable', 'string', 'max:500'],
+app\Http\Controllers\ManualPaymentController.php:39:            'items.*.price' => ['required', 'numeric', 'min:0'],
+app\Http\Controllers\ManualPaymentController.php:40:            'items.*.qty' => ['required', 'integer', 'min:1'],
+app\Http\Controllers\ManualPaymentController.php-41-            'items.*.redeemPoints' => ['nullable', 'integer', 'min:0'],
+app\Http\Controllers\ManualPaymentController.php:42:            'company_id' => ['required', 'integer', 'exists:companies,id'],
+app\Http\Controllers\ManualPaymentController.php:43:            'shipping_cost' => ['required', 'numeric', 'min:0'],
+app\Http\Controllers\ManualPaymentController.php-44-            'shipping_label' => ['nullable', 'string', 'max:100'],
+app\Http\Controllers\ManualPaymentController.php-45-            'address_id' => ['nullable', 'integer'],
+app\Http\Controllers\ManualPaymentController.php-46-            'tax_invoice' => ['nullable', 'array'],
+app\Http\Controllers\ManualPaymentController.php-47-            'tax_invoice.requested' => ['nullable', 'boolean'],
+app\Http\Controllers\ManualPaymentController.php-48-            'tax_invoice.profile_id' => ['nullable', 'integer'],
+--
+app\Http\Controllers\ManualPaymentController.php-234-
+app\Http\Controllers\ManualPaymentController.php-235-        abort_unless((string) $transaction->payment_type === 'manual_transfer', 422);
+app\Http\Controllers\ManualPaymentController.php-236-        abort_unless(in_array(strtolower((string) $transaction->status), ['pending', 'menunggu_verifikasi'], true), 422);
+app\Http\Controllers\ManualPaymentController.php-237-
+app\Http\Controllers\ManualPaymentController.php-238-        $validated = $request->validate([
+app\Http\Controllers\ManualPaymentController.php:239:            'payment_proof' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+app\Http\Controllers\ManualPaymentController.php-240-        ], [
+app\Http\Controllers\ManualPaymentController.php:241:            'payment_proof.required' => 'Bukti pembayaran wajib dipilih.',
+app\Http\Controllers\ManualPaymentController.php-242-            'payment_proof.image' => 'Bukti pembayaran harus berupa gambar.',
+app\Http\Controllers\ManualPaymentController.php-243-            'payment_proof.mimes' => 'Format bukti pembayaran harus JPG, PNG, atau WebP.',
+app\Http\Controllers\ManualPaymentController.php-244-            'payment_proof.max' => 'Ukuran bukti pembayaran maksimal 4 MB.',
+app\Http\Controllers\ManualPaymentController.php-245-        ]);
+app\Http\Controllers\ManualPaymentController.php-246-
+--
+app\Http\Controllers\MidtransController.php-33-    public function __construct(private readonly DocumentNumberGenerator $documentNumberGenerator) {}
+app\Http\Controllers\MidtransController.php-34-
+app\Http\Controllers\MidtransController.php-35-    public function notification(Request $request)
+app\Http\Controllers\MidtransController.php-36-    {
+app\Http\Controllers\MidtransController.php-37-        $validated = $request->validate([
+app\Http\Controllers\MidtransController.php:38:            'order_id' => ['required', 'string', 'max:255'],
+app\Http\Controllers\MidtransController.php:39:            'status_code' => ['required', 'string', 'max:10'],
+app\Http\Controllers\MidtransController.php:40:            'gross_amount' => ['required'],
+app\Http\Controllers\MidtransController.php:41:            'signature_key' => ['required', 'string', 'size:128'],
+app\Http\Controllers\MidtransController.php:42:            'transaction_status' => ['required', 'string', 'max:50'],
+app\Http\Controllers\MidtransController.php-43-            'transaction_id' => ['nullable', 'string', 'max:255'],
+app\Http\Controllers\MidtransController.php-44-            'payment_type' => ['nullable', 'string', 'max:50'],
+app\Http\Controllers\MidtransController.php-45-            'fraud_status' => ['nullable', 'string', 'max:50'],
+app\Http\Controllers\MidtransController.php-46-        ]);
+app\Http\Controllers\MidtransController.php-47-
+--
+app\Http\Controllers\MidtransController.php-96-    }
+app\Http\Controllers\MidtransController.php-97-
+app\Http\Controllers\MidtransController.php-98-    public function createCharge(Request $request, CheckoutTaxCalculator $taxCalculator)
+app\Http\Controllers\MidtransController.php-99-    {
+app\Http\Controllers\MidtransController.php-100-        $validated = $request->validate(array_merge([
+app\Http\Controllers\MidtransController.php:101:            'items' => ['required', 'array', 'min:1'],
+app\Http\Controllers\MidtransController.php:102:            'items.*.id' => ['required'],
+app\Http\Controllers\MidtransController.php-103-            'items.*.productVariantId' => ['nullable', 'integer'],
+app\Http\Controllers\MidtransController.php-104-            'items.*.companyId' => ['nullable', 'integer'],
+app\Http\Controllers\MidtransController.php:105:            'items.*.name' => ['required', 'string'],
+app\Http\Controllers\MidtransController.php-106-            'items.*.variant' => ['nullable', 'string'],
+app\Http\Controllers\MidtransController.php-107-            'items.*.image' => ['nullable', 'string'],
+app\Http\Controllers\MidtransController.php-108-            'items.*.note' => ['nullable', 'string', 'max:500'],
+app\Http\Controllers\MidtransController.php:109:            'items.*.price' => ['required', 'numeric', 'min:0'],
+app\Http\Controllers\MidtransController.php:110:            'items.*.qty' => ['required', 'integer', 'min:1'],
+app\Http\Controllers\MidtransController.php-111-            'items.*.redeemPoints' => ['nullable', 'integer', 'min:0'],
+app\Http\Controllers\MidtransController.php:112:            'company_id' => ['required', 'integer', 'exists:companies,id'],
+app\Http\Controllers\MidtransController.php:113:            'shipping_cost' => ['required', 'numeric', 'min:0'],
+app\Http\Controllers\MidtransController.php-114-            'shipping_label' => ['nullable', 'string', 'max:100'],
+app\Http\Controllers\MidtransController.php-115-            'address_id' => ['nullable', 'integer'],
+app\Http\Controllers\MidtransController.php:116:            'payment_method' => ['required', 'string', 'in:bca,bni,bri,mandiri,cimb,qris'],
+app\Http\Controllers\MidtransController.php-117-            'tax_invoice' => ['nullable', 'array'],
+app\Http\Controllers\MidtransController.php-118-            'tax_invoice.requested' => ['nullable', 'boolean'],
+app\Http\Controllers\MidtransController.php-119-            'tax_invoice.profile_id' => ['nullable', 'integer'],
+app\Http\Controllers\MidtransController.php-120-            'tax_invoice.taxpayer_name' => ['nullable', 'string', 'max:255'],
+app\Http\Controllers\MidtransController.php-121-            'tax_invoice.taxpayer_number' => ['nullable', 'string', 'max:32'],
+--
+app\Http\Controllers\MidtransController.php-622-    }
+app\Http\Controllers\MidtransController.php-623-
+app\Http\Controllers\MidtransController.php-624-    public function simulate(Request $request)
+app\Http\Controllers\MidtransController.php-625-    {
+app\Http\Controllers\MidtransController.php-626-        $validated = $request->validate([
+app\Http\Controllers\MidtransController.php:627:            'order_id' => ['required', 'string'],
+app\Http\Controllers\MidtransController.php-628-            'payment_type' => ['nullable', 'string'],
+app\Http\Controllers\MidtransController.php-629-            'reference_value' => ['nullable', 'string'],
+app\Http\Controllers\MidtransController.php-630-        ]);
+app\Http\Controllers\MidtransController.php-631-
+app\Http\Controllers\MidtransController.php-632-        try {
+--
+app\Http\Controllers\ProductController.php-86-        $request->merge([
+app\Http\Controllers\ProductController.php-87-            'variants' => $this->normalizeVariantNumericFields($request->input('variants', [])),
+app\Http\Controllers\ProductController.php-88-        ]);
+app\Http\Controllers\ProductController.php-89-
+app\Http\Controllers\ProductController.php-90-        $validated = $request->validate([
+app\Http\Controllers\ProductController.php:91:            'name'                  => ['required', 'string', 'max:255'],
+app\Http\Controllers\ProductController.php-92-            'main_category_id'      => ['nullable', 'exists:main_categories,id'],
+app\Http\Controllers\ProductController.php-93-            'category_detail_id'    => ['nullable', 'exists:category_details,id'],
+app\Http\Controllers\ProductController.php-94-            'category_id'           => ['nullable', 'exists:category_details,id'],
+app\Http\Controllers\ProductController.php:95:            'status'                => ['required', Rule::in(['active', 'inactive'])],
+app\Http\Controllers\ProductController.php-96-            'description'           => ['nullable', 'string'],
+app\Http\Controllers\ProductController.php-97-            'is_redeem_product'     => ['nullable', 'boolean'],
+app\Http\Controllers\ProductController.php-98-            'redeem_points'         => ['nullable', 'integer', 'min:1'],
+app\Http\Controllers\ProductController.php:99:            'variants'              => ['required', 'array', 'min:1'],
+app\Http\Controllers\ProductController.php:100:            'variants.*.price'      => ['required', 'numeric', 'min:0'],
+app\Http\Controllers\ProductController.php:101:            'variants.*.stock'      => ['required', 'integer', 'min:0'],
+app\Http\Controllers\ProductController.php:102:            'variants.*.weight_grams' => ['required', 'integer', 'min:1'],
+app\Http\Controllers\ProductController.php-103-            'variants.*.length_cm'  => ['nullable', 'numeric', 'min:0'],
+app\Http\Controllers\ProductController.php-104-            'variants.*.width_cm'   => ['nullable', 'numeric', 'min:0'],
+app\Http\Controllers\ProductController.php-105-            'variants.*.height_cm'  => ['nullable', 'numeric', 'min:0'],
+app\Http\Controllers\ProductController.php-106-            'variants.*.attributes' => ['nullable', 'array'],
+app\Http\Controllers\ProductController.php:107:            'variants.*.attributes.*.attribute_definition_id' => ['required', 'exists:attribute_definitions,id'],
+app\Http\Controllers\ProductController.php-108-            'variants.*.attributes.*.value_text' => ['nullable', 'string', 'max:255'],
+app\Http\Controllers\ProductController.php-109-            'variants.*.attributes.*.value_number' => ['nullable', 'numeric', 'min:0'],
+app\Http\Controllers\ProductController.php-110-            'variants.*.image'      => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+app\Http\Controllers\ProductController.php-111-        ]);
+app\Http\Controllers\ProductController.php-112-        $isRedeemProduct = $request->boolean('is_redeem_product');
+--
+app\Http\Controllers\ProductController.php-185-    }
+app\Http\Controllers\ProductController.php-186-
+app\Http\Controllers\ProductController.php-187-    public function import(Request $request)
+app\Http\Controllers\ProductController.php-188-    {
+app\Http\Controllers\ProductController.php-189-        $request->validate([
+app\Http\Controllers\ProductController.php:190:            'import_file' => ['required', 'file', 'mimes:xlsx,xls'],
+app\Http\Controllers\ProductController.php-191-        ], [
+app\Http\Controllers\ProductController.php:192:            'import_file.required' => 'File Excel wajib dipilih.',
+app\Http\Controllers\ProductController.php-193-            'import_file.mimes' => 'Format file harus .xlsx atau .xls sesuai template.',
+app\Http\Controllers\ProductController.php-194-        ]);
+app\Http\Controllers\ProductController.php-195-
+app\Http\Controllers\ProductController.php-196-        $file = $request->file('import_file');
+app\Http\Controllers\ProductController.php-197-        $sheetRows = IOFactory::load($file->getRealPath())
+--
+app\Http\Controllers\ProductController.php-211-                'import_file' => 'Format kolom Excel tidak sesuai template. Silakan download ulang template dan jangan ubah nama/urutan kolom.',
+app\Http\Controllers\ProductController.php-212-            ]);
+app\Http\Controllers\ProductController.php-213-        }
+app\Http\Controllers\ProductController.php-214-
+app\Http\Controllers\ProductController.php-215-        $attributeDefinitions = AttributeDefinition::query()->get()->keyBy('code');
+app\Http\Controllers\ProductController.php:216:        $requiredCodes = ['diameter', 'length_mm', 'thread_type', 'grade', 'material'];
+app\Http\Controllers\ProductController.php:217:        foreach ($requiredCodes as $code) {
+app\Http\Controllers\ProductController.php-218-            if (!$attributeDefinitions->has($code)) {
+app\Http\Controllers\ProductController.php-219-                throw ValidationException::withMessages([
+app\Http\Controllers\ProductController.php-220-                    'import_file' => "Attribute definition untuk kode '{$code}' belum tersedia di sistem.",
+app\Http\Controllers\ProductController.php-221-                ]);
+app\Http\Controllers\ProductController.php-222-            }
+--
+app\Http\Controllers\ProductController.php-245-            ]);
+app\Http\Controllers\ProductController.php-246-        }
+app\Http\Controllers\ProductController.php-247-
+app\Http\Controllers\ProductController.php-248-        $categoryDetails = CategoryDetail::query()->with('mainCategory')->get();
+app\Http\Controllers\ProductController.php-249-
+app\Http\Controllers\ProductController.php:250:        DB::transaction(function () use ($normalizedRows, $categoryDetails, $attributeDefinitions, $requiredCodes) {
+app\Http\Controllers\ProductController.php-251-            $attributeDefinitionsById = $attributeDefinitions->keyBy('id');
+app\Http\Controllers\ProductController.php-252-            $grouped = $normalizedRows->groupBy(function (array $row) {
+app\Http\Controllers\ProductController.php-253-                return implode('|', [
+app\Http\Controllers\ProductController.php-254-                    strtolower($row['product_name']),
+app\Http\Controllers\ProductController.php-255-                    strtolower($row['category_detail']),
+--
+app\Http\Controllers\ProductController.php-332-                        throw ValidationException::withMessages([
+app\Http\Controllers\ProductController.php-333-                            'import_file' => "Baris {$line}: price, stock, dan weight_grams wajib diisi.",
+app\Http\Controllers\ProductController.php-334-                        ]);
+app\Http\Controllers\ProductController.php-335-                    }
+app\Http\Controllers\ProductController.php-336-
+app\Http\Controllers\ProductController.php:337:                    $attributes = collect($requiredCodes)
+app\Http\Controllers\ProductController.php-338-                        ->map(function ($code) use ($row, $attributeDefinitions) {
+app\Http\Controllers\ProductController.php-339-                            $value = trim((string) ($row[$code] ?? ''));
+app\Http\Controllers\ProductController.php-340-                            return [
+app\Http\Controllers\ProductController.php-341-                                'attribute_definition_id' => (int) $attributeDefinitions->get($code)->id,
+app\Http\Controllers\ProductController.php-342-                                'value_text' => $value !== '' ? $value : null,
+--
+app\Http\Controllers\ProductController.php-408-        $request->merge([
+app\Http\Controllers\ProductController.php-409-            'variants' => $this->normalizeVariantNumericFields($request->input('variants', [])),
+app\Http\Controllers\ProductController.php-410-        ]);
+app\Http\Controllers\ProductController.php-411-
+app\Http\Controllers\ProductController.php-412-        $validated = $request->validate([
+app\Http\Controllers\ProductController.php:413:            'name'                  => ['required', 'string', 'max:255'],
+app\Http\Controllers\ProductController.php-414-            'main_category_id'      => ['nullable', 'exists:main_categories,id'],
+app\Http\Controllers\ProductController.php-415-            'category_detail_id'    => ['nullable', 'exists:category_details,id'],
+app\Http\Controllers\ProductController.php-416-            'category_id'           => ['nullable', 'exists:category_details,id'],
+app\Http\Controllers\ProductController.php:417:            'status'                => ['required', Rule::in(['active', 'inactive'])],
+app\Http\Controllers\ProductController.php-418-            'description'           => ['nullable', 'string'],
+app\Http\Controllers\ProductController.php-419-            'is_redeem_product'     => ['nullable', 'boolean'],
+app\Http\Controllers\ProductController.php-420-            'redeem_points'         => ['nullable', 'integer', 'min:1'],
+app\Http\Controllers\ProductController.php:421:            'variants'              => ['required', 'array', 'min:1'],
+app\Http\Controllers\ProductController.php-422-            'variants.*.product_variant_id' => ['nullable', 'integer'],
+app\Http\Controllers\ProductController.php:423:            'variants.*.price'      => ['required', 'numeric', 'min:0'],
+app\Http\Controllers\ProductController.php:424:            'variants.*.stock'      => ['required', 'integer', 'min:0'],
+app\Http\Controllers\ProductController.php:425:            'variants.*.weight_grams' => ['required', 'integer', 'min:1'],
+app\Http\Controllers\ProductController.php-426-            'variants.*.length_cm'  => ['nullable', 'numeric', 'min:0'],
+app\Http\Controllers\ProductController.php-427-            'variants.*.width_cm'   => ['nullable', 'numeric', 'min:0'],
+app\Http\Controllers\ProductController.php-428-            'variants.*.height_cm'  => ['nullable', 'numeric', 'min:0'],
+app\Http\Controllers\ProductController.php-429-            'variants.*.attributes' => ['nullable', 'array'],
+app\Http\Controllers\ProductController.php:430:            'variants.*.attributes.*.attribute_definition_id' => ['required', 'exists:attribute_definitions,id'],
+app\Http\Controllers\ProductController.php-431-            'variants.*.attributes.*.value_text' => ['nullable', 'string', 'max:255'],
+app\Http\Controllers\ProductController.php-432-            'variants.*.attributes.*.value_number' => ['nullable', 'numeric', 'min:0'],
+app\Http\Controllers\ProductController.php-433-            'variants.*.image'      => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+app\Http\Controllers\ProductController.php-434-        ]);
+app\Http\Controllers\ProductController.php-435-        $isRedeemProduct = $request->boolean('is_redeem_product');
+--
+app\Http\Controllers\ProfileController.php-12-    public function updateBiodata(Request $request, ImageOptimizer $imageOptimizer)
+app\Http\Controllers\ProfileController.php-13-    {
+app\Http\Controllers\ProfileController.php-14-        $user = $request->user();
+app\Http\Controllers\ProfileController.php-15-
+app\Http\Controllers\ProfileController.php-16-        $validated = $request->validate([
+app\Http\Controllers\ProfileController.php:17:            'first_name' => ['required', 'string', 'max:100'],
+app\Http\Controllers\ProfileController.php-18-            'last_name' => ['nullable', 'string', 'max:100'],
+app\Http\Controllers\ProfileController.php-19-            'username' => ['nullable', 'string', 'max:100', Rule::unique('users', 'username')->ignore($user->id)],
+app\Http\Controllers\ProfileController.php-20-            'gender' => ['nullable', Rule::in(['male', 'female'])],
+app\Http\Controllers\ProfileController.php:21:            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+app\Http\Controllers\ProfileController.php-22-            'phone_country_code' => ['nullable', 'string', 'max:8'],
+app\Http\Controllers\ProfileController.php-23-            'phone_number' => ['nullable', 'string', 'max:30'],
+app\Http\Controllers\ProfileController.php-24-            'birth_date' => ['nullable', 'date'],
+app\Http\Controllers\ProfileController.php-25-            'social_url' => ['nullable', 'url', 'max:255'],
+app\Http\Controllers\ProfileController.php-26-            'bio' => ['nullable', 'string', 'max:1000'],
+--
+app\Http\Controllers\ProfileController.php-55-    public function updatePassword(Request $request)
+app\Http\Controllers\ProfileController.php-56-    {
+app\Http\Controllers\ProfileController.php-57-        $user = $request->user();
+app\Http\Controllers\ProfileController.php-58-
+app\Http\Controllers\ProfileController.php-59-        $validated = $request->validate([
+app\Http\Controllers\ProfileController.php:60:            'current_password' => ['required', 'string'],
+app\Http\Controllers\ProfileController.php:61:            'password' => ['required', 'string', 'min:8', 'confirmed'],
+app\Http\Controllers\ProfileController.php-62-        ]);
+app\Http\Controllers\ProfileController.php-63-
+app\Http\Controllers\ProfileController.php-64-        if (!Hash::check($validated['current_password'], $user->password)) {
+app\Http\Controllers\ProfileController.php-65-            return back()->withErrors(['current_password' => 'Password saat ini tidak valid.']);
+app\Http\Controllers\ProfileController.php-66-        }
+--
+app\Http\Controllers\PromoPageController.php-63-    }
+app\Http\Controllers\PromoPageController.php-64-
+app\Http\Controllers\PromoPageController.php-65-    private function validatePayload(Request $request, ?int $ignoreId = null): array
+app\Http\Controllers\PromoPageController.php-66-    {
+app\Http\Controllers\PromoPageController.php-67-        return $request->validate([
+app\Http\Controllers\PromoPageController.php:68:            'title' => ['required', 'string', 'max:255'],
+app\Http\Controllers\PromoPageController.php-69-            'slug' => ['nullable', 'string', 'max:255', Rule::unique('promo_pages', 'slug')->ignore($ignoreId)],
+app\Http\Controllers\PromoPageController.php-70-            'subtitle' => ['nullable', 'string', 'max:255'],
+app\Http\Controllers\PromoPageController.php-71-            'description' => ['nullable', 'string'],
+app\Http\Controllers\PromoPageController.php-72-            'hero_image_url' => ['nullable', 'url', 'max:2048'],
+app\Http\Controllers\PromoPageController.php-73-            'hero_image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:6144'],
+--
+app\Http\Controllers\ReturnRequestController.php-15-class ReturnRequestController extends Controller
+app\Http\Controllers\ReturnRequestController.php-16-{
+app\Http\Controllers\ReturnRequestController.php-17-    public function store(Request $request, ImageOptimizer $imageOptimizer)
+app\Http\Controllers\ReturnRequestController.php-18-    {
+app\Http\Controllers\ReturnRequestController.php-19-        $validated = $request->validate([
+app\Http\Controllers\ReturnRequestController.php:20:            'transaction_id' => ['required', 'integer', 'exists:transactions,id'],
+app\Http\Controllers\ReturnRequestController.php:21:            'type' => ['required', Rule::in(['refund', 'exchange'])],
+app\Http\Controllers\ReturnRequestController.php:22:            'reason' => ['required', 'string', 'max:1000'],
+app\Http\Controllers\ReturnRequestController.php-23-            'customer_note' => ['nullable', 'string', 'max:1000'],
+app\Http\Controllers\ReturnRequestController.php:24:            'items' => ['required', 'array', 'min:1'],
+app\Http\Controllers\ReturnRequestController.php-25-            'items.*' => ['nullable', 'integer', 'min:0'],
+app\Http\Controllers\ReturnRequestController.php-26-            'photos' => ['nullable', 'array', 'max:5'],
+app\Http\Controllers\ReturnRequestController.php-27-            'photos.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+app\Http\Controllers\ReturnRequestController.php-28-        ]);
+app\Http\Controllers\ReturnRequestController.php-29-
+--
+app\Http\Controllers\SalesOrderController.php-124-    }
+app\Http\Controllers\SalesOrderController.php-125-
+app\Http\Controllers\SalesOrderController.php-126-    public function store(Request $request)
+app\Http\Controllers\SalesOrderController.php-127-    {
+app\Http\Controllers\SalesOrderController.php-128-        $validated = $request->validate([
+app\Http\Controllers\SalesOrderController.php:129:            'customer_mode' => ['required', 'in:existing,manual'],
+app\Http\Controllers\SalesOrderController.php:130:            'customer_id' => ['nullable', 'required_if:customer_mode,existing', 'integer', 'exists:users,id'],
+app\Http\Controllers\SalesOrderController.php:131:            'manual_customer_name' => ['nullable', 'required_if:customer_mode,manual', 'string', 'max:150'],
+app\Http\Controllers\SalesOrderController.php:132:            'manual_customer_phone' => ['nullable', 'required_if:customer_mode,manual', 'string', 'max:50'],
+app\Http\Controllers\SalesOrderController.php-133-            'manual_customer_email' => ['nullable', 'email', 'max:150'],
+app\Http\Controllers\SalesOrderController.php:134:            'items' => ['required', 'array', 'min:1'],
+app\Http\Controllers\SalesOrderController.php:135:            'items.*.product_variant_id' => ['required', 'integer', 'exists:product_variants,id'],
+app\Http\Controllers\SalesOrderController.php:136:            'items.*.qty' => ['required', 'integer', 'min:1'],
+app\Http\Controllers\SalesOrderController.php:137:            'items.*.price' => ['required', 'integer', 'min:0'],
+app\Http\Controllers\SalesOrderController.php-138-            'discount_amount' => ['nullable', 'integer', 'min:0'],
+app\Http\Controllers\SalesOrderController.php-139-            'ppn_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+app\Http\Controllers\SalesOrderController.php-140-            'shipping_cost' => ['nullable', 'integer', 'min:0'],
+app\Http\Controllers\SalesOrderController.php-141-            'admin_fee' => ['nullable', 'integer', 'min:0'],
+app\Http\Controllers\SalesOrderController.php-142-            'other_cost' => ['nullable', 'integer', 'min:0'],
+--
+app\Http\Controllers\StoreLocationController.php-27-
+app\Http\Controllers\StoreLocationController.php-28-    public function update(Request $request)
+app\Http\Controllers\StoreLocationController.php-29-    {
+app\Http\Controllers\StoreLocationController.php-30-        $validated = $request->validate([
+app\Http\Controllers\StoreLocationController.php-31-            'label' => ['nullable', 'string', 'max:255'],
+app\Http\Controllers\StoreLocationController.php:32:            'province_id' => ['required', 'integer', 'min:1'],
+app\Http\Controllers\StoreLocationController.php:33:            'province_name' => ['required', 'string', 'max:255'],
+app\Http\Controllers\StoreLocationController.php:34:            'city_id' => ['required', 'integer', 'min:1'],
+app\Http\Controllers\StoreLocationController.php:35:            'city_name' => ['required', 'string', 'max:255'],
+app\Http\Controllers\StoreLocationController.php-36-        ]);
+app\Http\Controllers\StoreLocationController.php-37-
+app\Http\Controllers\StoreLocationController.php-38-        $companyId = $this->activeCompanyId();
+app\Http\Controllers\StoreLocationController.php-39-
+app\Http\Controllers\StoreLocationController.php-40-        StoreLocation::query()->where('company_id', $companyId)->update(['is_active' => false]);
+--
+app\Http\Controllers\StoreLocationController.php-66-    }
+app\Http\Controllers\StoreLocationController.php-67-
+app\Http\Controllers\StoreLocationController.php-68-    public function cities(Request $request)
+app\Http\Controllers\StoreLocationController.php-69-    {
+app\Http\Controllers\StoreLocationController.php-70-        $validated = $request->validate([
+app\Http\Controllers\StoreLocationController.php:71:            'province_id' => ['required', 'integer', 'min:1'],
+app\Http\Controllers\StoreLocationController.php-72-        ]);
+app\Http\Controllers\StoreLocationController.php-73-
+app\Http\Controllers\StoreLocationController.php-74-        try {
+app\Http\Controllers\StoreLocationController.php-75-            $items = $this->rajaOngkir->cities((int) $validated['province_id']);
+app\Http\Controllers\StoreLocationController.php-76-
+--
+app\Http\Controllers\StockController.php-36-    public function updateThreshold(Request $request, ProductVariant $productVariant)
+app\Http\Controllers\StockController.php-37-    {
+app\Http\Controllers\StockController.php-38-        $this->guardCompanyOwnership($productVariant->product?->company_id);
+app\Http\Controllers\StockController.php-39-
+app\Http\Controllers\StockController.php-40-        $validated = $request->validate([
+app\Http\Controllers\StockController.php:41:            'low_stock_threshold' => ['required', 'integer', 'min:0'],
+app\Http\Controllers\StockController.php-42-        ]);
+app\Http\Controllers\StockController.php-43-
+app\Http\Controllers\StockController.php-44-        $productVariant->update([
+app\Http\Controllers\StockController.php-45-            'low_stock_threshold' => (int) $validated['low_stock_threshold'],
+app\Http\Controllers\StockController.php-46-        ]);
+--
+app\Http\Controllers\StockController.php-49-    }
+app\Http\Controllers\StockController.php-50-
+app\Http\Controllers\StockController.php-51-    public function store(Request $request)
+app\Http\Controllers\StockController.php-52-    {
+app\Http\Controllers\StockController.php-53-        $validated = $request->validate([
+app\Http\Controllers\StockController.php:54:            'product_variant_id' => ['required', 'integer', 'exists:product_variants,id'],
+app\Http\Controllers\StockController.php:55:            'type' => ['required', Rule::in(['in', 'out'])],
+app\Http\Controllers\StockController.php:56:            'quantity' => ['required', 'integer', 'min:1'],
+app\Http\Controllers\StockController.php-57-            'description' => ['nullable', 'string'],
+app\Http\Controllers\StockController.php-58-        ]);
+app\Http\Controllers\StockController.php-59-
+app\Http\Controllers\StockController.php-60-        $companyId = $this->activeCompanyId();
+app\Http\Controllers\StockController.php-61-

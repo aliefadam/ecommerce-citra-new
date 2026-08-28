@@ -88,6 +88,30 @@ class BannerResponsiveDesignTest extends TestCase
         $this->assertSame('image/webp', $imageInfo['mime']);
     }
 
+    public function test_server_upload_failure_has_an_actionable_error_message(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $failedUpload = new UploadedFile(
+            __FILE__,
+            'oversized-banner.png',
+            'image/png',
+            UPLOAD_ERR_INI_SIZE,
+            true
+        );
+
+        $response = $this->actingAs($admin)->post(route('banners.store'), [
+            'type' => 'carousel',
+            'image_file' => $failedUpload,
+            'sort_order' => 1,
+            'is_active' => 1,
+        ]);
+
+        $response->assertSessionHasErrors([
+            'image_file' => 'File gambar melebihi batas upload server. Pilih ulang gambar agar dikompres otomatis sebelum dikirim.',
+        ]);
+        $this->assertDatabaseCount('banners', 0);
+    }
+
     public function test_only_two_side_banners_can_be_active(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
