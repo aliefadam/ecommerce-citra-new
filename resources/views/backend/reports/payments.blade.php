@@ -23,11 +23,11 @@
             </form>
         </div>
 
-        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+        <div data-kpi-grid class="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4 mb-6">
             @foreach ([['Pending Payment', $paymentSummary['pending_payment'], 'text-amber-600'], ['Manual Verify', $paymentSummary['manual_waiting'], 'text-blue-600'], ['Paid Period', $paymentSummary['paid_period'], 'text-emerald-600'], ['Failed Period', $paymentSummary['failed_period'], 'text-red-600']] as $card)
-                <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">{{ $card[0] }}</p>
-                    <p class="mt-2 text-xl font-extrabold {{ $card[2] }}">{{ $number($card[1]) }}</p>
+                <div class="min-w-0 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 sm:p-5">
+                    <p class="text-[10px] font-semibold uppercase leading-tight tracking-wider text-slate-400 sm:text-xs">{{ $card[0] }}</p>
+                    <p class="mt-2 break-words text-lg font-extrabold sm:text-xl {{ $card[2] }}">{{ $number($card[1]) }}</p>
                 </div>
             @endforeach
         </div>
@@ -53,7 +53,7 @@
             <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden">
                 <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-700 font-extrabold text-slate-800 dark:text-white">Queue Operasional</div>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
+                <table class="w-full text-sm" data-mobile-cards data-mobile-primary-column="1">
                         <thead class="bg-slate-50 dark:bg-slate-700/50">
                             <tr>
                                 <th class="text-left px-4 py-3 text-slate-500">Invoice</th>

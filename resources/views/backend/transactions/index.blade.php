@@ -16,7 +16,7 @@
             </a>
         </div>
 
-        <div id="txSummaryCards" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-4"></div>
+        <div id="txSummaryCards" data-kpi-grid class="grid grid-cols-2 xl:grid-cols-4 gap-3 mb-4"></div>
 
         {{-- Filter Card --}}
         <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 mb-4">
@@ -168,7 +168,8 @@
             </div>
 
             <div class="overflow-x-auto">
-                <table class="w-full text-sm" style="overflow: visible;">
+                <table class="w-full text-sm" style="overflow: visible;" data-mobile-cards
+                    data-mobile-primary-column="3">
                     <thead class="bg-slate-50 dark:bg-slate-700/50">
                         <tr>
                             <th class="w-10 px-4 py-3">
@@ -705,11 +706,11 @@
             wrap.innerHTML = cards.map((card) => {
                 const isActive = activeTxStatusFilter === card.filter && card.filter !== '';
                 return `
-                    <button type="button" onclick="setTxStatusFilter('${card.filter}')" class="text-left rounded-2xl border ${card.accent} ${isActive ? 'bg-blue-50 dark:bg-blue-900/20 ring-2 ring-blue-500/30' : 'bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50'} px-4 py-3 transition-colors">
-                        <div class="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">${card.label}</div>
-                        <div class="mt-2 flex items-end justify-between gap-3">
-                            <span class="text-2xl font-bold text-slate-800 dark:text-white">${card.value}</span>
-                            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">${card.note}</span>
+                    <button type="button" onclick="setTxStatusFilter('${card.filter}')" class="min-w-0 text-left rounded-2xl border ${card.accent} ${isActive ? 'bg-blue-50 dark:bg-blue-900/20 ring-2 ring-blue-500/30' : 'bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50'} px-3 py-3 sm:px-4 transition-colors">
+                        <div class="text-[10px] sm:text-xs font-semibold uppercase leading-tight tracking-wide text-slate-400 dark:text-slate-500">${card.label}</div>
+                        <div class="mt-2 flex items-end justify-between gap-1.5">
+                            <span class="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white">${card.value}</span>
+                            <span class="max-w-[68%] text-right text-[10px] sm:text-xs font-medium leading-tight text-slate-500 dark:text-slate-400">${card.note}</span>
                         </div>
                     </button>
                 `;

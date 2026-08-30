@@ -39,7 +39,7 @@
                 <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Salin base URL perusahaan, lalu tambahkan <span class="font-mono">/products</span> atau <span class="font-mono">/categories</span>.</p>
             </div>
             <div class="overflow-x-auto">
-                <table class="w-full text-sm">
+                <table class="w-full text-sm" data-mobile-cards data-mobile-primary-column="1">
                     <thead class="bg-slate-50 dark:bg-slate-700/50">
                         <tr>
                             <th class="px-5 py-3 text-left font-semibold text-slate-500 dark:text-slate-400">Perusahaan</th>
@@ -81,13 +81,13 @@
         <div class="space-y-4">
             @foreach ($endpoints as $ep)
                 @php($fullUrl = $baseUrl . '/' . $sampleSlug . $ep['suffix'])
-                <div class="rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
+                <div class="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
                     <div class="flex flex-col gap-2 border-b border-slate-100 px-5 py-4 dark:border-slate-700/60 sm:flex-row sm:items-center sm:justify-between">
-                        <div class="flex items-center gap-3">
+                        <div class="flex min-w-0 items-start gap-3 sm:items-center">
                             <span class="rounded-md bg-emerald-100 px-2 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">GET</span>
-                            <div>
+                            <div class="min-w-0">
                                 <div class="text-sm font-bold text-slate-800 dark:text-slate-100">{{ $ep['title'] }}</div>
-                                <code class="text-xs text-slate-500 dark:text-slate-400">/api/v1/companies{{ $ep['path'] }}</code>
+                                <code class="block break-all text-xs text-slate-500 dark:text-slate-400">/api/v1/companies{{ $ep['path'] }}</code>
                             </div>
                         </div>
                         <button type="button" data-copy="{{ $fullUrl }}"

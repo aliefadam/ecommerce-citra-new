@@ -17,16 +17,16 @@
             </form>
         </div>
 
-        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+        <div data-kpi-grid class="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4 mb-6">
             @foreach ([
                 ['Kupon Aktif', number_format($summary['active_coupons'], 0, ',', '.')],
                 ['Order Pakai Kupon', number_format($summary['coupon_orders'], 0, ',', '.')],
                 ['Total Diskon', 'Rp ' . number_format($summary['discount_total'], 0, ',', '.')],
                 ['Poin Diredeem', number_format($summary['redeemed_points'], 0, ',', '.')],
             ] as $card)
-                <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">{{ $card[0] }}</p>
-                    <p class="mt-2 text-xl font-extrabold text-amber-600">{{ $card[1] }}</p>
+                <div class="min-w-0 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 sm:p-5">
+                    <p class="text-[10px] font-semibold uppercase leading-tight tracking-wider text-slate-400 sm:text-xs">{{ $card[0] }}</p>
+                    <p class="mt-2 break-words text-lg font-extrabold text-amber-600 sm:text-xl">{{ $card[1] }}</p>
                 </div>
             @endforeach
         </div>

@@ -146,6 +146,148 @@
             .color-option input:checked~.color-ring {
                 display: block;
             }
+
+            @media (max-width: 767px) {
+                [data-mobile-table-wrap] {
+                    overflow: visible !important;
+                }
+
+                table[data-mobile-cards] {
+                    display: block;
+                    width: 100%;
+                    min-width: 0 !important;
+                }
+
+                table[data-mobile-cards] thead {
+                    display: none;
+                }
+
+                table[data-mobile-cards] tbody {
+                    display: grid;
+                    gap: 0.75rem;
+                    padding: 0.75rem;
+                }
+
+                table[data-mobile-cards] tbody tr {
+                    position: relative;
+                    display: grid;
+                    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+                    gap: 0.75rem 1rem;
+                    padding: 1rem;
+                    overflow: visible;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 0.875rem;
+                    background: #ffffff;
+                    box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+                }
+
+                .dark table[data-mobile-cards] tbody tr {
+                    border-color: #334155;
+                    background: #172033;
+                    box-shadow: 0 1px 2px rgb(0 0 0 / 0.16);
+                }
+
+                table[data-mobile-cards] tbody td {
+                    display: flex;
+                    min-width: 0;
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 0.25rem;
+                    padding: 0 !important;
+                    border: 0 !important;
+                    background: transparent !important;
+                    overflow-wrap: anywhere;
+                    white-space: normal;
+                }
+
+                table[data-mobile-cards] tbody td > * {
+                    max-width: 100%;
+                    min-width: 0;
+                }
+
+                table[data-mobile-cards] tbody td > .flex {
+                    flex-wrap: wrap;
+                }
+
+                table[data-mobile-cards] tbody td code {
+                    overflow-wrap: anywhere;
+                    white-space: normal !important;
+                }
+
+                table[data-mobile-cards] tbody td::before {
+                    content: attr(data-mobile-label);
+                    color: #64748b;
+                    font-size: 0.625rem;
+                    font-weight: 700;
+                    letter-spacing: 0.055em;
+                    line-height: 1rem;
+                    text-transform: uppercase;
+                }
+
+                .dark table[data-mobile-cards] tbody td::before {
+                    color: #7890b4;
+                }
+
+                table[data-mobile-cards] tbody td[data-mobile-primary] {
+                    grid-column: 1 / -1;
+                    padding-right: 2rem !important;
+                }
+
+                table[data-mobile-cards] tbody td[data-mobile-primary]::before {
+                    display: none;
+                }
+
+                table[data-mobile-cards] tbody td[data-mobile-select] {
+                    position: absolute;
+                    top: 1rem;
+                    right: 1rem;
+                    z-index: 1;
+                    width: auto;
+                }
+
+                table[data-mobile-cards] tbody td[data-mobile-select]::before,
+                table[data-mobile-cards] tbody td[data-mobile-actions]::before {
+                    display: none;
+                }
+
+                table[data-mobile-cards] tbody td[data-mobile-actions] {
+                    grid-column: 1 / -1;
+                    display: flex;
+                    flex-direction: row;
+                    flex-wrap: wrap;
+                    align-items: center;
+                    gap: 0.5rem;
+                    padding-top: 0.75rem !important;
+                    border-top: 1px solid #e2e8f0 !important;
+                }
+
+                .dark table[data-mobile-cards] tbody td[data-mobile-actions] {
+                    border-top-color: #334155 !important;
+                }
+
+                table[data-mobile-cards] tbody td[data-mobile-actions] > a,
+                table[data-mobile-cards] tbody td[data-mobile-actions] > button,
+                table[data-mobile-cards] tbody td[data-mobile-actions] > form {
+                    flex: 1 1 auto;
+                }
+
+                table[data-mobile-cards] tbody td[data-mobile-actions] > a,
+                table[data-mobile-cards] tbody td[data-mobile-actions] > button,
+                table[data-mobile-cards] tbody td[data-mobile-actions] > form > button {
+                    justify-content: center;
+                }
+
+                table[data-mobile-cards] tbody td[data-mobile-empty] {
+                    grid-column: 1 / -1;
+                    align-items: center;
+                    padding: 1.25rem !important;
+                    text-align: center;
+                }
+
+                table[data-mobile-cards] tbody td[data-mobile-empty]::before {
+                    display: none;
+                }
+            }
         </style>
         @yield('style')
     </head>
@@ -411,6 +553,74 @@
                     refresh(true);
                     return api;
                 };
+            })();
+        </script>
+        <script>
+            (function() {
+                const actionPattern = /^(aksi|action|actions)$/i;
+
+                function cleanHeaderLabel(header) {
+                    if (!header) return '';
+                    const clone = header.cloneNode(true);
+                    clone.querySelectorAll('svg, input, button, span').forEach((element) => element.remove());
+                    return (header.dataset.mobileLabel || clone.textContent || '')
+                        .replace(/[↕↑↓]/g, '')
+                        .replace(/\s+/g, ' ')
+                        .trim();
+                }
+
+                function enhanceTable(table) {
+                    const headers = Array.from(table.querySelectorAll('thead th'));
+                    if (!headers.length) return;
+
+                    const primaryColumn = Math.max(0, Number(table.dataset.mobilePrimaryColumn || 1) - 1);
+
+                    Array.from(table.tBodies).forEach((tbody) => {
+                        Array.from(tbody.rows).forEach((row) => {
+                            const cells = Array.from(row.cells);
+                            if (cells.length === 1 && cells[0].colSpan > 1) {
+                                cells[0].setAttribute('data-mobile-empty', '');
+                                return;
+                            }
+
+                            cells.forEach((cell, index) => {
+                                const label = cleanHeaderLabel(headers[index]);
+                                cell.dataset.mobileLabel = label;
+                                cell.toggleAttribute('data-mobile-primary', index === primaryColumn);
+                                cell.toggleAttribute('data-mobile-actions', actionPattern.test(label));
+                                cell.toggleAttribute('data-mobile-select', !label && Boolean(cell.querySelector('input[type="checkbox"]')));
+                            });
+                        });
+                    });
+                }
+
+                function initMobileCardTable(table) {
+                    if (table.dataset.mobileCardsReady === 'true') {
+                        enhanceTable(table);
+                        return;
+                    }
+
+                    table.dataset.mobileCardsReady = 'true';
+                    table.closest('.overflow-x-auto')?.setAttribute('data-mobile-table-wrap', '');
+                    enhanceTable(table);
+
+                    Array.from(table.tBodies).forEach((tbody) => {
+                        new MutationObserver(() => enhanceTable(table)).observe(tbody, {
+                            childList: true,
+                            subtree: true
+                        });
+                    });
+                }
+
+                window.initMobileCardTables = function(root = document) {
+                    root.querySelectorAll('table[data-mobile-cards]').forEach(initMobileCardTable);
+                };
+
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', () => window.initMobileCardTables());
+                } else {
+                    window.initMobileCardTables();
+                }
             })();
         </script>
 

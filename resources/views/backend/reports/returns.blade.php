@@ -17,16 +17,16 @@
             </form>
         </div>
 
-        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+        <div data-kpi-grid class="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4 mb-6">
             @foreach ([
                 ['Total Pengajuan', number_format($summary['total_requests'], 0, ',', '.')],
                 ['Masih Aktif', number_format($summary['open_requests'], 0, ',', '.')],
                 ['Nilai Refund', 'Rp ' . number_format($summary['refund_total'], 0, ',', '.')],
                 ['Return Rate', $summary['return_rate'] . '%'],
             ] as $card)
-                <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">{{ $card[0] }}</p>
-                    <p class="mt-2 text-xl font-extrabold text-rose-600">{{ $card[1] }}</p>
+                <div class="min-w-0 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 sm:p-5">
+                    <p class="text-[10px] font-semibold uppercase leading-tight tracking-wider text-slate-400 sm:text-xs">{{ $card[0] }}</p>
+                    <p class="mt-2 break-words text-lg font-extrabold text-rose-600 sm:text-xl">{{ $card[1] }}</p>
                 </div>
             @endforeach
         </div>

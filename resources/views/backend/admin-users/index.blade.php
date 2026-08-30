@@ -18,7 +18,7 @@
 
         <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
             <div class="overflow-x-auto">
-                <table class="w-full text-sm">
+                <table class="w-full text-sm" data-mobile-cards data-mobile-primary-column="1">
                     <thead class="bg-slate-50 dark:bg-slate-700/50">
                         <tr>
                             <th class="px-4 py-3 text-left font-semibold text-slate-500 dark:text-slate-400">Name</th>

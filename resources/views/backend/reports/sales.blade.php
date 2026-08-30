@@ -36,11 +36,11 @@
             </form>
         </div>
 
-        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5 mb-6">
+        <div data-kpi-grid class="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-5 mb-6">
             @foreach ([['Omzet', $money($summary['revenue']), 'text-blue-600'], ['Order Paid', $number($summary['orders']), 'text-slate-800 dark:text-white'], ['Item Terjual', $number($summary['items_sold']), 'text-slate-800 dark:text-white'], ['AOV', $money($summary['average_order_value']), 'text-slate-800 dark:text-white'], ['Diskon', $money($summary['discount']), 'text-emerald-600']] as $card)
-                <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">{{ $card[0] }}</p>
-                    <p class="mt-2 text-xl font-extrabold {{ $card[2] }}">{{ $card[1] }}</p>
+                <div class="min-w-0 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 sm:p-5">
+                    <p class="text-[10px] font-semibold uppercase leading-tight tracking-wider text-slate-400 sm:text-xs">{{ $card[0] }}</p>
+                    <p class="mt-2 break-words text-lg font-extrabold sm:text-xl {{ $card[2] }}">{{ $card[1] }}</p>
                 </div>
             @endforeach
         </div>
@@ -49,7 +49,7 @@
             <section class="xl:col-span-2 rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden">
                 <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-700 font-extrabold text-slate-800 dark:text-white">Transaksi Paid Terbaru</div>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
+                <table class="w-full text-sm" data-mobile-cards data-mobile-primary-column="1">
                         <thead class="bg-slate-50 dark:bg-slate-700/50">
                             <tr>
                                 <th class="text-left px-4 py-3 text-slate-500">Invoice</th>

@@ -15,16 +15,16 @@
             </a>
         </div>
 
-        <div class="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div data-kpi-grid class="mb-4 grid grid-cols-2 gap-3 xl:grid-cols-4">
             @foreach ([
                 ['label' => 'Requested', 'value' => $summary['requested'] ?? 0, 'class' => 'bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800'],
                 ['label' => 'Processing', 'value' => $summary['processing'] ?? 0, 'class' => 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800'],
                 ['label' => 'Issued / Sent', 'value' => $summary['issued'] ?? 0, 'class' => 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800'],
                 ['label' => 'Rejected', 'value' => $summary['rejected'] ?? 0, 'class' => 'bg-red-50 text-red-700 border-red-100 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800'],
             ] as $card)
-                <div class="rounded-2xl border {{ $card['class'] }} p-4">
-                    <p class="text-xs font-semibold uppercase tracking-wider opacity-75">{{ $card['label'] }}</p>
-                    <p class="mt-2 text-2xl font-extrabold">{{ number_format((int) $card['value'], 0, ',', '.') }}</p>
+                <div class="min-w-0 rounded-2xl border {{ $card['class'] }} p-3 sm:p-4">
+                    <p class="text-[10px] font-semibold uppercase leading-tight tracking-wider opacity-75 sm:text-xs">{{ $card['label'] }}</p>
+                    <p class="mt-2 text-xl font-extrabold sm:text-2xl">{{ number_format((int) $card['value'], 0, ',', '.') }}</p>
                 </div>
             @endforeach
         </div>
@@ -56,7 +56,7 @@
             </form>
 
             <div class="overflow-x-auto">
-                <table class="w-full min-w-[1100px] text-sm">
+                    <table class="w-full min-w-[1100px] text-sm" data-mobile-cards data-mobile-primary-column="1">
                     <thead class="bg-slate-50 text-left dark:bg-slate-700/50">
                         <tr class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                             <th class="px-4 py-3">Transaksi</th>

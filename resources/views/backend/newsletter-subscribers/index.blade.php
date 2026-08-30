@@ -150,7 +150,7 @@
                     <h2 class="text-lg font-bold text-slate-800 dark:text-white">Histori Campaign</h2>
                 </div>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
+                    <table class="w-full text-sm" data-mobile-cards data-mobile-primary-column="1">
                         <thead class="bg-slate-50 dark:bg-slate-700/50">
                             <tr>
                                 <th class="text-left px-4 py-3 font-semibold text-slate-500">Subject</th>
@@ -198,7 +198,7 @@
                     </div>
                 </div>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
+                <table class="w-full text-sm" data-mobile-cards data-mobile-primary-column="2">
                         <thead class="bg-slate-50 dark:bg-slate-700/50">
                             <tr>
                                 <th class="text-left px-4 py-3 font-semibold text-slate-500 w-12">#</th>

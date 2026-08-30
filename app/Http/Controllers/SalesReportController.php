@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Transaction;
-use App\Models\TransactionDetail;
-use App\Models\Product;
-use App\Models\ProductVariant;
-use App\Models\StockMovement;
-use App\Models\TransactionProductReview;
 use App\Models\Cart;
 use App\Models\Coupon;
 use App\Models\NewsletterSubscriber;
+use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\ReturnRequest;
+use App\Models\StockMovement;
+use App\Models\Transaction;
+use App\Models\TransactionDetail;
+use App\Models\TransactionProductReview;
 use App\Models\User;
 use App\Models\Wishlist;
 use Illuminate\Http\Request;
@@ -124,13 +124,13 @@ class SalesReportController extends Controller
         $groups = collect($groups)
             ->map(function ($group) use ($user) {
                 $group['items'] = collect($group['items'])
-                    ->filter(fn($item) => empty($item['permission']) || $user?->hasAdminPermission($item['permission']))
+                    ->filter(fn ($item) => empty($item['permission']) || $user?->hasAdminPermission($item['permission']))
                     ->values()
                     ->all();
 
                 return $group;
             })
-            ->filter(fn($group) => !empty($group['items']))
+            ->filter(fn ($group) => ! empty($group['items']))
             ->values()
             ->all();
 
@@ -161,7 +161,7 @@ class SalesReportController extends Controller
             'orders' => $orders,
             'aov' => $orders > 0 ? round($revenue / $orders) : 0,
             'items_sold' => TransactionDetail::query()
-                ->whereHas('transaction', fn($q) => $q->whereBetween('created_at', [$start, $end])->whereIn(DB::raw('LOWER(status)'), $paidStatuses))
+                ->whereHas('transaction', fn ($q) => $q->whereBetween('created_at', [$start, $end])->whereIn(DB::raw('LOWER(status)'), $paidStatuses))
                 ->sum('quantity'),
             'revenue_growth' => $this->percentageChange($revenue, $previousRevenue),
             'order_growth' => $this->percentageChange($orders, $previousOrders),
@@ -183,7 +183,7 @@ class SalesReportController extends Controller
 
         $topProducts = TransactionDetail::query()
             ->selectRaw('product_id, product_name, SUM(quantity) as total_qty, SUM(subtotal) as total_revenue')
-            ->whereHas('transaction', fn($q) => $q->whereBetween('created_at', [$start, $end])->whereIn(DB::raw('LOWER(status)'), $paidStatuses))
+            ->whereHas('transaction', fn ($q) => $q->whereBetween('created_at', [$start, $end])->whereIn(DB::raw('LOWER(status)'), $paidStatuses))
             ->groupBy('product_id', 'product_name')
             ->orderByDesc('total_revenue')
             ->take(8)
@@ -230,7 +230,7 @@ class SalesReportController extends Controller
             'discount' => (clone $base)->sum('discount_amount'),
             'shipping' => (clone $base)->sum('shipping_cost'),
             'items_sold' => TransactionDetail::query()
-                ->whereHas('transaction', fn($q) => $q->whereBetween('created_at', [$start, $end])->whereIn(DB::raw('LOWER(status)'), $paidStatuses))
+                ->whereHas('transaction', fn ($q) => $q->whereBetween('created_at', [$start, $end])->whereIn(DB::raw('LOWER(status)'), $paidStatuses))
                 ->sum('quantity'),
             'average_order_value' => $orders > 0 ? round($revenue / $orders) : 0,
             'all_orders' => (clone $periodBase)->count(),
@@ -258,7 +258,7 @@ class SalesReportController extends Controller
 
         $topProducts = TransactionDetail::query()
             ->selectRaw('product_id, product_name, SUM(quantity) as total_qty, SUM(subtotal) as total_revenue')
-            ->whereHas('transaction', fn($q) => $q->whereBetween('created_at', [$start, $end])->whereIn(DB::raw('LOWER(status)'), $paidStatuses))
+            ->whereHas('transaction', fn ($q) => $q->whereBetween('created_at', [$start, $end])->whereIn(DB::raw('LOWER(status)'), $paidStatuses))
             ->groupBy('product_id', 'product_name')
             ->orderByDesc('total_qty')
             ->take(10)
@@ -296,7 +296,7 @@ class SalesReportController extends Controller
         $slowProducts = Product::query()
             ->withSum('productVariants as stock_total', 'stock')
             ->where('status', 'active')
-            ->whereDoesntHave('transactionDetails', fn($q) => $q->whereHas('transaction', fn($tx) => $tx->whereBetween('created_at', [$start, $end])->whereIn(DB::raw('LOWER(status)'), $paidStatuses)))
+            ->whereDoesntHave('transactionDetails', fn ($q) => $q->whereHas('transaction', fn ($tx) => $tx->whereBetween('created_at', [$start, $end])->whereIn(DB::raw('LOWER(status)'), $paidStatuses)))
             ->orderByDesc('stock_total')
             ->take(8)
             ->get();
@@ -396,7 +396,7 @@ class SalesReportController extends Controller
 
         $topProducts = TransactionDetail::query()
             ->selectRaw('product_id, product_name, SUM(quantity) as total_qty, SUM(subtotal) as total_revenue')
-            ->whereHas('transaction', fn($q) => $q->whereBetween('created_at', [$start, $end])->whereIn(DB::raw('LOWER(status)'), $paidStatuses))
+            ->whereHas('transaction', fn ($q) => $q->whereBetween('created_at', [$start, $end])->whereIn(DB::raw('LOWER(status)'), $paidStatuses))
             ->groupBy('product_id', 'product_name')
             ->orderByDesc('total_qty')
             ->take(20)
@@ -424,7 +424,7 @@ class SalesReportController extends Controller
         $slowProducts = Product::query()
             ->withSum('productVariants as stock_total', 'stock')
             ->where('status', 'active')
-            ->whereDoesntHave('transactionDetails', fn($q) => $q->whereHas('transaction', fn($tx) => $tx->whereBetween('created_at', [$start, $end])->whereIn(DB::raw('LOWER(status)'), $paidStatuses)))
+            ->whereDoesntHave('transactionDetails', fn ($q) => $q->whereHas('transaction', fn ($tx) => $tx->whereBetween('created_at', [$start, $end])->whereIn(DB::raw('LOWER(status)'), $paidStatuses)))
             ->orderByDesc('stock_total')
             ->take(20)
             ->get();
@@ -487,7 +487,7 @@ class SalesReportController extends Controller
             'active_buyers' => (clone $paidInPeriod)->distinct('user_id')->whereNotNull('user_id')->count('user_id'),
             'repeat_buyers' => User::query()
                 ->where('role', 'user')
-                ->whereHas('transactions', fn($q) => $q->whereBetween('created_at', [$start, $end])->whereIn(DB::raw('LOWER(status)'), $paidStatuses), '>=', 2)
+                ->whereHas('transactions', fn ($q) => $q->whereBetween('created_at', [$start, $end])->whereIn(DB::raw('LOWER(status)'), $paidStatuses), '>=', 2)
                 ->count(),
             'cart_users' => Cart::query()->distinct('user_id')->count('user_id'),
             'wishlist_users' => Wishlist::query()->distinct('user_id')->count('user_id'),
@@ -496,9 +496,11 @@ class SalesReportController extends Controller
 
         $topCustomers = User::query()
             ->where('role', 'user')
-            ->withCount(['transactions as paid_orders_count' => fn($q) => $q->whereBetween('created_at', [$start, $end])->whereIn(DB::raw('LOWER(status)'), $paidStatuses)])
-            ->withSum(['transactions as paid_revenue_sum' => fn($q) => $q->whereBetween('created_at', [$start, $end])->whereIn(DB::raw('LOWER(status)'), $paidStatuses)], 'grand_total')
-            ->having('paid_orders_count', '>', 0)
+            ->whereHas('transactions', fn ($q) => $q
+                ->whereBetween('created_at', [$start, $end])
+                ->whereIn(DB::raw('LOWER(status)'), $paidStatuses))
+            ->withCount(['transactions as paid_orders_count' => fn ($q) => $q->whereBetween('created_at', [$start, $end])->whereIn(DB::raw('LOWER(status)'), $paidStatuses)])
+            ->withSum(['transactions as paid_revenue_sum' => fn ($q) => $q->whereBetween('created_at', [$start, $end])->whereIn(DB::raw('LOWER(status)'), $paidStatuses)], 'grand_total')
             ->orderByDesc('paid_revenue_sum')
             ->take(20)
             ->get();
@@ -599,7 +601,7 @@ class SalesReportController extends Controller
 
     private function exportTransactions($transactions, $start, $end)
     {
-        $filename = 'report-transaksi-' . $start->format('Ymd') . '-' . $end->format('Ymd') . '.csv';
+        $filename = 'report-transaksi-'.$start->format('Ymd').'-'.$end->format('Ymd').'.csv';
 
         return response()->streamDownload(function () use ($transactions) {
             $handle = fopen('php://output', 'w');

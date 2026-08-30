@@ -12,10 +12,10 @@
         </div>
 
         <!-- Stats Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+        <div data-kpi-grid class="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 mb-6">
             <!-- Card 1 -->
             <div
-                class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 hover:shadow-lg hover:shadow-slate-200/60 dark:hover:shadow-slate-900/60 transition-all duration-300">
+                class="bg-white dark:bg-slate-800 rounded-2xl p-3 sm:p-5 border border-slate-200 dark:border-slate-700 hover:shadow-lg hover:shadow-slate-200/60 dark:hover:shadow-slate-900/60 transition-all duration-300">
                 <div class="flex items-center justify-between mb-4">
                     <div class="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3b82f6"
@@ -36,7 +36,7 @@
 
             <!-- Card 2 -->
             <div
-                class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 hover:shadow-lg hover:shadow-slate-200/60 dark:hover:shadow-slate-900/60 transition-all duration-300">
+                class="bg-white dark:bg-slate-800 rounded-2xl p-3 sm:p-5 border border-slate-200 dark:border-slate-700 hover:shadow-lg hover:shadow-slate-200/60 dark:hover:shadow-slate-900/60 transition-all duration-300">
                 <div class="flex items-center justify-between mb-4">
                     <div class="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center">
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10b981"
@@ -57,7 +57,7 @@
 
             <!-- Card 3 -->
             <div
-                class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 hover:shadow-lg hover:shadow-slate-200/60 dark:hover:shadow-slate-900/60 transition-all duration-300">
+                class="bg-white dark:bg-slate-800 rounded-2xl p-3 sm:p-5 border border-slate-200 dark:border-slate-700 hover:shadow-lg hover:shadow-slate-200/60 dark:hover:shadow-slate-900/60 transition-all duration-300">
                 <div class="flex items-center justify-between mb-4">
                     <div class="w-11 h-11 rounded-xl bg-violet-50 dark:bg-violet-900/30 flex items-center justify-center">
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6"
@@ -79,7 +79,7 @@
 
             <!-- Card 4 -->
             <div
-                class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 hover:shadow-lg hover:shadow-slate-200/60 dark:hover:shadow-slate-900/60 transition-all duration-300">
+                class="bg-white dark:bg-slate-800 rounded-2xl p-3 sm:p-5 border border-slate-200 dark:border-slate-700 hover:shadow-lg hover:shadow-slate-200/60 dark:hover:shadow-slate-900/60 transition-all duration-300">
                 <div class="flex items-center justify-between mb-4">
                     <div class="w-11 h-11 rounded-xl bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center">
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f59e0b"

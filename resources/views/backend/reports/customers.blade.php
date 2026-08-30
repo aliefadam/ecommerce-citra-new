@@ -17,7 +17,7 @@
             </form>
         </div>
 
-        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-6 mb-6">
+        <div data-kpi-grid class="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-6 mb-6">
             @foreach ([
                 ['Customer Baru', $summary['new_customers']],
                 ['Pembeli Aktif', $summary['active_buyers']],
@@ -26,9 +26,9 @@
                 ['User Wishlist', $summary['wishlist_users']],
                 ['Newsletter', $summary['newsletter']],
             ] as $card)
-                <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">{{ $card[0] }}</p>
-                    <p class="mt-2 text-xl font-extrabold text-blue-600">{{ number_format($card[1], 0, ',', '.') }}</p>
+                <div class="min-w-0 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 sm:p-4">
+                    <p class="text-[10px] font-semibold uppercase leading-tight tracking-wider text-slate-400 sm:text-xs">{{ $card[0] }}</p>
+                    <p class="mt-2 text-lg font-extrabold text-blue-600 sm:text-xl">{{ number_format($card[1], 0, ',', '.') }}</p>
                 </div>
             @endforeach
         </div>

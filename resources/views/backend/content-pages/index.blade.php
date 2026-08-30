@@ -27,7 +27,7 @@
 
     <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="w-full text-sm">
+                <table class="w-full text-sm" data-mobile-cards data-mobile-primary-column="1">
                 <thead class="bg-slate-50 dark:bg-slate-700/50">
                     <tr>
                         <th class="text-left px-4 py-3 font-semibold text-slate-500">Judul</th>

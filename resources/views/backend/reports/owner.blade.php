@@ -17,16 +17,16 @@
             </form>
         </div>
 
-        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+        <div data-kpi-grid class="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4 mb-6">
             @foreach ([
                 ['Omzet', 'Rp ' . number_format($overview['revenue'], 0, ',', '.'), $overview['revenue_growth'], 'text-blue-600'],
                 ['Order Paid', number_format($overview['orders'], 0, ',', '.'), $overview['order_growth'], 'text-emerald-600'],
                 ['AOV', 'Rp ' . number_format($overview['aov'], 0, ',', '.'), null, 'text-violet-600'],
                 ['Item Terjual', number_format($overview['items_sold'], 0, ',', '.'), null, 'text-orange-600'],
             ] as $card)
-                <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">{{ $card[0] }}</p>
-                    <p class="mt-2 text-2xl font-extrabold {{ $card[3] }}">{{ $card[1] }}</p>
+                <div class="min-w-0 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 sm:p-5">
+                    <p class="text-[10px] font-semibold uppercase leading-tight tracking-wider text-slate-400 sm:text-xs">{{ $card[0] }}</p>
+                    <p class="mt-2 break-words text-lg font-extrabold sm:text-2xl {{ $card[3] }}">{{ $card[1] }}</p>
                     @if (!is_null($card[2]))
                         <p class="mt-2 text-xs font-semibold {{ $card[2] >= 0 ? 'text-emerald-600' : 'text-red-600' }}">
                             {{ $card[2] >= 0 ? '+' : '' }}{{ $card[2] }}% dari periode sebelumnya
@@ -38,7 +38,7 @@
             @endforeach
         </div>
 
-        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+        <div data-kpi-grid class="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4 mb-6">
             @foreach ([
                 ['Customer Baru', $overview['new_customers'], 'users'],
                 ['Pembeli Aktif', $overview['active_customers'], 'user-check'],
@@ -49,11 +49,11 @@
                 ['Return Aktif', $overview['return_open'], 'rotate-ccw'],
                 ['Total Diskon', 'Rp ' . number_format($overview['discount'], 0, ',', '.'), 'badge-percent'],
             ] as $card)
-                <div class="flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
-                    <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><i data-lucide="{{ $card[2] }}" class="h-5 w-5"></i></span>
-                    <div>
-                        <p class="text-xs text-slate-400">{{ $card[0] }}</p>
-                        <p class="font-extrabold text-slate-800 dark:text-white">{{ is_numeric($card[1]) ? number_format($card[1], 0, ',', '.') : $card[1] }}</p>
+                <div class="min-w-0 flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 sm:gap-3 sm:p-4">
+                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 sm:h-10 sm:w-10"><i data-lucide="{{ $card[2] }}" class="h-4 w-4 sm:h-5 sm:w-5"></i></span>
+                    <div class="min-w-0">
+                        <p class="text-[10px] leading-tight text-slate-400 sm:text-xs">{{ $card[0] }}</p>
+                        <p class="break-words text-sm font-extrabold text-slate-800 dark:text-white sm:text-base">{{ is_numeric($card[1]) ? number_format($card[1], 0, ',', '.') : $card[1] }}</p>
                     </div>
                 </div>
             @endforeach

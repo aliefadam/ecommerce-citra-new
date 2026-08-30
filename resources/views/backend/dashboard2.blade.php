@@ -25,10 +25,10 @@
         </div>
 
         {{-- ============ STAT CARDS ============ --}}
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+        <div data-kpi-grid class="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 mb-6">
 
             {{-- Total Revenue --}}
-            <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-slate-700">
+            <div class="min-w-0 bg-white dark:bg-slate-800 rounded-2xl p-3 sm:p-5 shadow-sm border border-slate-100 dark:border-slate-700">
                 <div class="flex items-center justify-between mb-3">
                     <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Total
                         Revenue</span>
@@ -36,7 +36,7 @@
                         <i data-lucide="trending-up" class="w-4 h-4 text-blue-600 dark:text-blue-400"></i>
                     </span>
                 </div>
-                <div class="text-2xl font-bold text-slate-800 dark:text-white mb-1">
+                <div class="break-words text-lg font-bold text-slate-800 dark:text-white mb-1 sm:text-2xl">
                     Rp {{ number_format($totalRevenue, 0, ',', '.') }}
                 </div>
                 @php
@@ -61,7 +61,7 @@
             </div>
 
             {{-- Total Orders --}}
-            <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-slate-700">
+            <div class="min-w-0 bg-white dark:bg-slate-800 rounded-2xl p-3 sm:p-5 shadow-sm border border-slate-100 dark:border-slate-700">
                 <div class="flex items-center justify-between mb-3">
                     <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Total
                         Orders</span>
@@ -69,7 +69,7 @@
                         <i data-lucide="shopping-bag" class="w-4 h-4 text-violet-600 dark:text-violet-400"></i>
                     </span>
                 </div>
-                <div class="text-2xl font-bold text-slate-800 dark:text-white mb-1">{{ number_format($totalOrders) }}</div>
+                <div class="text-xl font-bold text-slate-800 dark:text-white mb-1 sm:text-2xl">{{ number_format($totalOrders) }}</div>
                 @if ($pendingOrders > 0)
                     <div
                         class="inline-flex items-center gap-1 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-semibold px-2 py-0.5 rounded-full">
@@ -82,7 +82,7 @@
             </div>
 
             {{-- Total Users --}}
-            <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-slate-700">
+            <div class="min-w-0 bg-white dark:bg-slate-800 rounded-2xl p-3 sm:p-5 shadow-sm border border-slate-100 dark:border-slate-700">
                 <div class="flex items-center justify-between mb-3">
                     <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Total
                         Pelanggan</span>
@@ -90,12 +90,12 @@
                         <i data-lucide="users" class="w-4 h-4 text-emerald-600 dark:text-emerald-400"></i>
                     </span>
                 </div>
-                <div class="text-2xl font-bold text-slate-800 dark:text-white mb-1">{{ number_format($totalUsers) }}</div>
+                <div class="text-xl font-bold text-slate-800 dark:text-white mb-1 sm:text-2xl">{{ number_format($totalUsers) }}</div>
                 <div class="text-xs text-slate-400">Pengguna terdaftar</div>
             </div>
 
             {{-- Total Products --}}
-            <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-slate-700">
+            <div class="min-w-0 bg-white dark:bg-slate-800 rounded-2xl p-3 sm:p-5 shadow-sm border border-slate-100 dark:border-slate-700">
                 <div class="flex items-center justify-between mb-3">
                     <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Total
                         Produk</span>
@@ -103,7 +103,7 @@
                         <i data-lucide="package" class="w-4 h-4 text-orange-600 dark:text-orange-400"></i>
                     </span>
                 </div>
-                <div class="text-2xl font-bold text-slate-800 dark:text-white mb-1">{{ number_format($totalProducts) }}
+                <div class="text-xl font-bold text-slate-800 dark:text-white mb-1 sm:text-2xl">{{ number_format($totalProducts) }}
                 </div>
                 <div class="text-xs text-slate-400">Produk aktif di katalog</div>
             </div>
@@ -123,7 +123,7 @@
                 </a>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            <div data-kpi-grid class="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
                 @foreach ($orderStatusCards as $statusCard)
                     @php
                         $statusColor = $statusCard['color'] ?? 'slate';
@@ -167,7 +167,7 @@
                     @endphp
 
                     <div
-                        class="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden relative">
+                        class="min-w-0 bg-white dark:bg-slate-800 rounded-2xl p-3 sm:p-5 shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden relative">
                         <div class="absolute inset-x-0 top-0 h-1 {{ $cardStyle['bar'] }}"></div>
                         <div class="flex items-start justify-between gap-3 mb-4">
                             <div>
