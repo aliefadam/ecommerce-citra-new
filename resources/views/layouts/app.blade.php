@@ -184,6 +184,45 @@
                     overlay.classList.toggle('hidden');
                 };
 
+                const sidebarNav = document.getElementById('admin-sidebar-nav');
+                if (sidebarNav) {
+                    const scrollKey = 'admin-sidebar-scroll-top';
+                    const rememberSidebarPosition = () => {
+                        sessionStorage.setItem(scrollKey, String(sidebarNav.scrollTop));
+                    };
+                    const savedPosition = sessionStorage.getItem(scrollKey);
+
+                    requestAnimationFrame(() => {
+                        if (savedPosition !== null) {
+                            sidebarNav.scrollTop = Number(savedPosition) || 0;
+                        }
+
+                        requestAnimationFrame(() => {
+                            const activeItem = sidebarNav.querySelector('[data-sidebar-active]');
+                            if (!activeItem) return;
+
+                            const navBounds = sidebarNav.getBoundingClientRect();
+                            const itemBounds = activeItem.getBoundingClientRect();
+                            const isVisible = itemBounds.top >= navBounds.top && itemBounds.bottom <= navBounds.bottom;
+
+                            if (!isVisible) {
+                                activeItem.scrollIntoView({
+                                    block: 'nearest'
+                                });
+                                rememberSidebarPosition();
+                            }
+                        });
+                    });
+
+                    sidebarNav.addEventListener('scroll', rememberSidebarPosition, {
+                        passive: true
+                    });
+                    sidebarNav.addEventListener('click', (event) => {
+                        if (event.target.closest('a[href]')) rememberSidebarPosition();
+                    });
+                    window.addEventListener('pagehide', rememberSidebarPosition);
+                }
+
                 window.toggleNotif = function() {
                     const notif = document.getElementById('notif-dropdown');
                     const profile = document.getElementById('profile-dropdown');

@@ -1,23 +1,20 @@
 <aside id="sidebar"
     class="fixed top-0 left-0 h-full w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 z-30 flex flex-col transition-transform duration-300 -translate-x-full lg:translate-x-0 shadow-xl lg:shadow-none">
-    <div class="flex items-center gap-3 px-6 py-5 border-b border-slate-200 dark:border-slate-700">
-        <div
-            class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-200 dark:shadow-blue-900 overflow-hidden">
+    <div class="relative flex min-h-[80px] items-center px-5 py-4 border-b border-slate-200 dark:border-slate-700">
+        <div class="flex min-w-0 flex-1 items-center">
             @if (!empty($appStoreLogoUrl))
-                <img src="{{ $appStoreLogoUrl }}" alt="{{ $appStoreName }}" class="w-full h-full object-contain bg-white p-1">
+                <img src="{{ $appStoreLogoUrl }}" alt="{{ $appStoreName }}"
+                    class="block h-12 w-auto max-w-[170px] object-contain object-left">
             @else
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"
-                    stroke-linecap="round" stroke-linejoin="round">
+                <svg class="h-11 w-11 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-label="{{ $appStoreName }}">
                     <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
                 </svg>
             @endif
         </div>
-        <span class="text-lg font-800 font-extrabold text-slate-800 dark:text-white tracking-tight">
-            {{ $appStoreName }}
-            <span class="text-blue-600"> Admin</span>
-        </span>
         <button onclick="toggleSidebar()"
-            class="ml-auto lg:hidden text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+            class="ml-3 shrink-0 rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-200 lg:hidden"
+            aria-label="Tutup sidebar">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                 stroke-linecap="round" stroke-linejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18" />
@@ -47,7 +44,7 @@
         };
     @endphp
 
-    <nav class="flex-1 overflow-y-auto px-3 py-4">
+    <nav id="admin-sidebar-nav" class="flex-1 overflow-y-auto px-3 py-4">
         @foreach (config('sidebar') as $section)
             @php
                 $visibleItems = collect($section['items'])->filter(fn($item) => $canShowSidebarItem($item))->values();
@@ -144,6 +141,7 @@
                                         @else
                                             {{-- Single child item --}}
                                             <a href="{{ !empty($child['route']) ? route($child['route']) : '#' }}"
+                                                @if (!empty($child['active']) && request()->routeIs($child['active'])) data-sidebar-active aria-current="page" @endif
                                                 class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
                                             {{ !empty($child['active']) && request()->routeIs($child['active'])
                                                 ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
@@ -191,6 +189,7 @@
                         @else
                             {{-- Single menu item --}}
                             <a href="{{ !empty($item['route']) ? route($item['route']) : '#' }}"
+                                @if (!empty($item['active']) && request()->routeIs(...array_map('trim', explode(',', $item['active'])))) data-sidebar-active aria-current="page" @endif
                                 class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all duration-200
                             {{ !empty($item['active']) && request()->routeIs(...array_map('trim', explode(',', $item['active'])))
                                 ? 'font-semibold bg-blue-600 text-white shadow-lg shadow-blue-200 dark:shadow-blue-900/40'
