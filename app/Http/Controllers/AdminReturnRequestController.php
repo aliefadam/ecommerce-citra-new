@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ScopesToActiveCompany;
 use App\Models\ReturnRequest;
 use App\Models\UserNotification;
 use Illuminate\Http\Request;
@@ -9,9 +10,12 @@ use Illuminate\Validation\Rule;
 
 class AdminReturnRequestController extends Controller
 {
+    use ScopesToActiveCompany;
+
     public function index()
     {
         $returnRequests = ReturnRequest::query()
+            ->whereHas('transaction', fn ($query) => $query->where('company_id', $this->activeCompanyId()))
             ->with(['user', 'transaction', 'items'])
             ->latest()
             ->get();
@@ -21,6 +25,8 @@ class AdminReturnRequestController extends Controller
 
     public function update(Request $request, ReturnRequest $returnRequest)
     {
+        $this->guardCompanyOwnership($returnRequest->transaction()->value('company_id'));
+
         $validated = $request->validate([
             'status' => ['required', Rule::in(['menunggu', 'disetujui', 'ditolak', 'diproses', 'selesai'])],
             'admin_note' => ['nullable', 'string', 'max:1000'],
@@ -32,16 +38,16 @@ class AdminReturnRequestController extends Controller
         $returnRequest->status = $newStatus;
         $returnRequest->admin_note = $validated['admin_note'] ?? null;
 
-        if ($newStatus === 'disetujui' && !$returnRequest->approved_at) {
+        if ($newStatus === 'disetujui' && ! $returnRequest->approved_at) {
             $returnRequest->approved_at = now();
             $returnRequest->rejected_at = null;
         }
 
-        if ($newStatus === 'ditolak' && !$returnRequest->rejected_at) {
+        if ($newStatus === 'ditolak' && ! $returnRequest->rejected_at) {
             $returnRequest->rejected_at = now();
         }
 
-        if ($newStatus === 'selesai' && !$returnRequest->completed_at) {
+        if ($newStatus === 'selesai' && ! $returnRequest->completed_at) {
             $returnRequest->completed_at = now();
         }
 
@@ -53,8 +59,8 @@ class AdminReturnRequestController extends Controller
                 'user_id' => $returnRequest->user_id,
                 'type' => 'return_request_updated',
                 'title' => 'Status Return/Refund Diperbarui',
-                'body' => 'Pengajuan ' . $typeLabel . ' ' . $returnRequest->request_no . ' sekarang berstatus ' . $newStatus . '.',
-                'url' => route('frontend.profil') . '?tab=pesanan',
+                'body' => 'Pengajuan '.$typeLabel.' '.$returnRequest->request_no.' sekarang berstatus '.$newStatus.'.',
+                'url' => route('frontend.profil').'?tab=pesanan',
             ]);
         }
 

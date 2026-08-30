@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ScopesToActiveCompany;
 use App\Models\ProductVariant;
 use App\Models\StockMovement;
 use App\Models\StoreLocation;
@@ -14,9 +15,12 @@ use Illuminate\Support\Facades\DB;
 
 class TransactionController extends Controller
 {
+    use ScopesToActiveCompany;
+
     public function index()
     {
         $transactions = Transaction::query()
+            ->where('company_id', $this->activeCompanyId())
             ->with(['user', 'createdByAdmin', 'details', 'statusHistories.user'])
             ->latest()
             ->get();
@@ -26,8 +30,10 @@ class TransactionController extends Controller
                 $image = (string) ($d->image ?? '');
                 $image = $this->resolveImageUrl($image);
                 $d->image_url = $image;
+
                 return $d;
             });
+
             return $tx;
         });
 
@@ -36,14 +42,17 @@ class TransactionController extends Controller
 
     public function process(Request $request, Transaction $transaction)
     {
+        $this->guardCompanyOwnership($transaction->company_id);
+
         try {
             $transaction = DB::transaction(function () use ($transaction, $request) {
                 $lockedTransaction = Transaction::query()
+                    ->where('company_id', $this->activeCompanyId())
                     ->with('details')
                     ->lockForUpdate()
                     ->findOrFail($transaction->id);
 
-                if (!in_array(strtolower((string) $lockedTransaction->status), ['paid', 'settlement', 'capture'], true)) {
+                if (! in_array(strtolower((string) $lockedTransaction->status), ['paid', 'settlement', 'capture'], true)) {
                     throw new \RuntimeException('Transaksi belum bisa diproses.');
                 }
 
@@ -58,13 +67,13 @@ class TransactionController extends Controller
                         }
 
                         $variant = ProductVariant::query()->lockForUpdate()->find($variantId);
-                        if (!$variant) {
+                        if (! $variant) {
                             continue;
                         }
 
                         $before = (int) $variant->stock;
                         if ($before < $qty) {
-                            throw new \RuntimeException('Stok varian "' . ($detail->variant_name ?: $detail->product_name) . '" tidak mencukupi.');
+                            throw new \RuntimeException('Stok varian "'.($detail->variant_name ?: $detail->product_name).'" tidak mencukupi.');
                         }
 
                         $after = $before - $qty;
@@ -100,10 +109,10 @@ class TransactionController extends Controller
         if ($transaction->user_id) {
             UserNotification::create([
                 'user_id' => $transaction->user_id,
-                'type'    => 'order_processed',
-                'title'   => 'Pesanan Sedang Disiapkan',
-                'body'    => 'Pesanan ' . $transaction->invoice_no . ' sedang disiapkan oleh tim kami dan akan segera dikirim.',
-                'url'     => route('frontend.profil') . '?tab=pesanan',
+                'type' => 'order_processed',
+                'title' => 'Pesanan Sedang Disiapkan',
+                'body' => 'Pesanan '.$transaction->invoice_no.' sedang disiapkan oleh tim kami dan akan segera dikirim.',
+                'url' => route('frontend.profil').'?tab=pesanan',
             ]);
         }
 
@@ -112,6 +121,8 @@ class TransactionController extends Controller
 
     public function ship(Request $request, Transaction $transaction)
     {
+        $this->guardCompanyOwnership($transaction->company_id);
+
         $validated = $request->validate([
             'tracking_number' => ['required', 'string', 'max:100'],
             'shipping_label' => ['nullable', 'string', 'max:100'],
@@ -120,15 +131,18 @@ class TransactionController extends Controller
 
         try {
             $result = DB::transaction(function () use ($transaction, $validated, $request): array {
-                $lockedTransaction = Transaction::query()->lockForUpdate()->findOrFail($transaction->id);
+                $lockedTransaction = Transaction::query()
+                    ->where('company_id', $this->activeCompanyId())
+                    ->lockForUpdate()
+                    ->findOrFail($transaction->id);
                 $currentStatus = strtolower((string) $lockedTransaction->status);
 
-                if (!in_array($currentStatus, ['process', 'processing', 'kirim'], true)) {
+                if (! in_array($currentStatus, ['process', 'processing', 'kirim'], true)) {
                     throw new \RuntimeException('Transaksi belum bisa dikirim.');
                 }
 
                 $trackingNumber = (string) $validated['tracking_number'];
-                $shippingLabel = !empty($validated['shipping_label'])
+                $shippingLabel = ! empty($validated['shipping_label'])
                     ? (string) $validated['shipping_label']
                     : (string) $lockedTransaction->shipping_label;
                 $shippingNote = $validated['shipping_note'] ?? $lockedTransaction->shipping_note;
@@ -150,7 +164,7 @@ class TransactionController extends Controller
                 $lockedTransaction->shipped_at = $lockedTransaction->shipped_at ?: now();
                 $lockedTransaction->save();
 
-                $this->recordHistory($lockedTransaction, $oldStatus, 'kirim', 'order_shipped', 'Resi: ' . $trackingNumber, $request->user()?->id);
+                $this->recordHistory($lockedTransaction, $oldStatus, 'kirim', 'order_shipped', 'Resi: '.$trackingNumber, $request->user()?->id);
 
                 return ['transaction' => $lockedTransaction, 'duplicate' => false];
             });
@@ -168,10 +182,10 @@ class TransactionController extends Controller
         if ($transaction->user_id) {
             UserNotification::create([
                 'user_id' => $transaction->user_id,
-                'type'    => 'order_shipped',
-                'title'   => 'Pesanan Dalam Perjalanan',
-                'body'    => 'Pesanan ' . $transaction->invoice_no . ' sudah dikirim via ' . ($transaction->shipping_label ?: 'kurir') . '. No. Resi: ' . $validated['tracking_number'],
-                'url'     => route('frontend.profil') . '?tab=pesanan',
+                'type' => 'order_shipped',
+                'title' => 'Pesanan Dalam Perjalanan',
+                'body' => 'Pesanan '.$transaction->invoice_no.' sudah dikirim via '.($transaction->shipping_label ?: 'kurir').'. No. Resi: '.$validated['tracking_number'],
+                'url' => route('frontend.profil').'?tab=pesanan',
             ]);
         }
 
@@ -180,6 +194,8 @@ class TransactionController extends Controller
 
     public function verifyPayment(Request $request, Transaction $transaction, LoyaltyPointService $loyaltyPointService)
     {
+        $this->guardCompanyOwnership($transaction->company_id);
+
         $validated = $request->validate([
             'action' => ['required', 'in:approve,reject'],
             'payment_admin_note' => ['nullable', 'string', 'max:500'],
@@ -187,7 +203,10 @@ class TransactionController extends Controller
 
         try {
             $result = DB::transaction(function () use ($transaction, $validated, $request, $loyaltyPointService): array {
-                $lockedTransaction = Transaction::query()->lockForUpdate()->findOrFail($transaction->id);
+                $lockedTransaction = Transaction::query()
+                    ->where('company_id', $this->activeCompanyId())
+                    ->lockForUpdate()
+                    ->findOrFail($transaction->id);
 
                 if ($lockedTransaction->payment_type !== 'manual_transfer') {
                     throw new \RuntimeException('Transaksi ini bukan pembayaran manual.');
@@ -255,13 +274,13 @@ class TransactionController extends Controller
         $transaction = $result['transaction'];
         $message = $result['message'];
 
-        if (!$result['duplicate'] && $transaction->user_id) {
+        if (! $result['duplicate'] && $transaction->user_id) {
             UserNotification::create([
                 'user_id' => $transaction->user_id,
                 'type' => $validated['action'] === 'approve' ? 'payment_received' : 'payment_rejected',
                 'title' => $validated['action'] === 'approve' ? 'Pembayaran Dikonfirmasi' : 'Bukti Transfer Ditolak',
-                'body' => $message . ' Pesanan ' . $transaction->invoice_no . '.',
-                'url' => route('frontend.profil') . '?tab=pesanan',
+                'body' => $message.' Pesanan '.$transaction->invoice_no.'.',
+                'url' => route('frontend.profil').'?tab=pesanan',
             ]);
         }
 
@@ -274,6 +293,8 @@ class TransactionController extends Controller
 
     public function show(Transaction $transaction)
     {
+        $this->guardCompanyOwnership($transaction->company_id);
+
         $transaction->load(['user', 'createdByAdmin', 'details', 'statusHistories.user', 'returnRequests.items']);
 
         return view('backend.transactions.show', compact('transaction'));
@@ -281,6 +302,8 @@ class TransactionController extends Controller
 
     public function shippingLabel(Transaction $transaction)
     {
+        $this->guardCompanyOwnership($transaction->company_id);
+
         $transaction->load(['user', 'details.productVariant']);
         $storeLocation = StoreLocation::query()
             ->where('company_id', $transaction->company_id)
@@ -300,6 +323,7 @@ class TransactionController extends Controller
             ->values();
 
         $transactions = Transaction::query()
+            ->where('company_id', $this->activeCompanyId())
             ->with(['user', 'details.productVariant'])
             ->whereIn('id', $ids)
             ->get()
@@ -361,7 +385,7 @@ class TransactionController extends Controller
             ? substr($image, strlen('storage/'))
             : ltrim($image, '/');
 
-        return asset('storage/' . $normalized);
+        return asset('storage/'.$normalized);
     }
 
     private function shippingLabelIssues(Transaction $transaction): array

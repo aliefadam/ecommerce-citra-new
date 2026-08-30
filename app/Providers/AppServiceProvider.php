@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\StoreSetting;
 use App\Models\Transaction;
+use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -44,6 +45,7 @@ class AppServiceProvider extends ServiceProvider
         View::composer('partials.topbar', function ($view) {
             try {
                 $adminNotifications = Transaction::query()
+                    ->where('company_id', User::activeCompanyId() ?? 0)
                     ->with('user')
                     ->latest()
                     ->take(10)

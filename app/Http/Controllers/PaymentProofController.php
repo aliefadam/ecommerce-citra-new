@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ScopesToActiveCompany;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -9,6 +10,8 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class PaymentProofController extends Controller
 {
+    use ScopesToActiveCompany;
+
     public function customer(Request $request, Transaction $transaction): BinaryFileResponse
     {
         $owned = $request->user()
@@ -26,9 +29,7 @@ class PaymentProofController extends Controller
     {
         $user = $request->user();
         abort_unless($user && $user->hasAdminPermission('transactions.show'), 403);
-        if (strtolower((string) $user->role) !== 'admin') {
-            abort_unless((int) $transaction->company_id === (int) $request->session()->get('admin_active_company_id'), 404);
-        }
+        $this->guardCompanyOwnership($transaction->company_id);
 
         return $this->file($transaction);
     }

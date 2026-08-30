@@ -2,15 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ScopesToActiveCompany;
 use App\Models\TransactionStatusHistory;
 use App\Models\TransactionTaxInvoice;
 use App\Services\TaxInvoiceDeliveryService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class AdminTaxInvoiceController extends Controller
 {
+    use ScopesToActiveCompany;
+
     public function index(Request $request)
     {
         $filters = $request->validate([
@@ -21,6 +25,7 @@ class AdminTaxInvoiceController extends Controller
         ]);
 
         $taxInvoices = TransactionTaxInvoice::query()
+            ->whereHas('transaction', fn ($query) => $query->where('company_id', $this->activeCompanyId()))
             ->with(['transaction.user', 'requestedByUser'])
             ->when(! empty($filters['status']), fn ($query) => $query->where('status', $filters['status']))
             ->when(! empty($filters['request_date']), fn ($query) => $query->whereDate('requested_at', $filters['request_date']))
@@ -49,10 +54,10 @@ class AdminTaxInvoiceController extends Controller
             ->withQueryString();
 
         $summary = [
-            'requested' => TransactionTaxInvoice::query()->where('status', TransactionTaxInvoice::STATUS_REQUESTED)->count(),
-            'processing' => TransactionTaxInvoice::query()->where('status', TransactionTaxInvoice::STATUS_PROCESSING)->count(),
-            'issued' => TransactionTaxInvoice::query()->whereIn('status', [TransactionTaxInvoice::STATUS_ISSUED, TransactionTaxInvoice::STATUS_SENT])->count(),
-            'rejected' => TransactionTaxInvoice::query()->where('status', TransactionTaxInvoice::STATUS_REJECTED)->count(),
+            'requested' => $this->taxInvoicesForActiveCompany()->where('status', TransactionTaxInvoice::STATUS_REQUESTED)->count(),
+            'processing' => $this->taxInvoicesForActiveCompany()->where('status', TransactionTaxInvoice::STATUS_PROCESSING)->count(),
+            'issued' => $this->taxInvoicesForActiveCompany()->whereIn('status', [TransactionTaxInvoice::STATUS_ISSUED, TransactionTaxInvoice::STATUS_SENT])->count(),
+            'rejected' => $this->taxInvoicesForActiveCompany()->where('status', TransactionTaxInvoice::STATUS_REJECTED)->count(),
         ];
 
         return view('backend.tax-invoices.index', [
@@ -64,6 +69,8 @@ class AdminTaxInvoiceController extends Controller
 
     public function show(Request $request, TransactionTaxInvoice $taxInvoice)
     {
+        $this->guardTaxInvoiceOwnership($taxInvoice);
+
         $taxInvoice->load([
             'transaction.user',
             'transaction.details',
@@ -87,6 +94,8 @@ class AdminTaxInvoiceController extends Controller
 
     public function process(Request $request, TransactionTaxInvoice $taxInvoice)
     {
+        $this->guardTaxInvoiceOwnership($taxInvoice);
+
         $this->transitionStatus(
             $taxInvoice,
             TransactionTaxInvoice::STATUS_PROCESSING,
@@ -99,6 +108,8 @@ class AdminTaxInvoiceController extends Controller
 
     public function reject(Request $request, TransactionTaxInvoice $taxInvoice)
     {
+        $this->guardTaxInvoiceOwnership($taxInvoice);
+
         $validated = $request->validate([
             'rejected_reason' => ['required', 'string', 'max:1000'],
             'admin_note' => ['nullable', 'string', 'max:1000'],
@@ -121,6 +132,8 @@ class AdminTaxInvoiceController extends Controller
 
     public function upload(Request $request, TransactionTaxInvoice $taxInvoice, TaxInvoiceDeliveryService $deliveryService)
     {
+        $this->guardTaxInvoiceOwnership($taxInvoice);
+
         $validated = $request->validate([
             'tax_invoice_file' => ['required', 'file', 'mimes:pdf', 'max:10240'],
             'tax_invoice_number' => ['nullable', 'string', 'max:100'],
@@ -149,6 +162,8 @@ class AdminTaxInvoiceController extends Controller
 
     public function send(Request $request, TransactionTaxInvoice $taxInvoice, TaxInvoiceDeliveryService $deliveryService)
     {
+        $this->guardTaxInvoiceOwnership($taxInvoice);
+
         try {
             $deliveryService->sendAvailableEmail($taxInvoice, $request->user());
         } catch (\Throwable $e) {
@@ -160,6 +175,8 @@ class AdminTaxInvoiceController extends Controller
 
     public function download(Request $request, TransactionTaxInvoice $taxInvoice, TaxInvoiceDeliveryService $deliveryService)
     {
+        $this->guardTaxInvoiceOwnership($taxInvoice);
+
         abort_unless($taxInvoice->tax_invoice_file_path, 404);
         abort_unless(Storage::disk(TaxInvoiceDeliveryService::DISK)->exists($taxInvoice->tax_invoice_file_path), 404);
 
@@ -175,6 +192,7 @@ class AdminTaxInvoiceController extends Controller
     {
         DB::transaction(function () use ($taxInvoice, $toStatus, $adminId, $note, $extra) {
             $freshTaxInvoice = TransactionTaxInvoice::query()
+                ->whereHas('transaction', fn ($query) => $query->where('company_id', $this->activeCompanyId()))
                 ->with('transaction')
                 ->lockForUpdate()
                 ->findOrFail($taxInvoice->id);
@@ -206,5 +224,16 @@ class AdminTaxInvoiceController extends Controller
         $invoiceNo = preg_replace('/[^A-Za-z0-9\-]+/', '-', (string) $taxInvoice->transaction?->invoice_no) ?: $taxInvoice->id;
 
         return 'faktur-pajak-'.$invoiceNo.'.pdf';
+    }
+
+    private function taxInvoicesForActiveCompany(): Builder
+    {
+        return TransactionTaxInvoice::query()
+            ->whereHas('transaction', fn ($query) => $query->where('company_id', $this->activeCompanyId()));
+    }
+
+    private function guardTaxInvoiceOwnership(TransactionTaxInvoice $taxInvoice): void
+    {
+        $this->guardCompanyOwnership($taxInvoice->transaction()->value('company_id'));
     }
 }

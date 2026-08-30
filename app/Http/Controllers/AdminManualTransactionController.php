@@ -302,6 +302,8 @@ class AdminManualTransactionController extends Controller
 
     public function updatePayment(Request $request, Transaction $transaction)
     {
+        $this->guardCompanyOwnership($transaction->company_id);
+
         if ($transaction->normalizedSource() !== Transaction::SOURCE_MANUAL) {
             return back()->withErrors(['payment' => 'Pembayaran manual admin hanya tersedia untuk transaksi manual.']);
         }
@@ -316,6 +318,11 @@ class AdminManualTransactionController extends Controller
         ]);
 
         DB::transaction(function () use ($request, $transaction, $validated) {
+            $transaction = Transaction::query()
+                ->where('company_id', $this->activeCompanyId())
+                ->lockForUpdate()
+                ->findOrFail($transaction->id);
+
             $oldStatus = (string) $transaction->status;
             $paymentStatus = (string) $validated['payment_status'];
             $paidAt = ! empty($validated['payment_paid_at']) ? Carbon::parse($validated['payment_paid_at']) : null;
@@ -371,6 +378,8 @@ class AdminManualTransactionController extends Controller
 
     public function updateShipping(Request $request, Transaction $transaction)
     {
+        $this->guardCompanyOwnership($transaction->company_id);
+
         if ($transaction->normalizedSource() !== Transaction::SOURCE_MANUAL) {
             return back()->withErrors(['shipping' => 'Pengiriman manual hanya tersedia untuk transaksi manual.']);
         }
@@ -417,6 +426,11 @@ class AdminManualTransactionController extends Controller
             : $this->shippingTypeLabel($shippingType);
 
         DB::transaction(function () use ($request, $transaction, $validated, $shippingType, $shippingCost, $courierName, $service, $shippingLabel) {
+            $transaction = Transaction::query()
+                ->where('company_id', $this->activeCompanyId())
+                ->lockForUpdate()
+                ->findOrFail($transaction->id);
+
             $oldStatus = (string) $transaction->status;
             $baseTotal = max(0, (int) $transaction->subtotal_amount - (int) $transaction->discount_amount) + (int) ($transaction->tax_amount ?? 0);
 
