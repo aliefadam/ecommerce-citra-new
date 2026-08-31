@@ -422,12 +422,14 @@
                                         </svg>
                                     </button>
                                     <input id="profileAvatarFile" name="avatar_file" type="file" accept="image/png,image/jpeg"
+                                        data-file-dropzone-anchor="#profileAvatarDropzone"
                                         class="hidden" />
                                     <input id="profileAvatarRemove" name="avatar_remove" type="hidden" value="0" />
                                 </div>
                                 <div>
                                     <p class="font-semibold text-slate-800 mb-1">Foto Profil</p>
                                     <p class="text-sm text-slate-500 mb-2">Format: JPG, PNG. Ukuran maks 2MB</p>
+                                    <div id="profileAvatarDropzone" class="mb-2"></div>
                                     <div class="flex gap-2">
                                         <button type="button" onclick="chooseProfilePhoto()"
                                             class="bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium px-4 py-1.5 rounded-lg border border-blue-200 transition-colors">Ganti

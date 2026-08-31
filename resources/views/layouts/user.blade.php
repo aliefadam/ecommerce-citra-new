@@ -130,6 +130,7 @@
         </script>
         <!--End of Tawk.to Script-->
 
+        @include('partials.file-dropzone')
         @yield('script')
     </body>
 

@@ -170,6 +170,7 @@
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">File Excel
                                 (.xlsx / .xls)</label>
                             <input id="import_file" name="import_file" type="file" accept=".xlsx,.xls"
+                                data-dropzone-preserve="true"
                                 class="hidden" onchange="handleFileChange(this)" />
                             <label for="import_file" id="file-drop-area"
                                 class="flex flex-col items-center justify-center gap-2 w-full py-7 px-4 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/30 cursor-pointer hover:border-emerald-400 dark:hover:border-emerald-500 hover:bg-emerald-50/50 dark:hover:bg-emerald-900/10 transition-all">

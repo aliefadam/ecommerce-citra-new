@@ -624,6 +624,7 @@
             })();
         </script>
 
+        @include('partials.file-dropzone')
         @yield('script')
     </body>
 
