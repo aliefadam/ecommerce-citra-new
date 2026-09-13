@@ -242,7 +242,7 @@
         if ($heroBanners->isEmpty()) {
             $heroBanners = collect([
                 [
-                    'image' => 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1600&h=700&fit=crop&crop=center',
+                    'image' => asset('imgs/banners/hero-industrial-default.png'),
                     'target_url' => '',
                 ],
             ]);

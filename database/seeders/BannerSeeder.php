@@ -14,7 +14,7 @@ class BannerSeeder extends Seeder
             [
                 'title' => 'Baut & Mur Lengkap',
                 'type' => 'carousel',
-                'image' => 'https://images.unsplash.com/photo-1609205807107-e8ec2120f9de?w=1600&h=700&fit=crop&crop=center',
+                'image' => asset('imgs/banners/hero-industrial-default.png'),
                 'target_url' => url('/kategori?parent=baut'),
                 'sort_order' => 1,
                 'is_active' => true,

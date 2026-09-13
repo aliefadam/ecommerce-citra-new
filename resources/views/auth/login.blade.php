@@ -19,7 +19,7 @@
     <body class="h-screen overflow-hidden bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100">
         <div class="min-h-screen grid lg:grid-cols-2">
             <section class="hidden lg:flex flex-col justify-between text-white relative overflow-hidden"
-                style="background: url('https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=900&q=80') center center / cover no-repeat;">
+                style="background: url('{{ asset('imgs/auth/fastener-workshop-auth.png') }}') center center / cover no-repeat;">
 
                 <!-- Dark overlay -->
                 <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-black/30"></div>
@@ -55,20 +55,11 @@
 
             <section class="flex items-center justify-center p-6 sm:p-10">
                 <div class="w-full max-w-md">
-                    <div class="flex items-center justify-between">
+                    <div class="mb-6">
                         <div>
                             <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Sign In</h2>
                             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Masukkan akun Anda untuk
                                 melanjutkan.</p>
-                        </div>
-                        <div
-                            class="mb-4 p-4 rounded-xl border border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-900/50 flex flex-col justify-end items-end">
-                            <p class="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-2">Demo Admin</p>
-
-                            <button type="button" onclick="fillDemo()"
-                                class="text-xs bg-blue-600 hover:bg-blue-700 text-white px-2 py-0.5 rounded font-semibold transition-colors">
-                                Isi Otomatis
-                            </button>
                         </div>
                     </div>
 
@@ -160,11 +151,6 @@
                 const html = document.documentElement;
                 html.classList.toggle('dark');
                 localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
-            }
-
-            function fillDemo() {
-                document.querySelector('input[name="email"]').value = 'admin@citra.com';
-                document.querySelector('input[name="password"]').value = '123123';
             }
         </script>
     </body>

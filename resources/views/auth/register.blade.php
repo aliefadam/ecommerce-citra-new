@@ -19,7 +19,7 @@
     <body class="h-screen overflow-hidden bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100">
         <div class="min-h-screen grid lg:grid-cols-2">
             <section class="hidden lg:flex flex-col justify-between text-white relative overflow-hidden"
-                style="background: url('https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=900&q=80') center center / cover no-repeat;">
+                style="background: url('{{ asset('imgs/auth/fastener-workshop-auth.png') }}') center center / cover no-repeat;">
 
                 <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-black/30"></div>
 
