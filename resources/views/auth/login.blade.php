@@ -13,26 +13,7 @@
             })();
         </script>
         <title>{{ $appStoreName ?? 'Ecommerce Citra' }} - Login</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
-            rel="stylesheet" />
-        <script>
-            tailwind.config = {
-                darkMode: 'class',
-                theme: {
-                    extend: {
-                        fontFamily: {
-                            jakarta: ['Plus Jakarta Sans', 'sans-serif']
-                        }
-                    }
-                }
-            }
-        </script>
-        <style>
-            * {
-                font-family: 'Plus Jakarta Sans', sans-serif;
-            }
-        </style>
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
 
     <body class="h-screen overflow-hidden bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100">

@@ -120,76 +120,8 @@
         $initial = strtoupper(substr($displayFirstName, 0, 1));
         $avatarUrl = trim((string) ($authUser?->avatar ?? ''));
         $hasAvatarImage = $avatarUrl !== '';
-        $cartCount = $authUser ? (int) $authUser->carts()->sum('quantity') : 0;
-        $navbarCategoryTree = \App\Models\MainCategory::query()
-            ->with(['categoryDetails' => fn($q) => $q->orderBy('name')])
-            ->orderBy('name')
-            ->get();
-        $navbarSearchProducts = \App\Models\Product::query()
-            ->with(['mainCategory', 'categoryDetail', 'productVariants'])
-            ->where('status', 'active')
-            ->whereNotNull('slug')
-            ->latest()
-            ->take(60)
-            ->get()
-            ->map(function ($product) {
-                $image = trim((string) ($product->firstAvailableImagePath() ?? ''));
-                if ($image !== '' && !str_starts_with($image, 'http://') && !str_starts_with($image, 'https://')) {
-                    $image = asset('storage/' . ltrim($image, '/'));
-                }
-                if ($image === '') {
-                    $image = 'https://via.placeholder.com/120x120?text=No+Image';
-                }
-
-                return [
-                    'name' => (string) $product->name,
-                    'meta' => (string) ($product->categoryDetail?->name ?? ($product->mainCategory?->name ?? 'Produk')),
-                    'image' => $image,
-                    'url' => route('frontend.detail-produk', ['slug' => $product->slug]),
-                ];
-            })
-            ->values()
-            ->all();
-        $megaCategories = $navbarCategoryTree
-            ->map(function ($parent) {
-                $children = $parent->categoryDetails->values();
-                $chunkSize = max(1, (int) ceil(max(1, $children->count()) / 4));
-                $columns = $children
-                    ->chunk($chunkSize)
-                    ->take(4)
-                    ->map(function ($chunk) {
-                        return [
-                            'title' => 'Kategori',
-                            'items' => $chunk
-                                ->map(
-                                    fn($child) => [
-                                        'name' => $child->name,
-                                        'url' => route('frontend.kategori', ['category' => $child->slug]),
-                                    ],
-                                )
-                                ->values()
-                                ->all(),
-                        ];
-                    })
-                    ->values()
-                    ->all();
-
-                if (empty($columns)) {
-                    $columns[] = [
-                        'title' => 'Kategori',
-                        'items' => [],
-                    ];
-                }
-
-                return [
-                    'key' => $parent->slug,
-                    'name' => $parent->name,
-                    'url' => route('frontend.kategori', ['parent' => $parent->slug]),
-                    'columns' => $columns,
-                ];
-            })
-            ->values()
-            ->all();
+        $cartCount = (int) ($customerNavigation['cartCount'] ?? 0);
+        $megaCategories = $customerNavigation['megaCategories'] ?? [];
     @endphp
 
     {{-- Main navbar row --}}
@@ -225,14 +157,17 @@
                         <input type="text" id="ecNavSearchDesktop" name="q"
                             value="{{ trim(request('q', $query ?? '')) }}" placeholder="Cari produk, merek, kategori..."
                             class="flex-1 px-3 py-2.5 text-sm outline-none bg-transparent text-slate-700 placeholder-slate-400"
-                            autocomplete="off" />
+                            autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false"
+                            aria-controls="ecNavSearchDropdownDesktop" data-storefront-autocomplete
+                            data-suggestions-url="{{ route('frontend.search.suggestions') }}" />
                         <button type="submit"
                             class="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white px-5 font-semibold text-sm flex items-center gap-1.5 transition-all flex-shrink-0 rounded-full my-1 mr-1">
                             Cari
                         </button>
                     </form>
                     <div id="ecNavSearchDropdownDesktop"
-                        class="hidden absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 z-50 overflow-hidden">
+                        role="listbox" aria-label="Saran produk"
+                        class="hidden absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 z-50 overflow-hidden max-h-[28rem] overflow-y-auto">
                     </div>
                 </div>
             </div>
@@ -513,14 +448,17 @@
         </div>
         <input type="text" id="ecNavSearchMobile" name="q" value="{{ trim(request('q', $query ?? '')) }}"
             placeholder="Cari produk..." class="flex-1 min-w-0 px-3 py-2.5 text-sm outline-none bg-transparent"
-            autocomplete="off" />
+            autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false"
+            aria-controls="ecNavSearchDropdownMobile" data-storefront-autocomplete
+            data-suggestions-url="{{ route('frontend.search.suggestions') }}" />
         <button type="submit"
             class="flex-shrink-0 bg-sky-500 hover:bg-sky-600 text-white px-4 flex items-center font-medium text-sm transition-colors rounded-full my-1 mr-1">
             Cari
         </button>
     </form>
     <div id="ecNavSearchDropdownMobile"
-        class="hidden mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden"></div>
+        role="listbox" aria-label="Saran produk"
+        class="hidden mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden max-h-[60vh] overflow-y-auto"></div>
 </div>
 
 <script>
@@ -528,127 +466,7 @@
         if (window.__ecNavbarReady) return;
         window.__ecNavbarReady = true;
 
-        const products = @json($navbarSearchProducts);
-
         const megaCategories = @json($megaCategories);
-
-        const skeletonHtml = () => Array.from({
-            length: 4
-        }, () => `
-            <div class="flex items-center gap-3 px-3 py-3 border-b border-slate-100 last:border-b-0 animate-pulse">
-                <div class="w-12 h-12 rounded-lg bg-slate-200"></div>
-                <div class="flex-1">
-                    <div class="h-3 rounded bg-slate-200 w-40 mb-2"></div>
-                    <div class="h-3 rounded bg-slate-200 w-24"></div>
-                </div>
-                <div class="w-5 h-5 rounded bg-slate-200"></div>
-            </div>
-        `).join('');
-
-        const normalizeSearch = (value) => String(value || '')
-            .toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .replace(/[^a-z0-9\s]/g, ' ')
-            .replace(/\s+/g, ' ')
-            .trim();
-
-        const compactSearch = (value) => normalizeSearch(value).replace(/\s+/g, '');
-
-        function scoreSearchMatch(product, keyword) {
-            const q = normalizeSearch(keyword);
-            if (!q) return -1;
-
-            const qCompact = compactSearch(q);
-            const name = normalizeSearch(product.name || '');
-            const meta = normalizeSearch(product.meta || '');
-            const haystack = `${name} ${meta}`.trim();
-            const haystackCompact = compactSearch(haystack);
-            const qTokens = q.split(' ').filter(Boolean);
-
-            let score = 0;
-            if (name === q) score += 120;
-            if (name.startsWith(q)) score += 90;
-            if (name.includes(q)) score += 70;
-            if (meta.includes(q)) score += 35;
-            if (haystackCompact.includes(qCompact)) score += 60;
-
-            const tokenHits = qTokens.filter(token => haystack.includes(token) || haystackCompact.includes(token)).length;
-            score += tokenHits * 18;
-
-            if (!score && qCompact.length >= 3) {
-                const chars = qCompact.split('');
-                let pointer = 0;
-                for (const char of haystackCompact) {
-                    if (char === chars[pointer]) pointer++;
-                    if (pointer >= chars.length) break;
-                }
-                if (pointer >= Math.max(3, qCompact.length - 1)) score += 24;
-            }
-
-            return score;
-        }
-
-        function renderSearchResults(container, keyword) {
-            const val = keyword.trim();
-            if (!val) {
-                container.classList.add('hidden');
-                container.innerHTML = '';
-                return;
-            }
-
-            container.classList.remove('hidden');
-            container.innerHTML = skeletonHtml();
-
-            setTimeout(() => {
-                const scored = products
-                    .map((p) => ({ ...p, __score: scoreSearchMatch(p, val) }))
-                    .filter((p) => p.__score > 0)
-                    .sort((a, b) => b.__score - a.__score)
-                    .slice(0, 5);
-
-                if (!scored.length) {
-                    container.innerHTML = `
-                        <div class="px-4 py-5 text-center text-sm text-slate-500">
-                            Produk tidak ditemukan.<br>
-                            <span class="text-xs text-slate-400">Coba kata yang lebih umum atau ejaan yang lebih singkat.</span>
-                        </div>`;
-                    return;
-                }
-
-                const suggestion = normalizeSearch(val) !== normalizeSearch(scored[0]?.name || '')
-                    ? `<div class="px-3 py-2 text-[11px] text-slate-400 border-b border-slate-100">Saran terdekat: <span class="font-semibold text-slate-600">${scored[0].name}</span></div>`
-                    : '';
-
-                container.innerHTML = suggestion + scored.map((p) => `
-                    <a href="${p.url}" class="flex items-center gap-3 px-3 py-3 border-b border-slate-100 last:border-b-0 hover:bg-slate-50 transition-colors">
-                        <img src="${p.image}" alt="${p.name}" class="w-12 h-12 rounded-lg object-cover border border-slate-100" />
-                        <div class="flex-1 min-w-0">
-                            <p class="text-sm font-medium text-slate-800 truncate">${p.name}</p>
-                            <p class="text-xs text-slate-500 truncate">${p.meta}</p>
-                        </div>
-                        <i class="fi fi-rr-angle-small-right text-sm text-slate-400 flex-shrink-0 leading-none"></i>
-                    </a>
-                `).join('');
-            }, 220);
-        }
-
-        function bindLiveSearch(inputId, dropdownId) {
-            const input = document.getElementById(inputId);
-            const dropdown = document.getElementById(dropdownId);
-            if (!input || !dropdown) return;
-            let timer = null;
-            input.addEventListener('input', () => {
-                clearTimeout(timer);
-                timer = setTimeout(() => renderSearchResults(dropdown, input.value || ''), 80);
-            });
-            input.addEventListener('focus', () => {
-                if ((input.value || '').trim()) renderSearchResults(dropdown, input.value || '');
-            });
-        }
-
-        bindLiveSearch('ecNavSearchDesktop', 'ecNavSearchDropdownDesktop');
-        bindLiveSearch('ecNavSearchMobile', 'ecNavSearchDropdownMobile');
 
         const isAuthenticated = @json(auth()->check());
         const cartCountUrl = @json(auth()->check() ? route('frontend.cart.count') : null);
@@ -875,7 +693,7 @@
                 'hp & tablet': '<i class="fi fi-rr-mobile-notch text-sm leading-none"></i>',
                 'ibu & bayi': '<i class="fi fi-rr-heart text-sm leading-none"></i>',
                 'kecantikan': '<i class="fi fi-rr-sparkles text-sm leading-none"></i>',
-                'mainan & anak': '<i class="fi fi-rr-face-smile text-sm leading-none"></i>',
+                'mainan & anak': '<i class="fi fi-rr-user text-sm leading-none"></i>',
                 'makanan & minuman': '<i class="fi fi-rr-utensils text-sm leading-none"></i>',
                 'olahraga': '<i class="fi fi-rr-bolt text-sm leading-none"></i>',
                 'rumah tangga': '<i class="fi fi-rr-home text-sm leading-none"></i>',

@@ -5,7 +5,6 @@
 @section('canonical', route('frontend.flash-sale'))
 
 @section('style')
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
     <style>
         * { font-family: 'Plus Jakarta Sans', sans-serif; }
         .card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease; }

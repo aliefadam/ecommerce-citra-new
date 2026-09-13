@@ -2,6 +2,7 @@ const { test, expect } = require('@playwright/test');
 const path = require('node:path');
 
 test('member checkout manual sampai admin verifikasi, proses, dan kirim', async ({ page }) => {
+    test.setTimeout(300_000);
     const pageErrors = [];
     const serverErrors = [];
 

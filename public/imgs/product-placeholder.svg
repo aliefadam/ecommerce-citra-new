@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240" role="img" aria-labelledby="title description">
+  <title id="title">Gambar produk belum tersedia</title>
+  <desc id="description">Placeholder bergaya industrial untuk produk tanpa foto.</desc>
+  <rect width="240" height="240" rx="24" fill="#f1f5f9"/>
+  <path d="M36 72h168M36 168h168M72 36v168M168 36v168" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="7 9"/>
+  <path d="M84 100h72l18 20-18 20H84l-18-20 18-20Z" fill="#fff" stroke="#64748b" stroke-width="5"/>
+  <circle cx="120" cy="120" r="15" fill="#f97316"/>
+</svg>

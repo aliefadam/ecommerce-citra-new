@@ -6,6 +6,7 @@ module.exports = async () => {
     const root = path.resolve(__dirname, '..', '..');
     const testingDirectory = path.resolve(root, 'storage', 'framework', 'testing');
     const database = path.resolve(testingDirectory, 'browser-e2e.sqlite');
+    const port = process.env.PLAYWRIGHT_PORT || '8765';
 
     if (!database.startsWith(testingDirectory + path.sep)) {
         throw new Error('Refusing to prepare an E2E database outside storage/framework/testing.');
@@ -19,7 +20,7 @@ module.exports = async () => {
         env: {
             ...process.env,
             APP_ENV: 'e2e',
-            APP_URL: 'http://127.0.0.1:8765',
+            APP_URL: `http://127.0.0.1:${port}`,
             DB_CONNECTION: 'sqlite',
             DB_DATABASE: database,
             SESSION_DRIVER: 'database',

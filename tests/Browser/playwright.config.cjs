@@ -2,6 +2,8 @@ const { defineConfig } = require('@playwright/test');
 const path = require('node:path');
 
 const database = path.resolve(__dirname, '..', '..', 'storage', 'framework', 'testing', 'browser-e2e.sqlite');
+const port = process.env.PLAYWRIGHT_PORT || '8765';
+const baseURL = `http://127.0.0.1:${port}`;
 
 module.exports = defineConfig({
     testDir: __dirname,
@@ -13,7 +15,7 @@ module.exports = defineConfig({
     globalSetup: path.resolve(__dirname, 'global-setup.cjs'),
     reporter: [['list']],
     use: {
-        baseURL: 'http://127.0.0.1:8765',
+        baseURL,
         channel: 'chrome',
         headless: true,
         viewport: { width: 1440, height: 1000 },
@@ -21,14 +23,14 @@ module.exports = defineConfig({
         trace: 'retain-on-failure',
     },
     webServer: {
-        command: 'php artisan serve --host=127.0.0.1 --port=8765',
+        command: `php artisan serve --host=127.0.0.1 --port=${port}`,
         cwd: path.resolve(__dirname, '..', '..'),
-        url: 'http://127.0.0.1:8765',
+        url: baseURL,
         reuseExistingServer: false,
         timeout: 120_000,
         env: {
             APP_ENV: 'e2e',
-            APP_URL: 'http://127.0.0.1:8765',
+            APP_URL: baseURL,
             DB_CONNECTION: 'sqlite',
             DB_DATABASE: database,
             SESSION_DRIVER: 'database',

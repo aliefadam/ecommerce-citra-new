@@ -23,7 +23,7 @@ besar agar setiap perubahan visual memiliki dasar teknis yang stabil.
 | Sprint | Fokus | Status | Dependensi | Bukti selesai |
 | --- | --- | --- | --- | --- |
 | Sprint 0 | Baseline dan inventory | Selesai | Tidak ada | [Report baseline + screenshot matrix](frontend-baseline/README.md) |
-| Sprint 1 | Asset pipeline dan performance foundation | Belum dimulai | Sprint 0 | Build, query report, test autocomplete |
+| Sprint 1 | Asset pipeline dan performance foundation | Selesai | Sprint 0 | [Build, query report, test autocomplete](frontend-baseline/sprint-1-report.md) |
 | Sprint 2 | Design system dan global shell | Belum dimulai | Sprint 1 | Component catalog + responsive review |
 | Sprint 3 | Homepage, katalog, search, dan product card | Belum dimulai | Sprint 2 | Screenshot + browser test katalog |
 | Sprint 4 | Detail produk dan cart | Belum dimulai | Sprint 3 | Browser test product-to-cart |
@@ -687,12 +687,14 @@ Scope:
 
 Acceptance criteria:
 
-- [ ] Frontend tetap ter-styling saat internet eksternal diblokir.
-- [ ] `npm run build` lulus dan asset ter-versioning.
-- [ ] Navbar tidak query 60 produk/varian pada setiap page load.
-- [ ] Autocomplete mendukung debounce, cancellation, keyboard, loading, empty, dan error.
-- [ ] Existing feature dan browser test tetap lulus.
-- [ ] Tidak ada regression SEO metadata.
+- [x] Frontend tetap ter-styling saat internet eksternal diblokir.
+- [x] `npm run build` lulus dan asset ter-versioning.
+- [x] Navbar tidak query 60 produk/varian pada setiap page load.
+- [x] Autocomplete mendukung debounce, cancellation, keyboard, loading, empty, dan error.
+- [x] Existing feature dan browser test tetap lulus.
+- [x] Tidak ada regression SEO metadata.
+
+Bukti: [Sprint 1 Asset Pipeline dan Performance Foundation](frontend-baseline/sprint-1-report.md).
 
 ### Sprint 2 - Design System dan Global Shell
 

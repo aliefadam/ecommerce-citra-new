@@ -6,7 +6,11 @@ const root = path.resolve(__dirname, '..', '..');
 const database = path.resolve(root, 'storage', 'framework', 'testing', 'browser-e2e.sqlite');
 
 async function prepareGuestCheckout(page, { email = 'negative-guest@example.test', shippingFailure = false } = {}) {
-    await page.route(/^https?:\/\/(?!127\.0\.0\.1:8765)/, (route) => route.abort());
+    const appOrigin = `http://127.0.0.1:${process.env.PLAYWRIGHT_PORT || '8765'}`;
+    await page.route(/^https?:\/\//, (route) => {
+        const requestOrigin = new URL(route.request().url()).origin;
+        return requestOrigin === appOrigin ? route.continue() : route.abort();
+    });
     await page.route('**/rajaongkir/**', async (route) => {
         const pathname = new URL(route.request().url()).pathname;
         if (shippingFailure && pathname.endsWith('/shipping-options')) {

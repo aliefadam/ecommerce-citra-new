@@ -35,8 +35,7 @@
 @endpush
 
 @section('style')
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
+    <link href="{{ asset('vendor/tom-select/tom-select.min.css') }}" rel="stylesheet">
     <style>
         * {
             font-family: 'Plus Jakarta Sans', sans-serif;
@@ -870,7 +869,7 @@
 @endsection
 
 @section('script')
-    <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+    <script src="{{ asset('vendor/tom-select/tom-select.complete.min.js') }}"></script>
     <script>
         const productData = @json($productData);
         const isAuthenticated = @json(auth()->check());

@@ -1,0 +1,92 @@
+/* Only the icon classes currently used by the customer storefront are declared here.
+   The font files remain local and Vite versions them for production. */
+@font-face {
+    font-family: 'uicons-regular-rounded';
+    src: url('@flaticon/flaticon-uicons/css/uicons-regular-rounded-J3WOUERV.woff2') format('woff2');
+    font-display: swap;
+}
+
+i[class^='fi-rr-']::before,
+i[class*=' fi-rr-']::before,
+span[class^='fi-rr-']::before,
+span[class*=' fi-rr-']::before {
+    font-family: 'uicons-regular-rounded' !important;
+    font-style: normal;
+    font-weight: 400 !important;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.fi-rr-angle-small-down::before { content: '\f153'; }
+.fi-rr-angle-small-right::before { content: '\f155'; }
+.fi-rr-apps::before { content: '\f16c'; }
+.fi-rr-arrow-small-left::before { content: '\f19d'; }
+.fi-rr-arrow-small-right::before { content: '\f19e'; }
+.fi-rr-badge-check::before { content: '\f1eb'; }
+.fi-rr-bell::before { content: '\f239'; }
+.fi-rr-bolt::before { content: '\f26c'; }
+.fi-rr-box::before { content: '\f2b6'; }
+.fi-rr-box-open-full::before { content: '\f2b2'; }
+.fi-rr-calendar::before { content: '\f339'; }
+.fi-rr-clock-three::before { content: '\f453'; }
+.fi-rr-coin::before { content: '\f493'; }
+.fi-rr-cross::before { content: '\f4f7'; }
+.fi-rr-cross-small::before { content: '\f4f6'; }
+.fi-rr-dashboard::before { content: '\f523'; }
+.fi-rr-exit::before { content: '\f5ed'; }
+.fi-rr-heart::before { content: '\f7a0'; }
+.fi-rr-home::before { content: '\f7b8'; }
+.fi-rr-laptop::before { content: '\f86f'; }
+.fi-rr-lock::before { content: '\f8d5'; }
+.fi-rr-marker::before { content: '\f8fd'; }
+.fi-rr-menu-burger::before { content: '\f925'; }
+.fi-rr-mobile-notch::before { content: '\f952'; }
+.fi-rr-receipt::before { content: '\fb16'; }
+.fi-rr-search::before { content: '\fbba'; }
+.fi-rr-shopping-cart::before { content: '\fbfc'; }
+.fi-rr-sparkles::before { content: '\fc84'; }
+.fi-rr-star::before { content: '\fce9'; }
+.fi-rr-triangle-warning::before { content: '\fe33'; }
+.fi-rr-truck-side::before { content: '\fe4d'; }
+.fi-rr-user::before { content: '\fea0'; }
+.fi-rr-utensils::before { content: '\fea8'; }
+
+@font-face {
+    font-family: 'remixicon';
+    src: url('../../node_modules/remixicon/fonts/remixicon.woff2') format('woff2');
+    font-display: swap;
+}
+
+[class^='ri-'],
+[class*=' ri-'] {
+    font-family: 'remixicon' !important;
+    font-style: normal;
+    font-weight: normal !important;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.ri-alarm-warning-fill::before { content: '\ea1c'; }
+.ri-arrow-down-s-line::before { content: '\ea4e'; }
+.ri-arrow-left-s-line::before { content: '\ea64'; }
+.ri-arrow-right-line::before { content: '\ea6c'; }
+.ri-arrow-right-s-line::before { content: '\ea6e'; }
+.ri-arrow-right-up-line::before { content: '\ea70'; }
+.ri-arrow-up-down-line::before { content: '\ea74'; }
+.ri-bank-card-line::before { content: '\ea92'; }
+.ri-filter-3-line::before { content: '\ed25'; }
+.ri-fire-fill::before { content: '\ed32'; }
+.ri-flashlight-fill::before { content: '\ed3c'; }
+.ri-folder-2-line::before { content: '\ed52'; }
+.ri-price-tag-3-fill::before { content: '\f022'; }
+.ri-search-line::before { content: '\f0d1'; }
+.ri-shopping-bag-3-fill::before { content: '\f115'; }
+.ri-stack-line::before { content: '\f181'; }
+.ri-timer-flash-fill::before { content: '\f213'; }
+.ri-user-smile-line::before { content: '\f274'; }

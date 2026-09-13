@@ -2,9 +2,12 @@
 
 namespace App\Providers;
 
+use App\Models\CategoryDetail;
+use App\Models\MainCategory;
 use App\Models\StoreSetting;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Services\StorefrontNavigationService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -27,6 +30,7 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('login', fn (Request $request) => Limit::perMinute(5)->by(strtolower((string) $request->input('email')).'|'.$request->ip()));
         RateLimiter::for('password-reset', fn (Request $request) => Limit::perMinute(3)->by(strtolower((string) $request->input('email')).'|'.$request->ip()));
         RateLimiter::for('payment-proof', fn (Request $request) => Limit::perMinute(5)->by(($request->user()?->id ?? $request->ip()).'|'.$request->route('transaction')));
+        RateLimiter::for('storefront-search', fn (Request $request) => Limit::perMinute(60)->by($request->ip()));
 
         $storeSettings = StoreSetting::defaults();
         try {
@@ -41,6 +45,20 @@ class AppServiceProvider extends ServiceProvider
         View::share('appStoreSettings', $storeSettings);
         View::share('appStoreName', (string) ($storeSettings['store_name'] ?? 'Ecommerce Citra'));
         View::share('appStoreLogoUrl', $storeLogoPath !== '' ? asset('storage/'.ltrim($storeLogoPath, '/')) : null);
+
+        View::composer('layouts.user', function ($view): void {
+            $user = auth()->user();
+            $view->with('customerNavigation', [
+                'megaCategories' => app(StorefrontNavigationService::class)->megaCategories(),
+                'cartCount' => $user ? (int) $user->carts()->sum('quantity') : 0,
+            ]);
+        });
+
+        $forgetStorefrontNavigation = fn () => app(StorefrontNavigationService::class)->forget();
+        MainCategory::saved($forgetStorefrontNavigation);
+        MainCategory::deleted($forgetStorefrontNavigation);
+        CategoryDetail::saved($forgetStorefrontNavigation);
+        CategoryDetail::deleted($forgetStorefrontNavigation);
 
         View::composer('partials.topbar', function ($view) {
             try {

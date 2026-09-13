@@ -49,6 +49,7 @@ use App\Http\Controllers\SalesReportController;
 use App\Http\Controllers\SeoController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\StoreLocationController;
+use App\Http\Controllers\StorefrontSearchSuggestionController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TransactionReviewController;
 use App\Http\Controllers\UserController;
@@ -309,6 +310,9 @@ Route::name('frontend.')->group(function () {
     Route::get('/blog/{slug}', [FrontendContentController::class, 'post'])->name('blog.show');
     Route::get('/redeem-point', [FrontendController::class, 'redeemPoint'])->name('redeem-point');
     Route::get('/pencarian', [FrontendController::class, 'search'])->name('search');
+    Route::get('/pencarian/saran', StorefrontSearchSuggestionController::class)
+        ->middleware('throttle:storefront-search')
+        ->name('search.suggestions');
     Route::get('/kategori', [FrontendController::class, 'kategori'])->name('kategori');
     Route::get('/detail-produk/{slug?}', [FrontendController::class, 'detailProduk'])->name('detail-produk');
     Route::get('/lacak-pesanan', [OrderTrackingController::class, 'index'])->name('order-tracking.index');

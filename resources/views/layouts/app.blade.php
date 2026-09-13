@@ -14,43 +14,9 @@
             })();
         </script>
         <title>{{ $appStoreName ?? 'Ecommerce Citra' }} Admin - @yield('title', 'Dashboard')</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
-            rel="stylesheet" />
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-        <script>
-            tailwind.config = {
-                darkMode: 'class',
-                theme: {
-                    extend: {
-                        fontFamily: {
-                            jakarta: ['Plus Jakarta Sans', 'sans-serif']
-                        },
-                        colors: {
-                            primary: {
-                                50: '#eff6ff',
-                                100: '#dbeafe',
-                                200: '#bfdbfe',
-                                300: '#93c5fd',
-                                400: '#60a5fa',
-                                500: '#3b82f6',
-                                600: '#2563eb',
-                                700: '#1d4ed8',
-                                800: '#1e40af',
-                                900: '#1e3a8a'
-                            }
-                        }
-                    }
-                }
-            }
-        </script>
+        @vite(['resources/css/app.css', 'resources/js/admin.js'])
+        <script src="{{ asset('vendor/chart.js/chart.umd.min.js') }}"></script>
         <style>
-            * {
-                font-family: 'Plus Jakarta Sans', sans-serif;
-            }
-
             .sidebar-link {
                 @apply flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200;
             }

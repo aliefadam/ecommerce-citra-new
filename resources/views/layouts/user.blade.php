@@ -42,15 +42,7 @@
         @if (!empty($appStoreSettings['google_site_verification']))
             <meta name="google-site-verification" content="{{ $appStoreSettings['google_site_verification'] }}" />
         @endif
-        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
-            rel="stylesheet" />
-        <link href="https://cdn.jsdelivr.net/npm/@flaticon/flaticon-uicons/css/all/all.css" rel="stylesheet" />
-        <style>
-            * {
-                font-family: 'Plus Jakarta Sans', sans-serif;
-            }
-        </style>
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
         @yield('style')
         @stack('structured_data')
     </head>
@@ -63,7 +55,7 @@
 
         <!-- Mobile Bottom Bar (Floating Pill) -->
         @php
-            $mobileCartCount = auth()->check() ? (int) auth()->user()->carts()->sum('quantity') : 0;
+            $mobileCartCount = (int) ($customerNavigation['cartCount'] ?? 0);
             $navIsHome     = request()->routeIs('frontend.index');
             $navIsKategori = request()->routeIs('frontend.kategori');
             $navIsPromo    = request()->routeIs('frontend.flash-sale');
@@ -157,14 +149,24 @@
                 };
             @endauth
 
-            (function () {
+            function loadTawkChat() {
+                if (window.__tawkLoaded) return;
+                window.__tawkLoaded = true;
                 var s1 = document.createElement("script"), s0 = document.getElementsByTagName("script")[0];
                 s1.async = true;
                 s1.src = 'https://embed.tawk.to/6a2247048705f01c35096780/1jqauarb4';
                 s1.charset = 'UTF-8';
                 s1.setAttribute('crossorigin', '*');
                 s0.parentNode.insertBefore(s1, s0);
-            })();
+            }
+
+            if ('requestIdleCallback' in window) {
+                window.requestIdleCallback(loadTawkChat, { timeout: 5000 });
+            } else {
+                window.addEventListener('load', function () {
+                    window.setTimeout(loadTawkChat, 2500);
+                }, { once: true });
+            }
         </script>
         <!--End of Tawk.to Script-->
 
