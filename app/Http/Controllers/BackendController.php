@@ -359,6 +359,19 @@ class BackendController extends Controller
             return redirect()->route('pages.settings', ['tab' => 'social'])->with('success', 'Link social media berhasil disimpan.');
         }
 
+        if ($section === 'seo') {
+            $validated = $request->validate([
+                'seo_home_title' => ['nullable', 'string', 'max:70'],
+                'seo_home_description' => ['required', 'string', 'max:180'],
+                'seo_default_image_url' => ['nullable', 'url:http,https', 'max:2048'],
+                'google_site_verification' => ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z0-9_-]*$/'],
+            ]);
+
+            StoreSetting::setMany(array_map(fn ($value) => trim((string) ($value ?? '')), $validated));
+
+            return redirect()->route('pages.settings', ['tab' => 'seo'])->with('success', 'Pengaturan SEO berhasil disimpan.');
+        }
+
         $validated = $request->validate([
             'store_name' => ['required', 'string', 'max:120'],
             'store_logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],

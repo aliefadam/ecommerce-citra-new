@@ -1,6 +1,9 @@
 @extends('layouts.user')
 
 @section('title', ($promo->title ?? 'Promo') . ' - ' . ($appStoreName ?? 'Ecommerce Citra'))
+@section('meta_description', \Illuminate\Support\Str::limit(trim(strip_tags((string) ($promo->description ?: $promo->subtitle))) ?: 'Promo terbaru dari '.($appStoreName ?? 'Ecommerce Citra').'.', 160))
+@section('canonical', route('frontend.promo', ['slug' => $promo->slug]))
+@section('og_image', $promo->hero_image ?? '')
 
 @section('content')
     @include('partials.navbar-user')

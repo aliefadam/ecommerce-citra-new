@@ -16,6 +16,10 @@ class StoreSetting extends Model
         return [
             'store_name' => 'Ecommerce Citra',
             'store_logo_path' => '',
+            'seo_home_title' => '',
+            'seo_home_description' => 'Belanja produk teknik, kebutuhan proyek, dan perlengkapan industri dengan mudah dan aman.',
+            'seo_default_image_url' => '',
+            'google_site_verification' => '',
             'manual_payment_bank_name' => 'BCA',
             'manual_payment_account_number' => '1234567890',
             'manual_payment_account_name' => 'Ecommerce Citra',

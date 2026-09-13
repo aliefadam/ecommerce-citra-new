@@ -255,6 +255,23 @@ Seeder yang tersedia:
 | `BannerSeeder`          | Banner homepage                |
 | `StoreLocationSeeder`   | Lokasi toko asal pengiriman    |
 
+### Reset data untuk go-live
+
+Gunakan command berikut satu kali ketika database target sudah benar-benar siap dikosongkan:
+
+```bash
+php artisan ops:reset-production-data --force
+```
+
+Command akan meminta kredensial super admin baru dan frasa konfirmasi `RESET DATA`. Seluruh tabel
+dibuat ulang tanpa menjalankan seeder demo. Produk, pengguna lama, transaksi, stok, session, cache
+database, serta file unggahan akan dihapus. Role sistem, perusahaan default, dan migration lain yang
+merupakan data fondasi tetap dibuat. Direktori backup operasional tidak dihapus.
+
+Gunakan `--keep-uploads` hanya jika file unggahan lama memang perlu dipertahankan, atau
+`--without-admin` jika database sengaja harus dibuat tanpa akun pengguna. Pastikan koneksi database
+di `.env` sudah menunjuk ke database yang tepat dan buat backup sebelum menjalankan reset.
+
 ## 📄 Lisensi
 
 Project ini dibuat untuk keperluan pembelajaran dan pengembangan.

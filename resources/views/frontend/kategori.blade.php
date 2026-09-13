@@ -1,6 +1,8 @@
 @extends('layouts.user')
 
-@section('title', 'Kategori - ' . ($appStoreName ?? 'Ecommerce Citra'))
+@section('title', ($selectedLabel ?? 'Kategori Produk') . ' - ' . ($appStoreName ?? 'Ecommerce Citra'))
+@section('meta_description', 'Temukan pilihan '.strtolower($selectedLabel ?? 'produk teknik').' dari '.($appStoreName ?? 'Ecommerce Citra').' untuk kebutuhan proyek dan industri.')
+@section('canonical', route('frontend.kategori'))
 
 @section('style')
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">

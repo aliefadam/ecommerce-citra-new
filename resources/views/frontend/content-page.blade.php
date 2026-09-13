@@ -1,6 +1,30 @@
 @extends('layouts.user')
 
 @section('title', ($page->meta_title ?: $page->title) . ' - ' . ($appStoreName ?? 'Ecommerce Citra'))
+@section('meta_description', $page->meta_description ?: \Illuminate\Support\Str::limit(trim(strip_tags((string) ($page->excerpt ?: $page->content))), 160))
+@section('canonical', $page->public_url)
+@section('og_image', $page->hero_image ?? '')
+@section('og_type', $page->type === 'post' ? 'article' : 'website')
+
+@if ($page->type === 'post')
+    @push('structured_data')
+        @php
+            $articleSchema = array_filter([
+                '@context' => 'https://schema.org',
+                '@type' => 'Article',
+                'headline' => $page->title,
+                'description' => $page->meta_description ?: $page->excerpt,
+                'image' => $page->hero_image ?: null,
+                'datePublished' => $page->published_at?->toAtomString(),
+                'dateModified' => $page->updated_at?->toAtomString(),
+                'mainEntityOfPage' => $page->public_url,
+                'author' => ['@type' => 'Organization', 'name' => $appStoreName ?? 'Ecommerce Citra'],
+                'publisher' => ['@type' => 'Organization', 'name' => $appStoreName ?? 'Ecommerce Citra'],
+            ]);
+        @endphp
+        <script type="application/ld+json">{!! json_encode($articleSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) !!}</script>
+    @endpush
+@endif
 
 @section('content')
     @include('partials.navbar-user')

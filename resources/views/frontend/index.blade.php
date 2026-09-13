@@ -1,6 +1,22 @@
 @extends('layouts.user')
 
-@section('title', ($appStoreName ?? 'Ecommerce Citra') . ' - Belanja Online Terpercaya')
+@section('title', $appStoreSettings['seo_home_title'] ?: (($appStoreName ?? 'Ecommerce Citra') . ' - Belanja Online Terpercaya'))
+@section('meta_description', $appStoreSettings['seo_home_description'] ?? 'Belanja online dengan mudah dan aman.')
+
+@push('structured_data')
+    @php
+        $sameAs = collect(['social_instagram', 'social_tiktok', 'social_facebook', 'social_twitter', 'social_youtube'])
+            ->map(fn ($key) => $appStoreSettings[$key] ?? null)->filter()->values()->all();
+        $homeSchema = [
+            '@context' => 'https://schema.org',
+            '@graph' => [
+                ['@type' => 'WebSite', '@id' => route('frontend.index').'#website', 'url' => route('frontend.index'), 'name' => $appStoreName ?? 'Ecommerce Citra', 'inLanguage' => 'id-ID'],
+                array_filter(['@type' => 'Organization', '@id' => route('frontend.index').'#organization', 'name' => $appStoreName ?? 'Ecommerce Citra', 'url' => route('frontend.index'), 'logo' => $appStoreLogoUrl ?? null, 'sameAs' => $sameAs]),
+            ],
+        ];
+    @endphp
+    <script type="application/ld+json">{!! json_encode($homeSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) !!}</script>
+@endpush
 
 @section('style')
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">

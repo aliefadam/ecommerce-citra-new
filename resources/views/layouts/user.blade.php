@@ -2,9 +2,46 @@
 <html lang="id">
 
     <head>
+        @php
+            $seoTitle = trim($__env->yieldContent('title', $appStoreName ?? 'Ecommerce Citra'));
+            $seoDescription = trim($__env->yieldContent('meta_description', $appStoreSettings['seo_home_description'] ?? 'Belanja online dengan mudah dan aman.'));
+            $seoCanonical = trim($__env->yieldContent('canonical', url()->current()));
+            $seoImage = trim($__env->yieldContent('og_image', $appStoreSettings['seo_default_image_url'] ?: ($appStoreLogoUrl ?? '')));
+            $privatePage = request()->routeIs(
+                'frontend.search',
+                'frontend.cart*',
+                'frontend.checkout*',
+                'frontend.profil*',
+                'frontend.wishlist*',
+                'frontend.notifications*',
+                'frontend.order-tracking*'
+            );
+            $seoRobots = trim($__env->yieldContent('robots', $privatePage ? 'noindex, follow' : 'index, follow, max-image-preview:large'));
+        @endphp
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>@yield('title', 'TokoKu')</title>
+        <title>{{ $seoTitle }}</title>
+        <meta name="description" content="{{ $seoDescription }}" />
+        <meta name="robots" content="{{ $seoRobots }}" />
+        <link rel="canonical" href="{{ $seoCanonical }}" />
+        <meta property="og:locale" content="id_ID" />
+        <meta property="og:type" content="@yield('og_type', 'website')" />
+        <meta property="og:site_name" content="{{ $appStoreName ?? 'Ecommerce Citra' }}" />
+        <meta property="og:title" content="{{ $seoTitle }}" />
+        <meta property="og:description" content="{{ $seoDescription }}" />
+        <meta property="og:url" content="{{ $seoCanonical }}" />
+        @if ($seoImage !== '')
+            <meta property="og:image" content="{{ $seoImage }}" />
+            <meta name="twitter:card" content="summary_large_image" />
+            <meta name="twitter:image" content="{{ $seoImage }}" />
+        @else
+            <meta name="twitter:card" content="summary" />
+        @endif
+        <meta name="twitter:title" content="{{ $seoTitle }}" />
+        <meta name="twitter:description" content="{{ $seoDescription }}" />
+        @if (!empty($appStoreSettings['google_site_verification']))
+            <meta name="google-site-verification" content="{{ $appStoreSettings['google_site_verification'] }}" />
+        @endif
         <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
             rel="stylesheet" />
@@ -15,6 +52,7 @@
             }
         </style>
         @yield('style')
+        @stack('structured_data')
     </head>
 
     <body class="@yield('body_class', 'bg-slate-50 text-slate-800 pb-20 md:pb-0')">

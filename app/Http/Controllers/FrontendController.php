@@ -593,6 +593,7 @@ class FrontendController extends Controller
                 'redeemPoints' => (int) ($product->redeem_points ?? 0),
                 'variantName' => $variant->attributeSummary(),
                 'variantValue' => $variant->skuLabel(),
+                'sku' => (string) $variant->sku,
                 'variantGroups' => $variantGroups,
                 'productVariantId' => (int) $variant->id,
                 'isWishlisted' => auth()->check()

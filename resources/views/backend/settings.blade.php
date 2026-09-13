@@ -4,7 +4,7 @@
 
 @section('content')
     @php
-        $activeTab = in_array(request('tab', 'store'), ['store', 'location', 'payment', 'tax', 'whatsapp', 'social'], true) ? request('tab', 'store') : 'store';
+        $activeTab = in_array(request('tab', 'store'), ['store', 'seo', 'location', 'payment', 'tax', 'whatsapp', 'social'], true) ? request('tab', 'store') : 'store';
         $logoPath = (string) ($storeSettings['store_logo_path'] ?? '');
         $logoUrl = $logoPath !== '' ? asset('storage/' . ltrim($logoPath, '/')) : null;
         $waGatewayRoutes = [
@@ -51,6 +51,11 @@
                             <i data-lucide="map-pin" class="w-[17px] h-[17px]"></i>
                             Store Location
                         </button>
+                        <button type="button" onclick="showTab('seo')" id="nav-seo"
+                            class="settings-tab {{ $activeTab === 'seo' ? 'active' : '' }} w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white transition-all text-left">
+                            <i data-lucide="search" class="w-[17px] h-[17px]"></i>
+                            SEO
+                        </button>
                         <button type="button" onclick="showTab('payment')" id="nav-payment"
                             class="settings-tab {{ $activeTab === 'payment' ? 'active' : '' }} w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white transition-all text-left">
                             <i data-lucide="credit-card" class="w-[17px] h-[17px]"></i>
@@ -73,6 +78,7 @@
                         </button>
                     </nav>
                 </div>
+
             </div>
 
             <div class="flex-1 space-y-5">
@@ -109,6 +115,47 @@
 
                         <div class="flex justify-end mt-5">
                             <button type="submit" class="px-5 py-2.5 text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors">Simpan Profil Toko</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="tab-seo" class="settings-content {{ $activeTab === 'seo' ? '' : 'hidden' }}">
+                    <form method="POST" action="{{ route('pages.settings.update') }}"
+                        class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
+                        @csrf
+                        <input type="hidden" name="section" value="seo">
+
+                        <h2 class="font-bold text-slate-800 dark:text-white mb-1">Search Engine Optimization</h2>
+                        <p class="text-xs text-slate-400 mb-6">Atur tampilan beranda di hasil pencarian dan saat tautan dibagikan. Meta keywords tidak digunakan Google.</p>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Judul SEO Beranda</label>
+                                <input type="text" name="seo_home_title" maxlength="70" value="{{ old('seo_home_title', $storeSettings['seo_home_title'] ?? '') }}"
+                                    placeholder="{{ ($storeSettings['store_name'] ?? 'Ecommerce Citra').' - Toko Teknik Online' }}"
+                                    class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200">
+                                <p class="text-xs text-slate-400 mt-1.5">Gunakan satu topik utama dan nama toko; maksimal 70 karakter.</p>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Deskripsi Beranda</label>
+                                <textarea name="seo_home_description" rows="3" maxlength="180" required
+                                    class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200">{{ old('seo_home_description', $storeSettings['seo_home_description'] ?? '') }}</textarea>
+                                <p class="text-xs text-slate-400 mt-1.5">Ringkas manfaat toko secara natural; maksimal 180 karakter.</p>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">URL Gambar Share Default</label>
+                                <input type="url" name="seo_default_image_url" value="{{ old('seo_default_image_url', $storeSettings['seo_default_image_url'] ?? '') }}" placeholder="https://domain.com/gambar-share.jpg"
+                                    class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Kode Verifikasi Google Search Console</label>
+                                <input type="text" name="google_site_verification" value="{{ old('google_site_verification', $storeSettings['google_site_verification'] ?? '') }}" placeholder="Kode content dari meta tag Google"
+                                    class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200">
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end mt-5">
+                            <button type="submit" class="px-5 py-2.5 text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors">Simpan SEO</button>
                         </div>
                     </form>
                 </div>

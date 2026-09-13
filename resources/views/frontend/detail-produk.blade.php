@@ -1,6 +1,38 @@
 @extends('layouts.user')
 
 @section('title', ($productData['name'] ?? 'Detail Produk') . ' - ' . ($appStoreName ?? 'Ecommerce Citra'))
+@section('meta_description', \Illuminate\Support\Str::limit(trim(strip_tags((string) ($productData['description'] ?? ''))) ?: 'Beli '.($productData['name'] ?? 'produk').' secara online di '.($appStoreName ?? 'Ecommerce Citra').'.', 160))
+@section('canonical', route('frontend.detail-produk', ['slug' => $productData['slug']]))
+@section('og_image', $productData['image'] ?? '')
+@section('og_type', 'product')
+
+@push('structured_data')
+    @php
+        $displayPrice = $productData['isFlashSale'] ? $productData['flashSalePrice'] : $productData['price'];
+        $productSchema = [
+            '@context' => 'https://schema.org',
+            '@type' => 'Product',
+            'name' => $productData['name'],
+            'description' => trim(strip_tags((string) ($productData['description'] ?? ''))),
+            'image' => $productData['images'],
+            'sku' => $productData['sku'],
+            'category' => $productData['categoryName'],
+            'brand' => ['@type' => 'Brand', 'name' => $productData['storeName'] ?: ($appStoreName ?? 'Ecommerce Citra')],
+            'offers' => [
+                '@type' => 'Offer',
+                'url' => route('frontend.detail-produk', ['slug' => $productData['slug']]),
+                'priceCurrency' => 'IDR',
+                'price' => (string) $displayPrice,
+                'availability' => $productData['stock'] > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+                'itemCondition' => 'https://schema.org/NewCondition',
+            ],
+        ];
+        if ($productData['reviews'] > 0) {
+            $productSchema['aggregateRating'] = ['@type' => 'AggregateRating', 'ratingValue' => $productData['rating'], 'reviewCount' => $productData['reviews']];
+        }
+    @endphp
+    <script type="application/ld+json">{!! json_encode($productSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) !!}</script>
+@endpush
 
 @section('style')
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">

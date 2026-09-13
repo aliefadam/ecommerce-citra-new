@@ -1,6 +1,8 @@
 @extends('layouts.user')
 
 @section('title', 'Flash Sale - ' . ($appStoreName ?? 'Ecommerce Citra'))
+@section('meta_description', 'Temukan promo dan harga spesial produk pilihan di '.($appStoreName ?? 'Ecommerce Citra').'.')
+@section('canonical', route('frontend.flash-sale'))
 
 @section('style')
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">

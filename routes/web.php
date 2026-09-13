@@ -46,6 +46,7 @@ use App\Http\Controllers\RajaOngkirController;
 use App\Http\Controllers\ReturnRequestController;
 use App\Http\Controllers\SalesOrderController;
 use App\Http\Controllers\SalesReportController;
+use App\Http\Controllers\SeoController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\StoreLocationController;
 use App\Http\Controllers\TransactionController;
@@ -55,6 +56,9 @@ use App\Http\Controllers\UserNotificationController;
 use App\Http\Controllers\VariantController;
 use App\Http\Controllers\WishlistController;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/robots.txt', [SeoController::class, 'robots'])->name('seo.robots');
+Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('seo.sitemap');
 
 Route::get('/docs/api-catalog', [ApiDocController::class, 'publicIndex'])->name('api-docs.public');
 Route::get('/internal/ready', [OperationalHealthController::class, 'readiness'])->name('ops.readiness')->middleware('throttle:30,1');
