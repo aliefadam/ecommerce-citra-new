@@ -71,6 +71,81 @@
     :where(button, [role="button"]):disabled, :where(button, [role="button"])[aria-disabled="true"] { cursor: not-allowed; }
     [x-cloak] { display: none !important; }
     [hidden] { display: none !important; }
+
+    /* Admin dark-mode foundation. Older admin views often only declare light-mode
+       utilities, so these scoped fallbacks keep every form and text label legible. */
+    .dark .admin-shell {
+        color-scheme: dark;
+        --admin-field-bg: #273449;
+        --admin-field-bg-muted: #1e293b;
+        --admin-field-border: #526279;
+        --admin-text-strong: #f8fafc;
+        --admin-text: #e2e8f0;
+        --admin-text-muted: #cbd5e1;
+        --admin-placeholder: #94a3b8;
+    }
+
+    .dark .admin-shell :where(
+        input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not([type="submit"]):not([type="button"]),
+        select,
+        textarea,
+        [contenteditable="true"]
+    ) {
+        border-color: var(--admin-field-border) !important;
+        background-color: var(--admin-field-bg) !important;
+        color: var(--admin-text-strong) !important;
+        caret-color: #60a5fa;
+    }
+
+    .dark .admin-shell :where(
+        input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),
+        textarea
+    )::placeholder {
+        color: var(--admin-placeholder) !important;
+        opacity: 1;
+    }
+
+    .dark .admin-shell :where(input, select, textarea, [contenteditable="true"]):disabled,
+    .dark .admin-shell :where(input, textarea)[readonly] {
+        background-color: var(--admin-field-bg-muted) !important;
+        color: var(--admin-text-muted) !important;
+        opacity: .8;
+    }
+
+    .dark .admin-shell select option {
+        background-color: var(--admin-field-bg);
+        color: var(--admin-text-strong);
+    }
+
+    .dark .admin-shell input:-webkit-autofill,
+    .dark .admin-shell input:-webkit-autofill:hover,
+    .dark .admin-shell input:-webkit-autofill:focus {
+        -webkit-text-fill-color: var(--admin-text-strong) !important;
+        box-shadow: 0 0 0 1000px var(--admin-field-bg) inset !important;
+        caret-color: #60a5fa;
+    }
+
+    .dark .admin-shell :where(label, legend) {
+        color: var(--admin-text) !important;
+    }
+
+    .dark .admin-shell .text-slate-950,
+    .dark .admin-shell .text-slate-900,
+    .dark .admin-shell .text-slate-800,
+    .dark .admin-shell .text-slate-700 {
+        color: var(--admin-text-strong) !important;
+    }
+
+    .dark .admin-shell .text-slate-600,
+    .dark .admin-shell .text-slate-500 {
+        color: var(--admin-text-muted) !important;
+    }
+
+    .dark .admin-shell .border-slate-100,
+    .dark .admin-shell .border-slate-200,
+    .dark .admin-shell .border-slate-300 {
+        border-color: var(--admin-field-border) !important;
+    }
 }
 
 @layer components {
