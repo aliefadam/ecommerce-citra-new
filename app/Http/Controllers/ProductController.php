@@ -108,6 +108,16 @@ class ProductController extends Controller
             'variants.*.attributes.*.value_text' => ['nullable', 'string', 'max:255'],
             'variants.*.attributes.*.value_number' => ['nullable', 'numeric', 'min:0'],
             'variants.*.image'      => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+        ], [
+            'name.required' => 'Nama produk wajib diisi.',
+            'status.required' => 'Status produk wajib dipilih.',
+            'variants.required' => 'Minimal satu varian produk wajib diisi.',
+            'variants.*.price.required' => 'Harga varian wajib diisi.',
+            'variants.*.stock.required' => 'Stok varian wajib diisi.',
+            'variants.*.weight_grams.required' => 'Berat varian wajib diisi.',
+            'variants.*.price.numeric' => 'Harga varian harus berupa angka.',
+            'variants.*.stock.integer' => 'Stok varian harus berupa bilangan bulat.',
+            'variants.*.weight_grams.integer' => 'Berat varian harus berupa bilangan bulat.',
         ]);
         $isRedeemProduct = $request->boolean('is_redeem_product');
         if ($request->boolean('is_redeem_product') && empty($validated['redeem_points'])) {
@@ -120,7 +130,11 @@ class ProductController extends Controller
         }
         $detailId = (int) ($validated['category_detail_id'] ?? $validated['category_id'] ?? 0);
         $detail = CategoryDetail::query()->find($detailId);
-        abort_unless($detail, 422);
+        if (!$detail) {
+            return back()
+                ->withErrors(['category_id' => 'Kategori wajib dipilih dari daftar yang tersedia.'])
+                ->withInput();
+        }
 
         $files = $request->file('variants', []);
         $attributeDefinitions = AttributeDefinition::query()->get()->keyBy('id');
@@ -431,6 +445,16 @@ class ProductController extends Controller
             'variants.*.attributes.*.value_text' => ['nullable', 'string', 'max:255'],
             'variants.*.attributes.*.value_number' => ['nullable', 'numeric', 'min:0'],
             'variants.*.image'      => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+        ], [
+            'name.required' => 'Nama produk wajib diisi.',
+            'status.required' => 'Status produk wajib dipilih.',
+            'variants.required' => 'Minimal satu varian produk wajib diisi.',
+            'variants.*.price.required' => 'Harga varian wajib diisi.',
+            'variants.*.stock.required' => 'Stok varian wajib diisi.',
+            'variants.*.weight_grams.required' => 'Berat varian wajib diisi.',
+            'variants.*.price.numeric' => 'Harga varian harus berupa angka.',
+            'variants.*.stock.integer' => 'Stok varian harus berupa bilangan bulat.',
+            'variants.*.weight_grams.integer' => 'Berat varian harus berupa bilangan bulat.',
         ]);
         $isRedeemProduct = $request->boolean('is_redeem_product');
         if ($request->boolean('is_redeem_product') && empty($validated['redeem_points'])) {
@@ -443,7 +467,11 @@ class ProductController extends Controller
         }
         $detailId = (int) ($validated['category_detail_id'] ?? $validated['category_id'] ?? 0);
         $detail = CategoryDetail::query()->find($detailId);
-        abort_unless($detail, 422);
+        if (!$detail) {
+            return back()
+                ->withErrors(['category_id' => 'Kategori wajib dipilih dari daftar yang tersedia.'])
+                ->withInput();
+        }
 
         $files = $request->file('variants', []);
         $attributeDefinitions = AttributeDefinition::query()->get()->keyBy('id');
