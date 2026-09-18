@@ -111,16 +111,16 @@
 
         <form action="{{ route('products.update', $product) }}" method="POST" enctype="multipart/form-data"
             x-data="productForm({
-                categories: @json($categories),
-                attributeDefinitions: {{ $attributeDefinitions->map(fn($definition) => ['id' => $definition->id, 'code' => $definition->code, 'name' => $definition->name, 'dataType' => $definition->data_type, 'unit' => $definition->unit]) }},
-                oldProductName: {{ json_encode(old('name', $product->name)) }},
-                oldCategoryId: {{ $oldCatId ?? 'null' }},
-                oldCategoryType: @json($oldCategoryType),
-                oldCategoryName: {{ json_encode($oldCatName) }},
-                oldIsRedeemProduct: {{ old('is_redeem_product', $product->is_redeem_product) ? 'true' : 'false' }},
-                oldRedeemPoints: {{ json_encode(old('redeem_points', $product->redeem_points)) }},
-                oldRows: {{ json_encode($oldVariants) }},
-                variantQuickAddUrl: {{ json_encode(route('variants.quick-add')) }},
+                categories: @js($categories),
+                attributeDefinitions: @js($attributeDefinitions->map(fn($definition) => ['id' => $definition->id, 'code' => $definition->code, 'name' => $definition->name, 'dataType' => $definition->data_type, 'unit' => $definition->unit])->values()),
+                oldProductName: @js(old('name', $product->name)),
+                oldCategoryId: @js($oldCatId),
+                oldCategoryType: @js($oldCategoryType),
+                oldCategoryName: @js($oldCatName),
+                oldIsRedeemProduct: @js((bool) old('is_redeem_product', $product->is_redeem_product)),
+                oldRedeemPoints: @js(old('redeem_points', $product->redeem_points)),
+                oldRows: @js($oldVariants),
+                variantQuickAddUrl: @js(route('variants.quick-add')),
             })">
             @csrf
             @method('PUT')
