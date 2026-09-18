@@ -1070,20 +1070,22 @@
 
         function selectVariantValueDrawer(select, groupKey) {
             const value = String(select?.value || '');
-            const label = document.getElementById('selected-drawer-' + groupKey);
-            if (label) label.textContent = value;
-            applySelectedVariantDataDrawer();
+            const selections = getSelectedVariantSelectionsDrawer();
+            const selectedVariant = findBestVariantForSelection(groupKey, value, selections);
+            applySelectedVariantDataDrawer(selectedVariant);
         }
 
-        function applySelectedVariantDataDrawer() {
+        function applySelectedVariantDataDrawer(selectedVariant = null) {
             const options = Array.isArray(productData.variantOptions) ? productData.variantOptions : [];
             if (!options.length) return;
 
-            syncVariantAvailabilityDrawer();
-            const selections = getSelectedVariantSelectionsDrawer();
-            let selectedVariant = options.find((opt) => variantMatchesSelections(opt, selections));
-            if (!selectedVariant) selectedVariant = options[0];
+            if (!selectedVariant) {
+                const selections = getSelectedVariantSelectionsDrawer();
+                selectedVariant = options.find((opt) => variantMatchesSelections(opt, selections)) || options[0];
+            }
             if (!selectedVariant) return;
+
+            syncVariantControlsToOption(selectedVariant, true);
 
             const displayPrice = Number(selectedVariant.displayPrice || selectedVariant.price || 0);
             const drawerPrice = document.getElementById('drawerProductPrice');
@@ -1380,15 +1382,17 @@
             }
         }
 
-        function applySelectedVariantData() {
+        function applySelectedVariantData(selectedVariant = null) {
             const options = Array.isArray(productData.variantOptions) ? productData.variantOptions : [];
             if (!options.length) return;
 
-            syncVariantAvailability();
-            const selections = getSelectedVariantSelections();
-            let selectedVariant = options.find((opt) => variantMatchesSelections(opt, selections));
-            if (!selectedVariant) selectedVariant = options[0];
+            if (!selectedVariant) {
+                const selections = getSelectedVariantSelections();
+                selectedVariant = options.find((opt) => variantMatchesSelections(opt, selections)) || options[0];
+            }
             if (!selectedVariant) return;
+
+            syncVariantControlsToOption(selectedVariant, false);
 
             productData.productVariantId = Number(selectedVariant.id || productData.productVariantId || 0);
             productData.stock = Number(selectedVariant.stock || 0);
@@ -1408,6 +1412,7 @@
 
             qty = clampQty(qty);
             updateQtyInput();
+            updateStockUI();
 
             if (selectedVariant.image) {
                 const mainImg = document.getElementById('mainImg');
@@ -1417,9 +1422,9 @@
 
         function selectVariantValue(select, groupKey) {
             const value = String(select?.value || '');
-            const label = document.getElementById('selected-' + groupKey);
-            if (label) label.textContent = value;
-            applySelectedVariantData();
+            const selections = getSelectedVariantSelections();
+            const selectedVariant = findBestVariantForSelection(groupKey, value, selections);
+            applySelectedVariantData(selectedVariant);
 
             // Open variant drawer on mobile when variant is selected
             if (window.innerWidth < 768 && drawerAction) {
@@ -1433,6 +1438,63 @@
         function normalizeVariantAttrValue(groupKey, value) {
             const raw = String(value || '').trim().toLowerCase();
             return groupKey === 'length_mm' ? raw.replace(/mm$/i, '') : raw;
+        }
+
+        function variantDisplayValue(groupKey, value) {
+            const raw = String(value || '').trim();
+            if (!raw) return '';
+            return groupKey === 'length_mm' && !/mm$/i.test(raw) ? `${raw}mm` : raw;
+        }
+
+        function findBestVariantForSelection(changedKey, changedValue, selections) {
+            const options = Array.isArray(productData.variantOptions) ? productData.variantOptions : [];
+            const candidates = options.filter((option) => {
+                return normalizeVariantAttrValue(changedKey, option.attributes?.[changedKey] || '') ===
+                    normalizeVariantAttrValue(changedKey, changedValue);
+            });
+
+            if (!candidates.length) return options[0] || null;
+
+            return candidates
+                .map((option, index) => ({
+                    option,
+                    index,
+                    score: Object.entries(selections).reduce((score, [key, value]) => {
+                        if (key === changedKey) return score;
+                        return score + (normalizeVariantAttrValue(key, option.attributes?.[key] || '') ===
+                            normalizeVariantAttrValue(key, value) ? 1 : 0);
+                    }, 0),
+                }))
+                .sort((a, b) => b.score - a.score || a.index - b.index)[0].option;
+        }
+
+        function syncVariantControlsToOption(option, drawer = false) {
+            const groups = Array.isArray(productData.variantGroups) ? productData.variantGroups : [];
+
+            groups.forEach((group) => {
+                const selector = drawer
+                    ? `[data-variant-group-drawer="${group.key}"]`
+                    : `[data-variant-group="${group.key}"]`;
+                const groupEl = document.querySelector(selector);
+                if (!groupEl) return;
+
+                const select = groupEl.querySelector(drawer
+                    ? 'select[data-group-key-drawer]'
+                    : 'select[data-group-key]');
+                if (!select) return;
+
+                const displayValue = variantDisplayValue(group.key, option.attributes?.[group.key] || '');
+                if (!displayValue) return;
+
+                select.value = displayValue;
+                const label = document.getElementById((drawer ? 'selected-drawer-' : 'selected-') + group.key);
+                if (label) label.textContent = displayValue;
+
+                const instance = select.tomselect;
+                if (instance) instance.setValue(displayValue, true);
+                if (drawer) refreshVariantSelectDrawerControl(select);
+                else refreshVariantSelectControl(select);
+            });
         }
 
         function getSelectedVariantSelections() {

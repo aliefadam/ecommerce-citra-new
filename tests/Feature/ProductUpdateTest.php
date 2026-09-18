@@ -64,7 +64,7 @@ class ProductUpdateTest extends TestCase
 
         $response = $this->from(route('products.edit', $product))->put(route('products.update', $product), [
             'name' => 'Produk Update',
-            'category_id' => $detail->id,
+            'category_detail_id' => $detail->id,
             'status' => 'active',
             'variants' => [
                 [
@@ -120,6 +120,44 @@ class ProductUpdateTest extends TestCase
         ]);
     }
 
+    public function test_edit_product_does_not_multiply_untouched_or_localized_rupiah_prices(): void
+    {
+        [$product, $detail, , , $productVariant] = $this->createProductFixture();
+        $this->actingAs($this->makeAdminUser());
+
+        $basePayload = [
+            'name' => $product->name,
+            'category_detail_id' => $detail->id,
+            'status' => 'active',
+            'variants' => [[
+                'product_variant_id' => $productVariant->id,
+                'existing_image' => '',
+                'stock' => '5',
+                'weight_grams' => '1000',
+                'attributes' => [
+                    $this->diameterAttribute()->id => [
+                        'attribute_definition_id' => $this->diameterAttribute()->id,
+                        'value_text' => 'M8',
+                    ],
+                ],
+            ]],
+        ];
+
+        $untouchedDecimalPayload = $basePayload;
+        $untouchedDecimalPayload['variants'][0]['price'] = (string) $productVariant->price;
+        $this->put(route('products.update', $product), $untouchedDecimalPayload)
+            ->assertRedirect(route('products.index'))
+            ->assertSessionHasNoErrors();
+        $this->assertSame(10000.0, (float) $productVariant->fresh()->price);
+
+        $localizedPayload = $basePayload;
+        $localizedPayload['variants'][0]['price'] = '13.000';
+        $this->put(route('products.update', $product), $localizedPayload)
+            ->assertRedirect(route('products.index'))
+            ->assertSessionHasNoErrors();
+        $this->assertSame(13000.0, (float) $productVariant->fresh()->price);
+    }
+
     public function test_edit_product_cannot_remove_a_variant_that_is_still_in_use(): void
     {
         [$product, $detail, $firstVariant, $secondVariant, $existingProductVariant] = $this->createProductFixture();
@@ -134,7 +172,7 @@ class ProductUpdateTest extends TestCase
         $response = $this->from(route('products.edit', $product))
             ->put(route('products.update', $product), [
                 'name' => 'Produk Update',
-                'category_id' => $detail->id,
+                'category_detail_id' => $detail->id,
                 'status' => 'active',
                 'variants' => [
                     [

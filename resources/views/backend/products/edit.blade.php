@@ -4,6 +4,13 @@
 
 @section('content')
     @php
+        $decimalForInput = static function ($value, int $scale = 3): string {
+            if ($value === null || $value === '') {
+                return '';
+            }
+
+            return rtrim(rtrim(number_format((float) $value, $scale, '.', ''), '0'), '.');
+        };
         $oldCategoryType = old('category_detail_id', $product->category_detail_id) ? 'detail' : (old('main_category_id', $product->main_category_id) ? 'main' : 'category');
         $oldCatId = old('category_detail_id', old('main_category_id', old('category_id', $product->category_detail_id ?: ($product->main_category_id ?: $product->category_id))));
         $oldCat = collect($categories)->first(fn ($category) => (int) $category['id'] === (int) $oldCatId && $category['type'] === $oldCategoryType);
@@ -46,13 +53,13 @@
                 ->toArray();
         } else {
             $oldVariants = $product->productVariants
-                ->map(function ($pv) {
+                ->map(function ($pv) use ($decimalForInput) {
                     $attributes = $pv->attributeValues
-                        ->mapWithKeys(function ($attribute) {
+                        ->mapWithKeys(function ($attribute) use ($decimalForInput) {
                             return [$attribute->attribute_definition_id => [
                                 'attributeDefinitionId' => $attribute->attribute_definition_id,
                                 'valueText' => $attribute->value_text ?? '',
-                                'valueNumber' => $attribute->value_number ?? '',
+                                'valueNumber' => $decimalForInput($attribute->value_number),
                             ]];
                         })
                         ->all();
@@ -60,12 +67,12 @@
                     return [
                         'productVariantId' => $pv->id,
                         'sku' => $pv->sku ?? '',
-                        'price' => $pv->price,
+                        'price' => (string) max(0, (int) round((float) $pv->price)),
                         'stock' => $pv->stock,
                         'weightGrams' => $pv->weight_grams,
-                        'lengthCm' => $pv->length_cm,
-                        'widthCm' => $pv->width_cm,
-                        'heightCm' => $pv->height_cm,
+                        'lengthCm' => $decimalForInput($pv->length_cm, 2),
+                        'widthCm' => $decimalForInput($pv->width_cm, 2),
+                        'heightCm' => $decimalForInput($pv->height_cm, 2),
                         'attributes' => $attributes,
                         'imagePath' => $pv->image
                             ? (\Illuminate\Support\Str::startsWith($pv->image, ['http://', 'https://'])

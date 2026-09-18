@@ -5,7 +5,7 @@
 @section('content')
     <main class="flex-1 p-4 sm:p-6 mt-6">
         <div class="max-w-3xl bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
-            <form action="{{ route('main-categories.store') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+            <form id="mainCategoryForm" action="{{ route('main-categories.store') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
                 @csrf
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5">Category Name</label>
@@ -32,7 +32,8 @@
                                 <polyline points="21 15 16 10 5 21" />
                             </svg>
                             <span id="mainCategoryImagePreviewLabel" class="text-xs text-slate-400 truncate">Pilih gambar...</span>
-                            <input id="mainCategoryImageFile" type="file" name="image_file" accept="image/*" class="hidden" />
+                            <input id="mainCategoryImageFile" type="file" name="image_file"
+                                accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" class="hidden" />
                         </label>
                     </div>
                     @error('image_file')
@@ -59,29 +60,5 @@
 @endsection
 
 @section('script')
-    <script>
-        (function() {
-            const input = document.getElementById('mainCategoryImageFile');
-            const preview = document.getElementById('mainCategoryImagePreview');
-            const wrap = document.getElementById('mainCategoryImagePreviewWrap');
-            const label = document.getElementById('mainCategoryImagePreviewLabel');
-            if (!input || !preview || !wrap || !label) return;
-            input.addEventListener('change', function(e) {
-                const file = e.target.files && e.target.files[0] ? e.target.files[0] : null;
-                if (!file) {
-                    wrap.classList.add('hidden');
-                    preview.src = '';
-                    label.textContent = 'Pilih gambar...';
-                    return;
-                }
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    preview.src = String(evt.target?.result || '');
-                    wrap.classList.remove('hidden');
-                    label.textContent = 'Ganti gambar...';
-                };
-                reader.readAsDataURL(file);
-            });
-        })();
-    </script>
+    @include('backend.main-categories.partials.image-upload-script', ['emptyLabel' => 'Pilih gambar...'])
 @endsection

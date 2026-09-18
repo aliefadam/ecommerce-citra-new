@@ -370,14 +370,14 @@ class ProductController extends Controller
 
                 foreach ($rows as $row) {
                     $line = (int) $row['_row_number'];
-                    $price = $this->normalizeDecimalInput($row['price']);
+                    $price = $this->normalizeMoneyInput($row['price']);
                     $stock = preg_replace('/\D+/', '', (string) $row['stock']) ?? '';
                     $weight = preg_replace('/\D+/', '', (string) $row['weight_grams']) ?? '';
                     $lengthCm = $this->normalizeDecimalInput($row['length_cm']);
                     $widthCm = $this->normalizeDecimalInput($row['width_cm']);
                     $heightCm = $this->normalizeDecimalInput($row['height_cm']);
 
-                    if ($price === null || $stock === '' || $weight === '') {
+                    if ($price === '' || $stock === '' || $weight === '') {
                         throw ValidationException::withMessages([
                             'import_file' => "Baris {$line}: price, stock, dan weight_grams wajib diisi.",
                         ]);
@@ -699,6 +699,11 @@ class ProductController extends Controller
                         continue;
                     }
 
+                    if ($field === 'price') {
+                        $variant[$field] = $this->normalizeMoneyInput($variant[$field]);
+                        continue;
+                    }
+
                     if (in_array($field, ['length_cm', 'width_cm', 'height_cm'], true)) {
                         $variant[$field] = $this->normalizeDecimalInput($variant[$field]);
                         continue;
@@ -726,6 +731,25 @@ class ProductController extends Controller
                 return $variant;
             })
             ->all();
+    }
+
+    private function normalizeMoneyInput(mixed $value): string
+    {
+        $raw = trim((string) $value);
+        if ($raw === '') {
+            return '';
+        }
+
+        $raw = preg_replace('/[^0-9.,]/', '', $raw) ?? '';
+
+        // Eloquent returns DECIMAL prices as e.g. "13000.00". Rupiah values are
+        // stored as whole numbers, so the database scale must not become two
+        // additional zeroes when an untouched edit form is submitted.
+        if (preg_match('/^\d+[.,]\d{1,2}$/', $raw) === 1) {
+            return (string) max(0, (int) round((float) str_replace(',', '.', $raw)));
+        }
+
+        return preg_replace('/\D+/', '', $raw) ?? '';
     }
 
     private function normalizeDecimalInput(mixed $value): ?string
