@@ -24,7 +24,7 @@ besar agar setiap perubahan visual memiliki dasar teknis yang stabil.
 | --- | --- | --- | --- | --- |
 | Sprint 0 | Baseline dan inventory | Selesai | Tidak ada | [Report baseline + screenshot matrix](frontend-baseline/README.md) |
 | Sprint 1 | Asset pipeline dan performance foundation | Selesai | Sprint 0 | [Build, query report, test autocomplete](frontend-baseline/sprint-1-report.md) |
-| Sprint 2 | Design system dan global shell | Belum dimulai | Sprint 1 | Component catalog + responsive review |
+| Sprint 2 | Design system dan global shell | Selesai | Sprint 1 | [Component catalog + responsive review](frontend-baseline/sprint-2-report.md) |
 | Sprint 3 | Homepage, katalog, search, dan product card | Belum dimulai | Sprint 2 | Screenshot + browser test katalog |
 | Sprint 4 | Detail produk dan cart | Belum dimulai | Sprint 3 | Browser test product-to-cart |
 | Sprint 5 | Checkout dan payment recovery | Belum dimulai | Sprint 4 | E2E guest/member/multi-company |
@@ -707,11 +707,13 @@ Scope:
 
 Acceptance criteria:
 
-- [ ] Semua aksi utama memakai component/state yang konsisten.
-- [ ] Navbar dan mega menu dapat digunakan dengan keyboard.
-- [ ] Mobile navigation, chat, toast, dan sticky element tidak bertumpuk.
-- [ ] Footer legal memiliki URL atau fallback accessible yang jelas.
-- [ ] Contrast, focus-visible, touch target, dan reduced motion lolos review.
+- [x] Semua aksi utama memakai component/state yang konsisten.
+- [x] Navbar dan mega menu dapat digunakan dengan keyboard.
+- [x] Mobile navigation, chat, toast, dan sticky element tidak bertumpuk.
+- [x] Footer legal memiliki URL atau fallback accessible yang jelas.
+- [x] Contrast, focus-visible, touch target, dan reduced motion lolos review.
+
+Bukti: [Sprint 2 Design System dan Global Shell](frontend-baseline/sprint-2-report.md).
 
 ### Sprint 3 - Homepage, Katalog, Search, dan Product Card
 

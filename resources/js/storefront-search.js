@@ -28,12 +28,14 @@ function bindAutocomplete(input, dropdown) {
     let activeIndex = -1;
 
     const close = () => {
+        dropdown.hidden = true;
         dropdown.classList.add('hidden');
         input.setAttribute('aria-expanded', 'false');
         activeIndex = -1;
     };
 
     const open = () => {
+        dropdown.hidden = false;
         dropdown.classList.remove('hidden');
         input.setAttribute('aria-expanded', 'true');
     };

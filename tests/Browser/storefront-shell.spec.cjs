@@ -1,0 +1,31 @@
+const { test, expect } = require('@playwright/test');
+const path = require('node:path');
+
+test('global shell supports keyboard menus and stable mobile navigation', async ({ page }) => {
+    const pageErrors = [];
+    page.on('pageerror', (error) => pageErrors.push(error.message));
+
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    const categoryTrigger = page.locator('#ecCategoryTrigger');
+    const categoryDropdown = page.locator('#ecCategoryDropdown');
+
+    await categoryTrigger.focus();
+    await categoryTrigger.press('Enter');
+    await expect(categoryTrigger).toHaveAttribute('aria-expanded', 'true');
+    await expect(categoryDropdown).toBeVisible();
+    await page.screenshot({ path: path.resolve(__dirname, '../../docs/frontend-baseline/screenshots/sprint-2-shell-desktop.png'), fullPage: false });
+    await page.keyboard.press('Escape');
+    await expect(categoryTrigger).toHaveAttribute('aria-expanded', 'false');
+    await expect(categoryDropdown).toBeHidden();
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    const mobileSearchTrigger = page.locator('#ecMobileSearchToggle');
+    await mobileSearchTrigger.click();
+    await expect(page.locator('#ecNavSearchMobile')).toBeFocused();
+    await expect(page.locator('nav[aria-label="Navigasi cepat"]')).toBeVisible();
+    await expect(page.locator('nav[aria-label="Navigasi cepat"] a')).toHaveCount(5);
+    await expect(page.locator('footer a[href*="kebijakan-privasi"]')).toBeVisible();
+    await page.screenshot({ path: path.resolve(__dirname, '../../docs/frontend-baseline/screenshots/sprint-2-shell-mobile.png'), fullPage: false });
+
+    expect(pageErrors).toEqual([]);
+});
