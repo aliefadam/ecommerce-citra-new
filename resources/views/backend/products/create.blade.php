@@ -325,7 +325,7 @@
                                                     $isNumber  = $definition->data_type === 'number';
                                                     $fieldKey  = $isNumber ? 'valueNumber' : 'valueText';
                                                     $fieldName = $isNumber ? 'value_number' : 'value_text';
-                                                    $opts      = $attributeOptions->get($defId, [])->values();
+                                                    $opts      = array_values((array) $attributeOptions->get($defId, []));
                                                     $placeholder = $definition->unit ?: 'Isi ' . strtolower($definition->name) . '...';
                                                 @endphp
                                                 <div x-data="{
