@@ -70,16 +70,16 @@
         </div>
 
         <form action="{{ route('products.store') }}" method="POST" enctype="multipart/form-data" x-data="productForm({
-            categories: @json($categories),
-            attributeDefinitions: {{ $attributeDefinitions->map(fn($definition) => ['id' => $definition->id, 'code' => $definition->code, 'name' => $definition->name, 'dataType' => $definition->data_type, 'unit' => $definition->unit]) }},
-            oldProductName: {{ json_encode(old('name')) }},
-            oldCategoryId: {{ $oldCatId ?? 'null' }},
-            oldCategoryType: @json($oldCategoryType),
-            oldCategoryName: {{ json_encode($oldCatName) }},
-            oldIsRedeemProduct: {{ old('is_redeem_product', 0) ? 'true' : 'false' }},
-            oldRedeemPoints: {{ json_encode(old('redeem_points')) }},
-            oldRows: {{ json_encode($oldVariants) }},
-            variantQuickAddUrl: {{ json_encode(route('variants.quick-add')) }},
+            categories: @js($categories),
+            attributeDefinitions: @js($attributeDefinitions->map(fn($definition) => ['id' => $definition->id, 'code' => $definition->code, 'name' => $definition->name, 'dataType' => $definition->data_type, 'unit' => $definition->unit])->values()),
+            oldProductName: @js(old('name')),
+            oldCategoryId: @js($oldCatId),
+            oldCategoryType: @js($oldCategoryType),
+            oldCategoryName: @js($oldCatName),
+            oldIsRedeemProduct: @js((bool) old('is_redeem_product', 0)),
+            oldRedeemPoints: @js(old('redeem_points')),
+            oldRows: @js($oldVariants),
+            variantQuickAddUrl: @js(route('variants.quick-add')),
         })">
             @csrf
 
@@ -325,13 +325,13 @@
                                                     $isNumber  = $definition->data_type === 'number';
                                                     $fieldKey  = $isNumber ? 'valueNumber' : 'valueText';
                                                     $fieldName = $isNumber ? 'value_number' : 'value_text';
-                                                    $opts      = json_encode($attributeOptions->get($defId, []));
+                                                    $opts      = $attributeOptions->get($defId, [])->values();
                                                     $placeholder = $definition->unit ?: 'Isi ' . strtolower($definition->name) . '...';
                                                 @endphp
                                                 <div x-data="{
                                                         open: false,
                                                         query: '',
-                                                        opts: {{ $opts }},
+                                                        opts: @js($opts),
                                                         get curVal() { return row.attributes['{{ $defId }}']['{{ $fieldKey }}']; },
                                                         set curVal(v) { row.attributes['{{ $defId }}']['{{ $fieldKey }}'] = v; },
                                                         get filtered() {
