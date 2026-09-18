@@ -79,12 +79,20 @@ class ProductController extends Controller
 
         $attributeOptions = $this->buildAttributeOptions($attributeDefinitions);
 
-        $categories = $legacyCategories->map(function ($category) {
+        $categories = $mainCategories->map(function ($category) {
+            return [
+                'id' => $category->id,
+                'type' => 'main',
+                'name' => $category->name,
+                'group' => 'Kategori utama',
+                'detail' => $category->name,
+            ];
+        })->concat($legacyCategories->map(function ($category) {
             return [
                 'id' => $category->id,
                 'type' => 'category',
                 'name' => $category->parent?->name ? $category->parent->name . ' > ' . $category->name : $category->name,
-                'group_name' => $category->parent?->name ?? 'Kategori',
+                'group' => $category->parent?->name ?? 'Kategori',
                 'detail_name' => $category->name,
                 'detail' => $category->name,
             ];
@@ -93,11 +101,11 @@ class ProductController extends Controller
                 'id' => $category->id,
                 'type' => 'detail',
                 'name' => $category->name,
-                'group_name' => $category->group_name,
+                'group' => $category->group_name,
                 'detail_name' => $category->detail_name,
                 'detail' => $category->detail_name,
             ];
-        }))->values();
+        })))->values();
         return view('backend.products.create', compact('mainCategories', 'categoryDetails', 'categories', 'attributeDefinitions', 'attributeOptions'));
     }
 
@@ -154,7 +162,10 @@ class ProductController extends Controller
         $category = !empty($validated['category_id'])
             ? Category::query()->find($validated['category_id'])
             : null;
-        if (!$detail && !$category) {
+        $mainCategory = !empty($validated['main_category_id'])
+            ? MainCategory::query()->find($validated['main_category_id'])
+            : null;
+        if (!$detail && !$category && !$mainCategory) {
             return back()
                 ->withErrors(['category_id' => 'Kategori wajib dipilih dari daftar yang tersedia.'])
                 ->withInput();
@@ -163,14 +174,14 @@ class ProductController extends Controller
         $files = $request->file('variants', []);
         $attributeDefinitions = AttributeDefinition::query()->get()->keyBy('id');
 
-        DB::transaction(function () use ($validated, $files, $detail, $category, $imageOptimizer, $attributeDefinitions, $isRedeemProduct) {
+        DB::transaction(function () use ($validated, $files, $detail, $category, $mainCategory, $imageOptimizer, $attributeDefinitions, $isRedeemProduct) {
             $slug = $this->makeUniqueProductSlug($validated['name']);
 
             $product = Product::create([
                 'company_id'  => $this->activeCompanyId(),
                 'name'        => $validated['name'],
                 'slug'        => $slug,
-                'main_category_id' => $detail ? (int) $detail->main_category_id : null,
+                'main_category_id' => $detail ? (int) $detail->main_category_id : ($mainCategory?->id),
                 'category_detail_id' => $detail ? (int) $detail->id : null,
                 'category_id' => $category?->id,
                 'status'      => $validated['status'],
@@ -436,12 +447,20 @@ class ProductController extends Controller
 
         $attributeOptions = $this->buildAttributeOptions($attributeDefinitions);
 
-        $categories = $legacyCategories->map(function ($category) {
+        $categories = $mainCategories->map(function ($category) {
+            return [
+                'id' => $category->id,
+                'type' => 'main',
+                'name' => $category->name,
+                'group' => 'Kategori utama',
+                'detail' => $category->name,
+            ];
+        })->concat($legacyCategories->map(function ($category) {
             return [
                 'id' => $category->id,
                 'type' => 'category',
                 'name' => $category->parent?->name ? $category->parent->name . ' > ' . $category->name : $category->name,
-                'group_name' => $category->parent?->name ?? 'Kategori',
+                'group' => $category->parent?->name ?? 'Kategori',
                 'detail_name' => $category->name,
                 'detail' => $category->name,
             ];
@@ -450,11 +469,11 @@ class ProductController extends Controller
                 'id' => $category->id,
                 'type' => 'detail',
                 'name' => $category->name,
-                'group_name' => $category->group_name,
+                'group' => $category->group_name,
                 'detail_name' => $category->detail_name,
                 'detail' => $category->detail_name,
             ];
-        }))->values();
+        })))->values();
         return view('backend.products.edit', compact('product', 'mainCategories', 'categoryDetails', 'categories', 'attributeDefinitions', 'attributeOptions'));
     }
 
@@ -514,7 +533,10 @@ class ProductController extends Controller
         $category = !empty($validated['category_id'])
             ? Category::query()->find($validated['category_id'])
             : null;
-        if (!$detail && !$category) {
+        $mainCategory = !empty($validated['main_category_id'])
+            ? MainCategory::query()->find($validated['main_category_id'])
+            : null;
+        if (!$detail && !$category && !$mainCategory) {
             return back()
                 ->withErrors(['category_id' => 'Kategori wajib dipilih dari daftar yang tersedia.'])
                 ->withInput();
@@ -557,13 +579,13 @@ class ProductController extends Controller
         $oldImages = $product->productVariants()->pluck('image')->filter()->values()->all();
         $newImages = [];
 
-        DB::transaction(function () use ($validated, $files, $request, $product, $detail, $category, $imageOptimizer, $existingVariants, $submittedVariants, $keptVariantIds, $variantIdsToDelete, $attributeDefinitions, $isRedeemProduct, &$newImages) {
+        DB::transaction(function () use ($validated, $files, $request, $product, $detail, $category, $mainCategory, $imageOptimizer, $existingVariants, $submittedVariants, $keptVariantIds, $variantIdsToDelete, $attributeDefinitions, $isRedeemProduct, &$newImages) {
             $slug = $this->makeUniqueProductSlug($validated['name'], $product->id);
 
             $product->update([
                 'name'        => $validated['name'],
                 'slug'        => $slug,
-                'main_category_id' => $detail ? (int) $detail->main_category_id : null,
+                'main_category_id' => $detail ? (int) $detail->main_category_id : ($mainCategory?->id),
                 'category_detail_id' => $detail ? (int) $detail->id : null,
                 'category_id' => $category?->id,
                 'status'      => $validated['status'],

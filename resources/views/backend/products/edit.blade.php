@@ -4,8 +4,8 @@
 
 @section('content')
     @php
-        $oldCategoryType = old('category_detail_id', $product->category_detail_id) ? 'detail' : 'category';
-        $oldCatId = old('category_detail_id', old('category_id', $product->category_detail_id ?: $product->category_id));
+        $oldCategoryType = old('category_detail_id', $product->category_detail_id) ? 'detail' : (old('main_category_id', $product->main_category_id) ? 'main' : 'category');
+        $oldCatId = old('category_detail_id', old('main_category_id', old('category_id', $product->category_detail_id ?: ($product->main_category_id ?: $product->category_id))));
         $oldCat = collect($categories)->first(fn ($category) => (int) $category['id'] === (int) $oldCatId && $category['type'] === $oldCategoryType);
         $oldCatName = $oldCat['name'] ?? '';
 
@@ -445,6 +445,7 @@
                                 placeholder="Cari atau tambah kategori..."
                                 class="w-full px-4 py-2.5 text-sm rounded-xl border focus:outline-none focus:ring-2 dark:text-slate-200 placeholder-slate-400 {{ $errors->has('category_id') ? 'border-2 border-red-400 bg-red-50 dark:bg-red-900/10 dark:border-red-600 focus:ring-red-400' : 'border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 focus:ring-blue-500' }}" />
                             <input type="hidden" name="category_id" :value="categoryType === 'category' ? categoryId : ''">
+                            <input type="hidden" name="main_category_id" :value="categoryType === 'main' ? categoryId : ''">
                             <input type="hidden" name="category_detail_id" :value="categoryType === 'detail' ? categoryId : ''">
                             <div x-show="categoryOpen" x-transition:enter="transition ease-out duration-100"
                                 x-transition:enter-start="opacity-0 -translate-y-1"
@@ -454,7 +455,7 @@
                                     <div class="border-b border-slate-100 dark:border-slate-700 last:border-b-0">
                                         <div class="px-3 py-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider"
                                             x-text="group.name"></div>
-                                        <template x-for="cat in group.items" :key="cat.id">
+                                        <template x-for="cat in group.items" :key="`${cat.type}-${cat.id}`">
                                             <button type="button" @click="selectCategory(cat)"
                                                 class="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 transition-colors"
                                                 :class="categoryId === cat.id ?
