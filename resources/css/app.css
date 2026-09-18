@@ -67,6 +67,9 @@
     body { min-width: 320px; background: var(--ec-warm-50); color: var(--ec-graphite-900); text-rendering: optimizeLegibility; }
     :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible { outline: 3px solid var(--ec-cobalt-600); outline-offset: 3px; }
     :where(button, input, select, textarea) { font: inherit; }
+    :where(button, [role="button"], select, summary) { cursor: pointer; }
+    :where(button, [role="button"]):disabled, :where(button, [role="button"])[aria-disabled="true"] { cursor: not-allowed; }
+    [x-cloak] { display: none !important; }
     [hidden] { display: none !important; }
 }
 

@@ -69,7 +69,8 @@
             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Tambahkan produk baru dengan varian.</p>
         </div>
 
-        <form action="{{ route('products.store') }}" method="POST" enctype="multipart/form-data" x-data="productForm({
+        <form action="{{ route('products.store') }}" method="POST" enctype="multipart/form-data"
+            @submit.prevent="confirmOpen = true" x-data="productForm({
             categories: @js($categories),
             attributeDefinitions: @js($attributeDefinitions->map(fn($definition) => ['id' => $definition->id, 'code' => $definition->code, 'name' => $definition->name, 'dataType' => $definition->data_type, 'unit' => $definition->unit])->values()),
             oldProductName: @js(old('name')),
@@ -480,7 +481,7 @@
                     {{-- Actions --}}
                     <div class="flex flex-col gap-2">
                         <button type="submit"
-                            class="w-full px-4 py-2.5 text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors">
+                            class="w-full cursor-pointer px-4 py-2.5 text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors">
                             Save Product
                         </button>
                         <a href="{{ route('products.index') }}"
@@ -491,6 +492,12 @@
 
                 </div>
             </div>
+
+            @include('backend.products.partials.submit-confirmation', [
+                'title' => 'Simpan produk baru?',
+                'message' => 'Pastikan informasi produk dan variannya sudah benar sebelum menyimpan',
+                'confirmLabel' => 'Ya, Simpan Produk',
+            ])
         </form>
     </main>
 @endsection
@@ -555,6 +562,8 @@
                 categoryId: oldCategoryId || null,
                 categoryType: oldCategoryType || null,
                 categoryOpen: false,
+                confirmOpen: false,
+                isSubmitting: false,
                 isRedeemProduct: !!oldIsRedeemProduct,
                 redeemPoints: oldRedeemPoints || '',
 
@@ -591,6 +600,12 @@
                     this.categoryType = cat.type;
                     this.categorySearch = cat.name;
                     this.categoryOpen = false;
+                },
+                submitConfirmed() {
+                    if (this.isSubmitting) return;
+                    this.isSubmitting = true;
+                    this.confirmOpen = false;
+                    this.$nextTick(() => this.$root.submit());
                 },
 
                 rows: oldRows.map((r, i) => ({
