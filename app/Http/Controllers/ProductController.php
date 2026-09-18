@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Concerns\ScopesToActiveCompany;
 use App\Models\MainCategory;
 use App\Models\AttributeDefinition;
+use App\Models\Category;
 use App\Models\CategoryDetail;
 use App\Models\Product;
 use App\Models\ProductVariant;
@@ -50,7 +51,7 @@ class ProductController extends Controller
     public function index()
     {
         $products = Product::where('company_id', $this->activeCompanyId())
-            ->with(['mainCategory', 'categoryDetail', 'productVariants'])
+            ->with(['category', 'mainCategory', 'categoryDetail', 'productVariants'])
             ->latest()
             ->get();
 
@@ -60,6 +61,7 @@ class ProductController extends Controller
     public function create()
     {
         $mainCategories = MainCategory::query()->orderBy('name')->get();
+        $legacyCategories = Category::query()->with('parent')->orderBy('name')->get();
         $categoryDetails = CategoryDetail::query()
             ->with('mainCategory')
             ->orderBy('name')
@@ -77,7 +79,25 @@ class ProductController extends Controller
 
         $attributeOptions = $this->buildAttributeOptions($attributeDefinitions);
 
-        $categories = $categoryDetails;
+        $categories = $legacyCategories->map(function ($category) {
+            return [
+                'id' => $category->id,
+                'type' => 'category',
+                'name' => $category->parent?->name ? $category->parent->name . ' > ' . $category->name : $category->name,
+                'group_name' => $category->parent?->name ?? 'Kategori',
+                'detail_name' => $category->name,
+                'detail' => $category->name,
+            ];
+        })->concat($categoryDetails->map(function ($category) {
+            return [
+                'id' => $category->id,
+                'type' => 'detail',
+                'name' => $category->name,
+                'group_name' => $category->group_name,
+                'detail_name' => $category->detail_name,
+                'detail' => $category->detail_name,
+            ];
+        }))->values();
         return view('backend.products.create', compact('mainCategories', 'categoryDetails', 'categories', 'attributeDefinitions', 'attributeOptions'));
     }
 
@@ -91,7 +111,7 @@ class ProductController extends Controller
             'name'                  => ['required', 'string', 'max:255'],
             'main_category_id'      => ['nullable', 'exists:main_categories,id'],
             'category_detail_id'    => ['nullable', 'exists:category_details,id'],
-            'category_id'           => ['nullable', 'exists:category_details,id'],
+            'category_id'           => ['nullable', 'exists:categories,id'],
             'status'                => ['required', Rule::in(['active', 'inactive'])],
             'description'           => ['nullable', 'string'],
             'is_redeem_product'     => ['nullable', 'boolean'],
@@ -128,9 +148,13 @@ class ProductController extends Controller
         if (!$request->boolean('is_redeem_product')) {
             $validated['redeem_points'] = null;
         }
-        $detailId = (int) ($validated['category_detail_id'] ?? $validated['category_id'] ?? 0);
-        $detail = CategoryDetail::query()->find($detailId);
-        if (!$detail) {
+        $detail = !empty($validated['category_detail_id'])
+            ? CategoryDetail::query()->find($validated['category_detail_id'])
+            : null;
+        $category = !empty($validated['category_id'])
+            ? Category::query()->find($validated['category_id'])
+            : null;
+        if (!$detail && !$category) {
             return back()
                 ->withErrors(['category_id' => 'Kategori wajib dipilih dari daftar yang tersedia.'])
                 ->withInput();
@@ -139,16 +163,16 @@ class ProductController extends Controller
         $files = $request->file('variants', []);
         $attributeDefinitions = AttributeDefinition::query()->get()->keyBy('id');
 
-        DB::transaction(function () use ($validated, $files, $detail, $imageOptimizer, $attributeDefinitions, $isRedeemProduct) {
+        DB::transaction(function () use ($validated, $files, $detail, $category, $imageOptimizer, $attributeDefinitions, $isRedeemProduct) {
             $slug = $this->makeUniqueProductSlug($validated['name']);
 
             $product = Product::create([
                 'company_id'  => $this->activeCompanyId(),
                 'name'        => $validated['name'],
                 'slug'        => $slug,
-                'main_category_id' => (int) $detail->main_category_id,
-                'category_detail_id' => (int) $detail->id,
-                'category_id' => null,
+                'main_category_id' => $detail ? (int) $detail->main_category_id : null,
+                'category_detail_id' => $detail ? (int) $detail->id : null,
+                'category_id' => $category?->id,
                 'status'      => $validated['status'],
                 'description' => $validated['description'] ?? null,
                 'is_redeem_product' => $isRedeemProduct,
@@ -394,6 +418,7 @@ class ProductController extends Controller
 
         $product->load('productVariants.variant', 'productVariants.attributeValues.definition');
         $mainCategories = MainCategory::query()->orderBy('name')->get();
+        $legacyCategories = Category::query()->with('parent')->orderBy('name')->get();
         $categoryDetails = CategoryDetail::query()
             ->with('mainCategory')
             ->orderBy('name')
@@ -411,7 +436,25 @@ class ProductController extends Controller
 
         $attributeOptions = $this->buildAttributeOptions($attributeDefinitions);
 
-        $categories = $categoryDetails;
+        $categories = $legacyCategories->map(function ($category) {
+            return [
+                'id' => $category->id,
+                'type' => 'category',
+                'name' => $category->parent?->name ? $category->parent->name . ' > ' . $category->name : $category->name,
+                'group_name' => $category->parent?->name ?? 'Kategori',
+                'detail_name' => $category->name,
+                'detail' => $category->name,
+            ];
+        })->concat($categoryDetails->map(function ($category) {
+            return [
+                'id' => $category->id,
+                'type' => 'detail',
+                'name' => $category->name,
+                'group_name' => $category->group_name,
+                'detail_name' => $category->detail_name,
+                'detail' => $category->detail_name,
+            ];
+        }))->values();
         return view('backend.products.edit', compact('product', 'mainCategories', 'categoryDetails', 'categories', 'attributeDefinitions', 'attributeOptions'));
     }
 
@@ -427,7 +470,7 @@ class ProductController extends Controller
             'name'                  => ['required', 'string', 'max:255'],
             'main_category_id'      => ['nullable', 'exists:main_categories,id'],
             'category_detail_id'    => ['nullable', 'exists:category_details,id'],
-            'category_id'           => ['nullable', 'exists:category_details,id'],
+            'category_id'           => ['nullable', 'exists:categories,id'],
             'status'                => ['required', Rule::in(['active', 'inactive'])],
             'description'           => ['nullable', 'string'],
             'is_redeem_product'     => ['nullable', 'boolean'],
@@ -465,9 +508,13 @@ class ProductController extends Controller
         if (!$request->boolean('is_redeem_product')) {
             $validated['redeem_points'] = null;
         }
-        $detailId = (int) ($validated['category_detail_id'] ?? $validated['category_id'] ?? 0);
-        $detail = CategoryDetail::query()->find($detailId);
-        if (!$detail) {
+        $detail = !empty($validated['category_detail_id'])
+            ? CategoryDetail::query()->find($validated['category_detail_id'])
+            : null;
+        $category = !empty($validated['category_id'])
+            ? Category::query()->find($validated['category_id'])
+            : null;
+        if (!$detail && !$category) {
             return back()
                 ->withErrors(['category_id' => 'Kategori wajib dipilih dari daftar yang tersedia.'])
                 ->withInput();
@@ -510,15 +557,15 @@ class ProductController extends Controller
         $oldImages = $product->productVariants()->pluck('image')->filter()->values()->all();
         $newImages = [];
 
-        DB::transaction(function () use ($validated, $files, $request, $product, $detail, $imageOptimizer, $existingVariants, $submittedVariants, $keptVariantIds, $variantIdsToDelete, $attributeDefinitions, $isRedeemProduct, &$newImages) {
+        DB::transaction(function () use ($validated, $files, $request, $product, $detail, $category, $imageOptimizer, $existingVariants, $submittedVariants, $keptVariantIds, $variantIdsToDelete, $attributeDefinitions, $isRedeemProduct, &$newImages) {
             $slug = $this->makeUniqueProductSlug($validated['name'], $product->id);
 
             $product->update([
                 'name'        => $validated['name'],
                 'slug'        => $slug,
-                'main_category_id' => (int) $detail->main_category_id,
-                'category_detail_id' => (int) $detail->id,
-                'category_id' => null,
+                'main_category_id' => $detail ? (int) $detail->main_category_id : null,
+                'category_detail_id' => $detail ? (int) $detail->id : null,
+                'category_id' => $category?->id,
                 'status'      => $validated['status'],
                 'description' => $validated['description'] ?? null,
                 'is_redeem_product' => $isRedeemProduct,

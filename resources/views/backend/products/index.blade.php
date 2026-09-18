@@ -241,7 +241,9 @@
                 return [
                     'id' => $p->id,
                     'name' => $p->name,
-                    'category' => trim(($p->mainCategory?->name ?? '-') . ' > ' . ($p->categoryDetail?->name ?? '-')),
+                    'category' => $p->categoryDetail
+                        ? trim(($p->mainCategory?->name ?? '-') . ' > ' . $p->categoryDetail->name)
+                        : ($p->category?->name ?? '-'),
                     'variants_count' => $p->productVariants->count(),
                     'status' => $p->status,
                 ];

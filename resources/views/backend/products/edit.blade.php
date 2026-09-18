@@ -4,8 +4,10 @@
 
 @section('content')
     @php
-        $oldCatId = old('category_id', old('category_detail_id', $product->category_detail_id));
-        $oldCatName = $oldCatId ? $categories->find($oldCatId)?->name ?? '' : '';
+        $oldCategoryType = old('category_detail_id', $product->category_detail_id) ? 'detail' : 'category';
+        $oldCatId = old('category_detail_id', old('category_id', $product->category_detail_id ?: $product->category_id));
+        $oldCat = collect($categories)->first(fn ($category) => (int) $category['id'] === (int) $oldCatId && $category['type'] === $oldCategoryType);
+        $oldCatName = $oldCat['name'] ?? '';
 
         if (old('variants')) {
             $oldVariants = collect(old('variants'))
@@ -109,10 +111,11 @@
 
         <form action="{{ route('products.update', $product) }}" method="POST" enctype="multipart/form-data"
             x-data="productForm({
-                categories: {{ $categories->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'group' => $c->group_name ?? '-', 'detail' => $c->detail_name ?? $c->name]) }},
+                categories: @json($categories),
                 attributeDefinitions: {{ $attributeDefinitions->map(fn($definition) => ['id' => $definition->id, 'code' => $definition->code, 'name' => $definition->name, 'dataType' => $definition->data_type, 'unit' => $definition->unit]) }},
                 oldProductName: {{ json_encode(old('name', $product->name)) }},
                 oldCategoryId: {{ $oldCatId ?? 'null' }},
+                oldCategoryType: @json($oldCategoryType),
                 oldCategoryName: {{ json_encode($oldCatName) }},
                 oldIsRedeemProduct: {{ old('is_redeem_product', $product->is_redeem_product) ? 'true' : 'false' }},
                 oldRedeemPoints: {{ json_encode(old('redeem_points', $product->redeem_points)) }},
@@ -438,10 +441,11 @@
                         <h2 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4">Kategori</h2>
                         <div class="relative" @click.outside="categoryOpen = false">
                             <input type="text" x-model="categorySearch"
-                                @input="categoryOpen = true; categoryId = null" @focus="categoryOpen = true"
+                                @input="categoryOpen = true; categoryId = null; categoryType = null" @focus="categoryOpen = true"
                                 placeholder="Cari atau tambah kategori..."
                                 class="w-full px-4 py-2.5 text-sm rounded-xl border focus:outline-none focus:ring-2 dark:text-slate-200 placeholder-slate-400 {{ $errors->has('category_id') ? 'border-2 border-red-400 bg-red-50 dark:bg-red-900/10 dark:border-red-600 focus:ring-red-400' : 'border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 focus:ring-blue-500' }}" />
-                            <input type="hidden" name="category_id" :value="categoryId ?? ''">
+                            <input type="hidden" name="category_id" :value="categoryType === 'category' ? categoryId : ''">
+                            <input type="hidden" name="category_detail_id" :value="categoryType === 'detail' ? categoryId : ''">
                             <div x-show="categoryOpen" x-transition:enter="transition ease-out duration-100"
                                 x-transition:enter-start="opacity-0 -translate-y-1"
                                 x-transition:enter-end="opacity-100 translate-y-0"
@@ -559,6 +563,7 @@
             attributeDefinitions,
             oldProductName,
             oldCategoryId,
+            oldCategoryType,
             oldCategoryName,
             oldIsRedeemProduct,
             oldRedeemPoints,
@@ -584,6 +589,7 @@
                 productName: oldProductName || '',
                 categorySearch: oldCategoryName || '',
                 categoryId: oldCategoryId || null,
+                categoryType: oldCategoryType || null,
                 categoryOpen: false,
                 isRedeemProduct: !!oldIsRedeemProduct,
                 redeemPoints: oldRedeemPoints || '',
@@ -618,6 +624,7 @@
                 },
                 selectCategory(cat) {
                     this.categoryId = cat.id;
+                    this.categoryType = cat.type;
                     this.categorySearch = cat.name;
                     this.categoryOpen = false;
                 },
