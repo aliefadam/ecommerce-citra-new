@@ -1321,8 +1321,10 @@ class FrontendController extends Controller
 
             return [
                 'id' => $item->id,
+                'productId' => (int) $product->id,
                 'slug' => $product->slug,
                 'name' => $product->name,
+                'variantName' => (string) $variant->attributeSummary(),
                 'image' => $this->resolveProductVariantImageUrl($product, $variant, '400x400'),
                 'price' => (int) round($salePrice),
                 'originalPrice' => (int) round($basePrice),

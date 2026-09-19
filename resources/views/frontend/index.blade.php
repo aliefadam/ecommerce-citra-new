@@ -123,6 +123,10 @@
         }
 
         #categoryTrack {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 0.625rem;
+            overflow-x: auto;
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
@@ -131,12 +135,149 @@
             display: none;
         }
 
+        .featured-category-card {
+            display: flex;
+            flex: 0 0 132px;
+            width: 132px;
+            min-width: 132px;
+            max-width: 132px;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .featured-category-image {
+            display: grid;
+            flex: 0 0 64px;
+            width: 64px;
+            height: 64px;
+            max-width: 64px;
+            max-height: 64px;
+            place-items: center;
+            overflow: hidden;
+            border-radius: 9999px;
+        }
+
+        .featured-category-image img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            max-width: 64px;
+            max-height: 64px;
+            object-fit: contain;
+            padding: 0.375rem;
+        }
+
+        @media (min-width: 640px) {
+            .featured-category-card {
+                flex-basis: 140px;
+                width: 140px;
+                min-width: 140px;
+                max-width: 140px;
+            }
+        }
+
         .badge-new {
             background: linear-gradient(135deg, #2563eb, #1d4ed8);
         }
 
         .badge-promo {
             background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .store-product-card {
+            display: flex;
+            min-width: 0;
+            height: 100%;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid #dbe3ed;
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 1px 2px rgb(15 23 42 / .025);
+            transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+        }
+
+        .store-product-card:hover {
+            transform: translateY(-2px);
+            border-color: #b9c9de;
+            box-shadow: 0 12px 24px rgb(15 45 86 / .09);
+        }
+
+        .store-product-media {
+            position: relative;
+            display: block;
+            aspect-ratio: 1.18 / 1;
+            overflow: hidden;
+            background: linear-gradient(145deg, #fff 55%, #f8fafc);
+        }
+
+        .store-product-media img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: .75rem;
+            transition: transform .3s ease;
+        }
+
+        .store-product-card:hover .store-product-media img { transform: scale(1.04); }
+
+        .store-wishlist-button {
+            position: absolute;
+            z-index: 2;
+            top: .65rem;
+            right: .65rem;
+            display: grid;
+            width: 2rem;
+            height: 2rem;
+            place-items: center;
+            border-radius: 999px;
+            background: rgb(255 255 255 / .9);
+            color: #315783;
+            transition: color .2s ease, background-color .2s ease, transform .2s ease;
+        }
+
+        .store-wishlist-button:hover { transform: scale(1.08); background: #eff6ff; color: #e11d48; }
+
+        .store-product-body { display: flex; flex: 1; flex-direction: column; padding: .75rem .85rem .85rem; }
+        .store-product-name { color: #082557; font-size: .8125rem; font-weight: 700; line-height: 1.35; }
+        .store-product-variant { margin-top: .18rem; min-height: 1rem; color: #607594; font-size: .7rem; line-height: 1.35; }
+        .store-product-price { margin-top: .45rem; color: #082557; font-size: 1rem; font-weight: 700; line-height: 1.2; }
+        .store-product-seller { display: flex; min-width: 0; align-items: center; gap: .45rem; margin-top: .7rem; color: #3d587f; font-size: .67rem; }
+        .store-product-seller i { flex: 0 0 auto; color: #0f4d96; font-size: .9rem; }
+        .store-product-seller span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .store-product-meta { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-top: auto; padding-top: .75rem; color: #526a8c; font-size: .65rem; }
+        .store-product-rating { display: inline-flex; align-items: center; gap: .25rem; color: #0d2d5d; font-weight: 600; }
+        .store-product-rating i { color: #f59e0b; }
+
+        .flash-sale-panel {
+            border-block: 1px solid #e4eaf2;
+            background: linear-gradient(110deg, #fff 0%, #f7fbff 56%, #fff 100%);
+        }
+
+        .flash-timer-unit {
+            min-width: 4rem;
+            border-radius: 9px;
+            background: linear-gradient(145deg, #103a69, #061d3b);
+            padding: .55rem .65rem;
+            color: #fff;
+            text-align: center;
+            box-shadow: 0 7px 14px rgb(8 38 76 / .18);
+        }
+
+        .flash-sale-card .store-product-price { color: #f02046; }
+        .flash-sale-progress { height: .45rem; overflow: hidden; border-radius: 999px; background: #e4eaf2; }
+        .flash-sale-progress > span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #fb3658, #f02046); }
+
+        #productGrid[data-view="list"] .store-product-card { display: grid; grid-template-columns: 12rem minmax(0, 1fr); }
+        #productGrid[data-view="list"] .store-product-media { height: 100%; min-height: 12rem; aspect-ratio: auto; }
+
+        @media (max-width: 639px) {
+            .store-product-media { aspect-ratio: 1 / 1; }
+            .store-product-body { padding: .65rem; }
+            .store-product-seller { margin-top: .55rem; }
+            .flash-timer-unit { min-width: 3.35rem; padding: .45rem; }
+            #productGrid[data-view="list"] .store-product-card { grid-template-columns: 8rem minmax(0, 1fr); }
+            #productGrid[data-view="list"] .store-product-media { min-height: 9rem; }
         }
 
         .search-dropdown {
@@ -331,10 +472,10 @@
             <div id="categoryTrack" class="flex snap-x snap-mandatory flex-nowrap gap-2.5 overflow-x-auto pb-1 scrollbar-hide">
                 @forelse (collect($homeMainCategories ?? []) as $cat)
                     <a href="{{ route('frontend.kategori', ['parent' => $cat['slug']]) }}"
-                        class="group flex w-[132px] shrink-0 snap-start flex-col items-center rounded-xl border border-slate-200 bg-white px-3 py-3 text-center shadow-[0_1px_2px_rgb(15_23_42/.02)] transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md sm:w-[140px]">
-                        <span class="grid size-16 place-items-center overflow-hidden rounded-full bg-slate-50 transition-colors duration-200 group-hover:bg-blue-50" aria-hidden="true">
+                        class="featured-category-card group shrink-0 snap-start rounded-xl border border-slate-200 bg-white px-3 py-3 text-center shadow-[0_1px_2px_rgb(15_23_42/.02)] transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md">
+                        <span class="featured-category-image bg-slate-50 transition-colors duration-200 group-hover:bg-blue-50" aria-hidden="true">
                             @if (!empty($cat['image']))
-                                <img src="{{ $cat['image'] }}" alt="" class="h-full w-full object-contain p-1.5 transition-transform duration-300 group-hover:scale-105" loading="lazy" />
+                                <img src="{{ $cat['image'] }}" alt="" class="transition-transform duration-300 group-hover:scale-105" loading="lazy" />
                             @else
                                 <i class="{{ $cat['icon'] }} text-3xl text-blue-600 transition-transform duration-300 group-hover:scale-110"></i>
                             @endif
@@ -350,99 +491,61 @@
     </section>
 
     @php
-        $flashSaleItems = collect($flashSale['items'] ?? [])->take(10);
+        $flashSaleItems = collect($flashSale['items'] ?? [])->take(6);
     @endphp
 
     @if ($flashSaleItems->isNotEmpty())
         <!-- FLASH SALE SECTION -->
-        <section class="max-w-7xl mx-auto px-4 sm:px-6 py-5">
-            <div class="bg-gradient-to-r from-red-50 to-orange-50 rounded-3xl p-6 border border-red-100">
-                <!-- Header -->
-                <div class="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
-                    <div class="flex items-center gap-4 flex-wrap">
-                        <div class="flex items-center gap-3">
-                            <div
-                                class="w-11 h-11 bg-gradient-to-br from-red-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-red-200">
-                                <i class="ri-flashlight-fill text-white text-xl"></i>
-                            </div>
-                            <div>
-                                <div class="flex items-center gap-1.5">
-                                    <h2 class="text-xl sm:text-2xl font-extrabold text-slate-800">Flash Sale</h2>
-                                </div>
-                                <p class="text-slate-500 text-[11px] sm:text-xs">Penawaran terbatas, jangan sampai habis!</p>
-                            </div>
-                        </div>
-                        <!-- Countdown -->
-                        <div class="hidden sm:flex items-center gap-2 pl-4 border-l border-red-200">
-                            <span class="text-slate-500 text-sm">Berakhir:</span>
-                            <div class="flex gap-1.5 items-center">
-                                <div class="bg-red-500 text-white rounded-lg px-2.5 py-1.5 text-center min-w-[42px] shadow-sm">
-                                    <div id="fs-hours" class="text-base font-bold leading-none">05</div>
-                                    <div class="text-[10px] text-red-200 mt-0.5">Jam</div>
-                                </div>
-                                <span class="text-red-400 font-bold text-lg">:</span>
-                                <div class="bg-red-500 text-white rounded-lg px-2.5 py-1.5 text-center min-w-[42px] shadow-sm">
-                                    <div id="fs-minutes" class="text-base font-bold leading-none">23</div>
-                                    <div class="text-[10px] text-red-200 mt-0.5">Mnt</div>
-                                </div>
-                                <span class="text-red-400 font-bold text-lg">:</span>
-                                <div class="bg-red-500 text-white rounded-lg px-2.5 py-1.5 text-center min-w-[42px] shadow-sm">
-                                    <div id="fs-seconds" class="text-base font-bold leading-none">47</div>
-                                    <div class="text-[10px] text-red-200 mt-0.5">Dtk</div>
-                                </div>
-                            </div>
+        <section class="flash-sale-panel py-7 sm:py-9">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6">
+                <div class="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div class="flex items-center gap-3">
+                        <i class="ri-flashlight-fill text-4xl text-rose-500 sm:text-5xl" aria-hidden="true"></i>
+                        <div>
+                            <h2 class="text-2xl font-extrabold tracking-tight text-slate-950 sm:text-3xl">Flash <span class="text-blue-700">Sale</span></h2>
+                            <p class="mt-0.5 text-xs text-slate-600 sm:text-sm">Penawaran terbatas untuk kebutuhan proyek Anda</p>
                         </div>
                     </div>
-                    <a href="{{ route('frontend.flash-sale') }}"
-                        class="text-red-500 hover:text-red-600 font-semibold text-xs sm:text-sm flex items-center gap-1 bg-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl border border-red-200 hover:border-red-300 transition-colors whitespace-nowrap self-start sm:self-auto">
-                        Lihat Semua <i class="ri-arrow-right-line"></i>
-                    </a>
-                </div>
-                <div class="sm:hidden flex items-center gap-1.5 mb-3">
-                    <span class="text-slate-500 text-[11px]">Berakhir:</span>
-                    <div class="bg-red-500 text-white rounded-md px-2 py-1 text-xs font-bold" id="fs-hours-mobile">05</div>
-                    <span class="text-red-400 font-bold text-xs">:</span>
-                    <div class="bg-red-500 text-white rounded-md px-2 py-1 text-xs font-bold" id="fs-minutes-mobile">23</div>
-                    <span class="text-red-400 font-bold text-xs">:</span>
-                    <div class="bg-red-500 text-white rounded-md px-2 py-1 text-xs font-bold" id="fs-seconds-mobile">47</div>
-                </div>
-                <div class="sm:hidden flex items-center justify-end gap-2 mb-3">
-                    <button type="button" onclick="flashSalePrev()"
-                        class="w-8 h-8 rounded-xl border border-red-200 bg-white text-red-500 hover:bg-red-50 transition-colors flex items-center justify-center">
-                        <i class="ri-arrow-left-s-line text-lg"></i>
-                    </button>
-                    <button type="button" onclick="flashSaleNext()"
-                        class="w-8 h-8 rounded-xl border border-red-200 bg-white text-red-500 hover:bg-red-50 transition-colors flex items-center justify-center">
-                        <i class="ri-arrow-right-s-line text-lg"></i>
-                    </button>
+                    <div class="flex flex-wrap items-center gap-3 sm:gap-4">
+                        <span class="text-xs font-medium text-slate-700 sm:text-sm">Berakhir dalam</span>
+                        <div class="flex items-center gap-2" aria-label="Hitung mundur flash sale">
+                            <div class="flash-timer-unit"><strong id="fs-hours" class="block text-lg leading-none sm:text-xl">00</strong><small class="mt-1 block text-[9px] text-blue-100">Jam</small></div>
+                            <div class="flash-timer-unit"><strong id="fs-minutes" class="block text-lg leading-none sm:text-xl">00</strong><small class="mt-1 block text-[9px] text-blue-100">Menit</small></div>
+                            <div class="flash-timer-unit"><strong id="fs-seconds" class="block text-lg leading-none sm:text-xl">00</strong><small class="mt-1 block text-[9px] text-blue-100">Detik</small></div>
+                        </div>
+                        <a href="{{ route('frontend.flash-sale') }}" class="ml-auto inline-flex min-h-10 items-center gap-2 border-l border-slate-200 pl-4 text-xs font-semibold text-blue-700 transition-colors hover:text-blue-900 sm:text-sm">Lihat Semua Promo <i class="ri-arrow-right-line" aria-hidden="true"></i></a>
+                    </div>
                 </div>
 
-                <!-- Flash Sale Products -->
-                <div id="flashSaleTrack"
-                    class="flex sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 overflow-x-auto sm:overflow-visible scroll-smooth pb-1">
+                <div id="flashSaleTrack" class="flex gap-2.5 overflow-x-auto scroll-smooth pb-2 sm:grid sm:grid-cols-3 sm:overflow-visible lg:grid-cols-6">
                     @foreach ($flashSaleItems as $fs)
-                        <a href="{{ url('/detail-produk/' . $fs['slug']) }}"
-                            class="min-w-[220px] w-[220px] sm:min-w-0 sm:w-auto bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow card-hover group border border-red-50">
-                            <div class="relative">
-                                <img src="{{ $fs['image'] }}"
-                                    class="w-full h-36 object-cover group-hover:scale-105 transition-transform duration-300" />
-                                <span
-                                    class="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">-{{ $fs['discountPercent'] }}%</span>
+                        @php $soldPercent = 100 - (int) $fs['remainingPercent']; @endphp
+                        <article class="store-product-card flash-sale-card w-[190px] min-w-[190px] sm:w-auto sm:min-w-0">
+                            <div class="store-product-media">
+                                <a href="{{ url('/detail-produk/' . $fs['slug']) }}" class="block h-full" aria-label="Lihat {{ $fs['name'] }}">
+                                    <img src="{{ $fs['image'] }}" alt="{{ $fs['name'] }}" loading="lazy" />
+                                </a>
+                                <span class="absolute left-2.5 top-2.5 rounded-md bg-rose-500 px-2 py-1 text-[10px] font-bold text-white shadow-sm">-{{ $fs['discountPercent'] }}%</span>
+                                <button type="button" onclick="addToWishlist({{ $fs['productId'] }})" data-wishlist-btn data-product-id="{{ $fs['productId'] }}" class="store-wishlist-button" aria-label="Tambahkan {{ $fs['name'] }} ke wishlist">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                                </button>
                             </div>
-                            <div class="p-3">
-                                <p class="text-[11px] sm:text-xs font-semibold text-slate-800 line-clamp-2 mb-1">
-                                    {{ $fs['name'] }}</p>
-                                <p class="text-sm sm:text-base font-bold text-red-500">Rp
-                                    {{ number_format($fs['price'], 0, ',', '.') }}</p>
-                                <p class="text-[11px] sm:text-xs text-slate-400 line-through">Rp
-                                    {{ number_format($fs['originalPrice'], 0, ',', '.') }}</p>
-                                <div class="mt-2 w-full bg-red-100 rounded-full h-1.5">
-                                    <div class="bg-red-500 h-1.5 rounded-full"
-                                        style="width:{{ 100 - $fs['remainingPercent'] }}%"></div>
+                            <div class="store-product-body">
+                                <a href="{{ url('/detail-produk/' . $fs['slug']) }}" class="store-product-name line-clamp-2 hover:text-blue-700">{{ $fs['name'] }}</a>
+                                <p class="store-product-variant truncate">{{ $fs['variantName'] ?: 'Pilihan produk industri' }}</p>
+                                <div class="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                                    <strong class="store-product-price">Rp {{ number_format($fs['price'], 0, ',', '.') }}</strong>
+                                    <span class="text-[10px] text-slate-400 line-through">Rp {{ number_format($fs['originalPrice'], 0, ',', '.') }}</span>
                                 </div>
-                                <p class="text-[10px] text-slate-500 mt-0.5">Tersisa {{ $fs['remainingPercent'] }}%</p>
+                                @if (!empty($fs['storeName']))
+                                    <p class="store-product-seller"><i class="ri-store-2-line" aria-hidden="true"></i><span>{{ $fs['storeName'] }}</span></p>
+                                @endif
+                                <div class="mt-auto pt-3">
+                                    <div class="flash-sale-progress"><span style="width: {{ $soldPercent }}%"></span></div>
+                                    <div class="mt-1.5 flex justify-between gap-2 text-[10px] font-medium text-slate-700"><span>{{ $soldPercent }}% terjual</span><span>Sisa {{ $fs['remaining'] }}</span></div>
+                                </div>
                             </div>
-                        </a>
+                        </article>
                     @endforeach
                 </div>
             </div>
@@ -494,7 +597,7 @@
                 <!-- Sort & View -->
                 <div class="flex items-center justify-between mb-6">
                     <div>
-                        <h2 class="text-lg sm:text-xl font-bold text-slate-800">Produk Terbaru</h2>
+                        <h2 class="text-2xl font-extrabold tracking-tight text-slate-950">Produk <span class="text-blue-700">Terlaris</span></h2>
                         <p class="text-xs sm:text-sm text-slate-500 mt-0.5" id="productCount">Menampilkan 12 produk</p>
                     </div>
                     <div class="flex items-center gap-2 sm:gap-3">
@@ -513,7 +616,7 @@
                             <option value="newest">Terbaru</option>
                             <option value="price-low">Harga Terendah</option>
                             <option value="price-high">Harga Tertinggi</option>
-                            <option value="popular">Terpopuler</option>
+                            <option value="popular" selected>Terpopuler</option>
                         </select>
                         <div class="flex bg-slate-100 rounded-xl p-1 gap-1">
                             <button onclick="setView('grid')" id="gridBtn" class="p-1.5 rounded-lg bg-blue-500 text-white transition-all">
@@ -574,45 +677,35 @@
                     ->values();
             @endphp
             @forelse ($rekProducts as $rp)
-                <div class="group bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 overflow-hidden flex flex-col">
-                    <a href="{{ url('/detail-produk/' . $rp['slug']) }}" class="relative overflow-hidden aspect-square block">
-                        <img src="{{ $rp['image'] }}" alt="{{ $rp['name'] }}"
-                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                @php $rpVariant = collect($rp['variants'] ?? [])->pluck('value')->filter()->take(2)->implode(' · '); @endphp
+                <article class="store-product-card">
+                    <div class="store-product-media">
+                        <a href="{{ url('/detail-produk/' . $rp['slug']) }}" class="block h-full" aria-label="Lihat {{ $rp['name'] }}">
+                            <img src="{{ $rp['image'] }}" alt="{{ $rp['name'] }}" loading="lazy" />
+                        </a>
                         @if (($rp['originalPrice'] ?? 0) > ($rp['price'] ?? 0))
                             @php $disc = round((1 - $rp['price'] / $rp['originalPrice']) * 100); @endphp
-                            <span class="absolute top-1.5 left-1.5 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow">-{{ $disc }}%</span>
+                            <span class="absolute left-2.5 top-2.5 rounded-md bg-rose-500 px-2 py-1 text-[10px] font-bold text-white shadow-sm">-{{ $disc }}%</span>
                         @elseif (($rp['badge'] ?? '') === 'new')
-                            <span class="absolute top-1.5 left-1.5 bg-blue-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow">BARU</span>
+                            <span class="absolute left-2.5 top-2.5 rounded-md bg-blue-700 px-2 py-1 text-[10px] font-bold text-white shadow-sm">BARU</span>
                         @elseif (($rp['badge'] ?? '') === 'best')
-                            <span class="absolute top-1.5 left-1.5 bg-amber-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow">TERLARIS</span>
+                            <span class="absolute left-2.5 top-2.5 rounded-md bg-amber-500 px-2 py-1 text-[10px] font-bold text-white shadow-sm">TERLARIS</span>
                         @endif
-                    </a>
-                    <div class="p-2 flex-1 flex flex-col gap-1">
-                        <a href="{{ url('/detail-produk/' . $rp['slug']) }}" class="text-[11px] sm:text-xs font-semibold text-slate-800 hover:text-blue-600 line-clamp-2 leading-snug transition-colors">{{ $rp['name'] }}</a>
-                        <div class="flex items-center gap-0.5">
-                            <span class="text-yellow-400 text-[10px]">&#9733;</span>
-                            <span class="text-[10px] font-medium text-slate-600">{{ number_format($rp['rating'], 1) }}</span>
-                            @if (!empty($rp['sold']))
-                                <span class="text-[10px] text-slate-400 ml-0.5">· {{ number_format($rp['sold']) }} terjual</span>
-                            @endif
-                        </div>
-                        <div class="mt-auto pt-0.5">
-                            @php
-                                $rpPrice = (int) ($rp['price'] ?? 0);
-                            @endphp
-                            <span class="font-bold text-slate-900 text-xs sm:text-sm">
-                                Rp {{ number_format($rpPrice, 0, ',', '.') }}
-                            </span>
-                            @if (($rp['originalPrice'] ?? 0) > ($rp['price'] ?? 0))
-                                <span class="text-slate-400 text-[10px] line-through block">Rp {{ number_format($rp['originalPrice'], 0, ',', '.') }}</span>
-                            @endif
-                        </div>
-                        <a href="{{ url('/detail-produk/' . $rp['slug']) }}"
-                            class="mt-2 inline-flex w-full items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-[11px] sm:text-xs font-semibold text-blue-600 transition-colors hover:border-blue-500 hover:bg-blue-500 hover:text-white">
-                            Detail
-                        </a>
+                        <button type="button" onclick="addToWishlist({{ $rp['id'] }})" data-wishlist-btn data-product-id="{{ $rp['id'] }}" class="store-wishlist-button" aria-label="Tambahkan {{ $rp['name'] }} ke wishlist">
+                            <svg class="h-4 w-4" fill="{{ !empty($rp['isWishlisted']) ? 'currentColor' : 'none' }}" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                        </button>
                     </div>
-                </div>
+                    <div class="store-product-body">
+                        <a href="{{ url('/detail-produk/' . $rp['slug']) }}" class="store-product-name line-clamp-2 hover:text-blue-700">{{ $rp['name'] }}</a>
+                        <p class="store-product-variant truncate">{{ $rpVariant ?: ($rp['category'] ?? 'Produk industri') }}</p>
+                        <p class="store-product-price">Rp {{ number_format((int) ($rp['price'] ?? 0), 0, ',', '.') }}</p>
+                        <p class="store-product-seller"><i class="ri-store-2-line" aria-hidden="true"></i><span>{{ $rp['storeName'] ?: 'Mitra industri' }}</span></p>
+                        <div class="store-product-meta">
+                            <span class="store-product-rating"><i class="ri-star-fill" aria-hidden="true"></i>{{ number_format((float) ($rp['rating'] ?? 0), 1) }} <span class="font-normal text-slate-400">({{ number_format((int) ($rp['reviews'] ?? 0)) }})</span></span>
+                            <span>Terjual {{ number_format((int) ($rp['sold'] ?? 0)) }}</span>
+                        </div>
+                    </div>
+                </article>
             @empty
                 <div class="col-span-full text-center py-10 text-slate-400 text-sm">Belum ada produk rekomendasi.</div>
             @endforelse
@@ -710,7 +803,7 @@
 @section('script')
     <script>
         // PRODUCT DATA
-        const products = @json($productsJson);
+        const products = @json(collect($productsJson ?? [])->sortByDesc('sold')->values());
         const flashSaleEndAt = @json($flashSale['end_at'] ?? null);
         const isAuthenticated = @json(auth()->check());
         const loginUrl = @json(route('login'));
@@ -753,41 +846,40 @@
                 const discount = p.originalPrice > p.price ? Math.round((1 - p.price / p.originalPrice) * 100) : 0;
                 const priceLabel = `Rp ${Number(p.price).toLocaleString('id-ID')}`;
                 const badgeHtml = p.isFlashSale ?
-                    `<span class="badge-promo text-white text-[10px] font-bold px-2 py-0.5 rounded-full">-${discount}%</span>` :
+                    `<span class="absolute left-2.5 top-2.5 rounded-md bg-rose-500 px-2 py-1 text-[10px] font-bold text-white shadow-sm">-${discount}%</span>` :
                     p.badge === 'new' ?
-                    `<span class="badge-new text-white text-[10px] font-bold px-2 py-0.5 rounded-full">BARU</span>` :
+                    `<span class="absolute left-2.5 top-2.5 rounded-md bg-blue-700 px-2 py-1 text-[10px] font-bold text-white shadow-sm">BARU</span>` :
                     p.badge === 'best' ?
-                    `<span class="bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">TERLARIS</span>` :
+                    `<span class="absolute left-2.5 top-2.5 rounded-md bg-amber-500 px-2 py-1 text-[10px] font-bold text-white shadow-sm">TERLARIS</span>` :
                     '';
-                const stars = '?'.repeat(Math.floor(p.rating)) + (p.rating % 1 >= 0.5 ? '1/2' : '');
+                const variants = Array.isArray(p.variants) ? p.variants.map(v => v.value).filter(Boolean) : [];
+                const variantLabel = variants.slice(0, 2).join(' · ') || p.category || 'Produk industri';
+                const productUrl = `{{ url('/detail-produk') }}/${encodeURIComponent(p.slug)}`;
+                const productName = escapeHtml(p.name);
+                const sellerName = escapeHtml(p.storeName || 'Mitra industri');
+
                 return `
-          <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden card-hover group h-full flex flex-col" data-id="${p.id}">
-            <div class="relative overflow-hidden aspect-square">
-              <a href="{{ url('/detail-produk') }}/${p.slug}">
-                <img src="${p.image}" alt="${p.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+          <article class="store-product-card" data-id="${p.id}">
+            <div class="store-product-media">
+              <a href="${productUrl}" class="block h-full" aria-label="Lihat ${productName}">
+                <img src="${escapeHtml(p.image)}" alt="${productName}" loading="lazy" />
               </a>
-              <div class="absolute top-1.5 left-1.5 flex gap-1 flex-wrap">${badgeHtml}</div>
-              <button onclick="addToWishlist(${p.id})" data-wishlist-btn data-product-id="${p.id}" class="absolute top-1.5 right-1.5 w-7 h-7 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-pink-50">
-                <svg class="w-3.5 h-3.5 text-pink-500" fill="${p.isWishlisted ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+              ${badgeHtml}
+              <button type="button" onclick="addToWishlist(${p.id})" data-wishlist-btn data-product-id="${p.id}" class="store-wishlist-button" aria-label="Tambahkan ${productName} ke wishlist">
+                <svg class="h-4 w-4" fill="${p.isWishlisted ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
               </button>
             </div>
-            <div class="p-2 flex-1 flex flex-col">
-              <a href="{{ url('/detail-produk') }}/${p.slug}" class="block">
-                <h3 class="text-[11px] sm:text-xs font-semibold text-slate-800 hover:text-blue-600 transition-colors line-clamp-2 leading-snug mb-1">${p.name}</h3>
-              </a>
-              <div class="flex items-center gap-0.5 mb-1">
-                <span class="text-yellow-400 text-[10px]">&#9733;</span>
-                <span class="text-[10px] font-medium text-slate-600">${p.rating}</span>
-                <span class="text-[10px] text-slate-400 ml-0.5">· ${p.sold.toLocaleString()} terjual</span>
-              </div>
-              ${p.storeName ? `<p class="text-[10px] text-slate-400 mb-1 truncate">${p.storeName}</p>` : ''}
-              <div class="mt-auto">
-                <p class="text-xs sm:text-sm font-bold text-slate-900">${priceLabel}</p>
-                ${p.originalPrice > p.price ? `<p class="text-[10px] text-slate-400 line-through">Rp ${p.originalPrice.toLocaleString('id-ID')}</p>` : ''}
-                <a href="{{ url('/detail-produk') }}/${p.slug}" class="mt-2 inline-flex w-full items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-[11px] sm:text-xs font-semibold text-blue-600 transition-colors hover:border-blue-500 hover:bg-blue-500 hover:text-white">Detail</a>
+            <div class="store-product-body">
+              <a href="${productUrl}" class="store-product-name line-clamp-2 hover:text-blue-700">${productName}</a>
+              <p class="store-product-variant truncate">${escapeHtml(variantLabel)}</p>
+              <p class="store-product-price">${priceLabel}</p>
+              <p class="store-product-seller"><i class="ri-store-2-line" aria-hidden="true"></i><span>${sellerName}</span></p>
+              <div class="store-product-meta">
+                <span class="store-product-rating"><i class="ri-star-fill" aria-hidden="true"></i>${Number(p.rating || 0).toFixed(1)} <span class="font-normal text-slate-400">(${Number(p.reviews || 0).toLocaleString('id-ID')})</span></span>
+                <span>Terjual ${Number(p.sold || 0).toLocaleString('id-ID')}</span>
               </div>
             </div>
-          </div>`;
+          </article>`;
             }).join('');
             syncWishlistButtons();
         }
@@ -1099,6 +1191,7 @@
         function setView(v) {
             currentView = v;
             const grid = document.getElementById('productGrid');
+            grid.dataset.view = v;
             if (v === 'grid') {
                 grid.className = 'grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4';
                 document.getElementById('gridBtn').className = 'p-2 bg-blue-500 text-white';
