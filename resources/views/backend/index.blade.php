@@ -459,7 +459,7 @@
                         ticks: {
                             color: textColor(),
                             font: {
-                                family: 'Plus Jakarta Sans',
+                                family: 'Inter',
                                 size: 11
                             }
                         }
@@ -471,7 +471,7 @@
                         ticks: {
                             color: textColor(),
                             font: {
-                                family: 'Plus Jakarta Sans',
+                                family: 'Inter',
                                 size: 11
                             },
                             callback: v => '$' + (v / 1000).toFixed(0) + 'k'

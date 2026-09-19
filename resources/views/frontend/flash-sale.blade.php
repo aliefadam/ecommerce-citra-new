@@ -6,7 +6,7 @@
 
 @section('style')
     <style>
-        * { font-family: 'Plus Jakarta Sans', sans-serif; }
+        * { font-family: 'Inter Variable', Inter, sans-serif; }
         .card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease; }
         .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12); }
         .hero-sale {

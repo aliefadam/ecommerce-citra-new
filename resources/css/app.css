@@ -1,6 +1,4 @@
-@import '@fontsource-variable/plus-jakarta-sans/index.css';
-@import '@fontsource/barlow-condensed/latin-600.css';
-@import '@fontsource/barlow-condensed/latin-700.css';
+@import '@fontsource-variable/inter/index.css';
 @import './storefront-icons.css';
 @import 'tailwindcss';
 
@@ -12,9 +10,9 @@
 @source '../**/*.js';
 
 @theme {
-    --font-sans: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    --font-sans: 'Inter Variable', Inter, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
-    --font-display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+    --font-display: 'Inter Variable', Inter, ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {
@@ -64,7 +62,9 @@
         background: var(--ec-warm-50);
     }
 
-    body { min-width: 320px; background: var(--ec-warm-50); color: var(--ec-graphite-900); text-rendering: optimizeLegibility; }
+    body { min-width: 320px; background: var(--ec-warm-50); color: var(--ec-graphite-900); font-weight: 400; text-rendering: optimizeLegibility; }
+    :where(h1, h2, h3, h4, h5, h6) { font-family: var(--font-sans); font-weight: 700; }
+    :where(small, label, figcaption) { font-weight: 400; }
     :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible { outline: 3px solid var(--ec-cobalt-600); outline-offset: 3px; }
     :where(button, input, select, textarea) { font: inherit; }
     :where(button, [role="button"], select, summary) { cursor: pointer; }
@@ -150,7 +150,7 @@
 
 @layer components {
     .ec-container { width: min(100% - 2rem, var(--ec-container)); margin-inline: auto; }
-    .ec-display { font-family: var(--font-display); font-weight: 700; letter-spacing: .015em; text-transform: uppercase; }
+    .ec-display { font-family: var(--font-display); font-weight: 700; letter-spacing: -.01em; text-transform: uppercase; }
     .ec-btn { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: .5rem; border: 1px solid transparent; border-radius: var(--ec-radius-sm); padding: .65rem 1rem; font-size: .875rem; font-weight: 700; line-height: 1.2; transition: background-color var(--ec-motion-fast), border-color var(--ec-motion-fast), color var(--ec-motion-fast), transform var(--ec-motion-fast); }
     .ec-btn:hover:not(:disabled) { transform: translateY(-1px); }
     .ec-btn-primary { background: var(--ec-orange-500); color: var(--ec-white); box-shadow: inset 0 -2px 0 rgb(0 0 0 / .14); }
@@ -176,7 +176,7 @@
     .ec-badge-success { background: var(--ec-success-100); color: var(--ec-success-700); }
     .ec-badge-warning { background: var(--ec-warning-100); color: var(--ec-warning-700); }
     .ec-badge-danger { background: var(--ec-danger-100); color: var(--ec-danger-700); }
-    .ec-price { color: var(--ec-graphite-950); font-variant-numeric: tabular-nums; font-weight: 800; letter-spacing: -.02em; }
+    .ec-price { color: var(--ec-graphite-950); font-variant-numeric: tabular-nums; font-weight: 700; letter-spacing: -.02em; }
     .ec-alert { display: flex; gap: .75rem; border: 1px solid var(--ec-steel-200); border-left-width: 4px; border-radius: var(--ec-radius-sm); background: var(--ec-white); padding: .85rem 1rem; }
     .ec-surface { border: 1px solid var(--ec-steel-200); border-radius: var(--ec-radius-md); background: var(--ec-white); }
     .ec-skeleton { overflow: hidden; background: var(--ec-steel-100); position: relative; }

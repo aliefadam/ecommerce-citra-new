@@ -129,7 +129,7 @@
           { label:'2023', data:[6000,7200,6800,9000,10500,12000,11200,13500,12800,15000,14200,17000], borderColor:'#a78bfa', backgroundColor:g2, borderWidth:2, tension:0.4, fill:true, pointRadius:3, pointHoverRadius:5, pointBackgroundColor:'#a78bfa' }
         ]
       },
-      options:{ responsive:true, plugins:{legend:{display:false}}, scales:{ x:{grid:{color:gc()},ticks:{color:tc(),font:{family:'Plus Jakarta Sans',size:11}}}, y:{grid:{color:gc()},ticks:{color:tc(),font:{family:'Plus Jakarta Sans',size:11}}} }}
+      options:{ responsive:true, plugins:{legend:{display:false}}, scales:{ x:{grid:{color:gc()},ticks:{color:tc(),font:{family:'Inter',size:11}}}, y:{grid:{color:gc()},ticks:{color:tc(),font:{family:'Inter',size:11}}} }}
     });
 
     // Bar
@@ -139,7 +139,7 @@
         labels:['Electronics','Clothing','Books','Software','Hardware','Services'],
         datasets:[{ data:[4200,3100,1800,5600,2900,3800], backgroundColor:['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ec4899','#06b6d4'], borderRadius:8, borderSkipped:false }]
       },
-      options:{ responsive:true, plugins:{legend:{display:false}}, scales:{ x:{grid:{display:false},ticks:{color:tc(),font:{family:'Plus Jakarta Sans',size:11}}}, y:{grid:{color:gc()},ticks:{color:tc(),font:{family:'Plus Jakarta Sans',size:11}}} }}
+      options:{ responsive:true, plugins:{legend:{display:false}}, scales:{ x:{grid:{display:false},ticks:{color:tc(),font:{family:'Inter',size:11}}}, y:{grid:{color:gc()},ticks:{color:tc(),font:{family:'Inter',size:11}}} }}
     });
 
     // Doughnut
@@ -159,7 +159,7 @@
         labels:['Organic','Paid','Email','Social','Referral'],
         datasets:[{ data:[42,28,18,35,22], backgroundColor:['rgba(59,130,246,0.7)','rgba(139,92,246,0.7)','rgba(16,185,129,0.7)','rgba(245,158,11,0.7)','rgba(236,72,153,0.7)'], borderWidth:0 }]
       },
-      options:{ responsive:true, plugins:{legend:{position:'bottom',labels:{font:{family:'Plus Jakarta Sans',size:11},color:tc(),boxWidth:10,padding:12}}}, scales:{r:{ticks:{display:false},grid:{color:gc()}}} }
+      options:{ responsive:true, plugins:{legend:{position:'bottom',labels:{font:{family:'Inter',size:11},color:tc(),boxWidth:10,padding:12}}}, scales:{r:{ticks:{display:false},grid:{color:gc()}}} }
     });
 
     // Radar
@@ -172,7 +172,7 @@
           { label:'Team B', data:[70,78,88,80,72,90], borderColor:'#10b981', backgroundColor:'rgba(16,185,129,0.15)', borderWidth:2, pointBackgroundColor:'#10b981', pointRadius:4 }
         ]
       },
-      options:{ responsive:true, plugins:{legend:{position:'bottom',labels:{font:{family:'Plus Jakarta Sans',size:11},color:tc(),boxWidth:10,padding:12}}}, scales:{r:{ticks:{font:{family:'Plus Jakarta Sans',size:10},color:tc()},grid:{color:gc()},pointLabels:{font:{family:'Plus Jakarta Sans',size:11},color:tc()}}} }
+      options:{ responsive:true, plugins:{legend:{position:'bottom',labels:{font:{family:'Inter',size:11},color:tc(),boxWidth:10,padding:12}}}, scales:{r:{ticks:{font:{family:'Inter',size:10},color:tc()},grid:{color:gc()},pointLabels:{font:{family:'Inter',size:11},color:tc()}}} }
     });
 
     // Stacked
@@ -186,7 +186,7 @@
           { label:'Services', data:[12000,15000,13000,18000], backgroundColor:'#10b981', borderRadius:{topLeft:8,topRight:8}, stack:'s' }
         ]
       },
-      options:{ responsive:true, plugins:{legend:{display:false}}, scales:{ x:{grid:{display:false},ticks:{color:tc(),font:{family:'Plus Jakarta Sans',size:12}}}, y:{grid:{color:gc()},ticks:{color:tc(),font:{family:'Plus Jakarta Sans',size:11},callback:v=>'$'+(v/1000).toFixed(0)+'k'}, stacked:true } }}
+      options:{ responsive:true, plugins:{legend:{display:false}}, scales:{ x:{grid:{display:false},ticks:{color:tc(),font:{family:'Inter',size:12}}}, y:{grid:{color:gc()},ticks:{color:tc(),font:{family:'Inter',size:11},callback:v=>'$'+(v/1000).toFixed(0)+'k'}, stacked:true } }}
     });
   }
 

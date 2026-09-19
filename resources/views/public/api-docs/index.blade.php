@@ -13,7 +13,7 @@
         </script>
         <title>Open Catalog API - Dokumentasi</title>
         <script src="https://cdn.tailwindcss.com"></script>
-        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
             rel="stylesheet" />
         <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
         <script>
@@ -22,7 +22,7 @@
                 theme: {
                     extend: {
                         fontFamily: {
-                            jakarta: ['Plus Jakarta Sans', 'sans-serif']
+                            inter: ['Inter', 'sans-serif']
                         }
                     }
                 }
@@ -30,7 +30,7 @@
         </script>
         <style>
             * {
-                font-family: 'Plus Jakarta Sans', sans-serif;
+                font-family: Inter, sans-serif;
             }
         </style>
     </head>

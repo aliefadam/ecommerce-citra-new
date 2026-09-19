@@ -368,7 +368,7 @@
             <svg id="acc-icon-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400 transition-transform duration-300 rotate-180"><polyline points="6 9 12 15 18 9"/></svg>
           </button>
           <div id="acc-body-0" class="px-5 pb-4 text-sm text-slate-500 dark:text-slate-400">
-            AdminKit is a modern, responsive admin panel template built with Tailwind CSS and Plus Jakarta Sans font, featuring dark mode, charts, datatables, and rich UI components.
+            AdminKit is a modern, responsive admin panel template built with Tailwind CSS and Inter, featuring dark mode, charts, datatables, and rich UI components.
           </div>
         </div>
         <div class="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">

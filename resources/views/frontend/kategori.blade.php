@@ -7,7 +7,7 @@
 @section('style')
     <style>
         * {
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Inter Variable', Inter, sans-serif;
         }
 
         .card-hover {

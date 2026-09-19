@@ -4,7 +4,7 @@
 
 @section('style')
     <style>
-        * { font-family: 'Plus Jakarta Sans', sans-serif; }
+        * { font-family: 'Inter Variable', Inter, sans-serif; }
         .card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease; }
         .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12); }
         .filter-chip { display:inline-flex; align-items:center; gap:8px; border-radius:999px; padding:8px 12px; font-size:12px; font-weight:600; background:#eff6ff; color:#1d4ed8; }
