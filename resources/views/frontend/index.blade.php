@@ -597,22 +597,39 @@
 
                     <div class="flex-1 overflow-y-auto pr-2">
                         <div class="flat-filter-section">
-                            <h4 class="mb-3 text-sm font-medium text-slate-950">Kategori</h4>
-                            <div class="space-y-3">
-                                @foreach ($homeFilterCategories ?? [] as $cat)
-                                    <label class="flex items-center gap-2 cursor-pointer group"><input type="checkbox"
-                                            class="filter-cat w-4 h-4 rounded accent-blue-500" value="{{ $cat['slug'] }}"
-                                            onchange="applyFilter()" /><span
-                                            class="text-sm text-slate-700 group-hover:text-slate-950">{{ $cat['name'] }}
-                                            ({{ $cat['count'] }})
-                                        </span></label>
-                                @endforeach
+                            <button type="button" class="flex w-full items-center justify-between gap-3 text-left"
+                                aria-expanded="true" aria-controls="homeCategoryPanel" onclick="toggleFilterSection(this, 'homeCategoryPanel')">
+                                <span class="text-sm font-medium text-slate-950">Kategori</span>
+                                <i class="ri-arrow-down-s-line rotate-180 text-lg text-slate-400 transition-transform"></i>
+                            </button>
+                            <div id="homeCategoryPanel" class="pt-3">
+                                <div class="relative mb-3">
+                                    <i class="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400"></i>
+                                    <input id="homeCategorySearch" type="search" placeholder="Cari kategori..."
+                                        class="w-full rounded border border-slate-300 bg-transparent py-2 pl-8 pr-3 text-sm outline-none transition focus:border-blue-500"
+                                        oninput="searchCategoryOptions(this, 'homeCategoryOptions', 'homeCategoryEmpty')" />
+                                </div>
+                                <div id="homeCategoryOptions" class="space-y-3">
+                                    @foreach ($homeFilterCategories ?? [] as $cat)
+                                        <label class="filter-category-option flex items-center gap-2 cursor-pointer group"><input type="checkbox"
+                                                class="filter-cat w-4 h-4 rounded accent-blue-500" value="{{ $cat['slug'] }}"
+                                                onchange="applyFilter()" /><span
+                                                class="text-sm text-slate-700 group-hover:text-slate-950">{{ $cat['name'] }}
+                                                ({{ $cat['count'] }})
+                                            </span></label>
+                                    @endforeach
+                                </div>
+                                <p id="homeCategoryEmpty" class="hidden py-2 text-xs text-slate-400">Kategori tidak ditemukan.</p>
                             </div>
                         </div>
 
                         <div class="flat-filter-section">
-                            <h4 class="mb-3 text-sm font-medium text-slate-950">Harga</h4>
-                            <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+                            <button type="button" class="flex w-full items-center justify-between gap-3 text-left"
+                                aria-expanded="true" aria-controls="homePricePanel" onclick="toggleFilterSection(this, 'homePricePanel')">
+                                <span class="text-sm font-medium text-slate-950">Harga</span>
+                                <i class="ri-arrow-down-s-line rotate-180 text-lg text-slate-400 transition-transform"></i>
+                            </button>
+                            <div id="homePricePanel" class="grid grid-cols-[1fr_auto_1fr] items-center gap-2 pt-3">
                                 <input id="homePriceMin" type="number" min="0" placeholder="Min" oninput="applyFilter()"
                                     class="min-w-0 w-full rounded border border-slate-300 bg-transparent px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-blue-500" />
                                 <span class="text-slate-400">-</span>
@@ -1028,6 +1045,30 @@
             } [char]));
         }
 
+        function toggleFilterSection(button, panelId) {
+            const panel = document.getElementById(panelId);
+            if (!panel) return;
+
+            const expanded = button.getAttribute('aria-expanded') === 'true';
+            button.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+            panel.classList.toggle('hidden', expanded);
+            button.querySelector('i')?.classList.toggle('rotate-180', !expanded);
+        }
+
+        function searchCategoryOptions(input, optionsId, emptyId) {
+            const options = Array.from(document.querySelectorAll(`#${optionsId} .filter-category-option`));
+            const query = normalizeFilterValue(input.value);
+            let visibleCount = 0;
+
+            options.forEach((option) => {
+                const visible = !query || normalizeFilterValue(option.textContent).includes(query);
+                option.classList.toggle('hidden', !visible);
+                if (visible) visibleCount++;
+            });
+
+            document.getElementById(emptyId)?.classList.toggle('hidden', visibleCount > 0);
+        }
+
         function renderFilterVariants() {
             const container = document.getElementById('homeFilterVariantList');
             if (!container) return;
@@ -1178,6 +1219,11 @@
 
         function resetFilter() {
             document.querySelectorAll('.filter-cat').forEach(c => c.checked = false);
+            const categorySearch = document.getElementById('homeCategorySearch');
+            if (categorySearch) {
+                categorySearch.value = '';
+                searchCategoryOptions(categorySearch, 'homeCategoryOptions', 'homeCategoryEmpty');
+            }
             const priceMin = document.getElementById('homePriceMin');
             const priceMax = document.getElementById('homePriceMax');
             if (priceMin) priceMin.value = '';

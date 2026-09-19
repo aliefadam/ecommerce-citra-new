@@ -59,13 +59,30 @@
                     </div>
 
                     <div class="flat-filter-section">
-                        <h4 class="mb-3 text-sm font-medium text-slate-950">Kategori</h4>
-                        <div id="categoryFilterList" class="space-y-3"></div>
+                        <button type="button" class="flex w-full items-center justify-between gap-3 text-left"
+                            aria-expanded="true" aria-controls="searchCategoryPanel" onclick="toggleFilterSection(this, 'searchCategoryPanel')">
+                            <span class="text-sm font-medium text-slate-950">Kategori</span>
+                            <i class="ri-arrow-down-s-line rotate-180 text-lg text-slate-400 transition-transform"></i>
+                        </button>
+                        <div id="searchCategoryPanel" class="pt-3">
+                            <div class="relative mb-3">
+                                <i class="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400"></i>
+                                <input id="searchCategorySearch" type="search" placeholder="Cari kategori..."
+                                    class="w-full rounded border border-slate-300 bg-transparent py-2 pl-8 pr-3 text-sm outline-none transition focus:border-blue-500"
+                                    oninput="searchCategoryOptions(this, 'categoryFilterList', 'searchCategoryEmpty')">
+                            </div>
+                            <div id="categoryFilterList" class="space-y-3"></div>
+                            <p id="searchCategoryEmpty" class="hidden py-2 text-xs text-slate-400">Kategori tidak ditemukan.</p>
+                        </div>
                     </div>
 
                     <div class="flat-filter-section">
-                        <h4 class="mb-3 text-sm font-medium text-slate-950">Harga</h4>
-                        <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+                        <button type="button" class="flex w-full items-center justify-between gap-3 text-left"
+                            aria-expanded="true" aria-controls="searchPricePanel" onclick="toggleFilterSection(this, 'searchPricePanel')">
+                            <span class="text-sm font-medium text-slate-950">Harga</span>
+                            <i class="ri-arrow-down-s-line rotate-180 text-lg text-slate-400 transition-transform"></i>
+                        </button>
+                        <div id="searchPricePanel" class="grid grid-cols-[1fr_auto_1fr] items-center gap-2 pt-3">
                             <input id="priceMin" type="number" min="0" placeholder="Min" oninput="applyFilters()" class="min-w-0 w-full rounded border border-slate-300 bg-transparent px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
                             <span class="text-slate-400">-</span>
                             <input id="priceMax" type="number" min="0" placeholder="Max" oninput="applyFilters()" class="min-w-0 w-full rounded border border-slate-300 bg-transparent px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
@@ -138,10 +155,34 @@
         return String(value || '').replace(/[&<>"']/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
     }
 
+    function toggleFilterSection(button, panelId) {
+        const panel = document.getElementById(panelId);
+        if (!panel) return;
+
+        const expanded = button.getAttribute('aria-expanded') === 'true';
+        button.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+        panel.classList.toggle('hidden', expanded);
+        button.querySelector('i')?.classList.toggle('rotate-180', !expanded);
+    }
+
+    function searchCategoryOptions(input, optionsId, emptyId) {
+        const options = Array.from(document.querySelectorAll(`#${optionsId} .filter-category-option`));
+        const searchValue = normalizeFilterValue(input.value);
+        let visibleCount = 0;
+
+        options.forEach((option) => {
+            const visible = !searchValue || normalizeFilterValue(option.textContent).includes(searchValue);
+            option.classList.toggle('hidden', !visible);
+            if (visible) visibleCount++;
+        });
+
+        document.getElementById(emptyId)?.classList.toggle('hidden', visibleCount > 0);
+    }
+
     function renderCategoryFilters() {
         const container = document.getElementById('categoryFilterList');
         container.innerHTML = searchMainCategories.map(cat => `
-            <label class="flex items-center gap-2 text-sm text-slate-700">
+            <label class="filter-category-option flex items-center gap-2 text-sm text-slate-700">
                 <input type="checkbox" class="filter-cat accent-blue-500" value="${cat.slug}" onchange="applyFilters()">
                 <span>${cat.name} (${cat.count})</span>
             </label>
@@ -351,6 +392,11 @@
 
     function resetFilters() {
         document.querySelectorAll('.filter-cat, .filter-variant').forEach(el => el.checked = false);
+        const categorySearch = document.getElementById('searchCategorySearch');
+        if (categorySearch) {
+            categorySearch.value = '';
+            searchCategoryOptions(categorySearch, 'categoryFilterList', 'searchCategoryEmpty');
+        }
         document.getElementById('priceMin').value = '';
         document.getElementById('priceMax').value = '';
         document.getElementById('filterPromo').checked = false;
