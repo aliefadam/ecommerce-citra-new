@@ -320,41 +320,32 @@
             </div>
         </div>
     </div>
-    <!-- KATEGORI SECTION -->
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 py-5">
-        <div class="flex items-center justify-between mb-4">
-            <div>
-                <p class="text-xs font-medium text-blue-500 tracking-widest uppercase mb-1">Browse</p>
-                <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight">Popular Categories</h2>
+    <!-- KATEGORI PILIHAN -->
+    <section class="border-y border-slate-100 bg-slate-50/80 py-6 sm:py-7" aria-labelledby="featuredCategoriesTitle">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6">
+            <div class="mb-4 sm:mb-5">
+                <h2 id="featuredCategoriesTitle" class="text-xl sm:text-2xl font-bold text-slate-950 leading-tight">Kategori Pilihan</h2>
+                <p class="mt-1 text-xs sm:text-sm font-normal text-slate-500">Temukan kebutuhan fastener dan tools sesuai kategori</p>
             </div>
-            <div class="flex items-center gap-2">
-                <button type="button" onclick="categoryPrev()"
-                    class="w-8 h-8 border border-slate-200 hover:border-slate-400 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 transition-all duration-200">
-                    <i class="ri-arrow-left-s-line text-lg"></i>
-                </button>
-                <button type="button" onclick="categoryNext()"
-                    class="w-8 h-8 border border-slate-200 hover:border-slate-400 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 transition-all duration-200">
-                    <i class="ri-arrow-right-s-line text-lg"></i>
-                </button>
+
+            <div id="categoryTrack" class="flex snap-x snap-mandatory flex-nowrap gap-2.5 overflow-x-auto pb-1 scrollbar-hide">
+                @forelse (collect($homeMainCategories ?? []) as $cat)
+                    <a href="{{ route('frontend.kategori', ['parent' => $cat['slug']]) }}"
+                        class="group flex w-[132px] shrink-0 snap-start flex-col items-center rounded-xl border border-slate-200 bg-white px-3 py-3 text-center shadow-[0_1px_2px_rgb(15_23_42/.02)] transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md sm:w-[140px]">
+                        <span class="grid size-16 place-items-center overflow-hidden rounded-full bg-slate-50 transition-colors duration-200 group-hover:bg-blue-50" aria-hidden="true">
+                            @if (!empty($cat['image']))
+                                <img src="{{ $cat['image'] }}" alt="" class="h-full w-full object-contain p-1.5 transition-transform duration-300 group-hover:scale-105" loading="lazy" />
+                            @else
+                                <i class="{{ $cat['icon'] }} text-3xl text-blue-600 transition-transform duration-300 group-hover:scale-110"></i>
+                            @endif
+                        </span>
+                        <strong class="mt-2 block w-full truncate text-xs font-bold text-slate-950 sm:text-[13px]">{{ $cat['name'] }}</strong>
+                        <span class="mt-1 text-[10px] font-normal text-slate-400 sm:text-[11px]">{{ number_format((int) ($cat['count'] ?? 0), 0, ',', '.') }} produk</span>
+                    </a>
+                @empty
+                    <div class="w-full rounded-xl border border-dashed border-slate-300 bg-white px-5 py-8 text-center text-sm text-slate-500">Kategori sedang disiapkan.</div>
+                @endforelse
             </div>
-        </div>
-        <div id="categoryTrack" class="flex flex-nowrap items-start gap-5 overflow-x-auto py-3 px-2 scrollbar-hide">
-            @foreach (collect($homeMainCategories ?? []) as $cat)
-                <a href="{{ route('frontend.kategori', ['parent' => $cat['slug']]) }}"
-                    class="flex flex-col items-center gap-3 group shrink-0 w-[100px]">
-                    <div class="relative w-[88px] h-[88px] rounded-full overflow-hidden bg-slate-50 ring-1 ring-slate-100 transition-all duration-300 group-hover:ring-2 group-hover:ring-blue-400 group-hover:shadow-md group-hover:-translate-y-1">
-                        @if (!empty($cat['image']))
-                            <img src="{{ $cat['image'] }}" alt="{{ $cat['name'] }}"
-                                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                        @else
-                            <div class="w-full h-full flex items-center justify-center">
-                                <i class="{{ $cat['icon'] }} text-3xl text-blue-500"></i>
-                            </div>
-                        @endif
-                    </div>
-                    <p class="text-[11px] font-medium text-slate-500 group-hover:text-slate-800 tracking-wide uppercase text-center leading-tight transition-colors duration-200">{{ $cat['name'] }}</p>
-                </a>
-            @endforeach
         </div>
     </section>
 
@@ -1563,24 +1554,6 @@
             if (!track) return;
             track.scrollBy({
                 left: track.clientWidth * 0.85,
-                behavior: 'smooth'
-            });
-        }
-
-        function categoryPrev() {
-            const track = document.getElementById('categoryTrack');
-            if (!track) return;
-            track.scrollBy({
-                left: -(track.clientWidth * 0.8),
-                behavior: 'smooth'
-            });
-        }
-
-        function categoryNext() {
-            const track = document.getElementById('categoryTrack');
-            if (!track) return;
-            track.scrollBy({
-                left: track.clientWidth * 0.8,
                 behavior: 'smooth'
             });
         }

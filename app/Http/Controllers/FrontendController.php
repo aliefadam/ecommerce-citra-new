@@ -36,17 +36,16 @@ class FrontendController extends Controller
                 'name' => (string) $c->name,
                 'icon' => $this->homeCategoryIcon((string) $c->name),
                 'image' => $this->resolveMainCategoryImage($c->image),
+                'count' => collect($products['home'])->where('parentCategorySlug', (string) $c->slug)->count(),
             ])
             ->values()
             ->all();
         $homeCategories = collect($mainCategories)
-            ->map(function ($cat) use ($products) {
-                $count = collect($products['home'])->where('parentCategorySlug', $cat['slug'])->count();
-
+            ->map(function ($cat) {
                 return [
                     'slug' => (string) $cat['slug'],
                     'name' => (string) $cat['name'],
-                    'count' => (int) $count,
+                    'count' => (int) $cat['count'],
                 ];
             })
             ->values()
