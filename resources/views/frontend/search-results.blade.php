@@ -10,11 +10,15 @@
         .filter-chip { display:inline-flex; align-items:center; gap:8px; border-radius:999px; padding:8px 12px; font-size:12px; font-weight:600; background:#eff6ff; color:#1d4ed8; }
         .filter-drawer-handle { width:40px; height:5px; background:#cbd5e1; border-radius:9999px; margin:0 auto 16px; cursor:grab; touch-action:none; }
         .filter-drawer-handle:active { cursor:grabbing; }
+        .flat-filter-panel { background:transparent; border:0; border-radius:0; box-shadow:none; padding:0; }
+        .flat-filter-title { padding-bottom:0.75rem; border-bottom:1px solid #e2e8f0; }
+        .flat-filter-section { padding:1.125rem 0; border-bottom:1px solid #e2e8f0; }
+        .flat-filter-panel input[type="checkbox"] { width:16px; height:16px; border-radius:2px; }
         @media (max-width: 1023px) {
             #filterSidebar.mobile-filter-drawer { position:fixed; inset:0; z-index:60; display:flex; align-items:flex-end; background:rgba(15, 23, 42, 0); opacity:0; transition:background 0.28s ease, opacity 0.28s ease; }
             #filterSidebar.mobile-filter-drawer:not(.mobile-filter-open) { pointer-events:none; }
             #filterSidebar.mobile-filter-drawer.mobile-filter-open { background:rgba(15, 23, 42, 0.4); opacity:1; pointer-events:auto; }
-            #filterPanel.mobile-filter-panel { width:100%; max-height:85vh; overflow-y:auto; overscroll-behavior:contain; border:0; border-radius:24px 24px 0 0; position:relative; top:auto; transform:translateY(calc(100% + 24px)); transition:transform 0.32s cubic-bezier(0.22, 1, 0.36, 1); will-change:transform; }
+            #filterPanel.mobile-filter-panel { width:100%; max-height:85vh; overflow-y:auto; overscroll-behavior:contain; border:0; border-radius:24px 24px 0 0; background:#fff; padding:1.25rem; box-shadow:0 -16px 40px rgb(15 23 42 / 0.14); position:relative; top:auto; transform:translateY(calc(100% + 24px)); transition:transform 0.32s cubic-bezier(0.22, 1, 0.36, 1); will-change:transform; }
             #filterSidebar.mobile-filter-open #filterPanel.mobile-filter-panel { transform:translateY(0); }
         }
     </style>
@@ -44,38 +48,39 @@
 
         <div class="flex flex-col lg:flex-row gap-6">
             <aside id="filterSidebar" class="hidden lg:block lg:w-72 flex-shrink-0">
-                <div id="filterPanel" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 sticky top-20 space-y-5">
+                <div id="filterPanel" class="flat-filter-panel sticky top-20">
                     <div id="filterDrawerHandle" class="filter-drawer-handle lg:hidden"></div>
-                    <div class="flex items-center justify-between">
-                        <h3 class="font-bold text-slate-800">Filter Pencarian</h3>
+                    <div class="flat-filter-title flex items-center justify-between">
+                        <h3 class="text-sm font-bold uppercase tracking-wide text-slate-950">Filter</h3>
                         <div class="flex items-center gap-3">
                             <button onclick="resetFilters()" class="text-xs text-blue-600 font-medium">Reset</button>
                             <button onclick="closeMobileFilter()" class="lg:hidden text-xs text-slate-500 font-medium">Tutup</button>
                         </div>
                     </div>
 
-                    <div>
-                        <h4 class="text-sm font-semibold text-slate-700 mb-3">Kategori</h4>
-                        <div id="categoryFilterList" class="space-y-2"></div>
+                    <div class="flat-filter-section">
+                        <h4 class="mb-3 text-sm font-medium text-slate-950">Kategori</h4>
+                        <div id="categoryFilterList" class="space-y-3"></div>
                     </div>
 
-                    <div>
-                        <h4 class="text-sm font-semibold text-slate-700 mb-3">Harga</h4>
-                        <div class="grid grid-cols-2 gap-2">
-                            <input id="priceMin" type="number" min="0" placeholder="Min" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:border-blue-400">
-                            <input id="priceMax" type="number" min="0" placeholder="Max" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:border-blue-400">
+                    <div class="flat-filter-section">
+                        <h4 class="mb-3 text-sm font-medium text-slate-950">Harga</h4>
+                        <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+                            <input id="priceMin" type="number" min="0" placeholder="Min" oninput="applyFilters()" class="min-w-0 w-full rounded border border-slate-300 bg-transparent px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
+                            <span class="text-slate-400">-</span>
+                            <input id="priceMax" type="number" min="0" placeholder="Max" oninput="applyFilters()" class="min-w-0 w-full rounded border border-slate-300 bg-transparent px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
                         </div>
                     </div>
 
-                    <div>
-                        <h4 class="text-sm font-semibold text-slate-700 mb-3">Status Produk</h4>
-                        <label class="flex items-center gap-2 text-sm text-slate-600 mb-2"><input id="filterPromo" type="checkbox" class="accent-blue-500"> Hanya promo / flash sale</label>
-                        <label class="flex items-center gap-2 text-sm text-slate-600"><input id="filterStock" type="checkbox" class="accent-blue-500"> Hanya stok tersedia</label>
+                    <div class="flat-filter-section">
+                        <h4 class="mb-3 text-sm font-medium text-slate-950">Status Produk</h4>
+                        <label class="mb-3 flex items-center gap-2 text-sm text-slate-700"><input id="filterPromo" type="checkbox" class="accent-blue-500" onchange="applyFilters()"> Hanya promo / flash sale</label>
+                        <label class="flex items-center gap-2 text-sm text-slate-700"><input id="filterStock" type="checkbox" class="accent-blue-500" onchange="applyFilters()"> Hanya stok tersedia</label>
                     </div>
 
-                    <div>
-                        <h4 class="text-sm font-semibold text-slate-700 mb-3">Rating</h4>
-                        <select id="ratingMin" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:border-blue-400 bg-white">
+                    <div class="flat-filter-section">
+                        <h4 class="mb-3 text-sm font-medium text-slate-950">Rating</h4>
+                        <select id="ratingMin" onchange="applyFilters()" class="w-full rounded border border-slate-300 bg-transparent px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
                             <option value="0">Semua rating</option>
                             <option value="4">4 ke atas</option>
                             <option value="4.5">4.5 ke atas</option>
@@ -83,9 +88,7 @@
                         </select>
                     </div>
 
-                    <div id="variantFilterList" class="space-y-5"></div>
-
-                    <button onclick="applyFilters()" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 rounded-xl transition-colors text-sm">Terapkan Filter</button>
+                    <div id="variantFilterList"></div>
                 </div>
             </aside>
 
@@ -138,8 +141,8 @@
     function renderCategoryFilters() {
         const container = document.getElementById('categoryFilterList');
         container.innerHTML = searchMainCategories.map(cat => `
-            <label class="flex items-center gap-2 text-sm text-slate-600">
-                <input type="checkbox" class="filter-cat accent-blue-500" value="${cat.slug}">
+            <label class="flex items-center gap-2 text-sm text-slate-700">
+                <input type="checkbox" class="filter-cat accent-blue-500" value="${cat.slug}" onchange="applyFilters()">
                 <span>${cat.name} (${cat.count})</span>
             </label>
         `).join('');
@@ -160,7 +163,7 @@
 
         container.innerHTML = Array.from(groups.entries()).map(([name, values]) => {
             const groupKey = normalizeFilterValue(name);
-            return `<div class="filter-variant-group border-t border-slate-100 pt-3" data-variant-group="${encodeURIComponent(groupKey)}">
+            return `<div class="filter-variant-group flat-filter-section" data-variant-group="${encodeURIComponent(groupKey)}">
                 <button type="button"
                     class="filter-variant-group-toggle flex w-full items-center justify-between gap-3 text-left"
                     data-variant-group="${encodeURIComponent(groupKey)}"
@@ -172,7 +175,7 @@
                 <div class="filter-variant-panel hidden pt-3" data-variant-group="${encodeURIComponent(groupKey)}">
                     <div class="filter-variant-options space-y-2" data-variant-group="${encodeURIComponent(groupKey)}">${Array.from(values.entries()).map(([key, label]) => `
                         <label class="filter-variant-option flex items-center gap-2 text-sm text-slate-600">
-                            <input type="checkbox" class="filter-variant accent-blue-500" data-variant-name="${encodeURIComponent(groupKey)}" data-variant-value="${encodeURIComponent(key)}" onchange="updateVariantOptionVisibility(this.dataset.variantName || ''); openCheckedVariantGroups();">
+                            <input type="checkbox" class="filter-variant accent-blue-500" data-variant-name="${encodeURIComponent(groupKey)}" data-variant-value="${encodeURIComponent(key)}" onchange="updateVariantOptionVisibility(this.dataset.variantName || ''); openCheckedVariantGroups(); applyFilters();">
                             <span>${escapeHtml(label)}</span>
                         </label>`).join('')}
                     </div>

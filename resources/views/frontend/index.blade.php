@@ -55,6 +55,30 @@
             cursor: grabbing;
         }
 
+        .flat-filter-panel {
+            background: transparent;
+            border: 0;
+            border-radius: 0;
+            box-shadow: none;
+            padding: 0;
+        }
+
+        .flat-filter-title {
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .flat-filter-section {
+            padding: 1.125rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .flat-filter-panel input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            border-radius: 2px;
+        }
+
         @media (max-width: 1023px) {
             #filterSidebar.mobile-filter-drawer {
                 position: fixed;
@@ -84,6 +108,9 @@
                 overscroll-behavior: contain;
                 border: 0;
                 border-radius: 24px 24px 0 0;
+                background: #fff;
+                padding: 1.25rem;
+                box-shadow: 0 -16px 40px rgb(15 23 42 / 0.14);
                 position: relative;
                 top: auto;
                 transform: translateY(calc(100% + 24px));
@@ -556,10 +583,10 @@
     <section class="max-w-7xl mx-auto px-4 sm:px-6 pb-8">
         <div class="flex flex-col lg:flex-row gap-8"> <!-- SIDEBAR FILTER -->
             <aside id="filterSidebar" class="hidden lg:block lg:w-64 flex-shrink-0">
-                <div id="filterPanel" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 sticky top-20 flex flex-col max-h-[calc(100vh-6rem)]">
+                <div id="filterPanel" class="flat-filter-panel sticky top-20 flex max-h-[calc(100vh-6rem)] flex-col">
                     <div id="filterDrawerHandle" class="filter-drawer-handle lg:hidden"></div>
-                    <div class="flex items-center justify-between mb-5 flex-shrink-0">
-                        <h3 class="font-bold text-slate-800">Filter Produk</h3>
+                    <div class="flat-filter-title flex flex-shrink-0 items-center justify-between">
+                        <h3 class="text-sm font-bold uppercase tracking-wide text-slate-950">Filter</h3>
                         <div class="flex items-center gap-3">
                             <button onclick="resetFilter()"
                                 class="text-xs text-blue-600 hover:text-blue-700 font-medium">Reset</button>
@@ -568,27 +595,34 @@
                         </div>
                     </div>
 
-                    <div class="overflow-y-auto flex-1 pr-3">
-                        <div class="mb-6">
-                            <h4 class="text-sm font-semibold text-slate-700 mb-3">Kategori</h4>
-                            <div class="space-y-2">
+                    <div class="flex-1 overflow-y-auto pr-2">
+                        <div class="flat-filter-section">
+                            <h4 class="mb-3 text-sm font-medium text-slate-950">Kategori</h4>
+                            <div class="space-y-3">
                                 @foreach ($homeFilterCategories ?? [] as $cat)
                                     <label class="flex items-center gap-2 cursor-pointer group"><input type="checkbox"
                                             class="filter-cat w-4 h-4 rounded accent-blue-500" value="{{ $cat['slug'] }}"
-                                            checked onchange="applyFilter()" /><span
-                                            class="text-sm text-slate-600 group-hover:text-slate-800">{{ $cat['name'] }}
+                                            onchange="applyFilter()" /><span
+                                            class="text-sm text-slate-700 group-hover:text-slate-950">{{ $cat['name'] }}
                                             ({{ $cat['count'] }})
                                         </span></label>
                                 @endforeach
                             </div>
                         </div>
 
-                        <div id="homeFilterVariantList" class="space-y-5"></div>
-                    </div>
+                        <div class="flat-filter-section">
+                            <h4 class="mb-3 text-sm font-medium text-slate-950">Harga</h4>
+                            <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+                                <input id="homePriceMin" type="number" min="0" placeholder="Min" oninput="applyFilter()"
+                                    class="min-w-0 w-full rounded border border-slate-300 bg-transparent px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-blue-500" />
+                                <span class="text-slate-400">-</span>
+                                <input id="homePriceMax" type="number" min="0" placeholder="Max" oninput="applyFilter()"
+                                    class="min-w-0 w-full rounded border border-slate-300 bg-transparent px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-blue-500" />
+                            </div>
+                        </div>
 
-                    <button onclick="applyFilter()"
-                        class="w-full mt-4 flex-shrink-0 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 rounded-xl transition-colors text-sm">Terapkan
-                        Filter</button>
+                        <div id="homeFilterVariantList"></div>
+                    </div>
                 </div>
             </aside>
 
@@ -1021,7 +1055,7 @@
                     </label>
                 `).join('');
 
-                return `<div class="filter-variant-group border-t border-slate-100 pt-3" data-variant-group="${encodeURIComponent(groupKey)}">
+                return `<div class="filter-variant-group flat-filter-section" data-variant-group="${encodeURIComponent(groupKey)}">
                     <button type="button"
                         class="filter-variant-group-toggle flex w-full items-center justify-between gap-3 text-left"
                         data-variant-group="${encodeURIComponent(groupKey)}"
@@ -1126,22 +1160,28 @@
 
         function applyFilter() {
             const cats = Array.from(document.querySelectorAll('.filter-cat:checked')).map(c => c.value);
-            const hasCategoryFilters = document.querySelectorAll('.filter-cat').length > 0;
+            const priceMin = Number(document.getElementById('homePriceMin')?.value || 0);
+            const priceMax = Number(document.getElementById('homePriceMax')?.value || 0);
             const activeVariantGroups = Object.entries(selectedVariantFilters).filter(([, values]) => values.size > 0);
             filteredProducts = products.filter(p => {
-                const catMatch = !hasCategoryFilters || cats.includes(p.parentCategorySlug);
+                const catMatch = cats.length === 0 || cats.includes(p.parentCategorySlug);
+                const priceMatch = (!priceMin || Number(p.price) >= priceMin) && (!priceMax || Number(p.price) <= priceMax);
                 const variantMatch = activeVariantGroups.length === 0 || activeVariantGroups.every(([name, values]) =>
                     Array.isArray(p.variants) && p.variants.some((variant) =>
                         normalizeFilterValue(variant.name) === name && values.has(normalizeFilterValue(variant.value))
                     )
                 );
-                return catMatch && variantMatch;
+                return catMatch && priceMatch && variantMatch;
             });
             renderProducts(filteredProducts);
         }
 
         function resetFilter() {
             document.querySelectorAll('.filter-cat').forEach(c => c.checked = false);
+            const priceMin = document.getElementById('homePriceMin');
+            const priceMax = document.getElementById('homePriceMax');
+            if (priceMin) priceMin.value = '';
+            if (priceMax) priceMax.value = '';
             selectedVariantFilters = {};
             document.querySelectorAll('.filter-variant').forEach((el) => {
                 el.checked = false;
