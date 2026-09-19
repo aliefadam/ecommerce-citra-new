@@ -170,14 +170,18 @@ class CartController extends Controller
         $this->ensureVariantCanBePurchased($variant, (int) $validated['quantity']);
 
         $basePrice = (int) $variant->price;
-        $flashItem = $variant->flashSaleItems->first(function (FlashSaleItem $item) {
+        $requestedQuantity = (int) $validated['quantity'];
+        $flashItem = $variant->flashSaleItems->first(function (FlashSaleItem $item) use ($requestedQuantity, $product) {
             $sale = $item->flashSale;
-            if (! $sale || ! $item->is_active || $sale->status !== 'active') {
+            if (! $sale || ! $item->is_active || $sale->status !== 'active' || (int) $sale->company_id !== (int) $product->company_id) {
                 return false;
             }
             $now = now();
 
-            return $sale->start_at && $sale->end_at && $now->between($sale->start_at, $sale->end_at);
+            return $sale->start_at
+                && $sale->end_at
+                && $now->between($sale->start_at, $sale->end_at)
+                && ((int) $item->sold + $requestedQuantity) <= (int) $item->quota;
         });
         $salePrice = $flashItem ? (int) $flashItem->discount_price : $basePrice;
         $variantText = $variant->attributeSummary();
@@ -296,15 +300,18 @@ class CartController extends Controller
             }
 
             $basePrice = (int) $variant->price;
-            $flashItem = $variant->flashSaleItems->first(function (FlashSaleItem $item) {
+            $flashItem = $variant->flashSaleItems->first(function (FlashSaleItem $item) use ($row, $product) {
                 $sale = $item->flashSale;
-                if (! $sale || ! $item->is_active || $sale->status !== 'active') {
+                if (! $sale || ! $item->is_active || $sale->status !== 'active' || (int) $sale->company_id !== (int) $product->company_id) {
                     return false;
                 }
 
                 $now = now();
 
-                return $sale->start_at && $sale->end_at && $now->between($sale->start_at, $sale->end_at);
+                return $sale->start_at
+                    && $sale->end_at
+                    && $now->between($sale->start_at, $sale->end_at)
+                    && ((int) $item->sold + (int) $row->quantity) <= (int) $item->quota;
             });
 
             $salePrice = $flashItem ? (int) $flashItem->discount_price : $basePrice;

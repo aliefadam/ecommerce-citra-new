@@ -2,16 +2,24 @@
 
 namespace Tests\Feature;
 
+use App\Models\Address;
+use App\Models\Company;
+use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\Transaction;
 use App\Models\TransactionTaxInvoice;
 use App\Models\User;
 use App\Models\UserTaxProfile;
+use App\Models\Variant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
+use Tests\Concerns\CreatesCheckoutShippingQuotes;
 use Tests\TestCase;
 
 class CustomerTaxInvoiceRequestTest extends TestCase
 {
+    use CreatesCheckoutShippingQuotes;
     use RefreshDatabase;
 
     public function test_manual_checkout_can_request_tax_invoice_and_save_profile(): void
@@ -20,23 +28,52 @@ class CustomerTaxInvoiceRequestTest extends TestCase
         $customer = User::factory()->create();
         $this->actingAs($customer);
 
-        $companyId = \App\Models\Company::query()->value('id');
+        $companyId = (int) Company::query()->value('id');
+        $suffix = Str::upper(Str::random(8));
+        $product = Product::query()->create([
+            'company_id' => $companyId,
+            'name' => 'Produk Pajak',
+            'slug' => 'produk-pajak-'.Str::lower($suffix),
+            'status' => 'active',
+        ]);
+        $variant = Variant::query()->create(['name' => 'Ukuran', 'value' => 'M10']);
+        $productVariant = ProductVariant::query()->create([
+            'product_id' => $product->id,
+            'variant_id' => $variant->id,
+            'sku' => 'TAX-'.$suffix,
+            'price' => 100000,
+            'stock' => 5,
+            'weight_grams' => 1000,
+        ]);
+        $address = Address::query()->create([
+            'user_id' => $customer->id,
+            'label' => 'Kantor Pajak',
+            'recipient_name' => $customer->name,
+            'phone_number' => '8123456789',
+            'province' => 'DKI Jakarta',
+            'city' => 'Jakarta',
+            'postal_code' => '10110',
+            'destination_id' => 99,
+            'address_line' => 'Jl. Pajak No. 1',
+            'is_primary' => true,
+        ]);
+        $items = [[
+            'id' => $product->id,
+            'productVariantId' => $productVariant->id,
+            'companyId' => $companyId,
+            'name' => 'DIMANIPULASI',
+            'variant' => 'M10',
+            'price' => 1,
+            'qty' => 1,
+        ]];
 
         $response = $this->postJson(route('frontend.checkout.manual-payment'), [
-            'items' => [
-                [
-                    'id' => 1,
-                    'productVariantId' => null,
-                    'companyId' => $companyId,
-                    'name' => 'Produk Pajak',
-                    'variant' => 'M10',
-                    'price' => 100000,
-                    'qty' => 1,
-                ],
-            ],
+            'items' => $items,
             'company_id' => $companyId,
             'shipping_cost' => 0,
             'shipping_label' => 'Ambil sendiri',
+            'shipping_quote_token' => $this->checkoutShippingQuote($items, $companyId, 99, 0, 'Ambil sendiri'),
+            'address_id' => $address->id,
             'tax_invoice' => [
                 'requested' => true,
                 'taxpayer_name' => 'PT Citra Pajak',

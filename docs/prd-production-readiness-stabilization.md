@@ -1,5 +1,7 @@
 # PRD: Production Readiness & Stabilization
 
+> Addendum wajib: temuan audit terbaru dan urutan remediasinya didefinisikan dalam [PRD Remediasi Hasil Audit Sistem September 2026](prd-system-audit-remediation-2026-09.md). Seluruh temuan P0/P1 pada addendum tersebut menjadi release blocker dan harus ditutup sebelum keputusan go-live.
+
 ## Ringkasan
 
 Sistem saat ini sudah memiliki fitur commerce dan operasional yang cukup luas, termasuk guest/member checkout, pembayaran Midtrans dan transfer manual, perhitungan ongkir dan pelacakan resi RajaOngkir, pengiriman email, WhatsApp gateway, retur/refund, multi-company penjual, serta dokumen B2B dari quotation sampai invoice.

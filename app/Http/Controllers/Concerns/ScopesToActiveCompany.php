@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Concerns;
 
+use App\Models\Company;
 use App\Models\User;
 
 /**
@@ -14,7 +15,9 @@ trait ScopesToActiveCompany
 {
     protected function activeCompanyId(): int
     {
-        return (int) (User::activeCompanyId() ?? 0);
+        return (int) (User::activeCompanyId()
+            ?? Company::query()->where('is_active', true)->orderBy('sort_order')->orderBy('id')->value('id')
+            ?? 0);
     }
 
     protected function guardCompanyOwnership(?int $modelCompanyId): void

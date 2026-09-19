@@ -14,12 +14,15 @@ test('guest checkout manual, tracking, proof upload, and account conversion', as
 
     await page.route('**/rajaongkir/**', async (route) => {
         const pathname = new URL(route.request().url()).pathname;
+        if (pathname.endsWith('/shipping-options')) {
+            await route.continue();
+            return;
+        }
         const responses = [
             ['/provinces', [{ id: 6, label: 'DKI Jakarta' }]],
             ['/cities', [{ id: 152, label: 'Jakarta Selatan' }]],
             ['/districts', [{ id: 2112, label: 'Setiabudi' }]],
             ['/subdistricts', [{ id: 101, destination_id: 101, label: 'Karet', zip_code: '12920' }]],
-            ['/shipping-options', [{ code: 'jne', name: 'JNE', service: 'REG', etd: '1-2 hari', cost: 12000 }]],
         ];
         const data = responses.find(([suffix]) => pathname.endsWith(suffix))?.[1] || [];
 

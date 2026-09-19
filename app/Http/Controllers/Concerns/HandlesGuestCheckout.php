@@ -117,6 +117,26 @@ trait HandlesGuestCheckout
         ];
     }
 
+    protected function checkoutShippingDestinationId(Request $request, array $validated, ?array $guest): int
+    {
+        if ($guest) {
+            return (int) ($validated['shipping_destination_id'] ?? 0);
+        }
+
+        $address = Address::query()
+            ->whereKey((int) ($validated['address_id'] ?? 0))
+            ->where('user_id', $request->user()?->id)
+            ->first();
+
+        if (! $address || (int) $address->destination_id < 1) {
+            throw ValidationException::withMessages([
+                'address_id' => 'Alamat pengiriman belum memiliki tujuan ongkir yang valid.',
+            ]);
+        }
+
+        return (int) $address->destination_id;
+    }
+
     protected function ensureCheckoutItemsAvailable(array $items, int $companyId): void
     {
         $requestedByVariant = collect($items)

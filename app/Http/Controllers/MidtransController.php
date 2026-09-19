@@ -11,9 +11,11 @@ use App\Models\Transaction;
 use App\Models\TransactionDetail;
 use App\Models\TransactionStatusHistory;
 use App\Models\UserNotification;
+use App\Services\CheckoutPricingService;
 use App\Services\CheckoutTaxCalculator;
 use App\Services\DocumentNumberGenerator;
 use App\Services\LoyaltyPointService;
+use App\Services\ShippingQuoteService;
 use App\Services\TaxInvoiceRequestService;
 use Carbon\Carbon;
 use Illuminate\Http\Client\PendingRequest;
@@ -37,7 +39,7 @@ class MidtransController extends Controller
         $validated = $request->validate([
             'order_id' => ['required', 'string', 'max:255'],
             'status_code' => ['required', 'string', 'max:10'],
-            'gross_amount' => ['required'],
+            'gross_amount' => ['required', 'numeric', 'min:0'],
             'signature_key' => ['required', 'string', 'size:128'],
             'transaction_status' => ['required', 'string', 'max:50'],
             'transaction_id' => ['nullable', 'string', 'max:255'],
@@ -76,6 +78,18 @@ class MidtransController extends Controller
             return response()->json(['message' => 'Transaksi tidak ditemukan.'], 404);
         }
 
+        $incomingAmount = (int) round((float) $validated['gross_amount']);
+        if ($incomingAmount !== (int) $transaction->grand_total) {
+            Log::warning('Midtrans notification rejected due to gross amount mismatch.', [
+                'order_id' => (string) $validated['order_id'],
+                'transaction_id' => $transaction->id,
+                'expected_amount' => (int) $transaction->grand_total,
+                'incoming_amount' => $incomingAmount,
+            ]);
+
+            return response()->json(['message' => 'Nominal pembayaran tidak sesuai dengan transaksi.'], 422);
+        }
+
         $incomingStatus = strtolower((string) $validated['transaction_status']);
         $fraudStatus = strtolower((string) ($validated['fraud_status'] ?? 'accept'));
 
@@ -95,23 +109,24 @@ class MidtransController extends Controller
         return response()->json(['ok' => true]);
     }
 
-    public function createCharge(Request $request, CheckoutTaxCalculator $taxCalculator)
+    public function createCharge(Request $request, CheckoutTaxCalculator $taxCalculator, CheckoutPricingService $checkoutPricing, ShippingQuoteService $shippingQuotes)
     {
         $validated = $request->validate(array_merge([
             'items' => ['required', 'array', 'min:1'],
-            'items.*.id' => ['required'],
-            'items.*.productVariantId' => ['nullable', 'integer'],
+            'items.*.id' => ['nullable', 'integer'],
+            'items.*.productVariantId' => ['required', 'integer'],
             'items.*.companyId' => ['nullable', 'integer'],
-            'items.*.name' => ['required', 'string'],
+            'items.*.name' => ['nullable', 'string'],
             'items.*.variant' => ['nullable', 'string'],
             'items.*.image' => ['nullable', 'string'],
             'items.*.note' => ['nullable', 'string', 'max:500'],
-            'items.*.price' => ['required', 'numeric', 'min:0'],
+            'items.*.price' => ['nullable', 'numeric', 'min:0'],
             'items.*.qty' => ['required', 'integer', 'min:1'],
             'items.*.redeemPoints' => ['nullable', 'integer', 'min:0'],
             'company_id' => ['required', 'integer', 'exists:companies,id'],
-            'shipping_cost' => ['required', 'numeric', 'min:0'],
+            'shipping_cost' => ['nullable', 'numeric', 'min:0'],
             'shipping_label' => ['nullable', 'string', 'max:100'],
+            'shipping_quote_token' => ['required', 'string'],
             'address_id' => ['nullable', 'integer'],
             'payment_method' => ['required', 'string', 'in:bca,bni,bri,mandiri,cimb,qris'],
             'tax_invoice' => ['nullable', 'array'],
@@ -140,33 +155,39 @@ class MidtransController extends Controller
                 : 'https://api.sandbox.midtrans.com/v2/charge';
 
             $companyId = (int) $validated['company_id'];
-            $this->ensureCheckoutItemsAvailable($validated['items'], $companyId);
+            $pricing = $checkoutPricing->resolve(
+                $validated['items'],
+                $companyId,
+                session('checkout.source') === 'redeem_point',
+            );
+            $destinationId = $this->checkoutShippingDestinationId($request, $validated, $guest);
+            $shippingQuote = $shippingQuotes->verify(
+                $validated['shipping_quote_token'],
+                $companyId,
+                $destinationId,
+                $pricing['fingerprint'],
+            );
+            $items = collect($pricing['items']);
 
-            $hasMixedCompanyItems = collect($validated['items'])
-                ->contains(fn ($item) => ! empty($item['companyId']) && (int) $item['companyId'] !== $companyId);
-            if ($hasMixedCompanyItems) {
-                throw new RuntimeException('Item di keranjang berasal dari lebih dari satu perusahaan. Checkout lintas perusahaan belum didukung dalam satu transaksi.');
-            }
-
-            $itemDetails = collect($validated['items'])->map(function ($item) {
+            $itemDetails = $items->map(function ($item) {
                 return [
-                    'id' => (string) $item['id'],
-                    'price' => (int) round((float) $item['price']),
+                    'id' => (string) $item['productVariantId'],
+                    'price' => (int) $item['price'],
                     'quantity' => (int) $item['qty'],
                     'name' => mb_substr((string) $item['name'], 0, 50),
                 ];
             })->values()->all();
 
-            $shippingCost = (int) round((float) $validated['shipping_cost']);
-            $subtotal = collect($validated['items'])->sum(fn ($item) => ((int) round((float) $item['price'])) * ((int) $item['qty']));
+            $shippingCost = $shippingQuote['cost'];
+            $subtotal = $pricing['subtotal'];
             $couponsByCompany = (array) session('checkout_coupon', []);
             $couponData = $couponsByCompany[$companyId] ?? [];
             $couponCode = (string) ($couponData['code'] ?? '');
             $discountAmount = 0;
 
             if ($couponCode !== '') {
-                $coupon = Coupon::query()->where('code', $couponCode)->first();
-                if ($coupon && (int) $coupon->company_id === $companyId && ! ($guest && $coupon->is_member_only) && $coupon->isUsableFor((int) $subtotal)) {
+                $coupon = Coupon::query()->where('company_id', $companyId)->where('code', $couponCode)->first();
+                if ($coupon && ! ($guest && $coupon->is_member_only) && $coupon->isUsableFor((int) $subtotal)) {
                     $discountAmount = $coupon->discountFor((int) $subtotal);
                 } else {
                     unset($couponsByCompany[$companyId]);
@@ -180,7 +201,7 @@ class MidtransController extends Controller
                     'id' => 'SHIPPING',
                     'price' => $shippingCost,
                     'quantity' => 1,
-                    'name' => mb_substr('Ongkos Kirim - '.(string) ($validated['shipping_label'] ?? 'Reguler'), 0, 50),
+                    'name' => mb_substr('Ongkos Kirim - '.$shippingQuote['label'], 0, 50),
                 ];
             }
             $discountLineAmount = min((int) $subtotal, $discountAmount);
@@ -283,7 +304,7 @@ class MidtransController extends Controller
                 }
             }
 
-            $displayItems = collect($validated['items'])->map(function ($item) {
+            $displayItems = $items->map(function ($item) {
                 $rawImage = (string) ($item['image'] ?? '');
                 $image = $rawImage;
 
@@ -307,7 +328,11 @@ class MidtransController extends Controller
                 ];
             })->values()->all();
 
-            $addressSnapshot = $this->checkoutAddressSnapshot($request, $validated, $guest);
+            $addressSnapshot = $this->checkoutAddressSnapshot(
+                $request,
+                array_merge($validated, ['shipping_label' => $shippingQuote['label']]),
+                $guest,
+            );
 
             $paymentSummary = [
                 'order_id' => $orderId,
@@ -323,7 +348,7 @@ class MidtransController extends Controller
                 'tax_rate' => $tax['tax_rate'],
                 'taxable_amount' => $tax['taxable_amount'],
                 'tax_amount' => $tax['tax_amount'],
-                'shipping_label' => (string) ($validated['shipping_label'] ?? 'Reguler'),
+                'shipping_label' => $shippingQuote['label'],
                 'items' => $displayItems,
                 'method_label' => strtoupper($validated['payment_method']),
                 'va_number' => $vaNumber,

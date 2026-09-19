@@ -3,14 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\StoreLocation;
+use App\Services\CheckoutPricingService;
 use App\Services\RajaOngkirService;
+use App\Services\ShippingQuoteService;
 use Illuminate\Http\Request;
 use RuntimeException;
 use Throwable;
 
 class RajaOngkirController extends Controller
 {
-    public function __construct(private readonly RajaOngkirService $rajaOngkir) {}
+    public function __construct(
+        private readonly RajaOngkirService $rajaOngkir,
+        private readonly CheckoutPricingService $checkoutPricing,
+        private readonly ShippingQuoteService $shippingQuotes,
+    ) {}
 
     public function provinces()
     {
@@ -72,28 +78,48 @@ class RajaOngkirController extends Controller
     {
         $validated = $request->validate([
             'destination_id' => ['required', 'integer'],
-            'weight' => ['required', 'integer', 'min:1'],
             'company_id' => ['required', 'integer', 'exists:companies,id'],
+            'items' => ['required', 'json'],
         ]);
 
         try {
-            $storeLocation = StoreLocation::query()
-                ->where('company_id', (int) $validated['company_id'])
-                ->where('is_active', true)
-                ->latest('id')
-                ->first();
-            $originId = (int) ($storeLocation?->city_id ?? 0);
-            $couriers = (string) config('services.rajaongkir.couriers', 'jne:sicepat:jnt');
-            if ($originId <= 0) {
-                throw new RuntimeException('Store location belum dikonfigurasi di admin.');
+            $items = json_decode((string) $validated['items'], true, flags: JSON_THROW_ON_ERROR);
+            if (! is_array($items) || $items === []) {
+                throw new RuntimeException('Item pengiriman tidak valid.');
             }
 
-            $data = $this->rajaOngkir->calculateDomesticCost(
-                $originId,
-                (int) $validated['destination_id'],
-                (int) $validated['weight'],
-                $couriers
+            $pricing = $this->checkoutPricing->resolve(
+                $items,
+                (int) $validated['company_id'],
+                session('checkout.source') === 'redeem_point',
             );
+            if (app()->environment('e2e')) {
+                $data = [[
+                    'code' => 'jne',
+                    'name' => 'JNE',
+                    'service' => 'REG',
+                    'etd' => '1-2 hari',
+                    'cost' => 12000,
+                ]];
+            } else {
+                $storeLocation = StoreLocation::query()
+                    ->where('company_id', (int) $validated['company_id'])
+                    ->where('is_active', true)
+                    ->latest('id')
+                    ->first();
+                $originId = (int) ($storeLocation?->city_id ?? 0);
+                $couriers = (string) config('services.rajaongkir.couriers', 'jne:sicepat:jnt');
+                if ($originId <= 0) {
+                    throw new RuntimeException('Store location belum dikonfigurasi di admin.');
+                }
+
+                $data = $this->rajaOngkir->calculateDomesticCost(
+                    $originId,
+                    (int) $validated['destination_id'],
+                    $pricing['weight_grams'],
+                    $couriers
+                );
+            }
 
             $data = collect($data)
                 ->filter(function ($item) {
@@ -113,6 +139,19 @@ class RajaOngkirController extends Controller
                     return ! str_contains($haystack, 'truck')
                         && ! str_contains($haystack, 'trucking')
                         && ! str_contains($haystack, 'cargo');
+                })
+                ->map(function (array $item) use ($validated, $pricing) {
+                    $label = trim(strtoupper((string) ($item['name'] ?? $item['code'] ?? '')).' '.(string) ($item['service'] ?? ''));
+                    $item['quote_token'] = $this->shippingQuotes->issue(
+                        (int) $validated['company_id'],
+                        (int) $validated['destination_id'],
+                        $pricing['fingerprint'],
+                        $pricing['weight_grams'],
+                        (int) ($item['cost'] ?? 0),
+                        $label,
+                    );
+
+                    return $item;
                 })
                 ->values()
                 ->all();

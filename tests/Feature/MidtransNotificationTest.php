@@ -75,6 +75,23 @@ class MidtransNotificationTest extends TestCase
         ]);
     }
 
+    public function test_valid_signature_with_wrong_gross_amount_cannot_mark_order_paid(): void
+    {
+        $transaction = $this->makeTransaction();
+        $payload = $this->notificationPayload($transaction, 'settlement', [
+            'gross_amount' => '1.00',
+        ]);
+
+        $this->postJson(route('midtrans.notification'), $payload)
+            ->assertUnprocessable()
+            ->assertJson(['message' => 'Nominal pembayaran tidak sesuai dengan transaksi.']);
+
+        $transaction->refresh();
+        $this->assertSame('pending', $transaction->status);
+        $this->assertSame('unpaid', $transaction->payment_status);
+        $this->assertDatabaseCount('transaction_status_histories', 0);
+    }
+
     public function test_out_of_order_pending_and_cancel_notifications_cannot_downgrade_paid_order(): void
     {
         $transaction = $this->makeTransaction();

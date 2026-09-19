@@ -10,10 +10,12 @@ use App\Models\Transaction;
 use App\Models\TransactionDetail;
 use App\Models\TransactionStatusHistory;
 use App\Models\UserNotification;
+use App\Services\CheckoutPricingService;
 use App\Services\CheckoutTaxCalculator;
 use App\Services\DocumentNumberGenerator;
 use App\Services\ImageOptimizer;
 use App\Services\LoyaltyPointService;
+use App\Services\ShippingQuoteService;
 use App\Services\TaxInvoiceRequestService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -25,23 +27,24 @@ class ManualPaymentController extends Controller
 {
     use HandlesGuestCheckout;
 
-    public function checkout(Request $request, LoyaltyPointService $loyaltyPointService, CheckoutTaxCalculator $taxCalculator, TaxInvoiceRequestService $taxInvoiceService, DocumentNumberGenerator $documentNumberGenerator)
+    public function checkout(Request $request, LoyaltyPointService $loyaltyPointService, CheckoutTaxCalculator $taxCalculator, CheckoutPricingService $checkoutPricing, ShippingQuoteService $shippingQuotes, TaxInvoiceRequestService $taxInvoiceService, DocumentNumberGenerator $documentNumberGenerator)
     {
         $validated = $request->validate(array_merge([
             'items' => ['required', 'array', 'min:1'],
-            'items.*.id' => ['required'],
-            'items.*.productVariantId' => ['nullable', 'integer'],
+            'items.*.id' => ['nullable', 'integer'],
+            'items.*.productVariantId' => ['required', 'integer'],
             'items.*.companyId' => ['nullable', 'integer'],
-            'items.*.name' => ['required', 'string'],
+            'items.*.name' => ['nullable', 'string'],
             'items.*.variant' => ['nullable', 'string'],
             'items.*.image' => ['nullable', 'string'],
             'items.*.note' => ['nullable', 'string', 'max:500'],
-            'items.*.price' => ['required', 'numeric', 'min:0'],
+            'items.*.price' => ['nullable', 'numeric', 'min:0'],
             'items.*.qty' => ['required', 'integer', 'min:1'],
             'items.*.redeemPoints' => ['nullable', 'integer', 'min:0'],
             'company_id' => ['required', 'integer', 'exists:companies,id'],
-            'shipping_cost' => ['required', 'numeric', 'min:0'],
+            'shipping_cost' => ['nullable', 'numeric', 'min:0'],
             'shipping_label' => ['nullable', 'string', 'max:100'],
+            'shipping_quote_token' => ['required', 'string'],
             'address_id' => ['nullable', 'integer'],
             'tax_invoice' => ['nullable', 'array'],
             'tax_invoice.requested' => ['nullable', 'boolean'],
@@ -59,26 +62,31 @@ class ManualPaymentController extends Controller
 
         $orderId = 'MAN-'.now()->format('YmdHis').'-'.Str::upper(Str::random(10));
 
-        $transaction = DB::transaction(function () use ($request, $validated, $guest, $orderId, $loyaltyPointService, $taxCalculator, $taxInvoiceService, $documentNumberGenerator) {
+        $transaction = DB::transaction(function () use ($request, $validated, $guest, $orderId, $loyaltyPointService, $taxCalculator, $checkoutPricing, $shippingQuotes, $taxInvoiceService, $documentNumberGenerator) {
             $companyId = (int) $validated['company_id'];
-            $items = collect($validated['items'])->values();
+            $pricing = $checkoutPricing->resolve(
+                $validated['items'],
+                $companyId,
+                session('checkout.source') === 'redeem_point',
+            );
+            $items = collect($pricing['items']);
+            $destinationId = $this->checkoutShippingDestinationId($request, $validated, $guest);
+            $shippingQuote = $shippingQuotes->verify(
+                $validated['shipping_quote_token'],
+                $companyId,
+                $destinationId,
+                $pricing['fingerprint'],
+            );
 
-            $this->ensureCheckoutItemsAvailable($items->all(), $companyId);
-
-            $hasMixedCompanyItems = $items->contains(fn ($item) => ! empty($item['companyId']) && (int) $item['companyId'] !== $companyId);
-            if ($hasMixedCompanyItems) {
-                abort(422, 'Item di keranjang berasal dari lebih dari satu perusahaan. Checkout lintas perusahaan belum didukung dalam satu transaksi.');
-            }
-
-            $subtotal = (int) $items->sum(fn ($item) => ((int) round((float) $item['price'])) * ((int) $item['qty']));
-            $shippingCost = (int) round((float) $validated['shipping_cost']);
+            $subtotal = $pricing['subtotal'];
+            $shippingCost = $shippingQuote['cost'];
             $discountAmount = 0;
             $couponsByCompany = (array) session('checkout_coupon', []);
             $couponCode = (string) ($couponsByCompany[$companyId]['code'] ?? '');
 
             if ($couponCode !== '') {
-                $coupon = Coupon::query()->where('code', $couponCode)->first();
-                if (! $coupon || (int) $coupon->company_id !== $companyId || ($guest && $coupon->is_member_only) || ! $coupon->isUsableFor($subtotal)) {
+                $coupon = Coupon::query()->where('company_id', $companyId)->where('code', $couponCode)->first();
+                if (! $coupon || ($guest && $coupon->is_member_only) || ! $coupon->isUsableFor($subtotal)) {
                     unset($couponsByCompany[$companyId]);
                     session(['checkout_coupon' => $couponsByCompany]);
                     abort(422, 'Voucher tidak valid atau sudah tidak bisa digunakan.');
@@ -87,7 +95,11 @@ class ManualPaymentController extends Controller
             }
             $tax = $taxCalculator->calculate($subtotal, $discountAmount, $shippingCost, companyId: $companyId);
 
-            $snapshot = $this->checkoutAddressSnapshot($request, $validated, $guest);
+            $snapshot = $this->checkoutAddressSnapshot(
+                $request,
+                array_merge($validated, ['shipping_label' => $shippingQuote['label']]),
+                $guest,
+            );
 
             $transaction = Transaction::create([
                 'company_id' => $companyId,
@@ -110,7 +122,7 @@ class ManualPaymentController extends Controller
                 'taxable_amount' => $tax['taxable_amount'],
                 'tax_amount' => $tax['tax_amount'],
                 'grand_total' => $tax['grand_total'],
-                'shipping_label' => (string) ($validated['shipping_label'] ?? 'Reguler'),
+                'shipping_label' => $shippingQuote['label'],
                 'shipping_recipient_name' => (string) ($snapshot['shipping_recipient_name'] ?? ''),
                 'shipping_phone' => (string) ($snapshot['shipping_phone'] ?? ''),
                 'shipping_address_line' => (string) ($snapshot['shipping_address_line'] ?? ''),
@@ -123,15 +135,15 @@ class ManualPaymentController extends Controller
 
             $detailRows = $items->map(function ($item) use ($transaction) {
                 $qty = max(1, (int) ($item['qty'] ?? 1));
-                $price = (int) round((float) ($item['price'] ?? 0));
+                $price = (int) $item['price'];
 
                 return [
                     'transaction_id' => $transaction->id,
-                    'product_id' => isset($item['id']) ? (int) $item['id'] : null,
-                    'product_variant_id' => isset($item['productVariantId']) ? (int) $item['productVariantId'] : null,
-                    'product_name' => (string) ($item['name'] ?? '-'),
-                    'variant_name' => (string) ($item['variant'] ?? ''),
-                    'image' => (string) ($item['image'] ?? ''),
+                    'product_id' => (int) $item['id'],
+                    'product_variant_id' => (int) $item['productVariantId'],
+                    'product_name' => (string) $item['name'],
+                    'variant_name' => (string) $item['variant'],
+                    'image' => (string) $item['image'],
                     'price' => $price,
                     'quantity' => $qty,
                     'subtotal' => $qty * $price,

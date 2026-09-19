@@ -8,6 +8,7 @@ use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class FlashSaleController extends Controller
 {
@@ -35,6 +36,8 @@ class FlashSaleController extends Controller
         $validated = $this->validateFlashSale($request);
 
         DB::transaction(function () use ($validated) {
+            $this->ensureVariantsBelongToActiveCompany($validated['items']);
+
             $flashSale = FlashSale::create([
                 'company_id' => $this->activeCompanyId(),
                 'name' => $validated['name'],
@@ -83,6 +86,8 @@ class FlashSaleController extends Controller
         $validated = $this->validateFlashSale($request);
 
         DB::transaction(function () use ($flashSale, $validated) {
+            $this->ensureVariantsBelongToActiveCompany($validated['items']);
+
             $flashSale->update([
                 'name' => $validated['name'],
                 'start_at' => $validated['start_at'],
@@ -125,7 +130,17 @@ class FlashSaleController extends Controller
             'status' => ['required', Rule::in(['draft', 'active', 'inactive'])],
             'notes' => ['nullable', 'string'],
             'items' => ['required', 'array', 'min:1'],
-            'items.*.product_variant_id' => ['required', 'exists:product_variants,id', 'distinct'],
+            'items.*.product_variant_id' => [
+                'required',
+                'integer',
+                'distinct',
+                Rule::exists('product_variants', 'id')->where(fn ($query) => $query->whereIn(
+                    'product_id',
+                    ProductVariant::query()
+                        ->select('product_id')
+                        ->whereHas('product', fn ($product) => $product->where('company_id', $this->activeCompanyId()))
+                )),
+            ],
             'items.*.discount_price' => ['required', 'numeric', 'min:0'],
             'items.*.quota' => ['required', 'integer', 'min:1'],
             'items.*.is_active' => ['nullable', 'boolean'],
@@ -134,5 +149,26 @@ class FlashSaleController extends Controller
             'items.*.product_variant_id.distinct' => 'Item varian dalam flash sale tidak boleh duplikat.',
             'end_at.after' => 'Waktu selesai harus lebih besar dari waktu mulai.',
         ]);
+    }
+
+    private function ensureVariantsBelongToActiveCompany(array $items): void
+    {
+        $variantIds = collect($items)
+            ->pluck('product_variant_id')
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        $ownedCount = ProductVariant::query()
+            ->whereIn('id', $variantIds)
+            ->whereHas('product', fn ($query) => $query->where('company_id', $this->activeCompanyId()))
+            ->lockForUpdate()
+            ->count();
+
+        if ($ownedCount !== $variantIds->count()) {
+            throw ValidationException::withMessages([
+                'items' => 'Salah satu varian produk bukan milik perusahaan aktif.',
+            ]);
+        }
     }
 }

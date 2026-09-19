@@ -13,10 +13,12 @@ use App\Models\UserNotification;
 use App\Models\Variant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
+use Tests\Concerns\CreatesCheckoutShippingQuotes;
 use Tests\TestCase;
 
 class AdminTransactionsUsabilityTest extends TestCase
 {
+    use CreatesCheckoutShippingQuotes;
     use RefreshDatabase;
 
     public function test_transactions_index_exposes_usability_controls(): void
@@ -679,6 +681,7 @@ class AdminTransactionsUsabilityTest extends TestCase
             'city' => 'Jakarta',
             'district' => 'Menteng',
             'postal_code' => '10310',
+            'destination_id' => 99,
             'address_line' => 'Jl. Checkout No. 1',
             'is_primary' => true,
         ]);
@@ -705,6 +708,10 @@ class AdminTransactionsUsabilityTest extends TestCase
                 'company_id' => $productVariant->product->company_id,
                 'shipping_cost' => 10000,
                 'shipping_label' => 'JNE REG',
+                'shipping_quote_token' => $this->checkoutShippingQuote([[
+                    'productVariantId' => $productVariant->id,
+                    'qty' => 1,
+                ]], (int) $productVariant->product->company_id, 99, 10000, 'JNE REG'),
                 'address_id' => $address->id,
             ]);
 
@@ -885,7 +892,7 @@ class AdminTransactionsUsabilityTest extends TestCase
         ]);
 
         $response = $this->get(route('transactions.bulk-shipping-label', [
-            'ids' => $first->id . ',' . $second->id,
+            'ids' => $first->id.','.$second->id,
         ]));
 
         $response->assertOk();
@@ -918,7 +925,7 @@ class AdminTransactionsUsabilityTest extends TestCase
         ]);
 
         $response = $this->get(route('transactions.bulk-shipping-label', [
-            'ids' => $valid->id . ',' . $missingAddress->id . ',' . $missingTracking->id,
+            'ids' => $valid->id.','.$missingAddress->id.','.$missingTracking->id,
         ]));
 
         $response->assertOk();
@@ -943,8 +950,8 @@ class AdminTransactionsUsabilityTest extends TestCase
 
         $transaction = Transaction::create(array_merge([
             'user_id' => $customer->id,
-            'invoice_no' => 'INV-' . uniqid(),
-            'order_id' => 'ORD-' . uniqid(),
+            'invoice_no' => 'INV-'.uniqid(),
+            'order_id' => 'ORD-'.uniqid(),
             'payment_type' => 'bank_transfer',
             'payment_method' => 'BCA',
             'payment_va_bank' => 'bca',
@@ -977,7 +984,7 @@ class AdminTransactionsUsabilityTest extends TestCase
     {
         $product = Product::create([
             'name' => $overrides['product_name'] ?? 'Produk Manual Test',
-            'slug' => 'produk-manual-test-' . uniqid(),
+            'slug' => 'produk-manual-test-'.uniqid(),
             'status' => 'active',
         ]);
         $variant = Variant::create([

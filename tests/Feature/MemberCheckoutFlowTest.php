@@ -13,10 +13,12 @@ use App\Models\Variant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Tests\Concerns\CreatesCheckoutShippingQuotes;
 use Tests\TestCase;
 
 class MemberCheckoutFlowTest extends TestCase
 {
+    use CreatesCheckoutShippingQuotes;
     use RefreshDatabase;
 
     public function test_member_can_checkout_multiple_selected_cart_items_with_owned_address(): void
@@ -42,14 +44,16 @@ class MemberCheckoutFlowTest extends TestCase
             ])
             ->assertOk();
 
+        $items = [
+            $this->checkoutItem($firstVariant, 2),
+            $this->checkoutItem($secondVariant, 1),
+        ];
         $response = $this->postJson(route('frontend.checkout.manual-payment'), [
-            'items' => [
-                $this->checkoutItem($firstVariant, 2),
-                $this->checkoutItem($secondVariant, 1),
-            ],
+            'items' => $items,
             'company_id' => $firstVariant->product->company_id,
             'shipping_cost' => 15000,
             'shipping_label' => 'JNE REG',
+            'shipping_quote_token' => $this->checkoutShippingQuote($items, (int) $firstVariant->product->company_id, 99, 15000, 'JNE REG'),
             'address_id' => $address->id,
         ]);
 
@@ -88,6 +92,7 @@ class MemberCheckoutFlowTest extends TestCase
                 'company_id' => $variant->product->company_id,
                 'shipping_cost' => 10000,
                 'shipping_label' => 'JNE REG',
+                'shipping_quote_token' => $this->checkoutShippingQuote([$this->checkoutItem($variant, 1)], (int) $variant->product->company_id, 99, 10000, 'JNE REG'),
                 'address_id' => $otherAddress->id,
             ])
             ->assertUnprocessable()
@@ -108,6 +113,7 @@ class MemberCheckoutFlowTest extends TestCase
             'city' => 'Jakarta Selatan',
             'district' => 'Setiabudi',
             'postal_code' => '12910',
+            'destination_id' => 99,
             'address_line' => 'Jl. Member Checkout No. 1',
             'is_primary' => true,
         ]);

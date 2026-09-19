@@ -870,7 +870,7 @@
 
         function getGroupState(companyId) {
             if (!groupState[companyId]) {
-                groupState[companyId] = { shippingCost: null, shippingLabel: 'Reguler', couponCode: '', discountAmount: 0 };
+                groupState[companyId] = { shippingCost: null, shippingLabel: 'Reguler', shippingQuoteToken: '', couponCode: '', discountAmount: 0 };
             }
             return groupState[companyId];
         }
@@ -1159,10 +1159,11 @@
             }
         }
 
-        function setGroupShipping(companyId, el, cost, label) {
+        function setGroupShipping(companyId, el, cost, label, quoteToken) {
             const state = getGroupState(companyId);
             state.shippingCost = cost;
             state.shippingLabel = label;
+            state.shippingQuoteToken = quoteToken;
             const container = document.getElementById(`shippingOptions-${companyId}`);
             container?.querySelectorAll('.shipping-card').forEach(c => {
                 c.classList.remove('active', 'border-blue-400');
@@ -1186,6 +1187,7 @@
                     `<div class="text-sm text-slate-500">Opsi pengiriman belum tersedia untuk alamat ini.</div>`;
                 state.shippingCost = null;
                 state.shippingLabel = '-';
+                state.shippingQuoteToken = '';
                 updateSummary();
                 return;
             }
@@ -1194,9 +1196,10 @@
                 const label = `${(item.name || item.code || '').toUpperCase()} ${item.service || ''}`.trim();
                 const etd = String(item.etd || '-');
                 const cost = Number(item.cost || 0);
+                const quoteToken = String(item.quote_token || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
                 return `
                     <label class="shipping-card ${idx === 0 ? 'active border-blue-400' : 'border-slate-200'} flex items-center gap-3 p-3 border-2 rounded-xl cursor-pointer hover:border-slate-300 transition-all"
-                        onclick="setGroupShipping(${companyId}, this, ${cost}, '${label.replace(/'/g, "\\'")}')">
+                        onclick="setGroupShipping(${companyId}, this, ${cost}, '${label.replace(/'/g, "\\'")}', '${quoteToken}')">
                         <input type="radio" name="shipping-${companyId}" class="accent-blue-500" ${idx === 0 ? 'checked' : ''} />
                         <div class="flex-1">
                             <div class="flex items-center gap-2">
@@ -1212,6 +1215,7 @@
             const first = list[0];
             state.shippingCost = Number(first.cost || 0);
             state.shippingLabel = `${(first.name || first.code || '').toUpperCase()} ${first.service || ''}`.trim();
+            state.shippingQuoteToken = String(first.quote_token || '');
             updateSummary();
         }
 
@@ -1231,6 +1235,7 @@
                     container.innerHTML = `<div class="text-sm text-slate-500">${isGuestCheckout ? 'Lengkapi data pengiriman lalu klik Simpan Data Pengiriman.' : 'Anda belum mengatur alamat pengiriman. Silakan atur di bagian profil.'}</div>`;
                     state.shippingCost = null;
                     state.shippingLabel = '-';
+                    state.shippingQuoteToken = '';
                     continue;
                 }
 
@@ -1238,14 +1243,18 @@
                     container.innerHTML = `<div class="text-sm text-red-500">Produk ini belum terhubung ke perusahaan mana pun.</div>`;
                     state.shippingCost = null;
                     state.shippingLabel = '-';
+                    state.shippingQuoteToken = '';
                     continue;
                 }
 
                 container.innerHTML = `<div class="text-sm text-slate-500">Memuat opsi pengiriman...</div>`;
                 const query = new URLSearchParams({
                     destination_id: String(destinationId),
-                    weight: String(groupWeight(group)),
                     company_id: String(group.companyId),
+                    items: JSON.stringify(group.items.map((item) => ({
+                        productVariantId: item.productVariantId,
+                        qty: item.qty,
+                    }))),
                 });
 
                 try {
@@ -1259,6 +1268,7 @@
                     container.innerHTML = `<div class="text-sm text-red-500">Gagal memuat ongkir RajaOngkir.</div>`;
                     state.shippingCost = null;
                     state.shippingLabel = '-';
+                    state.shippingQuoteToken = '';
                 }
             }
             updateSummary();
@@ -1778,6 +1788,7 @@
                     company_id: group.companyId,
                     shipping_cost: Number(state.shippingCost || 0),
                     shipping_label: String(state.shippingLabel || 'Reguler'),
+                    shipping_quote_token: String(state.shippingQuoteToken || ''),
                     address_id: selectedAddressId || null,
                     payment_method: selectedPayment,
                     tax_invoice: taxInvoicePayload,

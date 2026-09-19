@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\Cart;
 use App\Models\AttributeDefinition;
+use App\Models\Cart;
 use App\Models\CategoryDetail;
 use App\Models\MainCategory;
 use App\Models\Product;
@@ -153,6 +153,13 @@ class ProductUpdateTest extends TestCase
         $localizedPayload = $basePayload;
         $localizedPayload['variants'][0]['price'] = '13.000';
         $this->put(route('products.update', $product), $localizedPayload)
+            ->assertRedirect(route('products.index'))
+            ->assertSessionHasNoErrors();
+        $this->assertSame(13000.0, (float) $productVariant->fresh()->price);
+
+        $localizedDecimalPayload = $basePayload;
+        $localizedDecimalPayload['variants'][0]['price'] = '13.000,00';
+        $this->put(route('products.update', $product), $localizedDecimalPayload)
             ->assertRedirect(route('products.index'))
             ->assertSessionHasNoErrors();
         $this->assertSame(13000.0, (float) $productVariant->fresh()->price);

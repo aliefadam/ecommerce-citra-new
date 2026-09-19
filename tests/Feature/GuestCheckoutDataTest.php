@@ -5,16 +5,22 @@ namespace Tests\Feature;
 use App\Mail\InvoiceOrder;
 use App\Models\Company;
 use App\Models\Coupon;
+use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Models\Variant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
+use Tests\Concerns\CreatesCheckoutShippingQuotes;
 use Tests\TestCase;
 
 class GuestCheckoutDataTest extends TestCase
 {
+    use CreatesCheckoutShippingQuotes;
     use RefreshDatabase;
 
     private function guestSession(): array
@@ -30,11 +36,27 @@ class GuestCheckoutDataTest extends TestCase
     private function guestPayload(array $overrides = []): array
     {
         $companyId = (int) Company::query()->value('id');
+        $suffix = Str::upper(Str::random(8));
+        $product = Product::query()->create([
+            'company_id' => $companyId,
+            'name' => 'Produk Guest',
+            'slug' => 'produk-guest-'.Str::lower($suffix),
+            'status' => 'active',
+        ]);
+        $variant = Variant::query()->create(['name' => 'Ukuran', 'value' => $suffix]);
+        $productVariant = ProductVariant::query()->create([
+            'product_id' => $product->id,
+            'variant_id' => $variant->id,
+            'sku' => 'GUEST-'.$suffix,
+            'price' => 125000,
+            'stock' => 10,
+            'weight_grams' => 1000,
+        ]);
 
-        return array_merge([
+        $payload = array_merge([
             'items' => [[
-                'id' => 1,
-                'productVariantId' => null,
+                'id' => $product->id,
+                'productVariantId' => $productVariant->id,
                 'companyId' => $companyId,
                 'name' => 'Produk Guest',
                 'price' => 125000,
@@ -53,6 +75,16 @@ class GuestCheckoutDataTest extends TestCase
             'shipping_postal_code' => '40132',
             'shipping_destination_id' => 123,
         ], $overrides);
+
+        $payload['shipping_quote_token'] = $this->checkoutShippingQuote(
+            $payload['items'],
+            (int) $payload['company_id'],
+            (int) $payload['shipping_destination_id'],
+            (int) $payload['shipping_cost'],
+            (string) $payload['shipping_label'],
+        );
+
+        return $payload;
     }
 
     public function test_guest_checkout_page_renders_manual_shipping_form(): void

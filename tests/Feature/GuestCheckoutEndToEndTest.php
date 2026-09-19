@@ -18,10 +18,12 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Tests\Concerns\CreatesCheckoutShippingQuotes;
 use Tests\TestCase;
 
 class GuestCheckoutEndToEndTest extends TestCase
 {
+    use CreatesCheckoutShippingQuotes;
     use RefreshDatabase;
 
     private function makeProductVariant(int $stock = 5): ProductVariant
@@ -49,7 +51,7 @@ class GuestCheckoutEndToEndTest extends TestCase
 
     private function checkoutPayload(ProductVariant $variant, array $overrides = []): array
     {
-        return array_replace_recursive([
+        $payload = array_replace_recursive([
             'items' => [[
                 'id' => $variant->product_id,
                 'productVariantId' => $variant->id,
@@ -72,6 +74,16 @@ class GuestCheckoutEndToEndTest extends TestCase
             'shipping_postal_code' => '12910',
             'shipping_destination_id' => 99,
         ], $overrides);
+
+        $payload['shipping_quote_token'] = $this->checkoutShippingQuote(
+            $payload['items'],
+            (int) $payload['company_id'],
+            99,
+            (int) $payload['shipping_cost'],
+            (string) $payload['shipping_label'],
+        );
+
+        return $payload;
     }
 
     private function makeMemberAddress(User $user): Address
@@ -86,6 +98,7 @@ class GuestCheckoutEndToEndTest extends TestCase
             'city' => 'Jakarta Selatan',
             'district' => 'Setiabudi',
             'postal_code' => '12910',
+            'destination_id' => 99,
             'address_line' => 'Jl. Member E2E No. 10',
             'is_primary' => true,
         ]);
@@ -135,11 +148,12 @@ class GuestCheckoutEndToEndTest extends TestCase
             'quantity' => 1,
         ])->assertRedirect(route('frontend.checkout'));
 
+        $payload = $this->checkoutPayload($variant);
         $variant->update(['stock' => 0]);
 
         $this->postJson(
             route('frontend.checkout.manual-payment'),
-            $this->checkoutPayload($variant)
+            $payload
         )->assertUnprocessable()->assertJsonValidationErrors('items');
 
         $this->assertDatabaseCount('transactions', 0);
