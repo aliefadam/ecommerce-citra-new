@@ -64,7 +64,7 @@
                 @endauth
                 <a href="{{ route('frontend.cart') }}" class="ec-header-action ec-cart-action" aria-label="Keranjang, {{ $cartCount }} barang">
                     <span class="relative"><i class="fi fi-rr-shopping-cart" aria-hidden="true"></i><span id="cartCount" class="ec-header-count" @if($cartCount <= 0) hidden @endif>{{ $cartCount > 99 ? '99+' : $cartCount }}</span></span>
-                    <span><strong>Keranjang</strong><small>Rerum Segar</small></span>
+                    <span><strong>Keranjang</strong><small>{{ $cartCount }} barang</small></span>
                 </a>
             </div>
         </div>
