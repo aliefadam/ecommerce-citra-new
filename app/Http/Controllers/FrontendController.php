@@ -568,12 +568,25 @@ class FrontendController extends Controller
         ]);
 
         $relatedProducts = $this->buildRelatedProducts($product->id, $product->main_category_id);
+        $sameStoreProductIds = $product->company_id
+            ? Product::query()
+                ->storefrontVisible()
+                ->where('company_id', $product->company_id)
+                ->where('id', '!=', $product->id)
+                ->latest('id')
+                ->limit(10)
+                ->pluck('id')
+                ->map(fn ($id) => (int) $id)
+                ->all()
+            : [];
+        $sameStoreProducts = $this->buildProductCardsByIds($sameStoreProductIds);
 
         return view('frontend.detail-produk', [
             'productData' => [
                 'id' => $product->id,
                 'slug' => $product->slug,
                 'name' => $product->name,
+                'mainCategoryName' => (string) ($product->mainCategory?->name ?? ''),
                 'categoryName' => $product->categoryDetail?->name ?? ($product->mainCategory?->name ?? 'Produk'),
                 'categoryUrlName' => $this->mapCategoryPageCategory($product->categoryDetail?->name ?? $product->mainCategory?->name),
                 'image' => $image,
@@ -609,6 +622,7 @@ class FrontendController extends Controller
                         return [
                             'id' => (int) $pv->id,
                             'label' => $pv->skuLabel(),
+                            'sku' => (string) $pv->sku,
                             'summary' => $pv->attributeSummary(),
                             'attributes' => $this->buildVariantAttributeMap($pv),
                             'image' => $this->resolveProductVariantImageUrl($product, $pv, '700x700'),
@@ -622,8 +636,13 @@ class FrontendController extends Controller
                 'reviewItems' => $reviewItems,
                 'reviewDistribution' => $ratingDistribution,
                 'storeName' => (string) ($product->company?->name ?? ''),
+                'storeLegalName' => (string) ($product->company?->legal_name ?? ''),
+                'storeLogo' => filled($product->company?->logo_path)
+                    ? asset('storage/'.ltrim((string) $product->company->logo_path, '/'))
+                    : null,
             ],
             'relatedProductsJson' => $relatedProducts,
+            'sameStoreProductsJson' => $sameStoreProducts,
             'recentlyViewedProductsJson' => $recentlyViewedProducts,
         ]);
     }

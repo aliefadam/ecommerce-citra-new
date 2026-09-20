@@ -41,42 +41,54 @@
             font-family: 'Inter Variable', Inter, sans-serif;
         }
 
-        .card-hover {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .card-hover:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-        }
-
         .thumb-active {
             border-color: var(--ec-primary-700);
+            box-shadow: 0 0 0 1px var(--ec-primary-700);
         }
 
-        .product-detail-layout { display: grid; gap: 1.5rem; }
+        .product-detail-layout { display: grid; gap: 1.25rem; }
         .product-gallery { display: flex; min-width: 0; flex-direction: column; gap: .75rem; }
-        .product-main-media { aspect-ratio: 1 / 1; border: 1px solid #dbe3ed; border-radius: .5rem; background: #f6f8fb; box-shadow: 0 2px 10px rgb(15 45 86 / .04); }
-        .product-main-media img { object-fit: cover; }
+        .product-main-media { aspect-ratio: 1 / 1; border: 1px solid #e5e7eb; border-radius: .5rem; background: #f7f8fa; }
+        .product-main-media img { object-fit: contain; }
         .product-summary { min-width: 0; }
-        .product-buy-panel { border: 1px solid #dbe3ed; border-radius: .6rem; background: #fff; padding: 1rem; box-shadow: 0 8px 24px rgb(15 45 86 / .06); }
-        .product-buy-price { color: #e62745; font-size: 1.55rem; font-weight: 800; letter-spacing: -.03em; }
-        .product-buy-primary { background: linear-gradient(135deg, var(--ec-primary-600), var(--ec-primary-800)); }
-        .product-buy-primary:hover { filter: brightness(1.08); }
-        .product-seller-panel { margin-top: .75rem; border: 1px solid #dbe3ed; border-radius: .6rem; background: #fff; padding: 1rem; }
-        .product-seller-mark { display: grid; width: 2.75rem; height: 2.75rem; flex: 0 0 2.75rem; place-items: center; border: 1px solid var(--ec-primary-100); border-radius: 999px; background: #f8fbff; color: var(--ec-primary-700); font-weight: 800; }
-        .product-benefits { margin-top: .75rem; border-radius: .6rem; background: linear-gradient(145deg, #f8fafc, #eef3f8); padding: 1rem; }
-        .product-benefits li { display: flex; align-items: center; gap: .55rem; color: #445466; font-size: .72rem; }
-        .product-benefits li + li { margin-top: .65rem; }
-        .product-benefits svg { width: 1rem; height: 1rem; flex: 0 0 1rem; color: var(--ec-primary-700); }
+        .product-buy-panel { border: 1px solid #d7dee8; border-radius: .5rem; background: #fff; padding: 1rem; box-shadow: 0 4px 14px rgb(15 45 86 / .05); }
+        .product-main-price { color: #0b2b5b; font-size: 1.65rem; font-weight: 800; letter-spacing: -.035em; }
+        .product-buy-primary { background: #1256a0; }
+        .product-buy-primary:hover { background: #0b4380; }
+        .product-seller-panel { margin-top: .75rem; border: 1px solid #d7dee8; border-radius: .5rem; background: #fff; padding: 1rem; }
+        .product-seller-mark { display: grid; width: 2.75rem; height: 2.75rem; flex: 0 0 2.75rem; place-items: center; overflow: hidden; border: 1px solid #dbe3ed; border-radius: .5rem; background: #f7f9fc; color: #0b4380; font-weight: 800; }
+        .product-seller-mark img { width: 100%; height: 100%; object-fit: contain; }
+        .product-rfq { margin-top: .75rem; border: 1px solid #cad7e8; border-left: 3px solid #1256a0; border-radius: .5rem; background: #f7faff; padding: 1rem; }
+        .product-spec-table { border-top: 1px solid #e5e7eb; }
+        .product-spec-row { display: grid; grid-template-columns: minmax(7.5rem, 32%) minmax(0, 1fr); border-bottom: 1px solid #edf0f4; }
+        .product-spec-row:nth-child(even) { background: #fafbfc; }
+        .product-spec-row dt, .product-spec-row dd { padding: .7rem .85rem; font-size: .8125rem; }
+        .product-spec-row dt { color: #64748b; }
+        .product-spec-row dd { color: #172033; font-weight: 600; overflow-wrap: anywhere; }
+        .product-section-tabs { position: sticky; top: 7.25rem; z-index: 20; background: rgb(255 255 255 / .97); backdrop-filter: blur(8px); }
+        .product-section-tabs a { display: inline-flex; min-height: 2.9rem; align-items: center; border-bottom: 2px solid transparent; color: #64748b; font-size: .8125rem; font-weight: 650; white-space: nowrap; }
+        .product-section-tabs a:hover, .product-section-tabs a:focus { border-color: #1256a0; color: #0b4380; }
+        .product-copy { max-width: 52rem; color: #475569; font-size: .875rem; line-height: 1.8; }
+        .store-product-media img { object-fit: contain; padding: .5rem; }
 
-        @media (min-width: 1024px) {
-            .product-detail-layout { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.08fr) 17rem; align-items: start; gap: 1.25rem; }
+        @media (min-width: 768px) and (max-width: 1199px) {
+            .product-detail-layout { grid-template-columns: minmax(0, 42fr) minmax(0, 58fr); align-items: start; }
+            .product-buy-column { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .75rem; align-items: start; }
+            .product-seller-panel, .product-rfq { margin-top: 0; }
+        }
+
+        @media (min-width: 1200px) {
+            .product-detail-layout { grid-template-columns: minmax(0, 35fr) minmax(0, 40fr) minmax(16.5rem, 25fr); align-items: start; gap: 1.25rem; }
             .product-gallery { display: grid; grid-template-columns: 3.75rem minmax(0, 1fr); grid-template-areas: 'thumbs image'; align-items: start; }
             .product-main-media { grid-area: image; height: clamp(22rem, 36vw, 31rem); aspect-ratio: auto; }
             .product-thumbnails { grid-area: thumbs; max-height: clamp(22rem, 36vw, 31rem); flex-direction: column; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
             .product-thumbnails .thumb-btn { width: 3.75rem; height: 3.75rem; }
-            .product-buy-column { position: sticky; top: 9.5rem; }
+            .product-buy-column { position: sticky; top: 8.25rem; }
+        }
+
+        @media (max-width: 767px) {
+            .product-section-tabs { top: 0; }
+            .product-spec-row { grid-template-columns: 7rem minmax(0, 1fr); }
         }
 
         .ts-wrapper.single .ts-control {
@@ -390,7 +402,11 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                 </svg>
                 <a href="{{ route('frontend.kategori') }}"
-                    class="hover:text-blue-600">{{ $productData['categoryName'] }}</a>
+                    class="hover:text-blue-600">{{ $productData['mainCategoryName'] ?: $productData['categoryName'] }}</a>
+                @if (!empty($productData['mainCategoryName']) && $productData['mainCategoryName'] !== $productData['categoryName'])
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                    <a href="{{ route('frontend.kategori') }}" class="hover:text-blue-600">{{ $productData['categoryName'] }}</a>
+                @endif
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                 </svg>
@@ -400,7 +416,7 @@
     </div>
 
     <!-- MAIN PRODUCT SECTION -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8 pb-28 md:pb-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8 pb-48 md:pb-8">
         <div class="product-detail-layout">
 
             <!-- LEFT: Gallery -->
@@ -408,7 +424,7 @@
                 <!-- Main Image -->
                 <div class="product-main-media relative overflow-hidden">
                     <img id="mainImg" src="{{ $productData['image'] }}" alt="{{ $productData['name'] }}"
-                        class="main-img h-full w-full cursor-zoom-in object-cover" onclick="openProductImageModal(this.src)" />
+                        class="main-img h-full w-full cursor-zoom-in object-contain p-3" onclick="openProductImageModal(this.src)" />
                     @if ($productData['isFlashSale'])
                         <div class="absolute top-3 left-3">
                             <span class="bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-md">-{{ max(0, $savingPercent) }}%</span>
@@ -436,22 +452,22 @@
                 <div class="product-thumbnails flex gap-2 overflow-x-auto pb-1">
                     @foreach ($productData['images'] ?? [$productData['image']] as $idx => $thumb)
                         <button onclick="setImg({{ $idx }})"
-                            class="thumb-btn flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-all {{ $idx === 0 ? 'thumb-active border-blue-400' : 'border-slate-200 hover:border-slate-300' }}">
-                            <img src="{{ $thumb }}" class="w-full h-full object-cover" />
+                            class="thumb-btn flex-shrink-0 w-16 h-16 rounded-md overflow-hidden border bg-[#f7f8fa] transition-all {{ $idx === 0 ? 'thumb-active border-blue-700' : 'border-slate-200 hover:border-slate-400' }}">
+                            <img src="{{ $thumb }}" alt="Tampilan {{ $idx + 1 }} {{ $productData['name'] }}" class="w-full h-full object-contain p-1" />
                         </button>
                     @endforeach
                 </div>
+                <p class="text-center text-[11px] text-slate-400 lg:col-start-2">Klik gambar untuk memperbesar</p>
             </div>
 
             <!-- RIGHT: Product Info -->
             <div class="product-summary">
                 <!-- Brand & Status -->
                 <div class="flex items-center justify-between mb-2">
-                    <span
-                        class="text-blue-600 font-semibold text-xs bg-blue-50 px-2.5 py-1 rounded-full">{{ $productData['categoryName'] }}</span>
+                    <span class="text-[11px] font-bold uppercase tracking-[.12em] text-blue-800">{{ $productData['categoryName'] }} <span class="text-slate-300">&bull;</span> Industrial Supply</span>
                     <div class="flex items-center gap-2">
-                        <span id="stockStatusBadge" class="text-xs font-medium flex items-center gap-1 rounded-full px-2.5 py-1 {{ ($productData['stock'] ?? 0) <= 0 ? 'bg-red-50 text-red-600' : (($productData['stock'] ?? 0) <= 5 ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-blue-600') }}">
-                            <span id="stockStatusDot" class="w-2 h-2 rounded-full {{ ($productData['stock'] ?? 0) <= 0 ? 'bg-red-500' : (($productData['stock'] ?? 0) <= 5 ? 'bg-amber-500' : 'bg-blue-500') }}"></span>
+                        <span id="stockStatusBadge" class="text-xs font-medium flex items-center gap-1 rounded-full px-2.5 py-1 {{ ($productData['stock'] ?? 0) <= 0 ? 'bg-red-50 text-red-600' : (($productData['stock'] ?? 0) <= 5 ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-700') }}">
+                            <span id="stockStatusDot" class="w-2 h-2 rounded-full {{ ($productData['stock'] ?? 0) <= 0 ? 'bg-red-500' : (($productData['stock'] ?? 0) <= 5 ? 'bg-amber-500' : 'bg-emerald-500') }}"></span>
                             <span id="stockStatusText">{{ ($productData['stock'] ?? 0) <= 0 ? 'Stok Habis' : (($productData['stock'] ?? 0) <= 5 ? 'Stok Terbatas' : 'Stok Tersedia') }}</span>
                         </span>
                         <button onclick="shareProduct()" title="Bagikan produk"
@@ -464,7 +480,7 @@
                     </div>
                 </div>
 
-                <h1 class="text-lg sm:text-2xl font-extrabold text-slate-900 mb-1 leading-tight">
+                <h1 class="text-xl sm:text-2xl font-extrabold text-slate-950 mb-1 leading-tight tracking-[-.025em]">
                     {{ $productData['name'] }}</h1>
 
                 @if (!empty($productData['storeName']))
@@ -473,6 +489,7 @@
 
                 <!-- Rating & Sales -->
                 <div class="flex items-center gap-2 sm:gap-4 mb-4 flex-wrap">
+                    @if ((int) $productData['reviews'] > 0)
                     <div class="flex items-center gap-1">
                         @php
                             $ratingVal = (float) $productData['rating'];
@@ -493,6 +510,9 @@
                         <span class="font-bold text-slate-800 text-xs sm:text-sm">{{ number_format($productData['rating'], 1) }}</span>
                         <span class="text-slate-500 text-xs">({{ number_format($productData['reviews']) }} ulasan)</span>
                     </div>
+                    @else
+                        <span class="text-xs text-slate-500">Belum ada ulasan</span>
+                    @endif
                     <span class="text-slate-300 hidden sm:inline">|</span>
                     <span class="text-slate-600 text-xs"><span class="font-semibold text-slate-700">{{ number_format($productData['sold']) }}</span> terjual</span>
                     @if (!empty($productData['isRedeemProduct']))
@@ -501,6 +521,20 @@
                             Redeem {{ number_format((int) ($productData['redeemPoints'] ?? 0), 0, ',', '.') }} point
                         </span>
                     @endif
+                </div>
+
+                <div class="border-y border-slate-200 py-4 mb-5">
+                    <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <span id="productMainPrice" class="product-main-price">Rp {{ number_format($displayPrice, 0, ',', '.') }}</span>
+                        @if ($productData['isFlashSale'])
+                            <span id="productMainOrigPrice" class="text-sm text-slate-400 line-through">Rp {{ number_format($productData['origPrice'], 0, ',', '.') }}</span>
+                            <span class="rounded bg-red-50 px-2 py-1 text-xs font-bold text-red-600">-{{ max(0, $savingPercent) }}%</span>
+                        @endif
+                    </div>
+                    <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+                        <span>SKU: <strong id="productSku" class="font-semibold text-slate-700">{{ $productData['sku'] ?: '-' }}</strong></span>
+                        <span>Satuan: <strong class="font-semibold text-slate-700">pcs</strong></span>
+                    </div>
                 </div>
 
                 <div class="product-variant-grid hidden md:grid">
@@ -522,18 +556,33 @@
                 @endforeach
                 </div>
 
+                @if ($otherGroups->isNotEmpty())
+                    <button type="button" onclick="openVariantDrawer('buy')" class="mb-3 flex w-full items-center justify-between rounded-md border border-slate-300 px-3 py-3 text-left md:hidden">
+                        <span><span class="block text-xs font-bold text-slate-900">Pilih varian</span><span id="mobileVariantSummary" class="mt-1 block max-w-[16rem] truncate text-xs text-slate-500">{{ collect($defaultOther)->filter()->implode(' · ') }}</span></span>
+                        <svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                    </button>
+                @endif
+
+                @if ($otherGroups->isNotEmpty())
+                    <div class="hidden rounded-md border border-slate-200 bg-slate-50/70 md:block">
+                        <div class="border-b border-slate-200 px-3 py-2 text-xs font-bold uppercase tracking-[.08em] text-slate-600">Spesifikasi varian</div>
+                        <dl class="divide-y divide-slate-200/80">
+                            @foreach ($otherGroups as $group)
+                                <div class="grid grid-cols-[8rem_1fr] px-3 py-2 text-xs">
+                                    <dt class="text-slate-500">{{ $group['label'] }}</dt>
+                                    <dd class="font-semibold text-slate-800" data-variant-summary="{{ $group['key'] }}">{{ $defaultOther[$group['key']] ?? '-' }}</dd>
+                                </div>
+                            @endforeach
+                        </dl>
+                    </div>
+                @endif
+
             </div>
 
             <!-- RIGHT: Purchase & seller panel -->
             <aside class="product-buy-column">
-                <div class="product-buy-panel">
-                    <div class="flex flex-wrap items-baseline gap-2">
-                        <span id="productPrice" class="product-buy-price">Rp {{ number_format($displayPrice, 0, ',', '.') }}</span>
-                        @if ($productData['isFlashSale'])
-                            <span id="productOrigPrice" class="text-xs text-slate-400 line-through">Rp {{ number_format($productData['origPrice'], 0, ',', '.') }}</span>
-                            <span class="rounded bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold text-white">-{{ max(0, $savingPercent) }}%</span>
-                        @endif
-                    </div>
+                <div class="product-buy-panel hidden md:block">
+                    <h2 class="text-sm font-bold text-slate-900">Atur pembelian</h2>
                     @if ($productData['isFlashSale'])
                         <div class="mt-1.5 flex items-center gap-1.5 text-[11px]">
                             <span class="font-semibold text-rose-600">Flash Sale</span>
@@ -557,6 +606,11 @@
                             <button onclick="changeQty(1)" class="grid h-9 w-9 place-items-center text-slate-600 hover:bg-slate-50" aria-label="Tambah jumlah">+</button>
                         </div>
                         <p class="mt-1.5 text-[10px] text-slate-400">Minimum pembelian 1 pcs</p>
+                    </div>
+
+                    <div class="mt-4 flex items-end justify-between border-t border-slate-200 pt-3">
+                        <span class="text-xs text-slate-500">Subtotal</span>
+                        <strong id="productSubtotal" class="text-lg font-extrabold tracking-tight text-slate-950">Rp {{ number_format($displayPrice, 0, ',', '.') }}</strong>
                     </div>
 
                     <div class="mt-4 hidden flex-col gap-2 md:flex">
@@ -588,52 +642,106 @@
 
                 <div class="product-seller-panel">
                     <div class="flex items-center gap-3">
-                        <span class="product-seller-mark">{{ strtoupper(mb_substr($productData['storeName'] ?: 'M', 0, 1)) }}</span>
+                        <span class="product-seller-mark">
+                            @if (!empty($productData['storeLogo']))
+                                <img src="{{ $productData['storeLogo'] }}" alt="Logo {{ $productData['storeName'] }}">
+                            @else
+                                {{ strtoupper(mb_substr($productData['storeName'] ?: 'M', 0, 1)) }}
+                            @endif
+                        </span>
                         <div class="min-w-0">
                             <p class="truncate text-sm font-bold text-slate-900">{{ $productData['storeName'] ?: 'Mitra industri' }}</p>
-                            <p class="mt-0.5 flex items-center gap-1 text-[10px] font-semibold text-blue-700"><span class="h-1.5 w-1.5 rounded-full bg-blue-600"></span> Official Store</p>
+                            @if (!empty($productData['storeLegalName']) && $productData['storeLegalName'] !== $productData['storeName'])
+                                <p class="mt-0.5 truncate text-[10px] text-slate-500">{{ $productData['storeLegalName'] }}</p>
+                            @endif
+                            <p class="mt-1 flex items-center gap-1 text-[10px] font-semibold text-blue-700"><span class="h-1.5 w-1.5 rounded-full bg-blue-600"></span> Mitra pemasok BOQ</p>
                         </div>
                     </div>
-                    <div class="mt-4 grid grid-cols-3 divide-x divide-slate-100 text-center">
-                        <div><strong class="block text-sm text-slate-900">{{ number_format((float) $productData['rating'], 1) }}</strong><span class="text-[9px] text-slate-400">rating toko</span></div>
-                        <div><strong class="block text-sm text-slate-900">{{ number_format((int) $productData['sold']) }}</strong><span class="text-[9px] text-slate-400">terjual</span></div>
-                        <div><strong class="block text-sm text-slate-900">Aktif</strong><span class="text-[9px] text-slate-400">status</span></div>
+                    <div class="mt-4 grid grid-cols-2 gap-2">
+                        <button type="button" onclick="openSellerChat()" class="h-9 rounded-md border border-blue-700 text-xs font-semibold text-blue-800 hover:bg-blue-50">Chat Penjual</button>
+                        <a href="{{ route('frontend.kategori') }}" class="flex h-9 items-center justify-center rounded-md border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50">Lihat Produk</a>
                     </div>
                 </div>
 
-                <div class="product-benefits">
-                    <h3 class="mb-3 text-sm font-bold text-slate-900">Keunggulan Belanja</h3>
-                    <ul>
-                        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="m9 12 2 2 4-4m5.6 1.2A9 9 0 1 1 12.8 3a9 9 0 0 1 7.8 8.2Z"/></svg>Produk berkualitas</li>
-                        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M7 3v4m10-4v4M5 11h14v9H5z"/></svg>Stok dan harga transparan</li>
-                        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7h11v9H3zM14 10h4l3 3v3h-7zM7 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm10 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg>Pengiriman aman</li>
-                        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3a7 7 0 0 0-7 7v3l-2 3h18l-2-3v-3a7 7 0 0 0-7-7Zm-2 17h4"/></svg>Dukungan kebutuhan proyek</li>
-                    </ul>
+                <div class="product-rfq">
+                    <p class="text-sm font-bold text-slate-950">Butuh jumlah besar?</p>
+                    <p class="mt-1 text-[11px] leading-5 text-slate-600">Ajukan harga khusus untuk kebutuhan proyek, pembelian volume, atau permintaan perusahaan.</p>
+                    <button type="button" onclick="requestQuotation()" class="mt-3 flex h-9 w-full items-center justify-center rounded-md border border-blue-700 bg-white text-xs font-bold text-blue-800 hover:bg-blue-50">Minta Penawaran</button>
                 </div>
             </aside>
         </div>
 
-        <!-- TABS: Deskripsi, Ulasan, Variant -->
-        <div class="mt-10">
-            <div class="flex border-b border-slate-200 mb-6 gap-4 sm:gap-8 overflow-x-auto">
-                <button onclick="switchTab('desc')" id="tab-desc"
-                    class="tab-btn active pb-3 text-sm font-semibold text-blue-600 whitespace-nowrap border-b-2 border-blue-500">Deskripsi</button>
-                <button onclick="switchTab('review')" id="tab-review"
-                    class="tab-btn pb-3 text-sm font-semibold text-slate-500 hover:text-slate-700 whitespace-nowrap">Ulasan
-                    ({{ number_format($productData['reviews']) }})</button>
-                <button onclick="switchTab('size')" id="tab-size"
-                    class="tab-btn pb-3 text-sm font-semibold text-slate-500 hover:text-slate-700 whitespace-nowrap">Varian</button>
-            </div>
+        <!-- Product information navigation -->
+        <div class="mt-10" id="detail-produk">
+            <nav class="product-section-tabs -mx-4 mb-8 flex gap-6 overflow-x-auto border-y border-slate-200 px-4 sm:mx-0 sm:px-0" aria-label="Informasi produk">
+                <a href="#detail-produk">Detail Produk</a>
+                <a href="#spesifikasi">Spesifikasi</a>
+                <a href="#daftar-varian">Varian</a>
+                <a href="#ulasan">Ulasan</a>
+                <a href="#diskusi">Diskusi</a>
+            </nav>
 
-            <!-- Deskripsi -->
-            <div id="content-desc" class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                <h3 class="font-bold text-slate-800 mb-4 text-lg">Tentang Produk</h3>
-                <div class="prose text-slate-600 text-sm leading-relaxed">
+            <section id="spesifikasi" class="scroll-mt-40 border-b border-slate-200 pb-9">
+                <div class="mb-5 flex items-end justify-between gap-4">
+                    <div>
+                        <p class="text-[11px] font-bold uppercase tracking-[.14em] text-blue-800">Data teknis</p>
+                        <h2 class="mt-1 text-lg font-extrabold text-slate-950">Spesifikasi Produk</h2>
+                    </div>
+                    <span class="hidden text-xs text-slate-400 sm:block">SKU {{ $productData['sku'] ?: '-' }}</span>
+                </div>
+                <dl class="product-spec-table max-w-3xl">
+                    <div class="product-spec-row"><dt>Nama Produk</dt><dd>{{ $productData['name'] }}</dd></div>
+                    <div class="product-spec-row"><dt>Kategori</dt><dd>{{ $productData['categoryName'] }}</dd></div>
+                    @foreach ($otherGroups as $group)
+                        <div class="product-spec-row"><dt>{{ $group['label'] }}</dt><dd data-variant-spec="{{ $group['key'] }}">{{ $defaultOther[$group['key']] ?? '-' }}</dd></div>
+                    @endforeach
+                    <div class="product-spec-row"><dt>SKU</dt><dd id="productSpecSku">{{ $productData['sku'] ?: '-' }}</dd></div>
+                    <div class="product-spec-row"><dt>Stok</dt><dd id="productSpecStock">{{ number_format((int) $productData['stock']) }} pcs</dd></div>
+                </dl>
+            </section>
+
+            <section id="content-desc" class="scroll-mt-40 border-b border-slate-200 py-9">
+                <h2 class="mb-4 text-lg font-extrabold text-slate-950">Tentang Produk</h2>
+                <div class="product-copy prose prose-slate max-w-none">
                     {!! $productData['description'] ?: '<p>Belum ada deskripsi produk.</p>' !!}
                 </div>
-            </div>
-            <!-- Review -->
-            <div id="content-review" class="hidden bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+            </section>
+
+            <section id="daftar-varian" class="scroll-mt-40 border-b border-slate-200 py-9">
+                <div class="mb-4">
+                    <p class="text-[11px] font-bold uppercase tracking-[.14em] text-blue-800">Katalog SKU</p>
+                    <h2 class="mt-1 text-lg font-extrabold text-slate-950">Daftar Varian</h2>
+                </div>
+                <div class="overflow-x-auto border-y border-slate-200">
+                    <table class="w-full min-w-[680px] text-left text-sm">
+                        <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                            <tr>
+                                @foreach ($otherGroups as $group)<th class="px-4 py-3 font-semibold">{{ $group['label'] }}</th>@endforeach
+                                <th class="px-4 py-3 font-semibold">SKU</th>
+                                <th class="px-4 py-3 font-semibold">Stok</th>
+                                <th class="px-4 py-3 font-semibold">Harga</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            @forelse (($productData['variantOptions'] ?? []) as $option)
+                                <tr data-variant-row="{{ $option['id'] }}" class="transition-colors">
+                                    @foreach ($otherGroups as $group)
+                                        <td class="px-4 py-3 text-slate-700">{{ $option['attributes'][$group['key']] ?? '-' }}</td>
+                                    @endforeach
+                                    <td class="px-4 py-3 font-mono text-xs text-slate-600">{{ $option['label'] ?? '-' }}</td>
+                                    <td class="px-4 py-3"><span class="{{ ((int) ($option['stock'] ?? 0)) > 0 ? 'text-emerald-700' : 'text-red-600' }}">{{ number_format((int) ($option['stock'] ?? 0)) }}</span></td>
+                                    <td class="px-4 py-3 font-semibold text-slate-900">Rp {{ number_format($option['displayPrice'] ?? $option['price'] ?? 0, 0, ',', '.') }}</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="{{ max(3, $otherGroups->count() + 3) }}" class="px-4 py-4 text-slate-500">Belum ada data varian.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="ulasan" class="scroll-mt-40 border-b border-slate-200 py-9">
+                <h2 class="mb-6 text-lg font-extrabold text-slate-950">Ulasan Produk</h2>
                 <div class="grid md:grid-cols-3 gap-6 mb-8">
                     <div class="text-center">
                         <div class="text-4xl sm:text-5xl md:text-6xl font-extrabold text-slate-800 mb-1">{{ number_format($productData['rating'], 1) }}</div>
@@ -656,47 +764,45 @@
                     <div class="border-b border-slate-100 pb-5" id="reviews-container">
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <!-- Size Guide -->
-            <div id="content-size" class="hidden bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                <h3 class="font-bold text-slate-800 mb-4">Daftar Varian</h3>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left">
-                        <thead class="bg-slate-50">
-                            <tr>
-                                <th class="px-4 py-3 font-semibold text-slate-700 rounded-tl-xl">Varian</th>
-                                <th class="px-4 py-3 font-semibold text-slate-700">Harga</th>
-                                <th class="px-4 py-3 font-semibold text-slate-700">Stok</th>
-                                <th class="px-4 py-3 font-semibold text-slate-700 rounded-tr-xl">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100">
-                            @forelse (($productData['variantOptions'] ?? []) as $option)
-                                <tr>
-                                    <td class="px-4 py-3 font-medium text-slate-800">{{ $option['summary'] ?? '-' }}</td>
-                                    <td class="px-4 py-3 text-slate-600">
-                                        Rp {{ number_format($productData['isFlashSale'] ? ($option['displayPrice'] ?? 0) : ($option['price'] ?? 0), 0, ',', '.') }}
-                                    </td>
-                                    <td class="px-4 py-3 text-slate-600">{{ number_format((int) ($option['stock'] ?? 0)) }}</td>
-                                    <td class="px-4 py-3 text-slate-600">{{ ((int) ($option['stock'] ?? 0)) > 0 ? 'Tersedia' : 'Habis' }}</td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="4" class="px-4 py-3 text-slate-500">Belum ada data variant.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+            <section id="diskusi" class="scroll-mt-40 py-9">
+                <div class="flex flex-col justify-between gap-4 border-l-2 border-blue-700 pl-4 sm:flex-row sm:items-center">
+                    <div><h2 class="text-base font-bold text-slate-950">Perlu konfirmasi teknis?</h2><p class="mt-1 text-sm text-slate-500">Diskusikan spesifikasi, kompatibilitas, atau kebutuhan proyek dengan penjual.</p></div>
+                    <button type="button" onclick="openSellerChat()" class="h-10 shrink-0 rounded-md border border-blue-700 px-4 text-sm font-semibold text-blue-800 hover:bg-blue-50">Mulai Diskusi</button>
                 </div>
-            </div>
+            </section>
         </div>
+
+        @if (!empty($sameStoreProductsJson))
+            <section class="mt-10 border-t border-slate-200 pt-8 sm:mt-12">
+                <div class="mb-4 flex items-center justify-between gap-4">
+                    <div>
+                        <p class="text-[11px] font-bold uppercase tracking-[.14em] text-blue-800">{{ $productData['storeName'] ?: 'Mitra industri' }}</p>
+                        <h2 class="mt-1 text-lg font-extrabold text-slate-950">Produk Lain dari Toko Ini</h2>
+                    </div>
+                </div>
+                <div class="flex snap-x gap-3 overflow-x-auto pb-3 sm:grid sm:grid-cols-3 sm:overflow-visible md:grid-cols-5">
+                    @foreach ($sameStoreProductsJson as $sp)
+                        <article class="store-product-card group min-w-[168px] snap-start sm:min-w-0">
+                            <div class="store-product-media"><a href="{{ $sp['url'] }}" class="block h-full"><img src="{{ $sp['image'] }}" alt="{{ $sp['name'] }}" loading="lazy"></a></div>
+                            <div class="store-product-body">
+                                <a href="{{ $sp['url'] }}" class="store-product-name line-clamp-2 hover:text-blue-700">{{ $sp['name'] }}</a>
+                                <p class="store-product-variant truncate">{{ $sp['variant'] ?: 'Produk industri' }}</p>
+                                <p class="store-product-price">Rp {{ number_format($sp['price'], 0, ',', '.') }}</p>
+                                <p class="store-product-seller"><span>{{ $sp['storeName'] ?: 'Mitra industri' }}</span></p>
+                            </div>
+                        </article>
+                    @endforeach
+                </div>
+            </section>
+        @endif
 
         @if (!empty($recentlyViewedProductsJson))
             <div class="mt-10 sm:mt-12">
                 <div class="flex items-center justify-between mb-4 sm:mb-5">
                     <div class="flex items-center gap-3">
-                        <div class="w-1 h-6 sm:h-7 bg-gradient-to-b from-emerald-500 to-blue-600 rounded-full"></div>
+                        <div class="w-1 h-6 sm:h-7 bg-slate-400 rounded-full"></div>
                         <h2 class="text-base sm:text-xl font-bold text-slate-800">Terakhir Dilihat</h2>
                     </div>
                 </div>
@@ -728,8 +834,8 @@
         <div class="mt-10 sm:mt-12">
             <div class="flex items-center justify-between mb-4 sm:mb-5">
                 <div class="flex items-center gap-3">
-                    <div class="w-1 h-6 sm:h-7 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></div>
-                    <h2 class="text-base sm:text-xl font-bold text-slate-800">Produk Rekomendasi</h2>
+                    <div class="w-1 h-6 sm:h-7 bg-blue-700 rounded-full"></div>
+                    <h2 class="text-base sm:text-xl font-bold text-slate-800">Produk Serupa</h2>
                 </div>
                 <a href="{{ route('frontend.kategori') }}"
                     class="text-blue-600 hover:text-blue-700 font-semibold text-sm flex items-center gap-1 transition-colors">
@@ -767,7 +873,7 @@
     </div>
 
     <!-- STICKY BOTTOM BAR (Mobile) -->
-    <div id="mobileStickyActions" class="mobile-sticky-actions sticky bottom-[76px] md:hidden bg-white border-t border-slate-200 px-3 py-2.5 flex flex-col gap-2">
+    <div id="mobileStickyActions" class="mobile-sticky-actions fixed inset-x-0 bottom-[64px] md:hidden bg-white border-t border-slate-200 px-3 py-2.5 flex flex-col gap-2 shadow-[0_-4px_16px_rgb(15_23_42/.08)]">
         <div class="flex items-center justify-between gap-3 text-xs text-slate-500">
             <div>
                 <div class="font-semibold text-slate-800" id="mobileStickyPrice">Rp {{ number_format($displayPrice, 0, ',', '.') }}</div>
@@ -914,6 +1020,7 @@
         const loginUrl = @json(route('login'));
         const cartStoreUrl = @json(route('frontend.cart.store'));
         const wishlistToggleUrl = @json(route('frontend.wishlist.toggle'));
+        const sellerSupportUrl = @json($appStoreSettings['social_whatsapp'] ?? '');
         const csrfToken = @json(csrf_token());
         const pendingAuthActionKey = 'ec_pending_auth_action';
         const images = (productData.images && productData.images.length ? productData.images : [productData.image]);
@@ -940,10 +1047,9 @@
                 img.style.opacity = 1;
             }, 150);
             document.querySelectorAll('.thumb-btn').forEach((b, idx) => {
-                b.className = b.className.replace('thumb-active border-blue-400', '').replace('border-slate-200',
-                    '');
-                b.classList.add(idx === i ? 'thumb-active border-blue-400' : 'border-slate-200');
-                b.className = b.className.replace('border-2  border-2', 'border-2');
+                b.classList.toggle('thumb-active', idx === i);
+                b.classList.toggle('border-blue-700', idx === i);
+                b.classList.toggle('border-slate-200', idx !== i);
             });
         }
 
@@ -989,6 +1095,14 @@
             if (!input) return;
             input.max = String(getMaxQty(isDrawer));
             input.value = String(isDrawer ? qtyDrawer : qty);
+            if (!isDrawer) updateSubtotal();
+        }
+
+        function updateSubtotal() {
+            const selected = (productData.variantOptions || []).find((option) => Number(option.id) === Number(activeVariantId));
+            const unitPrice = Number(selected?.displayPrice || selected?.price || productData.flashSalePrice || productData.price || 0);
+            const subtotal = document.getElementById('productSubtotal');
+            if (subtotal) subtotal.textContent = formatRupiah(unitPrice * Math.max(1, qty));
         }
 
         function setQtyValue(value, isDrawer = false) {
@@ -1330,8 +1444,8 @@
             const mobileBuyNowBtn = document.getElementById('mobileBuyNowBtn');
 
             let label = 'Stok Tersedia';
-            let badgeClass = ['bg-blue-50', 'text-blue-600'];
-            let dotClass = 'bg-blue-500';
+            let badgeClass = ['bg-emerald-50', 'text-emerald-700'];
+            let dotClass = 'bg-emerald-500';
 
             if (stock <= 0) {
                 label = 'Stok Habis';
@@ -1473,13 +1587,35 @@
             if (redeemNowVariantInput) redeemNowVariantInput.value = String(activeVariantId);
 
             const displayPrice = Number(selectedVariant.displayPrice || selectedVariant.price || 0);
-            const priceEl = document.getElementById('productPrice');
-            if (priceEl) priceEl.textContent = formatRupiah(displayPrice);
+            const mainPriceEl = document.getElementById('productMainPrice');
+            if (mainPriceEl) mainPriceEl.textContent = formatRupiah(displayPrice);
             const mobileStickyPrice = document.getElementById('mobileStickyPrice');
             if (mobileStickyPrice) mobileStickyPrice.textContent = formatRupiah(displayPrice);
 
-            const origPriceEl = document.getElementById('productOrigPrice');
-            if (origPriceEl) origPriceEl.textContent = formatRupiah(selectedVariant.price || 0);
+            const mainOrigPriceEl = document.getElementById('productMainOrigPrice');
+            if (mainOrigPriceEl) mainOrigPriceEl.textContent = formatRupiah(selectedVariant.price || 0);
+
+            const selectedSku = selectedVariant.sku || selectedVariant.label || '-';
+            ['productSku', 'productSpecSku'].forEach((id) => {
+                const element = document.getElementById(id);
+                if (element) element.textContent = selectedSku;
+            });
+            const specStock = document.getElementById('productSpecStock');
+            if (specStock) specStock.textContent = `${productData.stock} pcs`;
+
+            Object.entries(selectedVariant.attributes || {}).forEach(([key, value]) => {
+                document.querySelectorAll(`[data-variant-summary="${CSS.escape(key)}"], [data-variant-spec="${CSS.escape(key)}"]`)
+                    .forEach((element) => element.textContent = value || '-');
+            });
+            const mobileVariantSummary = document.getElementById('mobileVariantSummary');
+            if (mobileVariantSummary) {
+                mobileVariantSummary.textContent = Object.values(selectedVariant.attributes || {}).filter(Boolean).join(' · ') || selectedVariant.summary || '-';
+            }
+            document.querySelectorAll('[data-variant-row]').forEach((row) => {
+                const active = Number(row.dataset.variantRow) === activeVariantId;
+                row.classList.toggle('bg-blue-50', active);
+                row.classList.toggle('shadow-[inset_3px_0_0_#1256a0]', active);
+            });
 
             const stockEl = document.getElementById('productStock');
             if (stockEl) stockEl.textContent = `${productData.stock} pcs`;
@@ -1858,19 +1994,6 @@
             if (event.key === 'Escape') closeProductImageModal();
         });
 
-        function switchTab(tab) {
-            ['desc', 'review', 'size'].forEach(t => {
-                document.getElementById('tab-' + t).className =
-                    'tab-btn pb-3 text-sm font-semibold text-slate-500 hover:text-slate-700 whitespace-nowrap';
-                document.getElementById('content-' + t).classList.add('hidden');
-            });
-            document.getElementById('tab-' + tab).className =
-                'tab-btn active pb-3 text-sm font-semibold text-blue-600 whitespace-nowrap border-b-2 border-blue-500';
-            document.getElementById('content-' + tab).classList.remove('hidden');
-        }
-
-
-
         // Reviews
         const reviews = @json($reviewItems->values()->all());
 
@@ -2127,6 +2250,31 @@
                     showToast('Gagal menyalin link.');
                 });
             }
+        }
+
+        function openSellerChat() {
+            if (window.Tawk_API && typeof window.Tawk_API.maximize === 'function') {
+                window.Tawk_API.maximize();
+                return;
+            }
+            if (sellerSupportUrl) {
+                window.open(sellerSupportUrl, '_blank', 'noopener,noreferrer');
+                return;
+            }
+            showToast('Layanan chat penjual belum tersedia.');
+        }
+
+        function requestQuotation() {
+            if (window.Tawk_API && typeof window.Tawk_API.maximize === 'function') {
+                window.Tawk_API.maximize();
+                showToast('Sampaikan jumlah dan kebutuhan proyek Anda melalui chat.');
+                return;
+            }
+            if (sellerSupportUrl) {
+                window.open(sellerSupportUrl, '_blank', 'noopener,noreferrer');
+                return;
+            }
+            showToast('Kanal permintaan penawaran belum tersedia.');
         }
 
         setMegaCategory('rumah-tangga');
