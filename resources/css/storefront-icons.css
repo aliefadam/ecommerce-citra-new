@@ -88,5 +88,7 @@ span[class*=' fi-rr-']::before {
 .ri-search-line::before { content: '\f0d1'; }
 .ri-shopping-bag-3-fill::before { content: '\f115'; }
 .ri-stack-line::before { content: '\f181'; }
+.ri-star-fill::before { content: '\f186'; }
+.ri-store-2-line::before { content: '\f1a5'; }
 .ri-timer-flash-fill::before { content: '\f213'; }
 .ri-user-smile-line::before { content: '\f274'; }

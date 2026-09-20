@@ -239,10 +239,10 @@
         }
 
         .store-product-media img {
+            display: block;
             width: 100%;
             height: 100%;
-            object-fit: contain;
-            padding: .75rem;
+            object-fit: cover;
             transition: transform .3s ease;
         }
 
