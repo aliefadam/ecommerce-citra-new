@@ -90,9 +90,12 @@
         <div class="ec-container ec-primary-nav-inner">
             <div class="relative ec-category-wrap">
                 <button id="ecCategoryTrigger" type="button" class="ec-category-button" aria-expanded="false" aria-controls="ecCategoryDropdown"><i class="fi fi-rr-menu-burger" aria-hidden="true"></i><span>Semua Kategori</span><i class="fi fi-rr-angle-small-down" aria-hidden="true"></i></button>
-                <div id="ecCategoryDropdown" class="ec-dropdown left-0 top-full mt-2 grid w-[min(76rem,calc(100vw-2rem))] grid-cols-[14rem_1fr] overflow-hidden" hidden>
-                    <div id="ecMegaCategoryMenu" class="grid content-start gap-1 border-r border-slate-200 bg-slate-50 p-3" role="tablist" aria-label="Kategori produk"></div>
-                    <div id="ecMegaCategoryContent" class="min-h-72 p-5"></div>
+                <div id="ecCategoryDropdown" class="ec-category-mega" hidden>
+                    <aside class="ec-mega-family-panel" aria-label="Product category">
+                        <p class="ec-mega-eyebrow">Product Category</p>
+                        <div id="ecMegaCategoryMenu" class="ec-mega-family-list" role="tablist" aria-label="Kategori produk"></div>
+                    </aside>
+                    <div id="ecMegaCategoryContent" class="ec-mega-catalog" role="tabpanel" aria-live="polite"></div>
                 </div>
             </div>
             <div class="ec-primary-links">

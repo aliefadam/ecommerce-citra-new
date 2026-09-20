@@ -168,25 +168,94 @@ function setupStorefrontShell() {
     const categoryMenu = get('ecMegaCategoryMenu');
     const categoryContent = get('ecMegaCategoryContent');
     let activeCategory = categories[0]?.key;
+
+    const categoryMeta = (category) => {
+        const identity = `${category?.key || ''} ${category?.name || ''}`.toLowerCase();
+        const icons = {
+            bolt: `<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 12.5 9 7.5h7l3 3-5 5-3-3H4v0Z"/><path d="m15.5 14.5 10 10m-7-13 10 10M23 22l-5.5 5.5M26 19l-5.5 5.5"/></svg>`,
+            fitting: `<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 4v9a12 12 0 0 0 12 12h9"/><path d="M3 4h8M3 8h8m17 13v8m-4-8v8"/><path d="M11 12h5a5 5 0 0 1 5 5v4"/></svg>`,
+            nut: `<svg viewBox="0 0 32 32" aria-hidden="true"><path d="m16 4 10 6v12l-10 6-10-6V10l10-6Z"/><circle cx="16" cy="16" r="5"/><path d="M13 12.2 19 19.8m0-7.6L13 19.8"/></svg>`,
+            screw: `<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 8h11l3 3-5 5-3-3H5V8Z"/><path d="m15.5 14.5 10 10m-7-13 10 10M20 22l5 5m-7-2 4 4m1-9 5 5"/></svg>`,
+            washer: `<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="11"/><circle cx="16" cy="16" r="5"/><path d="M8.2 8.2 12 12m8 8 3.8 3.8"/></svg>`,
+            chemical: `<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M11 4h10m-8 0v6l-5 8a6 6 0 0 0 5 9h6a6 6 0 0 0 5-9l-5-8V4"/><path d="M10 19h12M14 14h4"/></svg>`,
+            clamp: `<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M8 5v15a7 7 0 0 0 14 0v-5"/><path d="M5 5h6m8 7h6m-3-3v6M5 9h6"/><circle cx="15" cy="20" r="3"/></svg>`,
+            safety: `<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 4 27 8v7c0 7-4.5 11-11 14C9.5 26 5 22 5 15V8l11-4Z"/><path d="m11 16 3 3 7-7"/></svg>`,
+            default: `<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 9h22v14H5zM9 5v4m14-4v4M9 23v4m14-4v4"/><path d="M10 14h12m-12 4h8"/></svg>`,
+        };
+        const descriptions = {
+            bolt: 'Fastening Components',
+            fitting: 'Pipe & Flow Components',
+            nut: 'Threaded Fasteners',
+            screw: 'Precision Fasteners',
+            washer: 'Load Distribution',
+            chemical: 'Chemical & Bonding',
+            clamp: 'Mounting & Support',
+            safety: 'Safety & Surface Prep',
+        };
+        const matchers = [
+            ['washer', /washer|\bring\b/],
+            ['fitting', /fitting|\bpipe\b|\bpipa\b/],
+            ['nut', /\bnut\b|\bmur\b/],
+            ['screw', /screw|sekrup|\bpaku\b/],
+            ['chemical', /chemical|kimia|\blem\b|adhesive/],
+            ['clamp', /klem|clamp|bracket/],
+            ['safety', /safety|abrasive|pelindung/],
+            ['bolt', /bolt|baut/],
+        ];
+        const type = matchers.find(([, pattern]) => pattern.test(identity))?.[0] || 'default';
+
+        return {
+            icon: icons[type],
+            description: descriptions[type] || 'Industrial Components',
+        };
+    };
+
     const renderCategories = () => {
         if (!categoryMenu || !categoryContent) return;
-        categoryMenu.innerHTML = categories.length ? categories.map((category) => `
-            <button type="button" role="tab" aria-selected="${category.key === activeCategory}" data-category-key="${escapeHtml(category.key)}"
-                class="w-full min-h-11 rounded-lg px-3 text-left text-sm font-bold ${category.key === activeCategory ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-100'}">${escapeHtml(category.name)}</button>
-        `).join('') : '<p class="p-3 text-sm text-slate-500">Kategori belum tersedia.</p>';
+        categoryMenu.innerHTML = categories.length ? categories.map((category) => {
+            const meta = categoryMeta(category);
+            return `
+                <button type="button" role="tab" aria-selected="${category.key === activeCategory}" aria-controls="ecMegaCategoryContent" data-category-key="${escapeHtml(category.key)}" class="ec-mega-family-item">
+                    <span class="ec-mega-family-icon">${meta.icon}</span>
+                    <span class="ec-mega-family-copy"><strong>${escapeHtml(category.name)}</strong><small>${escapeHtml(meta.description)}</small></span>
+                    <span class="ec-mega-family-chevron" aria-hidden="true">&#8250;</span>
+                </button>`;
+        }).join('') : '<p class="ec-mega-unavailable">Kategori belum tersedia.</p>';
         const category = categories.find((item) => item.key === activeCategory) || categories[0];
-        if (!category) { categoryContent.innerHTML = '<p class="p-5 text-sm text-slate-500">Katalog sedang disiapkan.</p>'; return; }
+        if (!category) {
+            categoryContent.innerHTML = '<div class="ec-mega-empty"><p>Katalog sedang disiapkan.</p></div>';
+            return;
+        }
+        const meta = categoryMeta(category);
         const items = (category.columns || []).flatMap((column) => column.items || []);
-        categoryContent.innerHTML = `<div class="flex items-center justify-between border-b border-slate-200 pb-3"><div><p class="ec-display text-xl">${escapeHtml(category.name)}</p><p class="text-xs text-slate-500">${items.length} subkategori</p></div><a class="ec-btn ec-btn-text" href="${escapeHtml(category.url)}">Lihat semua</a></div>
-            <div class="grid grid-cols-2 gap-1 py-3 sm:grid-cols-3">${items.map((item) => `<a class="min-h-11 rounded-lg p-3 text-sm font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-800" href="${escapeHtml(item.url)}">${escapeHtml(item.name)}</a>`).join('') || '<p class="p-3 text-sm text-slate-500">Belum ada subkategori.</p>'}</div>`;
+        categoryContent.innerHTML = `
+            <header class="ec-mega-catalog-head">
+                <div>
+                    <p class="ec-mega-eyebrow">Product Family / ${String(items.length).padStart(2, '0')} Subcategories</p>
+                    <h2>${escapeHtml(category.name)}</h2>
+                    <p>${escapeHtml(meta.description)}</p>
+                </div>
+                <a href="${escapeHtml(category.url)}">Lihat Semua ${escapeHtml(category.name)} <span aria-hidden="true">&rarr;</span></a>
+            </header>
+            ${items.length ? `<div class="ec-mega-subcategory-grid">${items.map((item) => `
+                <a class="ec-mega-subcategory" href="${escapeHtml(item.url)}">
+                    <span>${escapeHtml(item.name)}</span><span aria-hidden="true">&rarr;</span>
+                </a>`).join('')}</div>` : `
+                <div class="ec-mega-empty">
+                    <span class="ec-mega-empty-icon">${meta.icon}</span>
+                    <div><p>Belum ada subkategori untuk <strong>${escapeHtml(category.name)}</strong>.</p>
+                    <a href="${escapeHtml(category.url)}">Lihat semua produk ${escapeHtml(category.name)} <span aria-hidden="true">&rarr;</span></a></div>
+                </div>`}`;
     };
-    categoryMenu?.addEventListener('click', (event) => {
+    const activateCategory = (event, shouldFocus = false) => {
         const tab = event.target.closest('[data-category-key]');
-        if (!tab) return;
+        if (!tab || tab.dataset.categoryKey === activeCategory) return;
         activeCategory = tab.dataset.categoryKey;
         renderCategories();
-        categoryMenu.querySelector('[aria-selected="true"]')?.focus();
-    });
+        if (shouldFocus) categoryMenu.querySelector('[aria-selected="true"]')?.focus();
+    };
+    categoryMenu?.addEventListener('click', (event) => activateCategory(event, true));
+    categoryMenu?.addEventListener('mouseover', (event) => activateCategory(event));
     categoryMenu?.addEventListener('keydown', (event) => {
         if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
         event.preventDefault();
