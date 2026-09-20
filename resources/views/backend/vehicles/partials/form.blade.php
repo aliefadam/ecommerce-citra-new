@@ -87,6 +87,18 @@
             @error('distance_block_km') <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p> @enderror
             @error('rate_per_distance_block') <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p> @enderror
             <p class="mt-2 text-xs leading-5 text-amber-900/70 dark:text-amber-100/70">Contoh: setiap 5 km dikenakan Rp5.000. Jarak 8 km dihitung 2 blok.</p>
+
+            <div class="mt-4">
+                <label class="mb-1 block text-[11px] font-semibold text-amber-900/70 dark:text-amber-100/70">Jarak maksimal kendaraan</label>
+                <div class="flex overflow-hidden rounded-xl border border-amber-200 bg-white focus-within:ring-2 focus-within:ring-amber-300 dark:border-amber-500/30 dark:bg-slate-800">
+                    <input type="number" name="max_distance_km" min="0.01" step="0.01"
+                        value="{{ old('max_distance_km', $vehicle->max_distance_km ?? 50) }}" required
+                        class="min-w-0 flex-1 bg-transparent px-3 py-2.5 text-sm font-bold text-slate-900 outline-none dark:text-white">
+                    <span class="flex items-center border-l border-amber-100 px-3 text-xs font-bold text-slate-400 dark:border-amber-500/20">km</span>
+                </div>
+                @error('max_distance_km') <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p> @enderror
+                <p class="mt-1.5 text-[11px] leading-4 text-amber-900/70 dark:text-amber-100/70">Pesanan di atas jarak ini akan ditolak sebagai luar jangkauan.</p>
+            </div>
         </div>
 
         <div class="mt-5 border-t border-amber-200 pt-5 dark:border-amber-500/20">

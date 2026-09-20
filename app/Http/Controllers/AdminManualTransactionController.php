@@ -455,6 +455,12 @@ class AdminManualTransactionController extends Controller
                 ]);
             }
 
+            if ($shippingDistanceKm > (float) $vehicle->max_distance_km) {
+                throw ValidationException::withMessages([
+                    'shipping_distance_km' => 'Jarak pengiriman melebihi jangkauan '.$vehicle->name.' (maksimal '.number_format((float) $vehicle->max_distance_km, 2, ',', '.').' km).',
+                ]);
+            }
+
             $shippingRatePerKg = (int) $vehicle->rate_per_kg;
             $shippingDistanceBlockKm = (float) $vehicle->distance_block_km;
             $shippingDistanceRate = (int) $vehicle->rate_per_distance_block;

@@ -29,6 +29,7 @@ class Vehicle extends Model
         'rate_per_kg',
         'distance_block_km',
         'rate_per_distance_block',
+        'max_distance_km',
         'is_active',
         'notes',
         'sort_order',
@@ -41,6 +42,7 @@ class Vehicle extends Model
             'rate_per_kg' => 'integer',
             'distance_block_km' => 'decimal:2',
             'rate_per_distance_block' => 'integer',
+            'max_distance_km' => 'decimal:2',
             'is_active' => 'boolean',
             'sort_order' => 'integer',
         ];

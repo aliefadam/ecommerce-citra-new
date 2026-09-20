@@ -1261,11 +1261,22 @@
                     const res = await fetch(`${shippingOptionsUrl}?${query.toString()}`, {
                         headers: { 'X-Requested-With': 'XMLHttpRequest' },
                     });
-                    if (!res.ok) throw new Error('gagal');
-                    const json = await res.json();
+                    const json = await res.json().catch(() => ({}));
+                    if (!res.ok) throw new Error(json?.message || `Layanan ongkir merespons HTTP ${res.status}.`);
                     renderGroupShippingOptions(group.companyId, Array.isArray(json?.data) ? json.data : []);
                 } catch (e) {
-                    container.innerHTML = `<div class="text-sm text-red-500">Gagal memuat ongkir RajaOngkir.</div>`;
+                    container.replaceChildren();
+                    const errorBox = document.createElement('div');
+                    errorBox.className = 'rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-600';
+                    const errorText = document.createElement('p');
+                    errorText.textContent = e?.message || 'Gagal memuat ongkir RajaOngkir.';
+                    const retryButton = document.createElement('button');
+                    retryButton.type = 'button';
+                    retryButton.className = 'mt-2 text-xs font-bold text-red-700 underline underline-offset-2';
+                    retryButton.textContent = 'Coba lagi';
+                    retryButton.addEventListener('click', loadShippingOptions);
+                    errorBox.append(errorText, retryButton);
+                    container.append(errorBox);
                     state.shippingCost = null;
                     state.shippingLabel = '-';
                     state.shippingQuoteToken = '';

@@ -79,6 +79,7 @@ class VehicleController extends Controller
             'rate_per_kg' => ['required', 'integer', 'min:0', 'max:999999999'],
             'distance_block_km' => ['required', 'numeric', 'min:0.01', 'max:1000000'],
             'rate_per_distance_block' => ['required', 'integer', 'min:0', 'max:999999999'],
+            'max_distance_km' => ['required', 'numeric', 'min:0.01', 'max:1000000'],
             'notes' => ['nullable', 'string', 'max:1000'],
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:65535'],
         ]);

@@ -42,13 +42,13 @@ class CompanyController extends Controller
         $company->vehicles()->createMany([
             [
                 'name' => 'Motor Kurir', 'type' => 'motor', 'capacity_kg' => 20,
-                'rate_per_kg' => 5000, 'distance_block_km' => 5, 'rate_per_distance_block' => 5000,
+                'rate_per_kg' => 5000, 'distance_block_km' => 5, 'rate_per_distance_block' => 5000, 'max_distance_km' => 30,
                 'is_active' => true, 'sort_order' => 10,
                 'notes' => 'Cocok untuk paket kecil dan pengiriman dalam kota.',
             ],
             [
                 'name' => 'Van Pengiriman', 'type' => 'van', 'capacity_kg' => 500,
-                'rate_per_kg' => 2500, 'distance_block_km' => 5, 'rate_per_distance_block' => 5000,
+                'rate_per_kg' => 2500, 'distance_block_km' => 5, 'rate_per_distance_block' => 5000, 'max_distance_km' => 100,
                 'is_active' => true, 'sort_order' => 20,
                 'notes' => 'Untuk barang besar atau pengiriman dalam jumlah banyak.',
             ],

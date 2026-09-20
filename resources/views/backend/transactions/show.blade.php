@@ -537,7 +537,7 @@
                                           class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
                                           placeholder="Catatan pembayaran">{{ old('payment_admin_note', $transaction->payment_admin_note) }}</textarea>
                             </div>
-                            <button type="submit" class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm hover:bg-blue-700">
+                            <button id="manualShippingSubmit" type="submit" class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 dark:disabled:bg-slate-700">
                                 <i data-lucide="save" class="h-4 w-4"></i> Simpan Pembayaran
                             </button>
                         </form>
@@ -583,6 +583,7 @@
                                                     data-capacity="{{ $vehicle->capacity_kg }}"
                                                     data-distance-block="{{ $vehicle->distance_block_km }}"
                                                     data-distance-rate="{{ $vehicle->rate_per_distance_block }}"
+                                                    data-max-distance="{{ $vehicle->max_distance_km }}"
                                                     @selected((string) old('shipping_vehicle_id', $transaction->shipping_vehicle_id) === (string) $vehicle->id)>
                                                     {{ $vehicle->name }} · Rp {{ number_format($vehicle->rate_per_kg, 0, ',', '.') }}/kg
                                                 </option>
@@ -733,6 +734,7 @@
     const shippingDistanceFormula = document.getElementById('shippingDistanceFormula');
     const shippingEstimate = document.getElementById('shippingEstimate');
     const shippingCapacityWarning = document.getElementById('shippingCapacityWarning');
+    const manualShippingSubmit = document.getElementById('manualShippingSubmit');
     const checkShippingRoute = document.getElementById('checkShippingRoute');
     const storeAddress = @json((string) ($transaction->company?->address ?? ''));
 
@@ -747,6 +749,7 @@
         if (!manualShippingCost) return;
         manualShippingCost.readOnly = isStoreCourier;
         manualShippingCost.classList.toggle('bg-slate-100', isStoreCourier);
+        if (manualShippingSubmit && !isStoreCourier) manualShippingSubmit.disabled = false;
 
         if (!isStoreCourier) return;
 
@@ -755,6 +758,7 @@
         const capacity = Number(option?.dataset?.capacity || 0);
         const distanceBlock = Number(option?.dataset?.distanceBlock || 0);
         const distanceRate = Number(option?.dataset?.distanceRate || 0);
+        const maxDistance = Number(option?.dataset?.maxDistance || 0);
         const weight = Number(shippingWeightKg?.value || 0);
         const distance = Number(shippingDistanceKm?.value || 0);
         const chargedWeight = weight > 0 ? Math.ceil(weight) : 0;
@@ -777,10 +781,15 @@
         }
 
         const overCapacity = capacity > 0 && weight > capacity;
+        const outOfRange = maxDistance > 0 && distance > maxDistance;
         if (shippingCapacityWarning) {
-            shippingCapacityWarning.classList.toggle('hidden', !overCapacity);
-            shippingCapacityWarning.textContent = overCapacity ? `Melebihi kapasitas ${capacity} kg` : '';
+            const warnings = [];
+            if (overCapacity) warnings.push(`Berat melebihi kapasitas ${capacity} kg`);
+            if (outOfRange) warnings.push(`Jarak di luar jangkauan maksimal ${maxDistance} km`);
+            shippingCapacityWarning.classList.toggle('hidden', warnings.length === 0);
+            shippingCapacityWarning.textContent = warnings.join(' · ');
         }
+        if (manualShippingSubmit) manualShippingSubmit.disabled = isStoreCourier && (overCapacity || outOfRange);
     }
 
     manualShippingType?.addEventListener('change', updateStoreCourierPricing);

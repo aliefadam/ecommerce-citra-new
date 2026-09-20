@@ -63,6 +63,10 @@
                         <p class="mt-1 font-black text-slate-900 dark:text-white">{{ $vehicle->capacity_kg ? number_format($vehicle->capacity_kg, 0, ',', '.').' kg' : 'Tanpa batas' }}</p>
                     </div>
                 </div>
+                <div class="mt-3 flex items-center gap-2 rounded-xl border border-slate-100 px-3 py-2 text-xs font-semibold text-slate-500 dark:border-slate-700 dark:text-slate-400">
+                    <i data-lucide="map-pinned" class="h-4 w-4 text-amber-500"></i>
+                    Jangkauan maksimal {{ rtrim(rtrim(number_format($vehicle->max_distance_km, 2, ',', '.'), '0'), ',') }} km
+                </div>
                 <p class="mt-4 min-h-10 text-sm leading-5 text-slate-500 dark:text-slate-400">{{ $vehicle->notes ?: 'Tidak ada catatan operasional.' }}</p>
 
                 <div class="mt-5 flex gap-2 border-t border-slate-100 pt-4 dark:border-slate-700">

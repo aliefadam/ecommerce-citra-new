@@ -57,6 +57,7 @@ class VehicleManagementTest extends TestCase
             'rate_per_kg' => 3500,
             'distance_block_km' => 5,
             'rate_per_distance_block' => 5000,
+            'max_distance_km' => 60,
             'sort_order' => 30,
             'is_active' => 1,
         ])->assertRedirect(route('vehicles.index'));
@@ -74,6 +75,7 @@ class VehicleManagementTest extends TestCase
             'rate_per_kg' => 1,
             'distance_block_km' => 5,
             'rate_per_distance_block' => 5000,
+            'max_distance_km' => 50,
         ])->assertNotFound();
     }
 
@@ -87,6 +89,7 @@ class VehicleManagementTest extends TestCase
             'rate_per_kg' => 5000,
             'distance_block_km' => 5,
             'rate_per_distance_block' => 5000,
+            'max_distance_km' => 30,
             'capacity_kg' => 20,
             'is_active' => true,
         ]);
@@ -141,6 +144,31 @@ class VehicleManagementTest extends TestCase
             ])
             ->assertRedirect(route('transactions.show', $transaction))
             ->assertSessionHasErrors('shipping_weight_kg');
+
+        $this->assertNull($transaction->fresh()->shipping_vehicle_id);
+    }
+
+    public function test_store_courier_rejects_destination_outside_vehicle_range(): void
+    {
+        $vehicle = Vehicle::query()
+            ->where('company_id', $this->company->id)
+            ->where('type', 'motor')
+            ->firstOrFail();
+        $vehicle->update(['max_distance_km' => 30, 'is_active' => true]);
+        $transaction = $this->manualTransaction();
+
+        $this->from(route('transactions.show', $transaction))
+            ->patch(route('transactions.manual-shipping.update', $transaction), [
+                'shipping_type' => 'kurir_toko',
+                'shipping_vehicle_id' => $vehicle->id,
+                'shipping_weight_kg' => 2,
+                'shipping_distance_km' => 30.01,
+                'shipping_recipient_name' => 'Penerima Luar Area',
+                'shipping_phone' => '081234567890',
+                'shipping_address_line' => 'Jl. Di Luar Jangkauan',
+            ])
+            ->assertRedirect(route('transactions.show', $transaction))
+            ->assertSessionHasErrors('shipping_distance_km');
 
         $this->assertNull($transaction->fresh()->shipping_vehicle_id);
     }
