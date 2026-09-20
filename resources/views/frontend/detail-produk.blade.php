@@ -918,6 +918,7 @@
         const pendingAuthActionKey = 'ec_pending_auth_action';
         const images = (productData.images && productData.images.length ? productData.images : [productData.image]);
         let currentImg = 0;
+        let activeVariantId = Number(productData.productVariantId || 0);
         let qty = 1;
         let qtyDrawer = 1;
         let drawerAvailableStock = Number(productData.stock || 0);
@@ -1144,6 +1145,7 @@
             if (!selectedVariant) return;
 
             syncVariantControlsToOption(selectedVariant, true);
+            activeVariantId = Number(selectedVariant.id || activeVariantId || 0);
 
             const displayPrice = Number(selectedVariant.displayPrice || selectedVariant.price || 0);
             const drawerPrice = document.getElementById('drawerProductPrice');
@@ -1460,9 +1462,15 @@
 
             syncVariantControlsToOption(selectedVariant, false);
 
-            productData.productVariantId = Number(selectedVariant.id || productData.productVariantId || 0);
+            activeVariantId = Number(selectedVariant.id || activeVariantId || 0);
+            productData.productVariantId = activeVariantId;
             productData.stock = Number(selectedVariant.stock || 0);
             productData.price = Number(selectedVariant.price || 0);
+
+            const buyNowVariantInput = document.getElementById('buyNowVariantId');
+            const redeemNowVariantInput = document.getElementById('redeemNowVariantId');
+            if (buyNowVariantInput) buyNowVariantInput.value = String(activeVariantId);
+            if (redeemNowVariantInput) redeemNowVariantInput.value = String(activeVariantId);
 
             const displayPrice = Number(selectedVariant.displayPrice || selectedVariant.price || 0);
             const priceEl = document.getElementById('productPrice');
@@ -1507,8 +1515,10 @@
         }
 
         function normalizeVariantAttrValue(groupKey, value) {
-            const raw = String(value || '').trim().toLowerCase();
-            return groupKey === 'length_mm' ? raw.replace(/mm$/i, '') : raw;
+            let normalized = String(value || '').trim().toLowerCase();
+            if (groupKey === 'length_mm') normalized = normalized.replace(/\s*mm$/i, '').trim();
+            if (/^-?\d+(?:\.\d+)?$/.test(normalized)) return String(Number(normalized));
+            return normalized.replace(/\s+/g, ' ');
         }
 
         function variantDisplayValue(groupKey, value) {
@@ -1728,13 +1738,18 @@
             if (!options.length) return Number(productData.productVariantId || 0);
             const selections = getSelectedVariantSelections();
             const exactMatch = options.find((opt) => variantMatchesSelections(opt, selections));
-            if (exactMatch) return Number(exactMatch.id || 0);
-            return Number(productData.productVariantId || options[0]?.id || 0);
+            if (!exactMatch) return 0;
+            if (Number(exactMatch.id || 0) !== activeVariantId) applySelectedVariantData(exactMatch);
+            return Number(exactMatch.id || 0);
         }
 
         async function addToCart() {
             syncMainQtyInput();
             const variantId = resolveSelectedVariantId();
+            if (!variantId) {
+                showToast('Kombinasi varian yang dipilih tidak tersedia. Silakan pilih ulang varian.');
+                return;
+            }
             if (Number(productData.stock || 0) <= 0) {
                 showToast('Stok produk ini sedang habis.');
                 return;
@@ -1777,6 +1792,10 @@
         function buyNow() {
             syncMainQtyInput();
             const variantId = resolveSelectedVariantId();
+            if (!variantId) {
+                showToast('Kombinasi varian yang dipilih tidak tersedia. Silakan pilih ulang varian.');
+                return false;
+            }
             if (Number(productData.stock || 0) <= 0) {
                 showToast('Stok produk ini sedang habis.');
                 return false;
@@ -1794,6 +1813,10 @@
         function redeemNow() {
             syncMainQtyInput();
             const variantId = resolveSelectedVariantId();
+            if (!variantId) {
+                showToast('Kombinasi varian yang dipilih tidak tersedia. Silakan pilih ulang varian.');
+                return false;
+            }
             if (Number(productData.stock || 0) <= 0) {
                 showToast('Stok produk ini sedang habis.');
                 return false;
