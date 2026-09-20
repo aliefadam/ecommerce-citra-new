@@ -46,11 +46,11 @@
     <section class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
         <div id="activeFilters" class="hidden flex flex-wrap gap-2 mb-4"></div>
 
-        <div class="flex flex-col lg:flex-row gap-6">
-            <aside id="filterSidebar" class="hidden lg:block lg:w-72 flex-shrink-0">
-                <div id="filterPanel" class="flat-filter-panel sticky top-20">
+        <div class="flex flex-col lg:flex-row gap-8">
+            <aside id="filterSidebar" class="hidden lg:block lg:w-64 flex-shrink-0">
+                <div id="filterPanel" class="flat-filter-panel sticky top-20 flex max-h-[calc(100vh-6rem)] flex-col">
                     <div id="filterDrawerHandle" class="filter-drawer-handle lg:hidden"></div>
-                    <div class="flat-filter-title flex items-center justify-between">
+                    <div class="flat-filter-title flex flex-shrink-0 items-center justify-between">
                         <h3 class="text-sm font-bold uppercase tracking-wide text-slate-950">Filter</h3>
                         <div class="flex items-center gap-3">
                             <button onclick="resetFilters()" class="text-xs text-blue-600 font-medium">Reset</button>
@@ -58,7 +58,8 @@
                         </div>
                     </div>
 
-                    <div class="flat-filter-section">
+                    <div class="flex-1 overflow-y-auto pr-2">
+                        <div class="flat-filter-section">
                         <button type="button" class="flex w-full items-center justify-between gap-3 text-left"
                             aria-expanded="true" aria-controls="searchCategoryPanel" onclick="toggleFilterSection(this, 'searchCategoryPanel')">
                             <span class="text-sm font-medium text-slate-950">Kategori</span>
@@ -105,7 +106,8 @@
                         </select>
                     </div>
 
-                    <div id="variantFilterList"></div>
+                        <div id="variantFilterList"></div>
+                    </div>
                 </div>
             </aside>
 
