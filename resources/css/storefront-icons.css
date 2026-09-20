@@ -30,15 +30,22 @@ span[class*=' fi-rr-']::before {
 .fi-rr-bolt::before { content: '\f26c'; }
 .fi-rr-box::before { content: '\f2b6'; }
 .fi-rr-box-open-full::before { content: '\f2b2'; }
+.fi-rr-building::before { content: '\f303'; }
 .fi-rr-calendar::before { content: '\f339'; }
 .fi-rr-clock-three::before { content: '\f453'; }
 .fi-rr-coin::before { content: '\f493'; }
+.fi-rr-comment-alt::before { content: '\f4a1'; }
+.fi-rr-credit-card::before { content: '\f4ee'; }
 .fi-rr-cross::before { content: '\f4f7'; }
 .fi-rr-cross-small::before { content: '\f4f6'; }
 .fi-rr-dashboard::before { content: '\f523'; }
+.fi-rr-document::before { content: '\f57a'; }
+.fi-rr-envelope::before { content: '\f5de'; }
 .fi-rr-exit::before { content: '\f5ed'; }
 .fi-rr-heart::before { content: '\f7a0'; }
+.fi-rr-headset::before { content: '\f794'; }
 .fi-rr-home::before { content: '\f7b8'; }
+.fi-rr-info::before { content: '\f80b'; }
 .fi-rr-laptop::before { content: '\f86f'; }
 .fi-rr-lock::before { content: '\f8d5'; }
 .fi-rr-marker::before { content: '\f8fd'; }
@@ -53,6 +60,28 @@ span[class*=' fi-rr-']::before {
 .fi-rr-truck-side::before { content: '\fe4d'; }
 .fi-rr-user::before { content: '\fea0'; }
 .fi-rr-utensils::before { content: '\fea8'; }
+
+@font-face {
+    font-family: 'uicons-brands';
+    src: url('@flaticon/flaticon-uicons/css/uicons-brands-XJPKRNBN.woff2') format('woff2');
+    font-display: swap;
+}
+
+i[class^='fi-brands-']::before,
+i[class*=' fi-brands-']::before,
+span[class^='fi-brands-']::before,
+span[class*=' fi-brands-']::before {
+    font-family: 'uicons-brands' !important;
+    font-style: normal;
+    font-weight: 400 !important;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.fi-brands-whatsapp::before { content: '\f1d2'; }
 
 @font-face {
     font-family: 'remixicon';

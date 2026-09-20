@@ -24,6 +24,10 @@ class FrontendContentController extends Controller
             ]);
         }
 
+        if ($slug === 'pusat-bantuan') {
+            return view('frontend.help-center', compact('page'));
+        }
+
         return view('frontend.content-page', compact('page'));
     }
 
