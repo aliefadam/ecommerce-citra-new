@@ -7,7 +7,7 @@
         * { font-family: 'Inter Variable', Inter, sans-serif; }
         .card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease; }
         .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12); }
-        .filter-chip { display:inline-flex; align-items:center; gap:8px; border-radius:999px; padding:8px 12px; font-size:12px; font-weight:600; background:#eff6ff; color:#1d4ed8; }
+        .filter-chip { display:inline-flex; align-items:center; gap:8px; border-radius:999px; padding:8px 12px; font-size:12px; font-weight:600; background:var(--ec-primary-100); color:var(--ec-primary-700); }
         .filter-drawer-handle { width:40px; height:5px; background:#cbd5e1; border-radius:9999px; margin:0 auto 16px; cursor:grab; touch-action:none; }
         .filter-drawer-handle:active { cursor:grabbing; }
         .flat-filter-panel { background:transparent; border:0; border-radius:0; box-shadow:none; padding:0; }
@@ -36,10 +36,10 @@
         </div>
     </div>
 
-    <section class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6">
+    <section class="ec-page-hero py-8">
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
             <h1 class="text-2xl md:text-3xl font-bold mb-2">Hasil Pencarian</h1>
-            <p id="searchMeta" class="text-blue-100 text-sm"></p>
+            <p id="searchMeta" class="ec-page-hero-copy text-sm"></p>
         </div>
     </section>
 
@@ -359,29 +359,31 @@
         }
         empty.classList.add('hidden');
 
-        grid.innerHTML = products.map((p) => `
-            <div class="bg-white rounded-xl overflow-hidden shadow-sm border border-slate-100 card-hover group flex flex-col">
-                <a href="{{ url('/detail-produk') }}/${p.slug}" class="relative block overflow-hidden aspect-square">
-                    <img src="${p.image}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="${escapeHtml(p.name)}" />
-                    ${p.originalPrice > p.price ? `<span class="absolute top-1.5 left-1.5 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">-${Math.round((1 - p.price / p.originalPrice) * 100)}%</span>` : ''}
-                    ${p.isFlashSale ? `<span class="absolute top-1.5 right-1.5 bg-amber-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">PROMO</span>` : ''}
-                </a>
-                <div class="p-2 flex-1 flex flex-col">
-                    <a href="{{ url('/detail-produk') }}/${p.slug}" class="text-[11px] sm:text-xs font-semibold text-slate-800 hover:text-blue-600 line-clamp-2 leading-snug transition-colors">${escapeHtml(p.name)}</a>
-                    <div class="flex items-center gap-0.5 mt-1">
-                        <span class="text-yellow-400 text-[10px]">★</span>
-                        <span class="text-[10px] font-medium text-slate-600">${Number(p.rating || 0).toFixed(1)}</span>
-                        <span class="text-[10px] text-slate-400 ml-0.5">· ${Number(p.sold || 0).toLocaleString('id-ID')} terjual</span>
-                    </div>
-                    <div class="mt-1 text-[10px] text-slate-400">${Number(p.stock || 0) > 0 ? `Stok ${Number(p.stock).toLocaleString('id-ID')}` : 'Stok habis'}</div>
-                    ${p.storeName ? `<div class="text-[10px] text-slate-400 truncate">${escapeHtml(p.storeName)}</div>` : ''}
-                    <div class="mt-auto pt-1">
-                        <p class="text-xs sm:text-sm font-bold text-slate-900">Rp ${Number(p.price).toLocaleString('id-ID')}</p>
-                        ${p.originalPrice > p.price ? `<p class="text-[10px] text-slate-400 line-through">Rp ${Number(p.originalPrice).toLocaleString('id-ID')}</p>` : ''}
-                        <a href="{{ url('/detail-produk') }}/${p.slug}" class="mt-2 inline-flex w-full items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-[11px] sm:text-xs font-semibold text-blue-600 transition-colors hover:border-blue-500 hover:bg-blue-500 hover:text-white">Detail</a>
+        grid.innerHTML = products.map((p) => {
+            const productUrl = `{{ url('/detail-produk') }}/${encodeURIComponent(p.slug)}`;
+            const variants = Array.isArray(p.variants) ? p.variants.map(v => v.value).filter(Boolean) : [];
+            const variantLabel = p.variant || variants.slice(0, 2).join(' · ') || p.category || 'Produk industri';
+            const discount = Number(p.originalPrice) > Number(p.price) ? Math.round((1 - Number(p.price) / Number(p.originalPrice)) * 100) : 0;
+            return `
+            <article class="store-product-card group">
+                <div class="store-product-media">
+                    <a href="${productUrl}" class="block h-full" aria-label="Lihat ${escapeHtml(p.name)}">
+                        <img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" loading="lazy" />
+                    </a>
+                    ${discount > 0 ? `<span class="absolute left-2.5 top-2.5 rounded-md bg-rose-500 px-2 py-1 text-[10px] font-bold text-white shadow-sm">-${discount}%</span>` : ''}
+                </div>
+                <div class="store-product-body">
+                    <a href="${productUrl}" class="store-product-name line-clamp-2 hover:text-blue-700">${escapeHtml(p.name)}</a>
+                    <p class="store-product-variant truncate">${escapeHtml(variantLabel)}</p>
+                    <p class="store-product-price">Rp ${Number(p.price || 0).toLocaleString('id-ID')}</p>
+                    <p class="store-product-seller"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 10.5V20h16v-9.5M3 4h18l-1.5 6a2.5 2.5 0 0 1-4.5 1.1 2.5 2.5 0 0 1-4.5 0A2.5 2.5 0 0 1 6 10L4.5 4M9 20v-5h6v5"/></svg><span>${escapeHtml(p.storeName || 'Mitra industri')}</span></p>
+                    <div class="store-product-meta">
+                        <span class="store-product-rating"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.7 2.83 5.73 6.32.92-4.58 4.46 1.08 6.3L12 17.14l-5.65 2.97 1.08-6.3-4.58-4.46 6.32-.92L12 2.7Z"/></svg>${Number(p.rating || 0).toFixed(1)} <span class="font-normal text-slate-400">(${Number(p.reviews || 0).toLocaleString('id-ID')})</span></span>
+                        <span>Terjual ${Number(p.sold || 0).toLocaleString('id-ID')}</span>
                     </div>
                 </div>
-            </div>`).join('');
+            </article>`;
+        }).join('');
     }
 
     function applyFilters() {

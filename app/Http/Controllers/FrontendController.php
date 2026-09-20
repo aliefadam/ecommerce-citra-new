@@ -659,6 +659,9 @@ class FrontendController extends Controller
                 'price' => $activeFlashSaleItem ? (int) $activeFlashSaleItem->discount_price : $basePrice,
                 'image' => $this->resolveProductVariantImageUrl($product, $variant, '300x300'),
                 'rating' => 0,
+                'reviews' => 0,
+                'sold' => 0,
+                'variant' => $variant->attributeSummary(),
                 'url' => route('frontend.detail-produk', ['slug' => $product->slug]),
                 'storeName' => (string) ($product->company?->name ?? ''),
             ];
@@ -740,6 +743,7 @@ class FrontendController extends Controller
                 'rating' => $rating,
                 'reviews' => $reviews,
                 'sold' => (int) ($soldMap[$product->id] ?? 0),
+                'variant' => $variant->attributeSummary(),
                 'isFlashSale' => $isFlashSale,
                 'storeName' => (string) ($product->company?->name ?? ''),
             ];

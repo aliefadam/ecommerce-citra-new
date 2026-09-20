@@ -204,11 +204,11 @@
         }
 
         .badge-new {
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            background: linear-gradient(135deg, var(--ec-primary-600), var(--ec-primary-800));
         }
 
         .badge-promo {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
+            background: linear-gradient(135deg, var(--ec-secondary-500), var(--ec-secondary-700));
         }
 
         .store-product-card {
@@ -270,11 +270,11 @@
         .store-product-variant { margin-top: .18rem; min-height: 1rem; color: #607594; font-size: .7rem; line-height: 1.35; }
         .store-product-price { margin-top: .45rem; color: #082557; font-size: 1rem; font-weight: 700; line-height: 1.2; }
         .store-product-seller { display: flex; min-width: 0; align-items: center; gap: .45rem; margin-top: .7rem; color: #3d587f; font-size: .67rem; }
-        .store-product-seller i { flex: 0 0 auto; color: #0f4d96; font-size: .9rem; }
+        .store-product-seller svg { width: .85rem; height: .85rem; flex: 0 0 .85rem; color: #0f4d96; }
         .store-product-seller span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .store-product-meta { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-top: auto; padding-top: .75rem; color: #526a8c; font-size: .65rem; }
         .store-product-rating { display: inline-flex; align-items: center; gap: .25rem; color: #0d2d5d; font-weight: 600; }
-        .store-product-rating i { color: #f59e0b; }
+        .store-product-rating svg { width: .75rem; height: .75rem; flex: 0 0 .75rem; color: #f59e0b; }
 
         .flash-sale-panel {
             border-block: 1px solid #e4eaf2;
@@ -326,7 +326,7 @@
             left: 0;
             width: 0;
             height: 2px;
-            background: #2563eb;
+            background: var(--ec-secondary-500);
             transition: width 0.3s;
         }
 
@@ -565,7 +565,7 @@
                                     <span class="text-[10px] text-slate-400 line-through">Rp {{ number_format($fs['originalPrice'], 0, ',', '.') }}</span>
                                 </div>
                                 @if (!empty($fs['storeName']))
-                                    <p class="store-product-seller"><i class="ri-store-2-line" aria-hidden="true"></i><span>{{ $fs['storeName'] }}</span></p>
+                                    <p class="store-product-seller"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 10.5V20h16v-9.5M3 4h18l-1.5 6a2.5 2.5 0 0 1-4.5 1.1 2.5 2.5 0 0 1-4.5 0A2.5 2.5 0 0 1 6 10L4.5 4M9 20v-5h6v5"/></svg><span>{{ $fs['storeName'] }}</span></p>
                                 @endif
                                 <div class="mt-auto pt-3">
                                     <div class="flash-sale-progress"><span style="width: {{ $soldPercent }}%"></span></div>
@@ -711,7 +711,7 @@
     <section class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
         <div class="flex items-center justify-between mb-5">
             <div class="flex items-center gap-3">
-                <div class="w-1 h-7 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></div>
+                <div class="ec-section-marker"></div>
                 <h2 class="text-xl sm:text-2xl font-bold text-slate-800">Produk Rekomendasi</h2>
             </div>
             <a href="{{ route('frontend.kategori') }}"
@@ -750,9 +750,9 @@
                         <a href="{{ url('/detail-produk/' . $rp['slug']) }}" class="store-product-name line-clamp-2 hover:text-blue-700">{{ $rp['name'] }}</a>
                         <p class="store-product-variant truncate">{{ $rpVariant ?: ($rp['category'] ?? 'Produk industri') }}</p>
                         <p class="store-product-price">Rp {{ number_format((int) ($rp['price'] ?? 0), 0, ',', '.') }}</p>
-                        <p class="store-product-seller"><i class="ri-store-2-line" aria-hidden="true"></i><span>{{ $rp['storeName'] ?: 'Mitra industri' }}</span></p>
+                        <p class="store-product-seller"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 10.5V20h16v-9.5M3 4h18l-1.5 6a2.5 2.5 0 0 1-4.5 1.1 2.5 2.5 0 0 1-4.5 0A2.5 2.5 0 0 1 6 10L4.5 4M9 20v-5h6v5"/></svg><span>{{ $rp['storeName'] ?: 'Mitra industri' }}</span></p>
                         <div class="store-product-meta">
-                            <span class="store-product-rating"><i class="ri-star-fill" aria-hidden="true"></i>{{ number_format((float) ($rp['rating'] ?? 0), 1) }} <span class="font-normal text-slate-400">({{ number_format((int) ($rp['reviews'] ?? 0)) }})</span></span>
+                            <span class="store-product-rating"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.7 2.83 5.73 6.32.92-4.58 4.46 1.08 6.3L12 17.14l-5.65 2.97 1.08-6.3-4.58-4.46 6.32-.92L12 2.7Z"/></svg>{{ number_format((float) ($rp['rating'] ?? 0), 1) }} <span class="font-normal text-slate-400">({{ number_format((int) ($rp['reviews'] ?? 0)) }})</span></span>
                             <span>Terjual {{ number_format((int) ($rp['sold'] ?? 0)) }}</span>
                         </div>
                     </div>
@@ -924,9 +924,9 @@
               <a href="${productUrl}" class="store-product-name line-clamp-2 hover:text-blue-700">${productName}</a>
               <p class="store-product-variant truncate">${escapeHtml(variantLabel)}</p>
               <p class="store-product-price">${priceLabel}</p>
-              <p class="store-product-seller"><i class="ri-store-2-line" aria-hidden="true"></i><span>${sellerName}</span></p>
+              <p class="store-product-seller"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 10.5V20h16v-9.5M3 4h18l-1.5 6a2.5 2.5 0 0 1-4.5 1.1 2.5 2.5 0 0 1-4.5 0A2.5 2.5 0 0 1 6 10L4.5 4M9 20v-5h6v5"/></svg><span>${sellerName}</span></p>
               <div class="store-product-meta">
-                <span class="store-product-rating"><i class="ri-star-fill" aria-hidden="true"></i>${Number(p.rating || 0).toFixed(1)} <span class="font-normal text-slate-400">(${Number(p.reviews || 0).toLocaleString('id-ID')})</span></span>
+                <span class="store-product-rating"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.7 2.83 5.73 6.32.92-4.58 4.46 1.08 6.3L12 17.14l-5.65 2.97 1.08-6.3-4.58-4.46 6.32-.92L12 2.7Z"/></svg>${Number(p.rating || 0).toFixed(1)} <span class="font-normal text-slate-400">(${Number(p.reviews || 0).toLocaleString('id-ID')})</span></span>
                 <span>Terjual ${Number(p.sold || 0).toLocaleString('id-ID')}</span>
               </div>
             </div>

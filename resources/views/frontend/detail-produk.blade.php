@@ -660,17 +660,23 @@
                 </div>
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                     @foreach ($recentlyViewedProductsJson as $rv)
-                        <a href="{{ $rv['url'] }}"
-                            class="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col">
-                            <div class="relative overflow-hidden aspect-[4/3]">
-                                <img src="{{ $rv['image'] }}" alt="{{ $rv['name'] }}"
-                                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                        <article class="store-product-card group">
+                            <div class="store-product-media">
+                                <a href="{{ $rv['url'] }}" class="block h-full" aria-label="Lihat {{ $rv['name'] }}">
+                                    <img src="{{ $rv['image'] }}" alt="{{ $rv['name'] }}" loading="lazy" />
+                                </a>
                             </div>
-                            <div class="p-3 flex-1 flex flex-col gap-1">
-                                <p class="text-sm font-semibold text-slate-800 group-hover:text-blue-600 line-clamp-2 leading-snug transition-colors">{{ $rv['name'] }}</p>
-                                <span class="font-bold text-slate-900 text-sm mt-auto">Rp {{ number_format($rv['price'], 0, ',', '.') }}</span>
+                            <div class="store-product-body">
+                                <a href="{{ $rv['url'] }}" class="store-product-name line-clamp-2 hover:text-blue-700">{{ $rv['name'] }}</a>
+                                <p class="store-product-variant truncate">{{ $rv['variant'] ?: 'Produk industri' }}</p>
+                                <p class="store-product-price">Rp {{ number_format($rv['price'], 0, ',', '.') }}</p>
+                                <p class="store-product-seller"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 10.5V20h16v-9.5M3 4h18l-1.5 6a2.5 2.5 0 0 1-4.5 1.1 2.5 2.5 0 0 1-4.5 0A2.5 2.5 0 0 1 6 10L4.5 4M9 20v-5h6v5"/></svg><span>{{ $rv['storeName'] ?: 'Mitra industri' }}</span></p>
+                                <div class="store-product-meta">
+                                    <span class="store-product-rating"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.7 2.83 5.73 6.32.92-4.58 4.46 1.08 6.3L12 17.14l-5.65 2.97 1.08-6.3-4.58-4.46 6.32-.92L12 2.7Z"/></svg>{{ number_format((float) $rv['rating'], 1) }} <span class="font-normal text-slate-400">({{ number_format((int) $rv['reviews']) }})</span></span>
+                                    <span>Terjual {{ number_format((int) $rv['sold']) }}</span>
+                                </div>
                             </div>
-                        </a>
+                        </article>
                     @endforeach
                 </div>
             </div>
@@ -690,42 +696,27 @@
             </div>
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 @forelse ($relatedProductsJson as $rp)
-                    <a href="{{ url('/detail-produk/' . $rp['slug']) }}"
-                        class="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col">
-                        <div class="relative overflow-hidden aspect-[4/3]">
-                            <img src="{{ $rp['image'] }}" alt="{{ $rp['name'] }}"
-                                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                    <article class="store-product-card group">
+                        <div class="store-product-media">
+                            <a href="{{ url('/detail-produk/' . $rp['slug']) }}" class="block h-full" aria-label="Lihat {{ $rp['name'] }}">
+                                <img src="{{ $rp['image'] }}" alt="{{ $rp['name'] }}" loading="lazy" />
+                            </a>
                             @if ($rp['isFlashSale'] && $rp['originalPrice'] > $rp['price'])
                                 @php $disc = round((1 - $rp['price'] / $rp['originalPrice']) * 100); @endphp
-                                <span class="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">-{{ $disc }}%</span>
+                                <span class="absolute left-2.5 top-2.5 rounded-md bg-rose-500 px-2 py-1 text-[10px] font-bold text-white shadow-sm">-{{ $disc }}%</span>
                             @endif
-                            <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
                         </div>
-                        <div class="p-3 flex-1 flex flex-col gap-1">
-                            <p class="text-sm font-semibold text-slate-800 group-hover:text-blue-600 line-clamp-2 leading-snug transition-colors">{{ $rp['name'] }}</p>
-                            <div class="flex items-center gap-1">
-                                @php
-                                    $rpRating = (float) $rp['rating'];
-                                    $rpFull = (int) floor($rpRating);
-                                @endphp
-                                <div class="flex">
-                                    @for ($s = 1; $s <= 5; $s++)
-                                        <span class="{{ $s <= $rpFull ? 'text-yellow-400' : 'text-slate-300' }} text-xs">★</span>
-                                    @endfor
-                                </div>
-                                <span class="text-xs font-medium text-slate-700">{{ number_format($rpRating, 1) }}</span>
-                                @if ($rp['reviews'] > 0)
-                                    <span class="text-xs text-slate-400">({{ number_format($rp['reviews']) }})</span>
-                                @endif
-                            </div>
-                            <div class="flex items-center gap-1.5 flex-wrap mt-auto pt-1">
-                                <span class="font-bold text-slate-900 text-sm">Rp {{ number_format($rp['price'], 0, ',', '.') }}</span>
-                                @if ($rp['originalPrice'] > $rp['price'])
-                                    <span class="text-slate-400 text-xs line-through">Rp {{ number_format($rp['originalPrice'], 0, ',', '.') }}</span>
-                                @endif
+                        <div class="store-product-body">
+                            <a href="{{ url('/detail-produk/' . $rp['slug']) }}" class="store-product-name line-clamp-2 hover:text-blue-700">{{ $rp['name'] }}</a>
+                            <p class="store-product-variant truncate">{{ $rp['variant'] ?: 'Produk industri' }}</p>
+                            <p class="store-product-price">Rp {{ number_format($rp['price'], 0, ',', '.') }}</p>
+                            <p class="store-product-seller"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 10.5V20h16v-9.5M3 4h18l-1.5 6a2.5 2.5 0 0 1-4.5 1.1 2.5 2.5 0 0 1-4.5 0A2.5 2.5 0 0 1 6 10L4.5 4M9 20v-5h6v5"/></svg><span>{{ $rp['storeName'] ?: 'Mitra industri' }}</span></p>
+                            <div class="store-product-meta">
+                                <span class="store-product-rating"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.7 2.83 5.73 6.32.92-4.58 4.46 1.08 6.3L12 17.14l-5.65 2.97 1.08-6.3-4.58-4.46 6.32-.92L12 2.7Z"/></svg>{{ number_format((float) $rp['rating'], 1) }} <span class="font-normal text-slate-400">({{ number_format((int) $rp['reviews']) }})</span></span>
+                                <span>Terjual {{ number_format((int) $rp['sold']) }}</span>
                             </div>
                         </div>
-                    </a>
+                    </article>
                 @empty
                     <div class="col-span-full text-center py-10 text-slate-400 text-sm">Belum ada produk rekomendasi.</div>
                 @endforelse

@@ -20,11 +20,11 @@
         }
 
         .badge-new {
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            background: linear-gradient(135deg, var(--ec-primary-600), var(--ec-primary-800));
         }
 
         .badge-promo {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
+            background: linear-gradient(135deg, var(--ec-secondary-500), var(--ec-secondary-700));
         }
 
         .sidebar-item {
@@ -32,9 +32,9 @@
         }
 
         .sidebar-item.active {
-            background: #eff6ff;
-            color: #1d4ed8;
-            border-right: 3px solid #2563eb;
+            background: var(--ec-primary-100);
+            color: var(--ec-primary-700);
+            border-right: 3px solid var(--ec-secondary-500);
         }
 
         .toast {
@@ -77,7 +77,7 @@
             left: 0;
             width: 0;
             height: 2px;
-            background: #2563eb;
+            background: var(--ec-secondary-500);
             transition: width 0.3s;
         }
 
@@ -193,10 +193,10 @@
     </div>
 
     <!-- HERO KATEGORI -->
-    <div class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6">
+    <div class="ec-page-hero py-8">
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
             <h1 class="text-2xl md:text-3xl font-bold mb-2" id="pageTitle">{{ $selectedLabel ?? 'Semua Kategori' }}</h1>
-            <p class="text-blue-100 text-sm">Temukan produk terbaik dari berbagai kategori pilihan</p>
+            <p class="ec-page-hero-copy text-sm">Temukan produk terbaik dari berbagai kategori pilihan</p>
             <!-- Search Mobile -->
             <form action="{{ route('frontend.search') }}" method="GET"
                 class="mt-4 md:hidden flex items-center bg-white/15 border border-white/30 rounded-xl overflow-hidden backdrop-blur-sm">
@@ -216,7 +216,7 @@
     <div id="allCategoriesSection" class="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-4">
         <div class="flex items-center justify-between mb-4">
             <div class="flex items-center gap-2">
-                <div class="w-1 h-6 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></div>
+                <div class="ec-section-marker"></div>
                 <h2 class="text-base font-bold text-slate-800">Semua Kategori</h2>
             </div>
             <span class="text-xs text-slate-400">{{ collect($categoryTree ?? [])->count() }} kategori tersedia</span>
@@ -514,11 +514,11 @@
                 <div class="flex gap-2 mb-1">${badge}</div>
                 <a href="{{ url('/detail-produk') }}/${p.slug}" class="font-semibold text-slate-800 hover:text-blue-600 transition-colors">${p.name}</a>
                 <div class="flex items-center gap-1 mt-1">
-                  <span class="text-yellow-400 text-xs">?</span>
+                  <svg class="h-3 w-3 flex-none text-amber-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.7 2.83 5.73 6.32.92-4.58 4.46 1.08 6.3L12 17.14l-5.65 2.97 1.08-6.3-4.58-4.46 6.32-.92L12 2.7Z"/></svg>
                   <span class="text-xs font-medium text-slate-700">${p.rating}</span>
                   <span class="text-xs text-slate-400">(${p.reviews}) &bull; ${p.sold.toLocaleString()} terjual</span>
                 </div>
-                ${p.storeName ? `<p class="text-xs text-slate-400 mt-0.5">${p.storeName}</p>` : ''}
+                <p class="store-product-seller mt-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 10.5V20h16v-9.5M3 4h18l-1.5 6a2.5 2.5 0 0 1-4.5 1.1 2.5 2.5 0 0 1-4.5 0A2.5 2.5 0 0 1 6 10L4.5 4M9 20v-5h6v5"/></svg><span>${escapeHtml(p.storeName || 'Mitra industri')}</span></p>
               </div>
               <div class="flex items-center justify-between">
                 <div>
@@ -537,31 +537,30 @@
             </div>
           </div>`;
                 }
-                return `<div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden card-hover group h-full flex flex-col">
-          <div class="relative overflow-hidden aspect-square">
-            <a href="{{ url('/detail-produk') }}/${p.slug}">
-              <img src="${p.image}" alt="${p.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                const productUrl = `{{ url('/detail-produk') }}/${encodeURIComponent(p.slug)}`;
+                const variantValues = Array.isArray(p.variants) ? p.variants.map(v => v.value).filter(Boolean) : [];
+                const variantLabel = variantValues.slice(0, 2).join(' · ') || p.cat || 'Produk industri';
+                return `<article class="store-product-card group" data-id="${p.id}">
+          <div class="store-product-media">
+            <a href="${productUrl}" class="block h-full" aria-label="Lihat ${escapeHtml(p.name)}">
+              <img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" loading="lazy" />
             </a>
-            <div class="absolute top-1.5 left-1.5 flex gap-1">${badge}</div>
-            <button onclick="toggleWishlist(${p.id})" data-wishlist-btn data-product-id="${p.id}" class="absolute top-1.5 right-1.5 w-7 h-7 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-pink-50 text-pink-500">
-              <svg class="w-3.5 h-3.5" fill="${p.isWishlisted ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+            <div class="absolute left-2.5 top-2.5 flex gap-1">${badge}</div>
+            <button onclick="toggleWishlist(${p.id})" data-wishlist-btn data-product-id="${p.id}" class="store-wishlist-button" aria-label="Tambahkan ${escapeHtml(p.name)} ke wishlist">
+              <svg class="h-4 w-4" fill="${p.isWishlisted ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
             </button>
           </div>
-          <div class="p-2 flex-1 flex flex-col">
-            <a href="{{ url('/detail-produk') }}/${p.slug}" class="block text-[11px] sm:text-xs font-semibold text-slate-800 hover:text-blue-600 transition-colors line-clamp-2 leading-snug mb-1">${p.name}</a>
-            <div class="flex items-center gap-0.5 mb-1">
-              <span class="text-yellow-400 text-[10px]">&#9733;</span>
-              <span class="text-[10px] font-medium text-slate-600">${p.rating}</span>
-              <span class="text-[10px] text-slate-400 ml-0.5">· ${p.sold.toLocaleString()} terjual</span>
-            </div>
-            ${p.storeName ? `<p class="text-[10px] text-slate-400 mb-1 truncate">${p.storeName}</p>` : ''}
-            <div class="mt-auto">
-              <p class="text-xs sm:text-sm font-bold text-slate-900">${priceLabel}</p>
-              ${p.origPrice > p.price ? `<p class="text-[10px] text-slate-400 line-through">Rp ${p.origPrice.toLocaleString('id-ID')}</p>` : ''}
-              <a href="{{ url('/detail-produk') }}/${p.slug}" class="mt-2 inline-flex w-full items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-[11px] sm:text-xs font-semibold text-blue-600 transition-colors hover:border-blue-500 hover:bg-blue-500 hover:text-white">Detail</a>
+          <div class="store-product-body">
+            <a href="${productUrl}" class="store-product-name line-clamp-2 hover:text-blue-700">${escapeHtml(p.name)}</a>
+            <p class="store-product-variant truncate">${escapeHtml(variantLabel)}</p>
+            <p class="store-product-price">${priceLabel}</p>
+            <p class="store-product-seller"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 10.5V20h16v-9.5M3 4h18l-1.5 6a2.5 2.5 0 0 1-4.5 1.1 2.5 2.5 0 0 1-4.5 0A2.5 2.5 0 0 1 6 10L4.5 4M9 20v-5h6v5"/></svg><span>${escapeHtml(p.storeName || 'Mitra industri')}</span></p>
+            <div class="store-product-meta">
+              <span class="store-product-rating"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.7 2.83 5.73 6.32.92-4.58 4.46 1.08 6.3L12 17.14l-5.65 2.97 1.08-6.3-4.58-4.46 6.32-.92L12 2.7Z"/></svg>${Number(p.rating || 0).toFixed(1)} <span class="font-normal text-slate-400">(${Number(p.reviews || 0).toLocaleString('id-ID')})</span></span>
+              <span>Terjual ${Number(p.sold || 0).toLocaleString('id-ID')}</span>
             </div>
           </div>
-        </div>`;
+        </article>`;
             }).join('');
             syncWishlistButtons();
         }
