@@ -202,6 +202,13 @@ return [
                 'permission' => 'member_tiers.index',
             ],
             [
+                'name' => 'Master Kendaraan',
+                'route' => 'vehicles.index',
+                'active' => 'vehicles.*',
+                'icon' => 'truck',
+                'permission' => 'vehicles.index',
+            ],
+            [
                 'name' => 'Products',
                 'route' => 'products.index',
                 'active' => 'products.*',

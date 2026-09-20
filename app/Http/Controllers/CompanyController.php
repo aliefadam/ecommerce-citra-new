@@ -38,7 +38,21 @@ class CompanyController extends Controller
             ? $imageOptimizer->storeWebp($request->file('logo'), 'companies', 512, 512, 82)
             : null;
 
-        Company::create($validated);
+        $company = Company::create($validated);
+        $company->vehicles()->createMany([
+            [
+                'name' => 'Motor Kurir', 'type' => 'motor', 'capacity_kg' => 20,
+                'rate_per_kg' => 5000, 'distance_block_km' => 5, 'rate_per_distance_block' => 5000,
+                'is_active' => true, 'sort_order' => 10,
+                'notes' => 'Cocok untuk paket kecil dan pengiriman dalam kota.',
+            ],
+            [
+                'name' => 'Van Pengiriman', 'type' => 'van', 'capacity_kg' => 500,
+                'rate_per_kg' => 2500, 'distance_block_km' => 5, 'rate_per_distance_block' => 5000,
+                'is_active' => true, 'sort_order' => 20,
+                'notes' => 'Untuk barang besar atau pengiriman dalam jumlah banyak.',
+            ],
+        ]);
 
         return redirect()->route('companies.index')->with('success', 'Perusahaan berhasil ditambahkan.');
     }

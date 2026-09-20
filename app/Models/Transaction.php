@@ -44,6 +44,14 @@ class Transaction extends Model
         'subtotal_amount',
         'shipping_cost',
         'shipping_type',
+        'shipping_vehicle_id',
+        'shipping_weight_grams',
+        'shipping_distance_km',
+        'shipping_rate_per_kg',
+        'shipping_distance_block_km',
+        'shipping_distance_rate',
+        'shipping_weight_cost',
+        'shipping_distance_cost',
         'coupon_code',
         'discount_amount',
         'tax_name',
@@ -91,6 +99,13 @@ class Transaction extends Model
         'redeem_points_finalized_at' => 'datetime',
         'redeem_points_released_at' => 'datetime',
         'tax_rate' => 'decimal:2',
+        'shipping_weight_grams' => 'integer',
+        'shipping_distance_km' => 'decimal:2',
+        'shipping_rate_per_kg' => 'integer',
+        'shipping_distance_block_km' => 'decimal:2',
+        'shipping_distance_rate' => 'integer',
+        'shipping_weight_cost' => 'integer',
+        'shipping_distance_cost' => 'integer',
     ];
 
     protected static function booted(): void
@@ -124,6 +139,11 @@ class Transaction extends Model
     public function createdByAdmin(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by_admin_id');
+    }
+
+    public function shippingVehicle(): BelongsTo
+    {
+        return $this->belongsTo(Vehicle::class, 'shipping_vehicle_id');
     }
 
     public function details(): HasMany

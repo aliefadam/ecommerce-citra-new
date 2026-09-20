@@ -158,6 +158,15 @@ return [
                         'delete' => ['key' => 'member_tiers.delete', 'label' => 'Delete membership tiers'],
                     ],
                 ],
+                'vehicles' => [
+                    'label' => 'Master Kendaraan',
+                    'permissions' => [
+                        'index' => ['key' => 'vehicles.index', 'label' => 'Lihat daftar kendaraan'],
+                        'create' => ['key' => 'vehicles.create', 'label' => 'Tambah kendaraan'],
+                        'edit' => ['key' => 'vehicles.edit', 'label' => 'Ubah kendaraan dan tarif'],
+                        'delete' => ['key' => 'vehicles.delete', 'label' => 'Hapus kendaraan'],
+                    ],
+                ],
             ],
         ],
 

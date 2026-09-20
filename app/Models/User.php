@@ -206,6 +206,10 @@ class User extends Authenticatable
                 'tax_invoices.send',
                 'return_requests.index',
                 'return_requests.edit',
+                'vehicles.index',
+                'vehicles.create',
+                'vehicles.edit',
+                'vehicles.delete',
             ],
             'manage_product_reviews' => [
                 'product_reviews.index',

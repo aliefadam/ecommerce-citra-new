@@ -55,6 +55,7 @@ use App\Http\Controllers\TransactionReviewController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserNotificationController;
 use App\Http\Controllers\VariantController;
+use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\WishlistController;
 use Illuminate\Support\Facades\Route;
 
@@ -113,6 +114,11 @@ Route::middleware(['auth', 'admin', 'company.scope'])->group(function () {
             ->middlewareFor(['create', 'store'], 'admin.permission:member_tiers.create')
             ->middlewareFor(['edit', 'update'], 'admin.permission:member_tiers.edit')
             ->middlewareFor(['destroy'], 'admin.permission:member_tiers.delete');
+        Route::resource('vehicles', VehicleController::class)->except(['show'])
+            ->middlewareFor(['index'], 'admin.permission:vehicles.index')
+            ->middlewareFor(['create', 'store'], 'admin.permission:vehicles.create')
+            ->middlewareFor(['edit', 'update'], 'admin.permission:vehicles.edit')
+            ->middlewareFor(['destroy'], 'admin.permission:vehicles.delete');
         Route::resource('admin-users', AdminUserController::class)->parameters(['admin-users' => 'adminUser'])->except(['show'])
             ->middlewareFor(['index'], 'admin.permission:admin_users.index')
             ->middlewareFor(['create', 'store'], 'admin.permission:admin_users.create')

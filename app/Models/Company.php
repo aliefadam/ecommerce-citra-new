@@ -46,6 +46,11 @@ class Company extends Model
         return $this->hasMany(StoreLocation::class);
     }
 
+    public function vehicles(): HasMany
+    {
+        return $this->hasMany(Vehicle::class);
+    }
+
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class);

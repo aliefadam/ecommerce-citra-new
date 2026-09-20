@@ -10,6 +10,7 @@ use App\Models\TransactionDetail;
 use App\Models\TransactionStatusHistory;
 use App\Models\TransactionTaxInvoice;
 use App\Models\User;
+use App\Models\Vehicle;
 use App\Services\DocumentNumberGenerator;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -386,6 +387,16 @@ class AdminManualTransactionController extends Controller
 
         $validated = $request->validate([
             'shipping_type' => ['required', Rule::in(['belum_ditentukan', 'dikirim', 'ambil_sendiri', 'kurir_toko', 'ekspedisi_manual', 'gratis_ongkir'])],
+            'shipping_vehicle_id' => [
+                'nullable',
+                'required_if:shipping_type,kurir_toko',
+                'integer',
+                Rule::exists('vehicles', 'id')->where(fn ($query) => $query
+                    ->where('company_id', $this->activeCompanyId())
+                    ->where('is_active', true)),
+            ],
+            'shipping_weight_kg' => ['nullable', 'required_if:shipping_type,kurir_toko', 'numeric', 'min:0.001', 'max:1000000'],
+            'shipping_distance_km' => ['nullable', 'required_if:shipping_type,kurir_toko', 'numeric', 'min:0.01', 'max:1000000'],
             'shipping_recipient_name' => ['nullable', 'string', 'max:150'],
             'shipping_phone' => ['nullable', 'string', 'max:50'],
             'shipping_address_line' => ['nullable', 'string', 'max:1000'],
@@ -421,11 +432,47 @@ class AdminManualTransactionController extends Controller
 
         $courierName = trim((string) ($validated['shipping_courier_name'] ?? ''));
         $service = trim((string) ($validated['shipping_service'] ?? ''));
-        $shippingLabel = $courierName !== ''
-            ? trim($courierName.($service !== '' ? ' '.$service : ''))
-            : $this->shippingTypeLabel($shippingType);
+        $vehicle = null;
+        $shippingWeightGrams = null;
+        $shippingRatePerKg = null;
+        $shippingDistanceKm = null;
+        $shippingDistanceBlockKm = null;
+        $shippingDistanceRate = null;
+        $shippingWeightCost = null;
+        $shippingDistanceCost = null;
 
-        DB::transaction(function () use ($request, $transaction, $validated, $shippingType, $shippingCost, $courierName, $service, $shippingLabel) {
+        if ($shippingType === 'kurir_toko') {
+            $vehicle = Vehicle::query()
+                ->where('company_id', $this->activeCompanyId())
+                ->where('is_active', true)
+                ->findOrFail((int) $validated['shipping_vehicle_id']);
+            $shippingWeightGrams = max(1, (int) round((float) $validated['shipping_weight_kg'] * 1000));
+            $shippingDistanceKm = round((float) $validated['shipping_distance_km'], 2);
+
+            if ($vehicle->capacity_kg && $shippingWeightGrams > ((int) $vehicle->capacity_kg * 1000)) {
+                throw ValidationException::withMessages([
+                    'shipping_weight_kg' => 'Berat kiriman melebihi kapasitas '.$vehicle->name.' ('.number_format($vehicle->capacity_kg, 0, ',', '.').' kg).',
+                ]);
+            }
+
+            $shippingRatePerKg = (int) $vehicle->rate_per_kg;
+            $shippingDistanceBlockKm = (float) $vehicle->distance_block_km;
+            $shippingDistanceRate = (int) $vehicle->rate_per_distance_block;
+            $breakdown = $vehicle->calculateShippingBreakdown($shippingWeightGrams, $shippingDistanceKm);
+            $shippingWeightCost = $breakdown['weight_cost'];
+            $shippingDistanceCost = $breakdown['distance_cost'];
+            $shippingCost = $breakdown['total'];
+            $courierName = $vehicle->name;
+            $service = $vehicle->typeLabel();
+        }
+
+        $shippingLabel = $vehicle
+            ? $vehicle->name.' · '.$vehicle->typeLabel()
+            : ($courierName !== ''
+                ? trim($courierName.($service !== '' ? ' '.$service : ''))
+                : $this->shippingTypeLabel($shippingType));
+
+        DB::transaction(function () use ($request, $transaction, $validated, $shippingType, $shippingCost, $courierName, $service, $shippingLabel, $vehicle, $shippingWeightGrams, $shippingRatePerKg, $shippingDistanceKm, $shippingDistanceBlockKm, $shippingDistanceRate, $shippingWeightCost, $shippingDistanceCost) {
             $transaction = Transaction::query()
                 ->where('company_id', $this->activeCompanyId())
                 ->lockForUpdate()
@@ -435,6 +482,14 @@ class AdminManualTransactionController extends Controller
             $baseTotal = max(0, (int) $transaction->subtotal_amount - (int) $transaction->discount_amount) + (int) ($transaction->tax_amount ?? 0);
 
             $transaction->shipping_type = $shippingType;
+            $transaction->shipping_vehicle_id = $vehicle?->id;
+            $transaction->shipping_weight_grams = $shippingWeightGrams;
+            $transaction->shipping_rate_per_kg = $shippingRatePerKg;
+            $transaction->shipping_distance_km = $shippingDistanceKm;
+            $transaction->shipping_distance_block_km = $shippingDistanceBlockKm;
+            $transaction->shipping_distance_rate = $shippingDistanceRate;
+            $transaction->shipping_weight_cost = $shippingWeightCost;
+            $transaction->shipping_distance_cost = $shippingDistanceCost;
             $transaction->shipping_recipient_name = $validated['shipping_recipient_name'] ?? null;
             $transaction->shipping_phone = $validated['shipping_phone'] ?? null;
             $transaction->shipping_address_line = $validated['shipping_address_line'] ?? null;

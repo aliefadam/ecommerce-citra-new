@@ -9,6 +9,7 @@ use App\Models\StoreLocation;
 use App\Models\Transaction;
 use App\Models\TransactionStatusHistory;
 use App\Models\UserNotification;
+use App\Models\Vehicle;
 use App\Services\LoyaltyPointService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -295,9 +296,20 @@ class TransactionController extends Controller
     {
         $this->guardCompanyOwnership($transaction->company_id);
 
-        $transaction->load(['user', 'createdByAdmin', 'details', 'statusHistories.user', 'returnRequests.items']);
+        $transaction->load(['company', 'user', 'createdByAdmin', 'details', 'statusHistories.user', 'returnRequests.items', 'shippingVehicle']);
+        $vehicles = Vehicle::query()
+            ->where('company_id', $this->activeCompanyId())
+            ->where(function ($query) use ($transaction) {
+                $query->where('is_active', true);
+                if ($transaction->shipping_vehicle_id) {
+                    $query->orWhereKey($transaction->shipping_vehicle_id);
+                }
+            })
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
 
-        return view('backend.transactions.show', compact('transaction'));
+        return view('backend.transactions.show', compact('transaction', 'vehicles'));
     }
 
     public function shippingLabel(Transaction $transaction)

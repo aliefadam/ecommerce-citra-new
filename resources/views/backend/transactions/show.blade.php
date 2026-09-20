@@ -558,13 +558,70 @@
                             @csrf @method('PATCH')
                             <div>
                                 <label class="mb-1 block text-xs font-semibold text-slate-500">Jenis Pengiriman</label>
-                                <select name="shipping_type" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200">
+                                <select id="manualShippingType" name="shipping_type" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200">
                                     @foreach (['belum_ditentukan' => 'Belum ditentukan','dikirim' => 'Dikirim','ambil_sendiri' => 'Ambil sendiri','kurir_toko' => 'Kurir toko','ekspedisi_manual' => 'Ekspedisi manual','gratis_ongkir' => 'Gratis ongkir'] as $v => $l)
                                         <option value="{{ $v }}" @selected(($transaction->shipping_type ?: 'belum_ditentukan') === $v)>{{ $l }}</option>
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="grid grid-cols-2 gap-3">
+                            <div id="storeCourierPricing" class="hidden rounded-2xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-500/20 dark:bg-amber-500/10">
+                                <div class="mb-3 flex items-center gap-2">
+                                    <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-400 text-slate-900"><i data-lucide="truck" class="h-4 w-4"></i></span>
+                                    <div>
+                                        <p class="text-xs font-bold text-slate-800 dark:text-white">Tarif kurir toko</p>
+                                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Dihitung dari kendaraan dan berat aktual.</p>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-300">Kendaraan</label>
+                                        <select id="shippingVehicle" name="shipping_vehicle_id" class="w-full rounded-xl border border-amber-200 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-400 dark:border-amber-500/30 dark:bg-slate-800 dark:text-slate-200">
+                                            <option value="">Pilih kendaraan</option>
+                                            @foreach ($vehicles as $vehicle)
+                                                <option value="{{ $vehicle->id }}"
+                                                    data-rate="{{ $vehicle->rate_per_kg }}"
+                                                    data-capacity="{{ $vehicle->capacity_kg }}"
+                                                    data-distance-block="{{ $vehicle->distance_block_km }}"
+                                                    data-distance-rate="{{ $vehicle->rate_per_distance_block }}"
+                                                    @selected((string) old('shipping_vehicle_id', $transaction->shipping_vehicle_id) === (string) $vehicle->id)>
+                                                    {{ $vehicle->name }} · Rp {{ number_format($vehicle->rate_per_kg, 0, ',', '.') }}/kg
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-300">Berat Kiriman (kg)</label>
+                                        <input id="shippingWeightKg" name="shipping_weight_kg" type="number" min="0.001" step="0.001"
+                                            value="{{ old('shipping_weight_kg', $transaction->shipping_weight_grams ? rtrim(rtrim(number_format($transaction->shipping_weight_grams / 1000, 3, '.', ''), '0'), '.') : '') }}"
+                                            placeholder="Contoh: 1.5"
+                                            class="w-full rounded-xl border border-amber-200 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-400 dark:border-amber-500/30 dark:bg-slate-800 dark:text-slate-200">
+                                    </div>
+                                </div>
+                                <div class="mt-3 grid grid-cols-[minmax(0,1fr)_auto] gap-2">
+                                    <div>
+                                        <label class="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-300">Jarak Toko ke Pelanggan (km)</label>
+                                        <input id="shippingDistanceKm" name="shipping_distance_km" type="number" min="0.01" step="0.01"
+                                            value="{{ old('shipping_distance_km', $transaction->shipping_distance_km) }}" placeholder="Contoh: 8.5"
+                                            class="w-full rounded-xl border border-amber-200 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-400 dark:border-amber-500/30 dark:bg-slate-800 dark:text-slate-200">
+                                    </div>
+                                    <button id="checkShippingRoute" type="button" class="mt-5 inline-flex items-center justify-center gap-2 rounded-xl border border-amber-300 bg-white px-3 py-2 text-xs font-bold text-amber-700 hover:bg-amber-100 dark:border-amber-500/30 dark:bg-slate-800 dark:text-amber-300 dark:hover:bg-slate-700">
+                                        <i data-lucide="map" class="h-4 w-4"></i> Cek Rute
+                                    </button>
+                                </div>
+                                <p class="mt-1.5 text-[11px] text-slate-500">Google Maps akan dibuka dengan rute dari alamat toko ke alamat pelanggan. Masukkan angka jarak rute yang ditampilkan.</p>
+                                <div class="mt-3 flex items-center justify-between rounded-xl bg-white/80 px-3 py-2.5 dark:bg-slate-900/40">
+                                    <div>
+                                        <p id="shippingFormula" class="text-[11px] font-semibold text-slate-500">Pilih kendaraan dan isi berat</p>
+                                        <p id="shippingDistanceFormula" class="mt-0.5 text-[11px] font-semibold text-slate-500"></p>
+                                        <p id="shippingCapacityWarning" class="hidden text-[11px] font-bold text-red-600"></p>
+                                    </div>
+                                    <p id="shippingEstimate" class="text-sm font-black text-amber-700 dark:text-amber-300">Rp 0</p>
+                                </div>
+                                @if ($vehicles->isEmpty())
+                                    <p class="mt-3 text-xs font-semibold text-red-600">Belum ada kendaraan aktif. Tambahkan melalui Master Kendaraan.</p>
+                                @endif
+                            </div>
+                            <div id="manualCourierFields" class="grid grid-cols-2 gap-3">
                                 <div>
                                     <label class="mb-1 block text-xs font-semibold text-slate-500">Penerima</label>
                                     <input name="shipping_recipient_name" type="text" value="{{ old('shipping_recipient_name', $transaction->shipping_recipient_name) }}"
@@ -578,30 +635,30 @@
                             </div>
                             <div>
                                 <label class="mb-1 block text-xs font-semibold text-slate-500">Alamat Lengkap</label>
-                                <textarea name="shipping_address_line" rows="2"
+                                <textarea id="shippingAddressLine" name="shipping_address_line" rows="2"
                                           class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">{{ old('shipping_address_line', $transaction->shipping_address_line) }}</textarea>
                             </div>
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
                                     <label class="mb-1 block text-xs font-semibold text-slate-500">Provinsi</label>
-                                    <input name="shipping_province" type="text" value="{{ old('shipping_province', $transaction->shipping_province) }}"
+                                    <input id="shippingProvince" name="shipping_province" type="text" value="{{ old('shipping_province', $transaction->shipping_province) }}"
                                            class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 </div>
                                 <div>
                                     <label class="mb-1 block text-xs font-semibold text-slate-500">Kota/Kabupaten</label>
-                                    <input name="shipping_city" type="text" value="{{ old('shipping_city', $transaction->shipping_city) }}"
+                                    <input id="shippingCity" name="shipping_city" type="text" value="{{ old('shipping_city', $transaction->shipping_city) }}"
                                            class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
                                     <label class="mb-1 block text-xs font-semibold text-slate-500">Kecamatan</label>
-                                    <input name="shipping_district" type="text" value="{{ old('shipping_district', $transaction->shipping_district) }}"
+                                    <input id="shippingDistrict" name="shipping_district" type="text" value="{{ old('shipping_district', $transaction->shipping_district) }}"
                                            class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 </div>
                                 <div>
                                     <label class="mb-1 block text-xs font-semibold text-slate-500">Kode Pos</label>
-                                    <input name="shipping_postal_code" type="text" value="{{ old('shipping_postal_code', $transaction->shipping_postal_code) }}"
+                                    <input id="shippingPostalCode" name="shipping_postal_code" type="text" value="{{ old('shipping_postal_code', $transaction->shipping_postal_code) }}"
                                            class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 </div>
                             </div>
@@ -620,7 +677,7 @@
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
                                     <label class="mb-1 block text-xs font-semibold text-slate-500">Ongkir</label>
-                                    <input name="shipping_cost" type="number" min="0" step="1" value="{{ old('shipping_cost', $transaction->shipping_cost) }}"
+                                    <input id="manualShippingCost" name="shipping_cost" type="number" min="0" step="1" value="{{ old('shipping_cost', $transaction->shipping_cost) }}"
                                            class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 </div>
                                 <div>
@@ -664,6 +721,94 @@
             }
         });
     }
+
+    const manualShippingType = document.getElementById('manualShippingType');
+    const storeCourierPricing = document.getElementById('storeCourierPricing');
+    const manualCourierFields = document.getElementById('manualCourierFields');
+    const shippingVehicle = document.getElementById('shippingVehicle');
+    const shippingWeightKg = document.getElementById('shippingWeightKg');
+    const shippingDistanceKm = document.getElementById('shippingDistanceKm');
+    const manualShippingCost = document.getElementById('manualShippingCost');
+    const shippingFormula = document.getElementById('shippingFormula');
+    const shippingDistanceFormula = document.getElementById('shippingDistanceFormula');
+    const shippingEstimate = document.getElementById('shippingEstimate');
+    const shippingCapacityWarning = document.getElementById('shippingCapacityWarning');
+    const checkShippingRoute = document.getElementById('checkShippingRoute');
+    const storeAddress = @json((string) ($transaction->company?->address ?? ''));
+
+    const rupiah = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 });
+
+    function updateStoreCourierPricing() {
+        if (!manualShippingType) return;
+        const isStoreCourier = manualShippingType.value === 'kurir_toko';
+        storeCourierPricing?.classList.toggle('hidden', !isStoreCourier);
+        manualCourierFields?.classList.toggle('hidden', isStoreCourier);
+
+        if (!manualShippingCost) return;
+        manualShippingCost.readOnly = isStoreCourier;
+        manualShippingCost.classList.toggle('bg-slate-100', isStoreCourier);
+
+        if (!isStoreCourier) return;
+
+        const option = shippingVehicle?.selectedOptions?.[0];
+        const rate = Number(option?.dataset?.rate || 0);
+        const capacity = Number(option?.dataset?.capacity || 0);
+        const distanceBlock = Number(option?.dataset?.distanceBlock || 0);
+        const distanceRate = Number(option?.dataset?.distanceRate || 0);
+        const weight = Number(shippingWeightKg?.value || 0);
+        const distance = Number(shippingDistanceKm?.value || 0);
+        const chargedWeight = weight > 0 ? Math.ceil(weight) : 0;
+        const distanceBlocks = distance > 0 && distanceBlock > 0 ? Math.ceil(distance / distanceBlock) : 0;
+        const weightCost = chargedWeight * rate;
+        const distanceCost = distanceBlocks * distanceRate;
+        const estimate = weightCost + distanceCost;
+
+        manualShippingCost.value = String(estimate);
+        if (shippingEstimate) shippingEstimate.textContent = rupiah.format(estimate);
+        if (shippingFormula) {
+            shippingFormula.textContent = rate && weight
+                ? `Berat: ${chargedWeight} kg × ${rupiah.format(rate)} = ${rupiah.format(weightCost)}`
+                : 'Pilih kendaraan dan isi berat';
+        }
+        if (shippingDistanceFormula) {
+            shippingDistanceFormula.textContent = distanceBlock && distance
+                ? `Jarak: ${distanceBlocks} blok × ${rupiah.format(distanceRate)} (${distanceBlock} km/blok) = ${rupiah.format(distanceCost)}`
+                : 'Isi jarak rute toko ke pelanggan';
+        }
+
+        const overCapacity = capacity > 0 && weight > capacity;
+        if (shippingCapacityWarning) {
+            shippingCapacityWarning.classList.toggle('hidden', !overCapacity);
+            shippingCapacityWarning.textContent = overCapacity ? `Melebihi kapasitas ${capacity} kg` : '';
+        }
+    }
+
+    manualShippingType?.addEventListener('change', updateStoreCourierPricing);
+    shippingVehicle?.addEventListener('change', updateStoreCourierPricing);
+    shippingWeightKg?.addEventListener('input', updateStoreCourierPricing);
+    shippingDistanceKm?.addEventListener('input', updateStoreCourierPricing);
+    checkShippingRoute?.addEventListener('click', function () {
+        const destination = [
+            document.getElementById('shippingAddressLine')?.value,
+            document.getElementById('shippingDistrict')?.value,
+            document.getElementById('shippingCity')?.value,
+            document.getElementById('shippingProvince')?.value,
+            document.getElementById('shippingPostalCode')?.value,
+        ].filter(Boolean).join(', ');
+
+        if (!storeAddress) {
+            alert('Alamat perusahaan belum diisi. Lengkapi alamat perusahaan terlebih dahulu.');
+            return;
+        }
+        if (!destination) {
+            alert('Isi alamat pelanggan terlebih dahulu untuk mengecek rute.');
+            return;
+        }
+
+        const routeUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(storeAddress)}&destination=${encodeURIComponent(destination)}&travelmode=driving`;
+        window.open(routeUrl, '_blank', 'noopener,noreferrer');
+    });
+    updateStoreCourierPricing();
 </script>
 @endsection
 @endsection
