@@ -12,6 +12,7 @@ use App\Models\TransactionDetail;
 use App\Models\TransactionStatusHistory;
 use App\Models\UserNotification;
 use App\Services\CheckoutPricingService;
+use App\Services\CommerceReservationService;
 use App\Services\CheckoutTaxCalculator;
 use App\Services\DocumentNumberGenerator;
 use App\Services\LoyaltyPointService;
@@ -564,8 +565,17 @@ class MidtransController extends Controller
         try {
             $tx = Transaction::query()
                 ->where('order_id', $orderId)
-                ->where('user_id', $request->user()?->id)
                 ->first();
+
+            if ($tx?->user_id !== null) {
+                abort_unless($request->user() && (int) $tx->user_id === (int) $request->user()->id, 403);
+            } elseif ($tx) {
+                $accessibleOrders = array_merge(
+                    (array) session('guest_owned_orders', []),
+                    (array) session('verified_orders', []),
+                );
+                abort_unless(in_array((string) $tx->order_id, $accessibleOrders, true), 403);
+            }
 
             if ($tx && (string) $tx->payment_type === 'manual_transfer') {
                 if ($this->shouldBypassExpiryForStatus((string) $tx->status)) {
@@ -579,6 +589,7 @@ class MidtransController extends Controller
                 $tx->cancel_reason = $validated['cancel_reason'] ?? null;
                 $tx->cancelled_at = now();
                 $tx->save();
+                app(CommerceReservationService::class)->release($tx);
 
                 TransactionStatusHistory::create([
                     'transaction_id' => $tx->id,
@@ -608,6 +619,7 @@ class MidtransController extends Controller
                 $tx->cancel_reason = $validated['cancel_reason'] ?? null;
                 $tx->cancelled_at = now();
                 $tx->save();
+                app(CommerceReservationService::class)->release($tx);
 
                 TransactionStatusHistory::create([
                     'transaction_id' => $tx->id,
@@ -1011,12 +1023,18 @@ class MidtransController extends Controller
             }
 
             if ($isNew) {
+                $coupon = null;
+                if ($discountAmount > 0 && (string) ($payment['coupon_code'] ?? '') !== '') {
+                    $coupon = app(CommerceReservationService::class)->lockUsableCoupon(
+                        (int) $transaction->company_id,
+                        (string) $payment['coupon_code'],
+                        $subtotal,
+                        ! $request->user(),
+                    );
+                }
+                app(CommerceReservationService::class)->reserve($transaction, $items->all(), $coupon, $discountAmount);
                 app(LoyaltyPointService::class)->reserveRedeemPoints($transaction);
                 app(TaxInvoiceRequestService::class)->requestForTransaction($transaction, $request->user(), $payment['tax_invoice'] ?? []);
-
-                if ($discountAmount > 0 && (string) ($payment['coupon_code'] ?? '') !== '') {
-                    Coupon::query()->where('code', (string) $payment['coupon_code'])->increment('used_count');
-                }
                 $userId = $request->user()?->id;
                 $userEmail = $request->user()?->email ?: ($guest['email'] ?? null);
                 if ($userEmail) {
@@ -1105,17 +1123,20 @@ class MidtransController extends Controller
                     ? 'Transaksi kadaluarsa (tidak dibayar tepat waktu)'
                     : 'Dibatalkan oleh sistem';
                 app(LoyaltyPointService::class)->releaseRedeemReservation($tx);
+                app(CommerceReservationService::class)->release($tx);
             } else {
                 $tx->status = $incomingStatus;
             }
 
             if ($isPaid) {
+                app(CommerceReservationService::class)->assertPayable($tx);
                 $tx->paid_at ??= now();
                 $tx->payment_paid_at ??= $tx->paid_at;
                 $tx->payment_status = 'paid';
                 $tx->payment_amount = (int) $tx->grand_total;
                 $tx->cancelled_at = null;
                 $tx->cancel_reason = null;
+                app(CommerceReservationService::class)->redeemPromotions($tx);
             } elseif ($incomingStatus === 'pending' && blank($tx->payment_status)) {
                 $tx->payment_status = 'unpaid';
             }

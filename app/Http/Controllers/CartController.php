@@ -422,8 +422,19 @@ class CartController extends Controller
                 TransactionDetail::query()->insert($detailRows);
             }
 
+            $reservations = app(\App\Services\CommerceReservationService::class);
+            $coupon = null;
             if ($discountAmount > 0 && (string) ($payment['coupon_code'] ?? '') !== '') {
-                Coupon::query()->where('code', (string) $payment['coupon_code'])->increment('used_count');
+                $coupon = $reservations->lockUsableCoupon(
+                    $companyId,
+                    (string) $payment['coupon_code'],
+                    $subtotal,
+                    false,
+                );
+            }
+            $reservations->reserve($transaction, $items->all(), $coupon, $discountAmount);
+            if (in_array(strtolower((string) $transaction->status), ['settlement', 'capture', 'paid'], true)) {
+                $reservations->redeemPromotions($transaction);
             }
         });
     }

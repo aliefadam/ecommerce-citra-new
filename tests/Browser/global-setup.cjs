@@ -3,6 +3,10 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 
 module.exports = async () => {
+    if (process.env.E2E_DATABASE_PREPARED === '1') {
+        return;
+    }
+
     const root = path.resolve(__dirname, '..', '..');
     const testingDirectory = path.resolve(root, 'storage', 'framework', 'testing');
     const database = path.resolve(testingDirectory, 'browser-e2e.sqlite');

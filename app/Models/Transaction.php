@@ -166,6 +166,21 @@ class Transaction extends Model
         return $this->hasMany(TransactionStatusHistory::class);
     }
 
+    public function inventoryReservations(): HasMany
+    {
+        return $this->hasMany(InventoryReservation::class);
+    }
+
+    public function flashSaleReservations(): HasMany
+    {
+        return $this->hasMany(FlashSaleReservation::class);
+    }
+
+    public function couponRedemptions(): HasMany
+    {
+        return $this->hasMany(CouponRedemption::class);
+    }
+
     public function taxInvoice(): HasOne
     {
         return $this->hasOne(TransactionTaxInvoice::class);

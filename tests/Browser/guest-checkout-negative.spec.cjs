@@ -86,7 +86,8 @@ function setVariantStock(variantId, stock) {
 
 test('shipping failure keeps checkout blocked and shows a useful error', async ({ page }) => {
     await prepareGuestCheckout(page, { shippingFailure: true });
-    await expect(page.getByText('Gagal memuat ongkir RajaOngkir.')).toBeVisible();
+    await expect(page.getByText('Courier unavailable')).toBeVisible();
+    await expect(page.locator('#guestShippingStatus')).toBeHidden();
     await expect(page.locator('#payBtn')).toBeDisabled();
     await expect(page).toHaveURL(/\/checkout$/);
 });

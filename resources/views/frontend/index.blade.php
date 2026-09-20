@@ -813,18 +813,17 @@
         </section>
     @endif
 
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 pb-4" aria-labelledby="newsletter-heading">
-        <div class="relative isolate min-h-[360px] overflow-hidden rounded-2xl bg-[#062c58] text-white shadow-[0_22px_55px_-26px_rgba(3,31,66,0.75)] sm:min-h-[380px] sm:rounded-3xl">
-            <img
-                src="{{ asset('imgs/banners/newsletter-industrial.webp') }}"
-                alt=""
-                class="absolute inset-0 -z-20 h-full w-full object-cover object-[68%_center] sm:object-center"
-                loading="lazy"
-                decoding="async">
-            <div class="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(3,34,70,0.98)_0%,rgba(3,42,82,0.91)_38%,rgba(3,42,82,0.38)_67%,rgba(3,30,61,0.18)_100%)]"></div>
-            <div class="absolute inset-x-0 bottom-0 -z-10 h-28 bg-gradient-to-t from-[#031f40]/45 to-transparent"></div>
+    <section class="relative isolate min-h-[440px] w-full overflow-hidden bg-[#062c58] text-white sm:min-h-[410px] lg:min-h-[390px]" aria-labelledby="newsletter-heading">
+        <img
+            src="{{ asset('imgs/banners/newsletter-industrial.webp') }}"
+            alt=""
+            class="absolute inset-0 -z-30 h-full w-full object-cover object-[68%_center] sm:object-[65%_center] lg:object-center"
+            loading="lazy"
+            decoding="async">
+        <div class="absolute inset-0 -z-20 bg-[linear-gradient(90deg,rgba(3,34,70,0.99)_0%,rgba(3,42,82,0.94)_55%,rgba(3,30,61,0.68)_100%)] sm:bg-[linear-gradient(90deg,rgba(3,34,70,0.98)_0%,rgba(3,42,82,0.92)_40%,rgba(3,42,82,0.46)_68%,rgba(3,30,61,0.2)_100%)]"></div>
+        <div class="absolute inset-x-0 bottom-0 -z-10 h-36 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent" aria-hidden="true"></div>
 
-            <div class="relative flex min-h-[360px] items-center px-6 py-10 sm:min-h-[380px] sm:px-10 lg:px-12">
+        <div class="ec-container relative flex min-h-[440px] items-center py-10 sm:min-h-[410px] lg:min-h-[390px]">
                 <div class="w-full max-w-[650px]">
                     <p class="mb-3 flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.24em] text-blue-200">
                         <span class="h-px w-8 bg-blue-300/80" aria-hidden="true"></span>
@@ -868,7 +867,6 @@
                 <p class="absolute right-8 top-10 hidden rotate-[-7deg] text-right font-serif text-2xl italic leading-tight text-white/85 drop-shadow-md xl:block" aria-hidden="true">
                     Small Parts<br>Big Impact
                 </p>
-            </div>
         </div>
     </section>
 

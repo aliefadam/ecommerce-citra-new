@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Company;
+use App\Models\AdminRole;
 use App\Models\Coupon;
 use App\Models\Product;
 use App\Models\ProductVariant;
@@ -150,6 +151,38 @@ class AuditCompanyIsolationRegressionTest extends TestCase
             ->assertOk()
             ->assertSee('RET-SCOPE-AKTIF', false)
             ->assertDontSee('RET-SCOPE-LAIN', false);
+    }
+
+    public function test_consolidated_report_requires_dedicated_permission_and_breaks_down_companies(): void
+    {
+        $this->makeTransaction($this->activeCompany, 'CONSOLIDATED-ACTIVE');
+        $this->makeTransaction($this->otherCompany, 'CONSOLIDATED-OTHER');
+
+        $role = AdminRole::query()->create([
+            'name' => 'Audit Report Staff',
+            'slug' => 'audit-report-staff',
+            'permissions' => ['reports.index', 'reports.owner'],
+        ]);
+        $staff = User::factory()->create([
+            'role' => 'staff',
+            'admin_role_id' => $role->id,
+        ]);
+
+        $this->actingAs($staff)
+            ->withSession(['admin_active_company_id' => $this->activeCompany->id])
+            ->get(route('reports.consolidated'))
+            ->assertRedirect(route('pages.index'));
+
+        $role->update(['permissions' => ['reports.index', 'reports.owner', 'reports.consolidated']]);
+        $staff->unsetRelation('adminRole')->unsetRelation('companyAssignments');
+
+        $this->actingAs($staff)
+            ->withSession(['admin_active_company_id' => $this->activeCompany->id])
+            ->get(route('reports.consolidated'))
+            ->assertOk()
+            ->assertSee($this->activeCompany->name, false)
+            ->assertSee($this->otherCompany->name, false)
+            ->assertSee('Rp 200.000', false);
     }
 
     private function makeTransaction(Company $company, string $suffix): Transaction

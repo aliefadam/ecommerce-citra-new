@@ -7,7 +7,10 @@
     ])->filter(fn ($social) => !empty($appStoreSettings[$social['key']]));
 @endphp
 
-<footer class="mt-10 border-t-4 border-orange-500 bg-slate-950 text-slate-300">
+<footer @class([
+    'bg-slate-950 text-slate-300',
+    'mt-10 border-t-4 border-orange-500' => !request()->routeIs('frontend.index'),
+])>
     <div class="ec-container py-12">
         <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
             <div>

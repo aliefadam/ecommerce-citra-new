@@ -2,7 +2,6 @@ const { test, expect } = require('@playwright/test');
 const path = require('node:path');
 
 test('member checkout manual sampai admin verifikasi, proses, dan kirim', async ({ page }) => {
-    test.setTimeout(300_000);
     const pageErrors = [];
     const serverErrors = [];
 
@@ -12,16 +11,6 @@ test('member checkout manual sampai admin verifikasi, proses, dan kirim', async 
             serverErrors.push(`${response.status()} ${response.url()}`);
         }
     });
-    await page.route('**/rajaongkir/shipping-options**', async (route) => {
-        await route.fulfill({
-            status: 200,
-            contentType: 'application/json',
-            body: JSON.stringify({
-                data: [{ code: 'jne', name: 'JNE', service: 'REG', etd: '1-2 hari', cost: 12_000 }],
-            }),
-        });
-    });
-
     await page.goto('/login', { waitUntil: 'domcontentloaded' });
     await page.locator('input[name="email"]').fill('aliefadam21@gmail.com');
     await page.locator('input[name="password"]').fill('123123');

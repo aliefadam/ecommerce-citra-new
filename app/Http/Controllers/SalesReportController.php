@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ScopesToActiveCompany;
 use App\Models\Cart;
+use App\Models\Company;
 use App\Models\Coupon;
 use App\Models\NewsletterSubscriber;
 use App\Models\Product;
@@ -32,6 +33,14 @@ class SalesReportController extends Controller
                 'icon' => 'receipt',
                 'tone' => 'blue',
                 'items' => [
+                    [
+                        'title' => 'Laporan Konsolidasi',
+                        'description' => 'Gabungan omzet dan order lintas perusahaan dengan breakdown per perusahaan.',
+                        'route' => route('reports.consolidated'),
+                        'permission' => 'reports.consolidated',
+                        'icon' => 'building-2',
+                        'tone' => 'indigo',
+                    ],
                     [
                         'title' => 'Owner Overview',
                         'description' => 'Ringkasan omzet, order, customer, stok, promo, return, dan pekerjaan aktif.',
@@ -139,6 +148,45 @@ class SalesReportController extends Controller
             ->all();
 
         return view('backend.reports.index', compact('groups'));
+    }
+
+    public function consolidated(Request $request)
+    {
+        $start = $request->date('start_date')?->startOfDay() ?? now()->startOfMonth();
+        $end = $request->date('end_date')?->endOfDay() ?? now()->endOfDay();
+        $paidStatuses = $this->paidStatuses();
+
+        $companies = Company::query()
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get()
+            ->map(function (Company $company) use ($start, $end, $paidStatuses): array {
+                $transactions = Transaction::query()
+                    ->where('company_id', $company->id)
+                    ->whereBetween('created_at', [$start, $end]);
+                $paid = (clone $transactions)->whereIn(DB::raw('LOWER(status)'), $paidStatuses);
+
+                return [
+                    'id' => $company->id,
+                    'name' => $company->name,
+                    'orders' => (clone $transactions)->count(),
+                    'paid_orders' => (clone $paid)->count(),
+                    'revenue' => (int) (clone $paid)->sum('grand_total'),
+                    'discount' => (int) (clone $paid)->sum('discount_amount'),
+                    'pending' => (clone $transactions)->whereIn(DB::raw('LOWER(status)'), ['pending', 'menunggu_verifikasi', 'authorize'])->count(),
+                ];
+            });
+
+        $totals = [
+            'orders' => (int) $companies->sum('orders'),
+            'paid_orders' => (int) $companies->sum('paid_orders'),
+            'revenue' => (int) $companies->sum('revenue'),
+            'discount' => (int) $companies->sum('discount'),
+            'pending' => (int) $companies->sum('pending'),
+        ];
+
+        return view('backend.reports.consolidated', compact('start', 'end', 'companies', 'totals'));
     }
 
     public function owner(Request $request)

@@ -12,6 +12,7 @@ class Coupon extends Model
     protected $fillable = [
         'company_id',
         'code',
+        'normalized_code',
         'name',
         'type',
         'value',
@@ -32,18 +33,31 @@ class Coupon extends Model
         'is_member_only' => 'boolean',
     ];
 
+    protected static function booted(): void
+    {
+        static::saving(function (Coupon $coupon): void {
+            $coupon->code = self::normalizeCode((string) $coupon->code);
+            $coupon->normalized_code = $coupon->code;
+        });
+    }
+
     public function company()
     {
         return $this->belongsTo(Company::class);
     }
 
-    public function isUsableFor(int $subtotal): bool
+    public static function normalizeCode(string $code): string
+    {
+        return mb_strtoupper(trim($code));
+    }
+
+    public function isUsableFor(int $subtotal, int $reservedCount = 0): bool
     {
         if (! $this->is_active || $subtotal < (int) $this->min_purchase) {
             return false;
         }
 
-        if ($this->usage_limit !== null && (int) $this->used_count >= (int) $this->usage_limit) {
+        if ($this->usage_limit !== null && ((int) $this->used_count + $reservedCount) >= (int) $this->usage_limit) {
             return false;
         }
 

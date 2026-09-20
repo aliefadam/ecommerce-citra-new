@@ -191,6 +191,7 @@ Route::middleware(['auth', 'admin', 'company.scope'])->group(function () {
             ->middlewareFor(['edit', 'update'], 'admin.permission:content_pages.edit')
             ->middlewareFor(['destroy'], 'admin.permission:content_pages.delete');
         Route::get('reports', [SalesReportController::class, 'home'])->name('reports.index')->middleware('admin.permission:reports.index');
+        Route::get('reports/consolidated', [SalesReportController::class, 'consolidated'])->name('reports.consolidated')->middleware('admin.permission:reports.consolidated');
         Route::get('reports/owner', [SalesReportController::class, 'owner'])->name('reports.owner')->middleware('admin.permission:reports.owner');
         Route::get('reports/sales', [SalesReportController::class, 'index'])->name('reports.sales')->middleware('admin.permission:reports.sales');
         Route::get('reports/stock', [SalesReportController::class, 'stock'])->name('reports.stock')->middleware('admin.permission:reports.stock');

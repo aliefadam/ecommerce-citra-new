@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Concerns\ScopesToActiveCompany;
 use App\Models\Coupon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class CouponController extends Controller
 {
@@ -22,8 +22,10 @@ class CouponController extends Controller
     public function store(Request $request)
     {
         $validated = $this->validated($request);
-        $validated['code'] = Str::upper(trim((string) $validated['code']));
+        $validated['code'] = Coupon::normalizeCode((string) $validated['code']);
+        $validated['normalized_code'] = $validated['code'];
         $validated['company_id'] = $this->activeCompanyId();
+        $this->ensureCodeIsUnique($validated['normalized_code'], $validated['company_id']);
         Coupon::create($validated);
 
         return back()->with('success', 'Voucher berhasil dibuat.');
@@ -34,7 +36,9 @@ class CouponController extends Controller
         $this->guardCompanyOwnership($coupon->company_id);
 
         $validated = $this->validated($request, $coupon);
-        $validated['code'] = Str::upper(trim((string) $validated['code']));
+        $validated['code'] = Coupon::normalizeCode((string) $validated['code']);
+        $validated['normalized_code'] = $validated['code'];
+        $this->ensureCodeIsUnique($validated['normalized_code'], (int) $coupon->company_id, $coupon->id);
         $coupon->update($validated);
 
         return back()->with('success', 'Voucher berhasil diperbarui.');
@@ -52,7 +56,7 @@ class CouponController extends Controller
     private function validated(Request $request, ?Coupon $coupon = null): array
     {
         $validated = $request->validate([
-            'code' => ['required', 'string', 'max:50', Rule::unique('coupons', 'code')->ignore($coupon?->id)],
+            'code' => ['required', 'string', 'max:50'],
             'name' => ['required', 'string', 'max:100'],
             'type' => ['required', Rule::in(['percent', 'fixed'])],
             'value' => ['required', 'integer', 'min:1'],
@@ -71,6 +75,23 @@ class CouponController extends Controller
         $validated['max_discount'] = ($validated['max_discount'] ?? null) !== null ? (int) $validated['max_discount'] : null;
         $validated['usage_limit'] = ($validated['usage_limit'] ?? null) !== null ? (int) $validated['usage_limit'] : null;
 
+        if ($validated['type'] === 'percent' && (int) $validated['value'] > 100) {
+            throw ValidationException::withMessages(['value' => 'Diskon persen maksimal 100%.']);
+        }
+
         return $validated;
+    }
+
+    private function ensureCodeIsUnique(string $normalizedCode, int $companyId, ?int $ignoreId = null): void
+    {
+        $exists = Coupon::query()
+            ->where('company_id', $companyId)
+            ->where('normalized_code', $normalizedCode)
+            ->when($ignoreId, fn ($query) => $query->whereKeyNot($ignoreId))
+            ->exists();
+
+        if ($exists) {
+            throw ValidationException::withMessages(['code' => 'Kode voucher sudah digunakan pada perusahaan ini.']);
+        }
     }
 }

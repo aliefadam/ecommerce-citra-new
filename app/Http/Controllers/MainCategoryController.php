@@ -39,11 +39,18 @@ class MainCategoryController extends Controller
                 ->withInput();
         }
 
-        MainCategory::create([
-            'name' => $validated['name'],
-            'slug' => $this->uniqueSlug($validated['name']),
-            'image' => $image,
-        ]);
+        try {
+            MainCategory::create([
+                'name' => $validated['name'],
+                'slug' => $this->uniqueSlug($validated['name']),
+                'image' => $image,
+            ]);
+        } catch (\Throwable $exception) {
+            if ($request->hasFile('image_file')) {
+                $imageOptimizer->deletePublicFile($image);
+            }
+            throw $exception;
+        }
         return redirect()->route('main-categories.index')->with('success', 'Kategori utama berhasil ditambahkan.');
     }
 
@@ -76,11 +83,18 @@ class MainCategoryController extends Controller
                 ->withInput();
         }
 
-        $mainCategory->update([
-            'name' => $validated['name'],
-            'slug' => $this->uniqueSlug($validated['name'], $mainCategory->id),
-            'image' => $image,
-        ]);
+        try {
+            $mainCategory->update([
+                'name' => $validated['name'],
+                'slug' => $this->uniqueSlug($validated['name'], $mainCategory->id),
+                'image' => $image,
+            ]);
+        } catch (\Throwable $exception) {
+            if ($request->hasFile('image_file') && $image !== $oldImage) {
+                $imageOptimizer->deletePublicFile($image);
+            }
+            throw $exception;
+        }
         if ($image !== $oldImage) {
             $imageOptimizer->deletePublicFile($oldImage);
         }

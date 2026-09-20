@@ -1,7 +1,6 @@
 const { test, expect } = require('@playwright/test');
-const path = require('node:path');
 
-test('global shell supports keyboard menus and stable mobile navigation', async ({ page }) => {
+test('global shell supports keyboard menus and stable mobile navigation', async ({ page }, testInfo) => {
     const pageErrors = [];
     page.on('pageerror', (error) => pageErrors.push(error.message));
 
@@ -28,7 +27,7 @@ test('global shell supports keyboard menus and stable mobile navigation', async 
     await categoryTrigger.press('Enter');
     await expect(categoryTrigger).toHaveAttribute('aria-expanded', 'true');
     await expect(categoryDropdown).toBeVisible();
-    await page.screenshot({ path: path.resolve(__dirname, '../../docs/frontend-baseline/screenshots/sprint-2-shell-desktop.png'), fullPage: false });
+    await page.screenshot({ path: testInfo.outputPath('sprint-2-shell-desktop.png'), fullPage: false });
     await page.keyboard.press('Escape');
     await expect(categoryTrigger).toHaveAttribute('aria-expanded', 'false');
     await expect(categoryDropdown).toBeHidden();
@@ -40,7 +39,7 @@ test('global shell supports keyboard menus and stable mobile navigation', async 
     await expect(page.locator('nav[aria-label="Navigasi cepat"]')).toBeVisible();
     await expect(page.locator('nav[aria-label="Navigasi cepat"] a')).toHaveCount(5);
     await expect(page.locator('footer a[href*="kebijakan-privasi"]')).toBeVisible();
-    await page.screenshot({ path: path.resolve(__dirname, '../../docs/frontend-baseline/screenshots/sprint-2-shell-mobile.png'), fullPage: false });
+    await page.screenshot({ path: testInfo.outputPath('sprint-2-shell-mobile.png'), fullPage: false });
 
     expect(pageErrors).toEqual([]);
 });

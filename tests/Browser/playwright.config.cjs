@@ -10,9 +10,11 @@ module.exports = defineConfig({
     testMatch: '**/*.spec.cjs',
     fullyParallel: false,
     workers: 1,
+    globalTimeout: 600_000,
     timeout: 120_000,
     expect: { timeout: 10_000 },
     globalSetup: path.resolve(__dirname, 'global-setup.cjs'),
+    outputDir: path.resolve(__dirname, '..', '..', 'test-results'),
     reporter: [['list']],
     use: {
         baseURL,
@@ -21,21 +23,5 @@ module.exports = defineConfig({
         viewport: { width: 1440, height: 1000 },
         screenshot: 'only-on-failure',
         trace: 'retain-on-failure',
-    },
-    webServer: {
-        command: `php artisan serve --host=127.0.0.1 --port=${port}`,
-        cwd: path.resolve(__dirname, '..', '..'),
-        url: baseURL,
-        reuseExistingServer: false,
-        timeout: 120_000,
-        env: {
-            APP_ENV: 'e2e',
-            APP_URL: baseURL,
-            DB_CONNECTION: 'sqlite',
-            DB_DATABASE: database,
-            SESSION_DRIVER: 'database',
-            CACHE_STORE: 'array',
-            MAIL_MAILER: 'array',
-        },
     },
 });

@@ -96,6 +96,7 @@ class CheckoutPricingService
                 'note' => $request['note'],
                 'redeemPoints' => $redeemCheckout ? (int) $product->redeem_points : 0,
                 'isFlashSale' => $flashSaleItem !== null,
+                'flashSaleItemId' => $flashSaleItem?->id,
                 'weightGrams' => max(1, (int) ($variant->weight_grams ?: config('services.checkout.default_item_weight', 1000))),
             ];
         })->values();

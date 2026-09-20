@@ -1225,6 +1225,7 @@
                 ? Number(document.getElementById('checkoutDestinationId')?.value || 0)
                 : Number(checkedAddress?.dataset?.destinationId || 0);
             const groups = buildGroups();
+            let allGroupsLoaded = groups.length > 0;
 
             for (const group of groups) {
                 const container = document.getElementById(`shippingOptions-${group.companyId}`);
@@ -1236,6 +1237,7 @@
                     state.shippingCost = null;
                     state.shippingLabel = '-';
                     state.shippingQuoteToken = '';
+                    allGroupsLoaded = false;
                     continue;
                 }
 
@@ -1244,6 +1246,7 @@
                     state.shippingCost = null;
                     state.shippingLabel = '-';
                     state.shippingQuoteToken = '';
+                    allGroupsLoaded = false;
                     continue;
                 }
 
@@ -1265,6 +1268,7 @@
                     if (!res.ok) throw new Error(json?.message || `Layanan ongkir merespons HTTP ${res.status}.`);
                     renderGroupShippingOptions(group.companyId, Array.isArray(json?.data) ? json.data : []);
                 } catch (e) {
+                    allGroupsLoaded = false;
                     container.replaceChildren();
                     const errorBox = document.createElement('div');
                     errorBox.className = 'rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-600';
@@ -1283,6 +1287,7 @@
                 }
             }
             updateSummary();
+            return allGroupsLoaded;
         }
 
         function setPaymentTab(tab) {
@@ -1685,8 +1690,8 @@
         async function useGuestShippingData() {
             try {
                 buildGuestCheckoutPayload();
-                await loadShippingOptions();
-                document.getElementById('guestShippingStatus')?.classList.remove('hidden');
+                const shippingLoaded = await loadShippingOptions();
+                document.getElementById('guestShippingStatus')?.classList.toggle('hidden', !shippingLoaded);
             } catch (error) {
                 alert(error?.message || 'Data pengiriman belum lengkap.');
             }

@@ -11,6 +11,7 @@ use App\Models\TransactionDetail;
 use App\Models\TransactionStatusHistory;
 use App\Models\UserNotification;
 use App\Services\CheckoutPricingService;
+use App\Services\CommerceReservationService;
 use App\Services\CheckoutTaxCalculator;
 use App\Services\DocumentNumberGenerator;
 use App\Services\ImageOptimizer;
@@ -27,7 +28,7 @@ class ManualPaymentController extends Controller
 {
     use HandlesGuestCheckout;
 
-    public function checkout(Request $request, LoyaltyPointService $loyaltyPointService, CheckoutTaxCalculator $taxCalculator, CheckoutPricingService $checkoutPricing, ShippingQuoteService $shippingQuotes, TaxInvoiceRequestService $taxInvoiceService, DocumentNumberGenerator $documentNumberGenerator)
+    public function checkout(Request $request, LoyaltyPointService $loyaltyPointService, CheckoutTaxCalculator $taxCalculator, CheckoutPricingService $checkoutPricing, ShippingQuoteService $shippingQuotes, TaxInvoiceRequestService $taxInvoiceService, DocumentNumberGenerator $documentNumberGenerator, CommerceReservationService $reservations)
     {
         $validated = $request->validate(array_merge([
             'items' => ['required', 'array', 'min:1'],
@@ -62,7 +63,7 @@ class ManualPaymentController extends Controller
 
         $orderId = 'MAN-'.now()->format('YmdHis').'-'.Str::upper(Str::random(10));
 
-        $transaction = DB::transaction(function () use ($request, $validated, $guest, $orderId, $loyaltyPointService, $taxCalculator, $checkoutPricing, $shippingQuotes, $taxInvoiceService, $documentNumberGenerator) {
+        $transaction = DB::transaction(function () use ($request, $validated, $guest, $orderId, $loyaltyPointService, $taxCalculator, $checkoutPricing, $shippingQuotes, $taxInvoiceService, $documentNumberGenerator, $reservations) {
             $companyId = (int) $validated['company_id'];
             $pricing = $checkoutPricing->resolve(
                 $validated['items'],
@@ -83,14 +84,10 @@ class ManualPaymentController extends Controller
             $discountAmount = 0;
             $couponsByCompany = (array) session('checkout_coupon', []);
             $couponCode = (string) ($couponsByCompany[$companyId]['code'] ?? '');
+            $coupon = null;
 
             if ($couponCode !== '') {
-                $coupon = Coupon::query()->where('company_id', $companyId)->where('code', $couponCode)->first();
-                if (! $coupon || ($guest && $coupon->is_member_only) || ! $coupon->isUsableFor($subtotal)) {
-                    unset($couponsByCompany[$companyId]);
-                    session(['checkout_coupon' => $couponsByCompany]);
-                    abort(422, 'Voucher tidak valid atau sudah tidak bisa digunakan.');
-                }
+                $coupon = $reservations->lockUsableCoupon($companyId, $couponCode, $subtotal, (bool) $guest);
                 $discountAmount = $coupon->discountFor($subtotal);
             }
             $tax = $taxCalculator->calculate($subtotal, $discountAmount, $shippingCost, companyId: $companyId);
@@ -156,10 +153,7 @@ class ManualPaymentController extends Controller
             })->all();
 
             TransactionDetail::insert($detailRows);
-
-            if ($discountAmount > 0 && $couponCode !== '') {
-                Coupon::query()->where('code', $couponCode)->increment('used_count');
-            }
+            $reservations->reserve($transaction, $items->all(), $coupon, $discountAmount);
 
             TransactionStatusHistory::create([
                 'transaction_id' => $transaction->id,

@@ -49,6 +49,12 @@ return [
                         'show' => ['key' => 'reports.owner', 'label' => 'View owner overview'],
                     ],
                 ],
+                'report_consolidated' => [
+                    'label' => 'Consolidated Companies',
+                    'permissions' => [
+                        'show' => ['key' => 'reports.consolidated', 'label' => 'View cross-company consolidated report'],
+                    ],
+                ],
                 'report_sales' => [
                     'label' => 'Sales Report',
                     'permissions' => [

@@ -173,8 +173,10 @@ class ProductController extends Controller
 
         $files = $request->file('variants', []);
         $attributeDefinitions = AttributeDefinition::query()->get()->keyBy('id');
+        $storedImages = [];
 
-        DB::transaction(function () use ($validated, $files, $detail, $category, $mainCategory, $imageOptimizer, $attributeDefinitions, $isRedeemProduct) {
+        try {
+            DB::transaction(function () use ($validated, $files, $detail, $category, $mainCategory, $imageOptimizer, $attributeDefinitions, $isRedeemProduct, &$storedImages) {
             $slug = $this->makeUniqueProductSlug($validated['name']);
 
             $product = Product::create([
@@ -196,6 +198,9 @@ class ProductController extends Controller
                 $v['image'] = isset($files[$i]['image'])
                     ? $imageOptimizer->storeWebp($files[$i]['image'], 'product-variants', 1200, 1200, 82)
                     : null;
+                if ($v['image']) {
+                    $storedImages[] = $v['image'];
+                }
                 $variantMeta = $this->resolveInternalVariant($attributes, $attributeDefinitions);
                 $v['variant_id'] = $variantMeta['variant_id'];
                 $v['sku'] = $this->buildVariantSku($validated['name'], $variantMeta['label']);
@@ -203,7 +208,11 @@ class ProductController extends Controller
                 $productVariant = $product->productVariants()->create($v);
                 $this->syncVariantAttributes($productVariant, $attributes, $attributeDefinitions);
             }
-        });
+            });
+        } catch (\Throwable $exception) {
+            collect($storedImages)->each(fn ($path) => $imageOptimizer->deletePublicFile((string) $path));
+            throw $exception;
+        }
 
         return redirect()->route('products.index')->with('success', 'Product berhasil ditambahkan.');
     }
@@ -578,8 +587,10 @@ class ProductController extends Controller
 
         $oldImages = $product->productVariants()->pluck('image')->filter()->values()->all();
         $newImages = [];
+        $uploadedImages = [];
 
-        DB::transaction(function () use ($validated, $files, $request, $product, $detail, $category, $mainCategory, $imageOptimizer, $existingVariants, $submittedVariants, $keptVariantIds, $variantIdsToDelete, $attributeDefinitions, $isRedeemProduct, &$newImages) {
+        try {
+            DB::transaction(function () use ($validated, $files, $request, $product, $detail, $category, $mainCategory, $imageOptimizer, $existingVariants, $submittedVariants, $keptVariantIds, $variantIdsToDelete, $attributeDefinitions, $isRedeemProduct, &$newImages, &$uploadedImages) {
             $slug = $this->makeUniqueProductSlug($validated['name'], $product->id);
 
             $product->update([
@@ -610,6 +621,7 @@ class ProductController extends Controller
 
                 if (isset($files[$i]['image'])) {
                     $v['image'] = $imageOptimizer->storeWebp($files[$i]['image'], 'product-variants', 1200, 1200, 82);
+                    $uploadedImages[] = $v['image'];
                 } else {
                     $existingImage = $request->input("variants.{$i}.existing_image");
                     $v['image'] = $existingImage ?: null;
@@ -631,7 +643,11 @@ class ProductController extends Controller
                 $productVariant = $product->productVariants()->create($v);
                 $this->syncVariantAttributes($productVariant, $attributes, $attributeDefinitions);
             }
-        });
+            });
+        } catch (\Throwable $exception) {
+            collect($uploadedImages)->each(fn ($path) => $imageOptimizer->deletePublicFile((string) $path));
+            throw $exception;
+        }
 
         collect($oldImages)
             ->diff($newImages)
@@ -740,16 +756,33 @@ class ProductController extends Controller
             return '';
         }
 
-        $raw = preg_replace('/[^0-9.,]/', '', $raw) ?? '';
+        if (str_starts_with($raw, '-') || preg_match('/[^0-9.,]/', $raw) === 1) {
+            throw ValidationException::withMessages(['variants' => 'Format harga tidak valid. Gunakan angka Rupiah tanpa nilai negatif.']);
+        }
 
-        // Eloquent returns DECIMAL prices as e.g. "13000.00". Rupiah values are
-        // stored as whole numbers, so the database scale must not become two
-        // additional zeroes when an untouched edit form is submitted.
+        if (preg_match('/^\d+$/', $raw) === 1) {
+            return ltrim($raw, '0') ?: '0';
+        }
+
+        if (preg_match('/^\d{1,3}(?:\.\d{3})+(?:,\d{1,2})?$/', $raw) === 1) {
+            $integer = explode(',', $raw, 2)[0];
+
+            return ltrim(str_replace('.', '', $integer), '0') ?: '0';
+        }
+
+        if (preg_match('/^\d{1,3}(?:,\d{3})+(?:\.\d{1,2})?$/', $raw) === 1) {
+            $integer = explode('.', $raw, 2)[0];
+
+            return ltrim(str_replace(',', '', $integer), '0') ?: '0';
+        }
+
         if (preg_match('/^\d+[.,]\d{1,2}$/', $raw) === 1) {
             return (string) max(0, (int) round((float) str_replace(',', '.', $raw)));
         }
 
-        return preg_replace('/\D+/', '', $raw) ?? '';
+        throw ValidationException::withMessages([
+            'variants' => 'Format harga ambigu. Gunakan contoh 13000, 13.000,00, atau 13,000.00.',
+        ]);
     }
 
     private function normalizeDecimalInput(mixed $value): ?string

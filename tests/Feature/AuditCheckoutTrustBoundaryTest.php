@@ -3,10 +3,15 @@
 namespace Tests\Feature;
 
 use App\Models\Company;
+use App\Models\Coupon;
+use App\Models\CouponRedemption;
 use App\Models\FlashSale;
+use App\Models\FlashSaleReservation;
+use App\Models\InventoryReservation;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Transaction;
+use App\Models\User;
 use App\Models\Variant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
@@ -180,6 +185,170 @@ class AuditCheckoutTrustBoundaryTest extends TestCase
         $item = session('checkout.items.0');
         $this->assertSame(125_000, (int) ($item['price'] ?? 0));
         $this->assertFalse((bool) ($item['isFlashSale'] ?? true));
+    }
+
+    public function test_reserved_stock_and_coupon_are_committed_exactly_once_through_fulfillment(): void
+    {
+        Mail::fake();
+        [$company, $product, $productVariant] = $this->makeProduct(price: 100_000, stock: 1);
+        $coupon = Coupon::query()->create([
+            'company_id' => $company->id,
+            'code' => 'LIMIT1',
+            'name' => 'Voucher Terbatas',
+            'type' => 'fixed',
+            'value' => 10_000,
+            'usage_limit' => 1,
+            'is_active' => true,
+        ]);
+
+        $response = $this->withSession(array_merge($this->guestSession(), [
+            'checkout_coupon' => [$company->id => ['code' => 'LIMIT1', 'discount_amount' => 10_000]],
+        ]))->postJson(route('frontend.checkout.manual-payment'), $this->guestPayload($company, $product, $productVariant));
+
+        $response->assertOk();
+        $transaction = Transaction::query()->sole();
+        $this->assertSame(1, (int) $productVariant->fresh()->stock);
+        $this->assertDatabaseHas('inventory_reservations', ['transaction_id' => $transaction->id, 'status' => 'reserved']);
+        $this->assertDatabaseHas('coupon_redemptions', ['transaction_id' => $transaction->id, 'status' => 'reserved']);
+        $this->assertSame(0, (int) $coupon->fresh()->used_count);
+
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin)
+            ->withSession(['admin_active_company_id' => $company->id])
+            ->patch(route('transactions.verify-payment', $transaction), ['action' => 'approve'])
+            ->assertRedirect();
+
+        $this->assertSame(1, (int) $coupon->fresh()->used_count);
+        $this->assertSame('redeemed', CouponRedemption::query()->where('transaction_id', $transaction->id)->value('status'));
+
+        $this->patchJson(route('transactions.process', $transaction))->assertOk();
+        $this->patchJson(route('transactions.process', $transaction))->assertUnprocessable();
+        $this->assertSame(0, (int) $productVariant->fresh()->stock);
+        $this->assertSame('committed', InventoryReservation::query()->where('transaction_id', $transaction->id)->value('status'));
+        $this->assertDatabaseCount('stock_movements', 1);
+    }
+
+    public function test_cancelling_pending_order_releases_stock_for_the_next_checkout(): void
+    {
+        Mail::fake();
+        [$company, $product, $productVariant] = $this->makeProduct(stock: 1);
+
+        $created = $this->withSession($this->guestSession())
+            ->postJson(route('frontend.checkout.manual-payment'), $this->guestPayload($company, $product, $productVariant))
+            ->assertOk();
+
+        $orderId = (string) $created->json('order_id');
+        $this->postJson(route('frontend.checkout.midtrans.cancel', $orderId), ['cancel_reason' => 'Uji release'])
+            ->assertOk();
+        $this->assertSame('released', InventoryReservation::query()->sole()->status);
+
+        $this->flushSession();
+        $this->withSession($this->guestSession())
+            ->postJson(route('frontend.checkout.manual-payment'), $this->guestPayload(
+                $company,
+                $product,
+                $productVariant,
+                ['guest_email' => 'guest-pengganti@example.test']
+            ))
+            ->assertOk();
+
+        $this->assertDatabaseCount('transactions', 2);
+    }
+
+    public function test_flash_sale_quota_is_reserved_released_and_committed_without_double_counting(): void
+    {
+        Mail::fake();
+        [$company, $product, $productVariant] = $this->makeProduct(price: 125_000, stock: 3);
+        $flashSale = FlashSale::query()->create([
+            'company_id' => $company->id,
+            'name' => 'Flash Sale Atomic',
+            'start_at' => now()->subMinute(),
+            'end_at' => now()->addHour(),
+            'status' => 'active',
+        ]);
+        $flashItem = $flashSale->items()->create([
+            'product_variant_id' => $productVariant->id,
+            'discount_price' => 10_000,
+            'quota' => 1,
+            'sold' => 0,
+            'is_active' => true,
+        ]);
+
+        $first = $this->withSession($this->guestSession())
+            ->postJson(route('frontend.checkout.manual-payment'), $this->guestPayload($company, $product, $productVariant))
+            ->assertOk();
+        $firstTransaction = Transaction::query()->where('order_id', $first->json('order_id'))->firstOrFail();
+        $this->assertSame(10_000, (int) $firstTransaction->subtotal_amount);
+        $this->assertSame('reserved', FlashSaleReservation::query()->sole()->status);
+        $this->assertSame(0, (int) $flashItem->fresh()->sold);
+
+        $this->flushSession();
+        $this->withSession($this->guestSession())
+            ->postJson(route('frontend.checkout.manual-payment'), $this->guestPayload(
+                $company,
+                $product,
+                $productVariant,
+                ['guest_email' => 'flash-kedua@example.test']
+            ))
+            ->assertUnprocessable();
+
+        app(\App\Services\CommerceReservationService::class)->release($firstTransaction);
+        $this->flushSession();
+        $replacement = $this->withSession($this->guestSession())
+            ->postJson(route('frontend.checkout.manual-payment'), $this->guestPayload(
+                $company,
+                $product,
+                $productVariant,
+                ['guest_email' => 'flash-pengganti@example.test']
+            ))
+            ->assertOk();
+
+        $replacementTransaction = Transaction::query()->where('order_id', $replacement->json('order_id'))->firstOrFail();
+        app(\App\Services\CommerceReservationService::class)->commitInventory($replacementTransaction);
+        app(\App\Services\CommerceReservationService::class)->commitInventory($replacementTransaction);
+
+        $this->assertSame(1, (int) $flashItem->fresh()->sold);
+        $this->assertSame('committed', FlashSaleReservation::query()->where('transaction_id', $replacementTransaction->id)->value('status'));
+    }
+
+    public function test_released_stock_reservation_cannot_be_approved_as_paid(): void
+    {
+        Mail::fake();
+        [$company, $product, $productVariant] = $this->makeProduct(stock: 1);
+        $this->withSession($this->guestSession())
+            ->postJson(route('frontend.checkout.manual-payment'), $this->guestPayload($company, $product, $productVariant))
+            ->assertOk();
+
+        $transaction = Transaction::query()->sole();
+        app(\App\Services\CommerceReservationService::class)->release($transaction);
+
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin)
+            ->withSession(['admin_active_company_id' => $company->id])
+            ->patch(route('transactions.verify-payment', $transaction), ['action' => 'approve'])
+            ->assertSessionHasErrors('stock');
+
+        $this->assertNotSame('paid', $transaction->fresh()->status);
+        $this->assertSame('released', InventoryReservation::query()->sole()->status);
+    }
+
+    public function test_expired_reservations_are_released_idempotently(): void
+    {
+        Mail::fake();
+        [$company, $product, $productVariant] = $this->makeProduct(stock: 1);
+        $this->withSession($this->guestSession())
+            ->postJson(route('frontend.checkout.manual-payment'), $this->guestPayload($company, $product, $productVariant))
+            ->assertOk();
+
+        $transaction = Transaction::query()->sole();
+        $transaction->update(['expires_at' => now()->subMinute()]);
+
+        $this->artisan('commerce:release-expired-reservations')->assertSuccessful();
+        $this->artisan('commerce:release-expired-reservations')->assertSuccessful();
+
+        $this->assertSame('dibatalkan', $transaction->fresh()->status);
+        $this->assertSame('released', InventoryReservation::query()->sole()->status);
+        $this->assertSame(1, $transaction->statusHistories()->where('type', 'reservation_expired')->count());
     }
 
     private function makeProduct(int $price = 100_000, int $stock = 5): array

@@ -320,3 +320,65 @@ Bukti verifikasi:
 - Test quote ongkir membuktikan berat request buatan diabaikan dan berat database yang dikirim ke provider.
 - 5 skenario Playwright checkout lulus, termasuk happy path guest manual, kegagalan provider ongkir, email member, stok habis, dan bukti pembayaran invalid. Runner masih perlu dihentikan setelah test terakhir karena masalah teardown `AUD-10` belum masuk lingkup Fase 1.
 - Full suite pada checkpoint awal Fase 1: **172 lulus, 9 gagal**. Kesembilan kegagalan adalah regression test untuk Fase 2–6 yang memang belum dikerjakan; tidak ada kegagalan baru dari Fase 1. Setelah penambahan pemeriksaan konflik quote, total test hijau terarah bertambah satu.
+
+### Fase 2 — Isolasi perusahaan dan otorisasi
+
+Status: **selesai** pada 20 September 2026. `AUD-02`, `AUD-03`, dan `AUD-05` ditutup.
+
+Implementasi yang selesai:
+
+- Seluruh query laporan mengikuti perusahaan aktif melalui scope terpusat; invoice admin dan mutasi flash sale juga memverifikasi kepemilikan perusahaan.
+- Laporan lintas perusahaan dipisahkan ke route khusus dengan permission `reports.consolidated` dan menampilkan rincian per perusahaan serta total konsolidasi.
+- Regression test membuktikan admin perusahaan A tidak dapat membaca invoice atau memasukkan varian perusahaan B, dan angka laporan berubah mengikuti perusahaan aktif.
+
+### Fase 3 — Reservasi stok dan kuota flash sale
+
+Status: **selesai** pada 20 September 2026. `AUD-04` dan `AUD-06` ditutup.
+
+Implementasi yang selesai:
+
+- Ditambahkan reservasi stok dan flash-sale persisten dengan status `reserved`, `committed`, dan `released`, expiry, foreign key, index, serta unique constraint idempotensi.
+- Checkout mengunci varian dan item flash sale dalam urutan stabil, lalu menghitung stok/kuota tersedia setelah reservasi aktif.
+- Cancel dan expiry melepaskan reservasi; proses fulfillment mengurangi stok fisik dan kuota tepat satu kali serta membuat satu stock movement.
+- Callback atau approval pembayaran ditolak bila reservasi transaksi sudah dilepas.
+- Command `commerce:release-expired-reservations` dijadwalkan setiap lima menit dan aman dijalankan ulang.
+
+### Fase 4 — Kupon atomic dan perusahaan-aware
+
+Status: **selesai** pada 20 September 2026. `AUD-07` dan `AUD-08` ditutup.
+
+Implementasi yang selesai:
+
+- Kode kupon dinormalisasi konsisten dan unique constraint diubah menjadi `company_id + normalized_code`, didahului backfill serta pemeriksaan collision.
+- Apply dan checkout selalu mencari kupon dalam perusahaan transaksi; persentase dibatasi 1–100.
+- Reservasi/redemption kupon memakai row lock, status idempotent, dan `used_count` direkonsiliasi ketika pembayaran sah.
+- Retry, cancel, dan expiry tidak menambah penggunaan kupon dua kali.
+
+### Fase 5 — Hardening input harga dan upload
+
+Status: **selesai** pada 20 September 2026. `AUD-09` ditutup.
+
+Implementasi yang selesai:
+
+- Parser harga membedakan angka polos, ribuan Indonesia, format desimal database, dan format internasional; input ambigu atau invalid ditolak.
+- Kasus regresi seperti `13.000,00` menghasilkan 13.000, bukan 1.300.000.
+- File produk dan kategori yang baru diunggah dihapus kembali bila transaksi database gagal, sehingga record lama dan storage tidak meninggalkan orphan baru.
+
+### Fase 6 — Stabilitas Playwright dan CI
+
+Status: **selesai** pada 20 September 2026. `AUD-10` ditutup.
+
+Implementasi yang selesai:
+
+- Screenshot runtime diarahkan ke `test-results/`; test biasa tidak lagi menulis baseline ke `docs/`.
+- Runner menyiapkan SQLite E2E, menjalankan PHP built-in server sebagai satu child process yang dimiliki runner, menunggu readiness, menjalankan Playwright langsung melalui Node, lalu menghentikan server pada blok cleanup.
+- Mock fulfillment diselaraskan dengan kontrak quote token server-authoritative dan state error ongkir tidak lagi menampilkan banner sukses.
+
+Bukti verifikasi final:
+
+- Backend: **194 test lulus** dengan **1.156 assertion**.
+- Browser E2E: **15 skenario lulus** dalam 2,2 menit dan runner selesai sendiri dengan exit code 0.
+- Build production Vite berhasil.
+- Setelah Playwright, tidak ada proses PHP/Node milik runner yang tertinggal dan tidak ada screenshot tracked yang berubah.
+
+Status release gate: **GO** untuk cakupan `AUD-01` sampai `AUD-10`.

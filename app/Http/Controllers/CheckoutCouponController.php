@@ -17,12 +17,12 @@ class CheckoutCouponController extends Controller
 
         $companyId = (int) $validated['company_id'];
         $coupon = Coupon::query()
-            ->whereRaw('UPPER(code) = ?', [strtoupper(trim((string) $validated['code']))])
+            ->where('company_id', $companyId)
+            ->where('normalized_code', Coupon::normalizeCode((string) $validated['code']))
             ->first();
 
         if (
             ! $coupon
-            || (int) $coupon->company_id !== $companyId
             || (! $request->user() && $coupon->is_member_only)
             || ! $coupon->isUsableFor((int) $validated['subtotal'])
         ) {
