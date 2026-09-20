@@ -46,7 +46,7 @@ class AppServiceProvider extends ServiceProvider
         View::share('appStoreName', (string) ($storeSettings['store_name'] ?? 'Ecommerce Citra'));
         View::share('appStoreLogoUrl', $storeLogoPath !== '' ? asset('storage/'.ltrim($storeLogoPath, '/')) : null);
 
-        View::composer('layouts.user', function ($view): void {
+        View::composer(['layouts.user', 'partials.navbar-user'], function ($view): void {
             $user = auth()->user();
             $view->with('customerNavigation', [
                 'megaCategories' => app(StorefrontNavigationService::class)->megaCategories(),

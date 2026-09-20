@@ -4,6 +4,7 @@
     $displayFirstName = trim(explode(' ', $displayName)[0] ?? $displayName);
     $cartCount = (int) ($customerNavigation['cartCount'] ?? 0);
     $megaCategories = $customerNavigation['megaCategories'] ?? [];
+    $selectedSearchCategory = collect($megaCategories)->firstWhere('key', (string) request('parent'));
     $quoteUrl = !empty($appStoreSettings['social_whatsapp'])
         ? $appStoreSettings['social_whatsapp']
         : route('frontend.pages.show', 'pusat-bantuan');
@@ -31,13 +32,28 @@
                     <label for="ecNavSearchDesktop" class="sr-only">Cari produk</label>
                     <input id="ecNavSearchDesktop" name="q" value="{{ trim(request('q', $query ?? '')) }}" placeholder="Cari produk, kategori, atau merek..."
                         class="ec-reference-search-input" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="ecNavSearchDropdownDesktop" data-storefront-autocomplete data-suggestions-url="{{ route('frontend.search.suggestions') }}" />
-                    <label for="ecNavCategory" class="sr-only">Kategori pencarian</label>
-                    <select id="ecNavCategory" name="parent" class="ec-reference-search-category" aria-label="Kategori pencarian">
-                        <option value="">Semua Kategori</option>
-                        @foreach ($megaCategories as $category)
-                            <option value="{{ $category['key'] }}" @selected(request('parent') === $category['key'])>{{ $category['name'] }}</option>
-                        @endforeach
-                    </select>
+                    <div class="ec-reference-search-category" data-search-category>
+                        <input id="ecNavCategory" type="hidden" name="parent" value="{{ $selectedSearchCategory['key'] ?? '' }}" />
+                        <button id="ecNavCategoryTrigger" type="button" class="ec-reference-search-category-trigger"
+                            aria-haspopup="listbox" aria-expanded="false" aria-controls="ecNavCategoryDropdown">
+                            <span data-search-category-label>{{ $selectedSearchCategory['name'] ?? 'Semua Kategori' }}</span>
+                            <i class="fi fi-rr-angle-small-down" aria-hidden="true"></i>
+                        </button>
+                        <div id="ecNavCategoryDropdown" class="ec-reference-search-category-dropdown" role="listbox"
+                            aria-label="Kategori pencarian" hidden>
+                            <button type="button" class="ec-reference-search-category-option" role="option"
+                                aria-selected="{{ $selectedSearchCategory ? 'false' : 'true' }}" data-category-value="" data-category-label="Semua Kategori">
+                                <span>Semua Kategori</span><i class="fi fi-rr-check" aria-hidden="true"></i>
+                            </button>
+                            @foreach ($megaCategories as $category)
+                                <button type="button" class="ec-reference-search-category-option" role="option"
+                                    aria-selected="{{ ($selectedSearchCategory['key'] ?? null) === $category['key'] ? 'true' : 'false' }}"
+                                    data-category-value="{{ $category['key'] }}" data-category-label="{{ $category['name'] }}">
+                                    <span>{{ $category['name'] }}</span><i class="fi fi-rr-check" aria-hidden="true"></i>
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
                     <button class="ec-reference-search-button" type="submit" aria-label="Cari"><i class="fi fi-rr-search" aria-hidden="true"></i></button>
                 </form>
                 <div id="ecNavSearchDropdownDesktop" class="ec-dropdown left-0 right-0 top-full mt-2 max-h-[28rem] overflow-y-auto" role="listbox" aria-label="Saran produk" hidden></div>

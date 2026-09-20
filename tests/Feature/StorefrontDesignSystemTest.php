@@ -17,6 +17,8 @@ class StorefrontDesignSystemTest extends TestCase
             ->assertOk()
             ->assertSee('data-storefront-shell', false)
             ->assertSee('aria-label="Navigasi utama"', false)
+            ->assertSee('id="ecNavCategoryDropdown"', false)
+            ->assertSee('data-category-value="baut"', false)
             ->assertSee('aria-controls="ecCategoryDropdown"', false)
             ->assertSee('aria-label="Navigasi cepat"', false)
             ->assertSee(route('frontend.pages.show', 'kebijakan-privasi'), false)

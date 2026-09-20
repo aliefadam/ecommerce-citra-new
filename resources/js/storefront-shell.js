@@ -98,6 +98,7 @@ function setupStorefrontShell() {
         return opening;
     };
     const closables = [
+        [get('ecNavCategoryTrigger'), get('ecNavCategoryDropdown')],
         [get('ecCategoryTrigger'), get('ecCategoryDropdown')],
         [get('ecAccountTrigger'), get('ecAccountDropdown')],
         [get('ecNotifTrigger'), get('ecNotifDropdown')],
@@ -119,6 +120,48 @@ function setupStorefrontShell() {
         if (event.key !== 'Escape') return;
         closables.forEach(([trigger, panel]) => toggle(trigger, panel, false));
         event.target.closest('button, a, input')?.focus();
+    });
+
+    const searchCategory = root.querySelector('[data-search-category]');
+    const searchCategoryTrigger = get('ecNavCategoryTrigger');
+    const searchCategoryDropdown = get('ecNavCategoryDropdown');
+    const searchCategoryInput = get('ecNavCategory');
+    const searchCategoryLabel = searchCategory?.querySelector('[data-search-category-label]');
+    const searchCategoryOptions = () => [...(searchCategoryDropdown?.querySelectorAll('[role="option"]') || [])];
+
+    searchCategoryDropdown?.addEventListener('click', (event) => {
+        const option = event.target.closest('[data-category-value]');
+        if (!option || !searchCategoryInput || !searchCategoryLabel) return;
+        searchCategoryInput.value = option.dataset.categoryValue || '';
+        searchCategoryLabel.textContent = option.dataset.categoryLabel || 'Semua Kategori';
+        searchCategoryOptions().forEach((item) => item.setAttribute('aria-selected', String(item === option)));
+        toggle(searchCategoryTrigger, searchCategoryDropdown, false);
+        searchCategoryTrigger.focus();
+    });
+    searchCategoryTrigger?.addEventListener('keydown', (event) => {
+        if (!['ArrowDown', 'ArrowUp'].includes(event.key)) return;
+        event.preventDefault();
+        toggle(searchCategoryTrigger, searchCategoryDropdown, true);
+        const options = searchCategoryOptions();
+        const selectedIndex = Math.max(0, options.findIndex((option) => option.getAttribute('aria-selected') === 'true'));
+        options[event.key === 'ArrowUp' ? Math.max(0, selectedIndex - 1) : selectedIndex]?.focus();
+    });
+    searchCategoryDropdown?.addEventListener('keydown', (event) => {
+        const options = searchCategoryOptions();
+        const currentIndex = options.indexOf(document.activeElement);
+        if (event.key === 'Escape') {
+            event.stopPropagation();
+            toggle(searchCategoryTrigger, searchCategoryDropdown, false);
+            searchCategoryTrigger?.focus();
+            return;
+        }
+        if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
+        event.preventDefault();
+        let nextIndex = currentIndex;
+        if (event.key === 'Home') nextIndex = 0;
+        else if (event.key === 'End') nextIndex = options.length - 1;
+        else nextIndex = (currentIndex + (event.key === 'ArrowDown' ? 1 : -1) + options.length) % options.length;
+        options[nextIndex]?.focus();
     });
 
     const categories = Array.isArray(config.categories) ? config.categories : [];

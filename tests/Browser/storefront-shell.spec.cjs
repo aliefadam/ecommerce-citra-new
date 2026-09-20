@@ -6,6 +6,21 @@ test('global shell supports keyboard menus and stable mobile navigation', async 
     page.on('pageerror', (error) => pageErrors.push(error.message));
 
     await page.goto('/', { waitUntil: 'domcontentloaded' });
+    const searchCategoryTrigger = page.locator('#ecNavCategoryTrigger');
+    const searchCategoryDropdown = page.locator('#ecNavCategoryDropdown');
+    const searchCategoryInput = page.locator('#ecNavCategory');
+
+    await searchCategoryTrigger.click();
+    await expect(searchCategoryTrigger).toHaveAttribute('aria-expanded', 'true');
+    await expect(searchCategoryDropdown).toBeVisible();
+    const firstCategory = searchCategoryDropdown.locator('[data-category-value]:not([data-category-value=""])').first();
+    const firstCategoryValue = await firstCategory.getAttribute('data-category-value');
+    const firstCategoryLabel = await firstCategory.getAttribute('data-category-label');
+    await firstCategory.click();
+    await expect(searchCategoryDropdown).toBeHidden();
+    await expect(searchCategoryInput).toHaveValue(firstCategoryValue);
+    await expect(searchCategoryTrigger.locator('[data-search-category-label]')).toHaveText(firstCategoryLabel);
+
     const categoryTrigger = page.locator('#ecCategoryTrigger');
     const categoryDropdown = page.locator('#ecCategoryDropdown');
 
