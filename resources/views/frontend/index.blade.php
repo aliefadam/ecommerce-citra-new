@@ -813,38 +813,61 @@
         </section>
     @endif
 
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 pb-4">
-        <div class="rounded-3xl bg-gradient-to-r from-slate-900 via-slate-800 to-blue-800 px-6 py-8 sm:px-10 sm:py-10 text-white shadow-xl overflow-hidden relative">
-            <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(circle at top right, white 0, transparent 35%), radial-gradient(circle at bottom left, white 0, transparent 30%);"></div>
-            <div class="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-                <div class="max-w-2xl">
-                    <p class="text-xs font-semibold tracking-[0.3em] uppercase text-blue-200 mb-2">Newsletter</p>
-                    <h3 class="text-2xl sm:text-3xl font-bold leading-tight mb-2">Dapatkan update promo dan produk terbaru</h3>
-                    <p class="text-sm sm:text-base text-slate-200">Masukkan email kamu untuk menerima info diskon, restock, dan penawaran khusus dari {{ $appStoreName ?? 'Ecommerce Citra' }}.</p>
-                </div>
-                <form action="{{ route('frontend.newsletter.subscribe') }}" method="POST" class="w-full lg:max-w-xl">
-                    @csrf
-                    <div class="flex flex-col sm:flex-row gap-3">
-                        <div class="flex-1">
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 pb-4" aria-labelledby="newsletter-heading">
+        <div class="relative isolate min-h-[360px] overflow-hidden rounded-2xl bg-[#062c58] text-white shadow-[0_22px_55px_-26px_rgba(3,31,66,0.75)] sm:min-h-[380px] sm:rounded-3xl">
+            <img
+                src="{{ asset('imgs/banners/newsletter-industrial.webp') }}"
+                alt=""
+                class="absolute inset-0 -z-20 h-full w-full object-cover object-[68%_center] sm:object-center"
+                loading="lazy"
+                decoding="async">
+            <div class="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(3,34,70,0.98)_0%,rgba(3,42,82,0.91)_38%,rgba(3,42,82,0.38)_67%,rgba(3,30,61,0.18)_100%)]"></div>
+            <div class="absolute inset-x-0 bottom-0 -z-10 h-28 bg-gradient-to-t from-[#031f40]/45 to-transparent"></div>
+
+            <div class="relative flex min-h-[360px] items-center px-6 py-10 sm:min-h-[380px] sm:px-10 lg:px-12">
+                <div class="w-full max-w-[650px]">
+                    <p class="mb-3 flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.24em] text-blue-200">
+                        <span class="h-px w-8 bg-blue-300/80" aria-hidden="true"></span>
+                        Newsletter
+                    </p>
+                    <h2 id="newsletter-heading" class="max-w-xl text-3xl font-extrabold leading-[1.12] tracking-[-0.025em] sm:text-4xl">
+                        Dapatkan Update<br class="hidden sm:block"> Promo &amp; Produk Terbaru
+                    </h2>
+                    <p class="mt-3 max-w-xl text-sm leading-6 text-blue-100/90 sm:text-base">
+                        Jadilah yang pertama tahu tentang penawaran spesial, produk baru, dan informasi seputar industri.
+                    </p>
+
+                    <form action="{{ route('frontend.newsletter.subscribe') }}" method="POST" class="mt-6 w-full">
+                        @csrf
+                        <div class="flex w-full flex-col overflow-hidden rounded-xl bg-white shadow-[0_12px_30px_-14px_rgba(0,0,0,0.65)] sm:flex-row sm:rounded-2xl">
+                            <label for="newsletter-email" class="sr-only">Alamat email</label>
                             <input
+                                id="newsletter-email"
                                 type="email"
                                 name="email"
                                 value="{{ old('email') }}"
-                                placeholder="Masukkan email kamu"
-                                class="w-full rounded-2xl border {{ $errors->has('email') || session('newsletter_error') ? 'border-red-300 focus:border-red-400' : 'border-white/20 focus:border-blue-300' }} bg-white px-4 py-3 text-slate-800 placeholder:text-slate-400 focus:outline-none"
+                                placeholder="Masukkan alamat email Anda"
+                                autocomplete="email"
+                                aria-invalid="{{ $errors->has('email') || session('newsletter_error') ? 'true' : 'false' }}"
+                                class="min-w-0 flex-1 border-0 bg-white px-5 py-4 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:ring-2 focus:ring-inset {{ $errors->has('email') || session('newsletter_error') ? 'focus:ring-red-400' : 'focus:ring-blue-500' }}"
                                 required>
-                            @error('email')
-                                <p class="mt-2 text-sm text-red-200">{{ $message }}</p>
-                            @enderror
-                            @if (session('newsletter_error'))
-                                <p class="mt-2 text-sm text-red-200">{{ session('newsletter_error') }}</p>
-                            @endif
+                            <button type="submit" class="group inline-flex min-h-[52px] items-center justify-center gap-2 bg-blue-600 px-7 py-3.5 text-sm font-bold text-white transition-colors hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white/80 sm:min-w-[175px]">
+                                Berlangganan
+                                <i class="ri-arrow-right-line transition-transform duration-200 group-hover:translate-x-1" aria-hidden="true"></i>
+                            </button>
                         </div>
-                        <button type="submit" class="inline-flex items-center justify-center rounded-2xl bg-blue-500 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-400 transition-colors whitespace-nowrap">
-                            Subscribe
-                        </button>
-                    </div>
-                </form>
+                        @error('email')
+                            <p class="mt-2 text-sm font-medium text-red-200">{{ $message }}</p>
+                        @enderror
+                        @if (session('newsletter_error'))
+                            <p class="mt-2 text-sm font-medium text-red-200">{{ session('newsletter_error') }}</p>
+                        @endif
+                    </form>
+                </div>
+
+                <p class="absolute right-8 top-10 hidden rotate-[-7deg] text-right font-serif text-2xl italic leading-tight text-white/85 drop-shadow-md xl:block" aria-hidden="true">
+                    Small Parts<br>Big Impact
+                </p>
             </div>
         </div>
     </section>
