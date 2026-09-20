@@ -51,7 +51,32 @@
         }
 
         .thumb-active {
-            border-color: #2563eb;
+            border-color: var(--ec-primary-700);
+        }
+
+        .product-detail-layout { display: grid; gap: 1.5rem; }
+        .product-gallery { display: flex; min-width: 0; flex-direction: column; gap: .75rem; }
+        .product-main-media { aspect-ratio: 1 / 1; border: 1px solid #dbe3ed; border-radius: .5rem; background: #f6f8fb; box-shadow: 0 2px 10px rgb(15 45 86 / .04); }
+        .product-main-media img { object-fit: cover; }
+        .product-summary { min-width: 0; }
+        .product-buy-panel { border: 1px solid #dbe3ed; border-radius: .6rem; background: #fff; padding: 1rem; box-shadow: 0 8px 24px rgb(15 45 86 / .06); }
+        .product-buy-price { color: #e62745; font-size: 1.55rem; font-weight: 800; letter-spacing: -.03em; }
+        .product-buy-primary { background: linear-gradient(135deg, var(--ec-primary-600), var(--ec-primary-800)); }
+        .product-buy-primary:hover { filter: brightness(1.08); }
+        .product-seller-panel { margin-top: .75rem; border: 1px solid #dbe3ed; border-radius: .6rem; background: #fff; padding: 1rem; }
+        .product-seller-mark { display: grid; width: 2.75rem; height: 2.75rem; flex: 0 0 2.75rem; place-items: center; border: 1px solid var(--ec-primary-100); border-radius: 999px; background: #f8fbff; color: var(--ec-primary-700); font-weight: 800; }
+        .product-benefits { margin-top: .75rem; border-radius: .6rem; background: linear-gradient(145deg, #f8fafc, #eef3f8); padding: 1rem; }
+        .product-benefits li { display: flex; align-items: center; gap: .55rem; color: #445466; font-size: .72rem; }
+        .product-benefits li + li { margin-top: .65rem; }
+        .product-benefits svg { width: 1rem; height: 1rem; flex: 0 0 1rem; color: var(--ec-primary-700); }
+
+        @media (min-width: 1024px) {
+            .product-detail-layout { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.08fr) 17rem; align-items: start; gap: 1.25rem; }
+            .product-gallery { display: grid; grid-template-columns: 3.75rem minmax(0, 1fr); grid-template-areas: 'thumbs image'; align-items: start; }
+            .product-main-media { grid-area: image; }
+            .product-thumbnails { grid-area: thumbs; max-height: 31rem; flex-direction: column; overflow-x: hidden; overflow-y: auto; }
+            .product-thumbnails .thumb-btn { width: 3.75rem; height: 3.75rem; }
+            .product-buy-column { position: sticky; top: 9.5rem; }
         }
 
         .ts-wrapper.single .ts-control {
@@ -365,12 +390,12 @@
 
     <!-- MAIN PRODUCT SECTION -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8 pb-28 md:pb-8">
-        <div class="grid md:grid-cols-2 gap-10 lg:gap-16">
+        <div class="product-detail-layout">
 
             <!-- LEFT: Gallery -->
-            <div class="flex flex-col gap-3">
+            <div class="product-gallery">
                 <!-- Main Image -->
-                <div class="relative rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 shadow-sm aspect-square md:aspect-[4/3]">
+                <div class="product-main-media relative overflow-hidden">
                     <img id="mainImg" src="{{ $productData['image'] }}" alt="{{ $productData['name'] }}"
                         class="w-full h-full object-cover main-img" />
                     @if ($productData['isFlashSale'])
@@ -397,7 +422,7 @@
                     @endif
                 </div>
                 <!-- Thumbnails -->
-                <div class="flex gap-2 overflow-x-auto pb-1">
+                <div class="product-thumbnails flex gap-2 overflow-x-auto pb-1">
                     @foreach ($productData['images'] ?? [$productData['image']] as $idx => $thumb)
                         <button onclick="setImg({{ $idx }})"
                             class="thumb-btn flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-all {{ $idx === 0 ? 'thumb-active border-blue-400' : 'border-slate-200 hover:border-slate-300' }}">
@@ -408,7 +433,7 @@
             </div>
 
             <!-- RIGHT: Product Info -->
-            <div>
+            <div class="product-summary">
                 <!-- Brand & Status -->
                 <div class="flex items-center justify-between mb-2">
                     <span
@@ -428,7 +453,7 @@
                     </div>
                 </div>
 
-                <h1 class="text-lg sm:text-2xl md:text-3xl font-extrabold text-slate-900 mb-1 leading-tight">
+                <h1 class="text-lg sm:text-2xl font-extrabold text-slate-900 mb-1 leading-tight">
                     {{ $productData['name'] }}</h1>
 
                 @if (!empty($productData['storeName']))
@@ -467,28 +492,6 @@
                     @endif
                 </div>
 
-                <!-- Price -->
-                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-3 sm:p-4 mb-5 border border-blue-100/60">
-                    <div class="flex items-center gap-2 flex-wrap mb-1">
-                        <span id="productPrice" class="text-xl sm:text-2xl md:text-3xl font-extrabold text-blue-600">Rp
-                            {{ number_format($displayPrice, 0, ',', '.') }}</span>
-                        @if ($productData['isFlashSale'])
-                            <span id="productOrigPrice" class="text-xs sm:text-sm text-slate-400 line-through">Rp
-                                {{ number_format($productData['origPrice'], 0, ',', '.') }}</span>
-                            <span class="bg-red-100 text-red-600 text-xs font-bold px-2 py-0.5 rounded-md">Hemat
-                                {{ max(0, $savingPercent) }}%</span>
-                        @endif
-                    </div>
-                    @if ($productData['isFlashSale'])
-                        <div class="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                            <span class="bg-yellow-100 text-yellow-700 text-xs font-semibold px-2 py-0.5 rounded">Flash
-                                Sale</span>
-                            <span class="text-xs text-slate-600">Berakhir dalam:</span>
-                            <span class="font-mono font-bold text-red-600 text-sm" id="saleTimer">00:00:00</span>
-                        </div>
-                    @endif
-                </div>
-
                 @foreach ($otherGroups as $group)
                     <div class="mb-5 hidden md:block" data-variant-group="{{ $group['key'] }}">
                         <div class="flex items-center gap-1.5 mb-2">
@@ -520,55 +523,95 @@
                     </div>
                 </div>
 
-                <!-- Quantity -->
-                <div class="mb-5">
-                    <span class="text-xs sm:text-sm font-semibold text-slate-700 block mb-2">Jumlah</span>
-                    <div class="flex flex-wrap items-center gap-3">
-                        <div class="flex items-center border-2 border-slate-200 rounded-xl overflow-hidden">
-                            <button onclick="changeQty(-1)"
-                                class="px-2.5 py-1.5 text-slate-600 hover:bg-slate-50 font-bold text-sm transition-colors">−</button>
+            </div>
+
+            <!-- RIGHT: Purchase & seller panel -->
+            <aside class="product-buy-column">
+                <div class="product-buy-panel">
+                    <div class="flex flex-wrap items-baseline gap-2">
+                        <span id="productPrice" class="product-buy-price">Rp {{ number_format($displayPrice, 0, ',', '.') }}</span>
+                        @if ($productData['isFlashSale'])
+                            <span id="productOrigPrice" class="text-xs text-slate-400 line-through">Rp {{ number_format($productData['origPrice'], 0, ',', '.') }}</span>
+                            <span class="rounded bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold text-white">-{{ max(0, $savingPercent) }}%</span>
+                        @endif
+                    </div>
+                    @if ($productData['isFlashSale'])
+                        <div class="mt-1.5 flex items-center gap-1.5 text-[11px]">
+                            <span class="font-semibold text-rose-600">Flash Sale</span>
+                            <span class="text-slate-400">berakhir</span>
+                            <span class="font-mono font-bold text-rose-600" id="saleTimer">00:00:00</span>
+                        </div>
+                    @endif
+
+                    <div class="mt-3 flex items-center gap-2 text-xs text-slate-600">
+                        <span id="stockStatusDotSide" class="h-2 w-2 rounded-full {{ ($productData['stock'] ?? 0) > 0 ? 'bg-emerald-500' : 'bg-rose-500' }}"></span>
+                        <span>Stok tersisa: <strong id="productStock" class="font-semibold text-slate-800">{{ number_format((int) $productData['stock']) }} pcs</strong></span>
+                    </div>
+
+                    <div class="mt-4">
+                        <span class="mb-2 block text-xs font-semibold text-slate-700">Jumlah</span>
+                        <div class="flex w-fit items-center overflow-hidden rounded-md border border-slate-200 bg-white">
+                            <button onclick="changeQty(-1)" class="grid h-9 w-9 place-items-center text-slate-600 hover:bg-slate-50" aria-label="Kurangi jumlah">−</button>
                             <input id="qtyDisplay" type="number" min="1" max="{{ max(1, (int) ($productData['stock'] ?? 1)) }}" value="1"
                                 inputmode="numeric" oninput="handleQtyInput(this)" onblur="commitQtyInput(this)"
-                                class="w-12 sm:w-16 px-2 py-1.5 font-bold text-slate-800 text-center border-x-2 border-slate-200 text-sm focus:outline-none focus:bg-blue-50" />
-                            <button onclick="changeQty(1)"
-                                class="px-2.5 py-1.5 text-slate-600 hover:bg-slate-50 font-bold text-sm transition-colors">+</button>
+                                class="h-9 w-12 border-x border-slate-200 text-center text-sm font-bold text-slate-800 outline-none" />
+                            <button onclick="changeQty(1)" class="grid h-9 w-9 place-items-center text-slate-600 hover:bg-slate-50" aria-label="Tambah jumlah">+</button>
                         </div>
-                        <span class="text-xs sm:text-sm text-slate-500">Stok: <span
-                                id="productStock" class="text-slate-700 font-semibold">{{ $productData['stock'] }}
-                                item</span></span>
+                        <p class="mt-1.5 text-[10px] text-slate-400">Minimum pembelian 1 pcs</p>
+                    </div>
+
+                    <div class="mt-4 hidden flex-col gap-2 md:flex">
+                        <button id="buyNowBtn" type="button" onclick="buyNow()"
+                            class="product-buy-primary flex h-11 w-full items-center justify-center rounded-md text-sm font-bold text-white transition">
+                            <span class="btn-label">Beli Sekarang</span>
+                        </button>
+                        <button id="addToCartBtn" onclick="addToCart()"
+                            class="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-blue-50 text-sm font-semibold text-blue-700 transition hover:bg-blue-100">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13 5.4 5M7 13l-2.3 2.3c-.6.6-.2 1.7.7 1.7H17m0 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-8 2a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"/></svg>
+                            <span class="btn-label">Tambah ke Keranjang</span>
+                        </button>
+                        @if (!empty($productData['isRedeemProduct']))
+                            <button type="button" onclick="redeemNow()" class="flex h-10 w-full items-center justify-center rounded-md bg-amber-500 text-sm font-semibold text-white hover:bg-amber-600">Redeem Point</button>
+                        @endif
+                    </div>
+
+                    <div class="mt-4 grid grid-cols-2 border-t border-slate-100 pt-3 text-[11px] font-medium text-slate-600">
+                        <button onclick="toggleWishlist()" class="flex items-center justify-center gap-1.5 border-r border-slate-100 hover:text-rose-600">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4.3 6.3a4.5 4.5 0 0 0 0 6.4L12 20.4l7.7-7.7a4.5 4.5 0 0 0-6.4-6.4L12 7.6l-1.3-1.3a4.5 4.5 0 0 0-6.4 0Z"/></svg>
+                            Wishlist
+                        </button>
+                        <button onclick="shareProduct()" class="flex items-center justify-center gap-1.5 hover:text-blue-700">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8.7 13.3a3 3 0 1 0 0-2.6m0 2.6 6.6 3.4m-6.6-6 6.6-3.4m0 0a3 3 0 1 0 5.4-2.6 3 3 0 0 0-5.4 2.6Zm0 9.4a3 3 0 1 0 5.4 2.6 3 3 0 0 0-5.4-2.6Z"/></svg>
+                            Bagikan
+                        </button>
                     </div>
                 </div>
 
-                <!-- Action Buttons (Desktop) -->
-                <div class="hidden md:flex gap-3 mb-6">
-                    <button id="addToCartBtn" onclick="addToCart()"
-                        class="flex-1 h-11 bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold rounded-xl border border-blue-200 hover:border-blue-400 transition-all flex items-center justify-center gap-2 text-sm">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                        <span class="btn-label">Keranjang</span>
-                    </button>
-                    <button id="buyNowBtn" type="button" onclick="buyNow()"
-                        class="flex-1 h-11 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm shadow-blue-100 text-sm">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                        <span class="btn-label">Beli Sekarang</span>
-                    </button>
-                    @if (!empty($productData['isRedeemProduct']))
-                        <button type="button" onclick="redeemNow()"
-                            class="flex-1 h-11 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm shadow-amber-100 text-sm">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-10V6m0 12v2m9-8a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            Redeem Point
-                        </button>
-                    @endif
+                <div class="product-seller-panel">
+                    <div class="flex items-center gap-3">
+                        <span class="product-seller-mark">{{ strtoupper(mb_substr($productData['storeName'] ?: 'M', 0, 1)) }}</span>
+                        <div class="min-w-0">
+                            <p class="truncate text-sm font-bold text-slate-900">{{ $productData['storeName'] ?: 'Mitra industri' }}</p>
+                            <p class="mt-0.5 flex items-center gap-1 text-[10px] font-semibold text-blue-700"><span class="h-1.5 w-1.5 rounded-full bg-blue-600"></span> Official Store</p>
+                        </div>
+                    </div>
+                    <div class="mt-4 grid grid-cols-3 divide-x divide-slate-100 text-center">
+                        <div><strong class="block text-sm text-slate-900">{{ number_format((float) $productData['rating'], 1) }}</strong><span class="text-[9px] text-slate-400">rating toko</span></div>
+                        <div><strong class="block text-sm text-slate-900">{{ number_format((int) $productData['sold']) }}</strong><span class="text-[9px] text-slate-400">terjual</span></div>
+                        <div><strong class="block text-sm text-slate-900">Aktif</strong><span class="text-[9px] text-slate-400">status</span></div>
+                    </div>
                 </div>
-            </div>
+
+                <div class="product-benefits">
+                    <h3 class="mb-3 text-sm font-bold text-slate-900">Keunggulan Belanja</h3>
+                    <ul>
+                        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="m9 12 2 2 4-4m5.6 1.2A9 9 0 1 1 12.8 3a9 9 0 0 1 7.8 8.2Z"/></svg>Produk berkualitas</li>
+                        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M7 3v4m10-4v4M5 11h14v9H5z"/></svg>Stok dan harga transparan</li>
+                        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7h11v9H3zM14 10h4l3 3v3h-7zM7 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm10 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg>Pengiriman aman</li>
+                        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3a7 7 0 0 0-7 7v3l-2 3h18l-2-3v-3a7 7 0 0 0-7-7Zm-2 17h4"/></svg>Dukungan kebutuhan proyek</li>
+                    </ul>
+                </div>
+            </aside>
         </div>
 
         <!-- TABS: Deskripsi, Ulasan, Variant -->
@@ -1244,6 +1287,7 @@
             const stock = Number(productData.stock || 0);
             const statusText = document.getElementById('stockStatusText');
             const statusDot = document.getElementById('stockStatusDot');
+            const sideStatusDot = document.getElementById('stockStatusDotSide');
             const statusBadge = document.getElementById('stockStatusBadge');
             const stockEl = document.getElementById('productStock');
             const mobileStock = document.getElementById('mobileStickyStock');
@@ -1269,8 +1313,9 @@
 
             if (statusText) statusText.textContent = label;
             if (statusDot) statusDot.className = `w-2 h-2 rounded-full ${dotClass}`;
+            if (sideStatusDot) sideStatusDot.className = `h-2 w-2 rounded-full ${stock > 0 ? 'bg-emerald-500' : 'bg-rose-500'}`;
             if (statusBadge) statusBadge.className = `text-xs font-medium flex items-center gap-1 rounded-full px-2.5 py-1 ${badgeClass.join(' ')}`;
-            if (stockEl) stockEl.textContent = `${stock} item`;
+            if (stockEl) stockEl.textContent = `${stock} pcs`;
             if (mobileStock) mobileStock.textContent = `Stok ${stock} item`;
             if (mobileStatus) {
                 mobileStatus.textContent = stock <= 0 ? 'Stok habis' : (stock <= 5 ? 'Stok terbatas' : 'Siap dibeli');
@@ -1288,7 +1333,7 @@
             const desktopBuyLabel = buyNowBtn?.querySelector('.btn-label');
             const mobileCartLabel = mobileAddToCartBtn?.querySelector('.btn-label');
             const mobileBuyLabel = mobileBuyNowBtn?.querySelector('.btn-label');
-            if (desktopCartLabel) desktopCartLabel.textContent = stock <= 0 ? 'Stok Habis' : 'Keranjang';
+            if (desktopCartLabel) desktopCartLabel.textContent = stock <= 0 ? 'Stok Habis' : 'Tambah ke Keranjang';
             if (desktopBuyLabel) desktopBuyLabel.textContent = stock <= 0 ? 'Pilih Produk Lain' : 'Beli Sekarang';
             if (mobileCartLabel) mobileCartLabel.textContent = stock <= 0 ? 'Stok Habis' : 'Keranjang';
             if (mobileBuyLabel) mobileBuyLabel.textContent = stock <= 0 ? 'Pilih Produk Lain' : 'Beli Sekarang';
@@ -1399,7 +1444,7 @@
             if (origPriceEl) origPriceEl.textContent = formatRupiah(selectedVariant.price || 0);
 
             const stockEl = document.getElementById('productStock');
-            if (stockEl) stockEl.textContent = `${productData.stock} item`;
+            if (stockEl) stockEl.textContent = `${productData.stock} pcs`;
 
             qty = clampQty(qty);
             updateQtyInput();
