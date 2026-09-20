@@ -73,20 +73,23 @@
         @media (min-width: 1024px) {
             .product-detail-layout { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.08fr) 17rem; align-items: start; gap: 1.25rem; }
             .product-gallery { display: grid; grid-template-columns: 3.75rem minmax(0, 1fr); grid-template-areas: 'thumbs image'; align-items: start; }
-            .product-main-media { grid-area: image; }
-            .product-thumbnails { grid-area: thumbs; max-height: 31rem; flex-direction: column; overflow-x: hidden; overflow-y: auto; }
+            .product-main-media { grid-area: image; height: clamp(22rem, 36vw, 31rem); aspect-ratio: auto; }
+            .product-thumbnails { grid-area: thumbs; max-height: clamp(22rem, 36vw, 31rem); flex-direction: column; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
             .product-thumbnails .thumb-btn { width: 3.75rem; height: 3.75rem; }
             .product-buy-column { position: sticky; top: 9.5rem; }
         }
 
         .ts-wrapper.single .ts-control {
-            min-height: 44px;
-            border-radius: 0.75rem;
+            min-height: 38px;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.55rem;
             border: 1.5px solid #e2e8f0;
             background: #fff;
             box-shadow: none;
-            padding: 0.6rem 0.875rem;
-            font-size: 0.875rem;
+            padding: 0.4rem 0.75rem;
+            font-size: 0.8125rem;
+            text-align: center;
             color: #334155;
             transition: border-color 0.15s, box-shadow 0.15s;
         }
@@ -99,6 +102,14 @@
         .ts-wrapper .ts-control input {
             font-size: 0.875rem;
             color: #334155;
+        }
+
+        .ts-wrapper.single .ts-control .item { width: 100%; text-align: center; }
+        .ts-wrapper.is-single-option .ts-control { cursor: default; background: #f8fafc; color: #475569; }
+        .product-variant-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: .85rem 1rem; margin-bottom: 1.25rem; }
+        .product-variant-field { min-width: 0; margin: 0; }
+        @media (min-width: 1024px) {
+            .product-variant-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
 
         .ts-wrapper .ts-dropdown {
@@ -397,7 +408,7 @@
                 <!-- Main Image -->
                 <div class="product-main-media relative overflow-hidden">
                     <img id="mainImg" src="{{ $productData['image'] }}" alt="{{ $productData['name'] }}"
-                        class="w-full h-full object-cover main-img" />
+                        class="main-img h-full w-full cursor-zoom-in object-cover" onclick="openProductImageModal(this.src)" />
                     @if ($productData['isFlashSale'])
                         <div class="absolute top-3 left-3">
                             <span class="bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-md">-{{ max(0, $savingPercent) }}%</span>
@@ -413,11 +424,11 @@
                     @if (count($productData['images'] ?? [$productData['image']]) > 1)
                         <button onclick="prevImg()"
                             class="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/80 backdrop-blur-sm rounded-full shadow flex items-center justify-center hover:bg-white transition-colors">
-                            <i class="ri-arrow-left-s-line text-xl text-slate-600"></i>
+                            <svg class="h-5 w-5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m15 18-6-6 6-6"/></svg>
                         </button>
                         <button onclick="nextImg()"
                             class="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/80 backdrop-blur-sm rounded-full shadow flex items-center justify-center hover:bg-white transition-colors">
-                            <i class="ri-arrow-right-s-line text-xl text-slate-600"></i>
+                            <svg class="h-5 w-5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6"/></svg>
                         </button>
                     @endif
                 </div>
@@ -492,8 +503,9 @@
                     @endif
                 </div>
 
+                <div class="product-variant-grid hidden md:grid">
                 @foreach ($otherGroups as $group)
-                    <div class="mb-5 hidden md:block" data-variant-group="{{ $group['key'] }}">
+                    <div class="product-variant-field" data-variant-group="{{ $group['key'] }}">
                         <div class="flex items-center gap-1.5 mb-2">
                             <span class="text-xs sm:text-sm font-semibold text-slate-700">{{ $group['label'] }}:</span>
                             <span id="selected-{{ $group['key'] }}"
@@ -508,19 +520,6 @@
                         </select>
                     </div>
                 @endforeach
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
-                    <div class="rounded-2xl border border-slate-200 bg-white px-4 py-3">
-                        <p class="text-[11px] uppercase tracking-[0.18em] text-slate-400 mb-1">Keunggulan</p>
-                        <p class="text-sm font-semibold text-slate-700">Produk aktif & siap dibeli</p>
-                    </div>
-                    <div class="rounded-2xl border border-slate-200 bg-white px-4 py-3">
-                        <p class="text-[11px] uppercase tracking-[0.18em] text-slate-400 mb-1">Pengiriman</p>
-                        <p class="text-sm font-semibold text-slate-700">Cek ongkir saat checkout</p>
-                    </div>
-                    <div class="rounded-2xl border border-slate-200 bg-white px-4 py-3">
-                        <p class="text-[11px] uppercase tracking-[0.18em] text-slate-400 mb-1">Keamanan</p>
-                        <p class="text-sm font-semibold text-slate-700">Checkout aman & cepat</p>
-                    </div>
                 </div>
 
             </div>
@@ -900,6 +899,11 @@
                 class="w-full max-h-[80vh] object-contain rounded-xl bg-white" />
         </div>
     </div>
+
+    <div id="productImageModal" class="fixed inset-0 z-[100000] hidden items-center justify-center bg-slate-950/90 p-4 backdrop-blur-sm" onclick="closeProductImageModal(event)">
+        <button type="button" onclick="closeProductImageModal()" class="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full bg-white/10 text-2xl text-white hover:bg-white/20" aria-label="Tutup gambar">&times;</button>
+        <img id="productImageModalImg" src="" alt="{{ $productData['name'] }}" class="max-h-[90vh] max-w-[92vw] rounded-lg bg-white object-contain shadow-2xl" />
+    </div>
 @endsection
 
 @section('script')
@@ -926,6 +930,7 @@
         let isDragging = false;
 
         function setImg(i) {
+            if (!images.length || i < 0 || i >= images.length) return;
             currentImg = i;
             const img = document.getElementById('mainImg');
             img.style.opacity = 0;
@@ -947,6 +952,25 @@
 
         function nextImg() {
             setImg((currentImg + 1) % images.length);
+        }
+
+        function openProductImageModal(src = '') {
+            const modal = document.getElementById('productImageModal');
+            const modalImg = document.getElementById('productImageModalImg');
+            const mainImg = document.getElementById('mainImg');
+            if (!modal || !modalImg) return;
+            modalImg.src = src || mainImg?.src || '';
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closeProductImageModal(event = null) {
+            const modal = document.getElementById('productImageModal');
+            if (!modal || (event && event.target !== modal)) return;
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.classList.remove('overflow-hidden');
         }
 
         function getMaxQty(isDrawer = false) {
@@ -1202,12 +1226,13 @@
 
                 const instance = new TomSelect(select, {
                     create: false,
+                    controlInput: null,
                     maxItems: 1,
                     closeAfterSelect: true,
                     allowEmptyOption: false,
                     copyClassesToDropdown: false,
                     hideSelected: true,
-                    searchField: ['text'],
+                    searchField: [],
                     render: {
                         no_results(data, escape) {
                             return `<div class="ts-no-results">Tidak ditemukan: "${escape(data.input)}"</div>`;
@@ -1217,6 +1242,11 @@
                         selectVariantValueDrawer(select, groupKey);
                     },
                 });
+
+                if (Array.from(select.options).filter((option) => !option.disabled).length <= 1) {
+                    instance.lock();
+                    instance.wrapper?.classList.add('is-single-option');
+                }
 
                 variantSelectDrawerInstances.set(groupKey, instance);
             });
@@ -1451,8 +1481,13 @@
             updateStockUI();
 
             if (selectedVariant.image) {
-                const mainImg = document.getElementById('mainImg');
-                if (mainImg) mainImg.src = selectedVariant.image;
+                const variantImageIndex = images.indexOf(selectedVariant.image);
+                if (variantImageIndex >= 0) {
+                    setImg(variantImageIndex);
+                } else {
+                    const mainImg = document.getElementById('mainImg');
+                    if (mainImg) mainImg.src = selectedVariant.image;
+                }
             }
         }
 
@@ -1606,12 +1641,13 @@
 
                 const instance = new TomSelect(select, {
                     create: false,
+                    controlInput: null,
                     maxItems: 1,
                     closeAfterSelect: true,
                     allowEmptyOption: false,
                     copyClassesToDropdown: false,
                     hideSelected: true,
-                    searchField: ['text'],
+                    searchField: [],
                     render: {
                         no_results(data, escape) {
                             return `<div class="ts-no-results">Tidak ditemukan: "${escape(data.input)}"</div>`;
@@ -1627,6 +1663,11 @@
                         document.body.classList.remove('variant-select-open');
                     },
                 });
+
+                if (Array.from(select.options).filter((option) => !option.disabled).length <= 1) {
+                    instance.lock();
+                    instance.wrapper?.classList.add('is-single-option');
+                }
 
                 variantSelectInstances.set(groupKey, instance);
             });
@@ -1790,6 +1831,9 @@
         updateStockUI();
         syncWishIcon();
         resumePendingAuthActionIfAny();
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') closeProductImageModal();
+        });
 
         function switchTab(tab) {
             ['desc', 'review', 'size'].forEach(t => {
