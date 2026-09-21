@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model
 {
-    protected $fillable = ['name', 'slug', 'parent_id'];
+    protected $fillable = ['name', 'slug', 'parent_id', 'specification_template_id'];
 
     public function parent()
     {
@@ -21,5 +21,10 @@ class Category extends Model
     public function products()
     {
         return $this->hasMany(Product::class);
+    }
+
+    public function specificationTemplate()
+    {
+        return $this->belongsTo(SpecificationTemplate::class);
     }
 }

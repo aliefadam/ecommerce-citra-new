@@ -102,7 +102,7 @@ class ProductController extends Controller
                 'group' => $category->parent?->name ?? 'Kategori',
                 'detail_name' => $category->name,
                 'detail' => $category->name,
-                'templateId' => null,
+                'templateId' => $category->specification_template_id,
             ];
         })->concat($categoryDetails->map(function ($category) {
             return [
@@ -183,7 +183,8 @@ class ProductController extends Controller
 
         $specificationTemplate = app(ProductSpecificationService::class)->resolve(
             $detail?->id,
-            $detail?->main_category_id ?: $mainCategory?->id
+            $detail?->main_category_id ?: $mainCategory?->id,
+            $category?->id,
         );
         app(ProductSpecificationService::class)->validateVariants($specificationTemplate, $validated['variants']);
 
@@ -523,7 +524,7 @@ class ProductController extends Controller
                 'group' => $category->parent?->name ?? 'Kategori',
                 'detail_name' => $category->name,
                 'detail' => $category->name,
-                'templateId' => null,
+                'templateId' => $category->specification_template_id,
             ];
         })->concat($categoryDetails->map(function ($category) {
             return [
@@ -607,7 +608,8 @@ class ProductController extends Controller
 
         $specificationTemplate = app(ProductSpecificationService::class)->resolve(
             $detail?->id,
-            $detail?->main_category_id ?: $mainCategory?->id
+            $detail?->main_category_id ?: $mainCategory?->id,
+            $category?->id,
         );
         app(ProductSpecificationService::class)->validateVariants($specificationTemplate, $validated['variants']);
 

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Category;
 use App\Models\CategoryDetail;
 use App\Models\MainCategory;
 use App\Models\Product;
@@ -11,7 +12,7 @@ use Illuminate\Validation\ValidationException;
 
 class ProductSpecificationService
 {
-    public function resolve(?int $categoryDetailId, ?int $mainCategoryId): ?SpecificationTemplate
+    public function resolve(?int $categoryDetailId, ?int $mainCategoryId, ?int $legacyCategoryId = null): ?SpecificationTemplate
     {
         $templateId = $categoryDetailId
             ? CategoryDetail::query()->whereKey($categoryDetailId)->value('specification_template_id')
@@ -19,6 +20,10 @@ class ProductSpecificationService
 
         if (! $templateId && $mainCategoryId) {
             $templateId = MainCategory::query()->whereKey($mainCategoryId)->value('default_specification_template_id');
+        }
+
+        if (! $templateId && $legacyCategoryId) {
+            $templateId = Category::query()->whereKey($legacyCategoryId)->value('specification_template_id');
         }
 
         return $templateId
@@ -32,7 +37,7 @@ class ProductSpecificationService
 
     public function resolveForProduct(Product $product): ?SpecificationTemplate
     {
-        return $this->resolve($product->category_detail_id, $product->main_category_id);
+        return $this->resolve($product->category_detail_id, $product->main_category_id, $product->category_id);
     }
 
     public function templatePayload(): array

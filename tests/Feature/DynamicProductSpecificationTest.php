@@ -36,6 +36,29 @@ class DynamicProductSpecificationTest extends TestCase
         $this->assertSame($pipe->id, $detail->fresh()->specification_template_id);
     }
 
+    public function test_existing_bolt_category_mapping_is_sent_to_the_product_form(): void
+    {
+        $bolt = SpecificationTemplate::query()->where('code', 'bolt')->firstOrFail();
+        $main = MainCategory::create([
+            'name' => 'Bolt Existing',
+            'slug' => 'bolt-existing',
+            'default_specification_template_id' => $bolt->id,
+        ]);
+        CategoryDetail::create([
+            'main_category_id' => $main->id,
+            'name' => 'Hex Bolt Existing',
+            'slug' => 'hex-bolt-existing',
+        ]);
+
+        $response = $this->actingAs($this->admin())->get(route('products.create'));
+        $response->assertOk();
+        $categoryPayload = collect($response->viewData('categories'))
+            ->first(fn ($category) => $category['type'] === 'detail' && (int) $category['id'] === (int) CategoryDetail::query()->where('slug', 'hex-bolt-existing')->value('id'));
+
+        $this->assertSame($bolt->id, (int) $categoryPayload['templateId']);
+        $this->assertSame('bolt', $response->viewData('specificationTemplates')[(string) $bolt->id]['code']);
+    }
+
     public function test_pipe_product_requires_fields_from_its_template(): void
     {
         [, $detail] = $this->categoryFixture('pipe');
