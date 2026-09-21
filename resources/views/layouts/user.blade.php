@@ -64,28 +64,28 @@
             $navIsCart     = request()->routeIs('frontend.cart');
             $navIsAkun     = request()->routeIs('frontend.profil');
         @endphp
-        <nav class="ec-bottom-nav fixed inset-x-0 bottom-0 border-t border-slate-200 bg-white/95 px-2 shadow-[0_-8px_30px_rgb(17_24_32/.08)] backdrop-blur md:hidden" aria-label="Navigasi cepat">
-            <div class="mx-auto grid max-w-md grid-cols-5">
+        <nav class="ec-bottom-nav md:hidden" aria-label="Navigasi cepat">
+            <div class="ec-bottom-nav-track">
 
                 {{-- Home --}}
                 <a href="{{ route('frontend.index') }}"
                     class="ec-bottom-link" @if($navIsHome) aria-current="page" @endif>
                     <i class="fi fi-rr-home text-[1.1rem] leading-none flex-shrink-0"></i>
-                    <span>Beranda</span>
+                    <span class="ec-bottom-label">Beranda</span>
                 </a>
 
                 {{-- Kategori --}}
                 <a href="{{ route('frontend.kategori') }}"
                     class="ec-bottom-link" @if($navIsKategori) aria-current="page" @endif>
                     <i class="fi fi-rr-apps text-[1.1rem] leading-none flex-shrink-0"></i>
-                    <span>Kategori</span>
+                    <span class="ec-bottom-label">Kategori</span>
                 </a>
 
                 {{-- Promo --}}
                 <a href="{{ route('frontend.flash-sale') }}"
                     class="ec-bottom-link" @if($navIsPromo) aria-current="page" @endif>
                     <i class="fi fi-rr-bolt text-[1.1rem] leading-none flex-shrink-0"></i>
-                    <span>Promo</span>
+                    <span class="ec-bottom-label">Promo</span>
                 </a>
 
                 {{-- Keranjang --}}
@@ -95,14 +95,14 @@
                         <i class="fi fi-rr-shopping-cart text-[1.1rem] leading-none"></i>
                         <span id="mobileCartBadge" class="absolute -right-2 -top-2 grid min-h-4 min-w-4 place-items-center rounded-full bg-orange-600 px-1 text-[9px] font-bold text-white" @if($mobileCartCount <= 0) hidden @endif>{{ $mobileCartCount > 99 ? '99+' : $mobileCartCount }}</span>
                     </span>
-                    <span>Keranjang</span>
+                    <span class="ec-bottom-label">Keranjang</span>
                 </a>
 
                 {{-- Akun --}}
                 <a href="{{ route('frontend.profil') }}"
                     class="ec-bottom-link" @if($navIsAkun) aria-current="page" @endif>
                     <i class="fi fi-rr-user text-[1.1rem] leading-none flex-shrink-0"></i>
-                    <span>Akun</span>
+                    <span class="ec-bottom-label">Akun</span>
                 </a>
 
             </div>
