@@ -26,6 +26,19 @@ class StorefrontDesignSystemTest extends TestCase
             ->assertDontSee('footerModalOpen', false);
     }
 
+    public function test_mobile_task_navigation_only_appears_on_its_primary_destinations(): void
+    {
+        $this->seed();
+
+        $this->get(route('frontend.index'))
+            ->assertOk()
+            ->assertSee('aria-label="Navigasi cepat"', false);
+
+        $this->get(route('frontend.detail-produk', 'baut-hex-m8-x-25mm-galvanis'))
+            ->assertOk()
+            ->assertDontSee('aria-label="Navigasi cepat"', false);
+    }
+
     public function test_legal_routes_have_accessible_fallback_content_without_database_pages(): void
     {
         $this->get('/pages/kebijakan-privasi')

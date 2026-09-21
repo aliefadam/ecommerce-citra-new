@@ -33,6 +33,7 @@ test('global shell supports keyboard menus and stable mobile navigation', async 
     await expect(categoryDropdown).toBeHidden();
 
     await page.setViewportSize({ width: 390, height: 844 });
+    await expect(page.locator('.ec-site-header')).toHaveCSS('position', 'relative');
     const mobileSearchTrigger = page.locator('#ecMobileSearchToggle');
     await mobileSearchTrigger.click();
     await expect(page.locator('#ecNavSearchMobile')).toBeFocused();

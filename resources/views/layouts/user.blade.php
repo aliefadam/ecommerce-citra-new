@@ -17,6 +17,13 @@
                 'frontend.order-tracking*'
             );
             $seoRobots = trim($__env->yieldContent('robots', $privatePage ? 'noindex, follow' : 'index, follow, max-image-preview:large'));
+            $showMobileTaskNavigation = request()->routeIs(
+                'frontend.index',
+                'frontend.kategori',
+                'frontend.flash-sale',
+                'frontend.cart',
+                'frontend.profil'
+            );
         @endphp
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -47,7 +54,7 @@
         @stack('structured_data')
     </head>
 
-    <body class="@yield('body_class', 'bg-stone-50 text-slate-800 pb-20 md:pb-0')">
+    <body class="@yield('body_class', 'bg-stone-50 text-slate-800') {{ $showMobileTaskNavigation ? 'pb-20 md:pb-0' : '' }}">
         <div class="min-h-screen">
             @yield('content')
         </div>
@@ -55,17 +62,18 @@
 
         <div id="ecToastRegion" class="ec-toast-region" aria-live="polite" aria-atomic="true"></div>
 
-        <!-- Mobile task navigation -->
-        @php
-            $mobileCartCount = (int) ($customerNavigation['cartCount'] ?? 0);
-            $navIsHome     = request()->routeIs('frontend.index');
-            $navIsKategori = request()->routeIs('frontend.kategori');
-            $navIsPromo    = request()->routeIs('frontend.flash-sale');
-            $navIsCart     = request()->routeIs('frontend.cart');
-            $navIsAkun     = request()->routeIs('frontend.profil');
-        @endphp
-        <nav class="ec-bottom-nav md:hidden" aria-label="Navigasi cepat">
-            <div class="ec-bottom-nav-track">
+        @if ($showMobileTaskNavigation)
+            <!-- Mobile task navigation -->
+            @php
+                $mobileCartCount = (int) ($customerNavigation['cartCount'] ?? 0);
+                $navIsHome     = request()->routeIs('frontend.index');
+                $navIsKategori = request()->routeIs('frontend.kategori');
+                $navIsPromo    = request()->routeIs('frontend.flash-sale');
+                $navIsCart     = request()->routeIs('frontend.cart');
+                $navIsAkun     = request()->routeIs('frontend.profil');
+            @endphp
+            <nav class="ec-bottom-nav md:hidden" aria-label="Navigasi cepat">
+                <div class="ec-bottom-nav-track">
 
                 {{-- Home --}}
                 <a href="{{ route('frontend.index') }}"
@@ -105,8 +113,9 @@
                     <span class="ec-bottom-label">Akun</span>
                 </a>
 
-            </div>
-        </nav>
+                </div>
+            </nav>
+        @endif
 
         <!-- WhatsApp Floating Button -->
         @if (!empty($appStoreSettings['social_whatsapp']))
@@ -133,7 +142,7 @@
                     mobile: {
                         position: 'br',
                         xOffset: '16px',
-                        yOffset: '86px'
+                        yOffset: '{{ $showMobileTaskNavigation ? '86px' : '16px' }}'
                     }
                 }
             };
