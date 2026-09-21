@@ -232,6 +232,12 @@ return [
                         'active' => 'category-details.*',
                         'permission' => 'categories.index',
                     ],
+                    [
+                        'name' => 'Specification Templates',
+                        'route' => 'specification-templates.index',
+                        'active' => 'specification-templates.*',
+                        'permission' => 'categories.index',
+                    ],
                 ],
             ],
             [

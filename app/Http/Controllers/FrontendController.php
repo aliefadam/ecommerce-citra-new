@@ -12,7 +12,6 @@ use App\Models\MainCategory;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\PromoPage;
-use App\Models\StoreSetting;
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
 use App\Models\TransactionProductReview;
@@ -1242,23 +1241,27 @@ class FrontendController extends Controller
 
     private function buildVariantFilterPairs(ProductVariant $variant): array
     {
-        $labels = [
-            'diameter' => 'Diameter',
-            'length_mm' => 'Panjang',
-            'thread_type' => 'Tipe Drat',
-            'grade' => 'Grade',
-            'material' => 'Material',
-        ];
-
-        return collect($this->buildVariantAttributeMap($variant))
-            ->map(function ($value, $code) use ($labels) {
-                if (! isset($labels[$code]) || trim((string) $value) === '') {
+        return $variant->attributeValues
+            ->sortBy(fn ($attribute) => (int) ($attribute->definition?->sort_order ?? 999))
+            ->map(function ($attribute) {
+                $definition = $attribute->definition;
+                if (! $definition) {
                     return null;
                 }
 
+                $value = $attribute->value_text;
+                if (($value === null || $value === '') && $attribute->value_number !== null) {
+                    $value = rtrim(rtrim((string) $attribute->value_number, '0'), '.');
+                }
+                if (trim((string) $value) === '') {
+                    return null;
+                }
+
+                $unit = trim((string) $definition->unit);
+
                 return [
-                    'name' => $labels[$code],
-                    'value' => $code === 'length_mm' ? $value.'mm' : $value,
+                    'name' => (string) $definition->name,
+                    'value' => $unit !== '' ? $value.' '.$unit : $value,
                 ];
             })
             ->filter()
@@ -1268,26 +1271,21 @@ class FrontendController extends Controller
 
     private function buildAttributeVariantGroups($variants): array
     {
-        $labels = [
-            'diameter' => 'Diameter',
-            'length_mm' => 'Panjang',
-            'thread_type' => 'Tipe Drat',
-            'grade' => 'Grade',
-            'material' => 'Material',
-        ];
+        $definitions = collect($variants)
+            ->flatMap(fn ($variant) => $variant->attributeValues)
+            ->map(fn ($attribute) => $attribute->definition)
+            ->filter()
+            ->unique('id')
+            ->sortBy(fn ($definition) => [(int) $definition->sort_order, (int) $definition->id]);
 
-        $order = ['diameter', 'length_mm', 'thread_type', 'grade', 'material'];
-
-        return collect($order)
-            ->map(function ($code) use ($variants, $labels) {
+        return $definitions
+            ->map(function ($definition) use ($variants) {
+                $code = (string) $definition->code;
                 $values = collect($variants)
                     ->map(function ($variant) use ($code) {
                         $value = $variant->attributeValue($code);
-                        if (! $value) {
-                            return null;
-                        }
 
-                        return $code === 'length_mm' ? $value.'mm' : $value;
+                        return $value ?: null;
                     })
                     ->filter()
                     ->unique()
@@ -1300,7 +1298,8 @@ class FrontendController extends Controller
 
                 return [
                     'key' => $code,
-                    'label' => $labels[$code] ?? ucfirst($code),
+                    'label' => (string) $definition->name.($definition->unit ? ' ('.$definition->unit.')' : ''),
+                    'unit' => $definition->unit,
                     'values' => $values,
                 ];
             })

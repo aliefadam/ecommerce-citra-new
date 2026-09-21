@@ -2,19 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ProductImportTemplateExport;
 use App\Http\Controllers\Concerns\ScopesToActiveCompany;
-use App\Models\MainCategory;
 use App\Models\AttributeDefinition;
 use App\Models\Category;
 use App\Models\CategoryDetail;
+use App\Models\MainCategory;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\ProductVariantAttribute;
 use App\Models\ReturnRequestItem;
+use App\Models\SpecificationTemplate;
 use App\Models\TransactionDetail;
 use App\Models\Variant;
 use App\Services\ImageOptimizer;
+use App\Services\ProductSpecificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -22,7 +26,6 @@ use Illuminate\Validation\ValidationException;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-use App\Exports\ProductImportTemplateExport;
 
 class ProductController extends Controller
 {
@@ -54,8 +57,9 @@ class ProductController extends Controller
             ->with(['category', 'mainCategory', 'categoryDetail', 'productVariants'])
             ->latest()
             ->get();
+        $specificationTemplates = SpecificationTemplate::query()->where('is_active', true)->orderBy('name')->get();
 
-        return view('backend.products.index', compact('products'));
+        return view('backend.products.index', compact('products', 'specificationTemplates'));
     }
 
     public function create()
@@ -67,9 +71,10 @@ class ProductController extends Controller
             ->orderBy('name')
             ->get()
             ->map(function ($category) {
-                $category->name = ($category->mainCategory?->name ? $category->mainCategory->name . ' > ' : '') . $category->name;
+                $category->name = ($category->mainCategory?->name ? $category->mainCategory->name.' > ' : '').$category->name;
                 $category->group_name = (string) ($category->mainCategory?->name ?? 'Lainnya');
                 $category->detail_name = (string) $category->getOriginal('name');
+
                 return $category;
             });
         $attributeDefinitions = AttributeDefinition::query()
@@ -78,6 +83,7 @@ class ProductController extends Controller
             ->get();
 
         $attributeOptions = $this->buildAttributeOptions($attributeDefinitions);
+        $specificationTemplates = app(ProductSpecificationService::class)->templatePayload();
 
         $categories = $mainCategories->map(function ($category) {
             return [
@@ -86,15 +92,17 @@ class ProductController extends Controller
                 'name' => $category->name,
                 'group' => 'Kategori utama',
                 'detail' => $category->name,
+                'templateId' => $category->default_specification_template_id,
             ];
         })->concat($legacyCategories->map(function ($category) {
             return [
                 'id' => $category->id,
                 'type' => 'category',
-                'name' => $category->parent?->name ? $category->parent->name . ' > ' . $category->name : $category->name,
+                'name' => $category->parent?->name ? $category->parent->name.' > '.$category->name : $category->name,
                 'group' => $category->parent?->name ?? 'Kategori',
                 'detail_name' => $category->name,
                 'detail' => $category->name,
+                'templateId' => null,
             ];
         })->concat($categoryDetails->map(function ($category) {
             return [
@@ -104,9 +112,11 @@ class ProductController extends Controller
                 'group' => $category->group_name,
                 'detail_name' => $category->detail_name,
                 'detail' => $category->detail_name,
+                'templateId' => $category->specification_template_id ?: $category->mainCategory?->default_specification_template_id,
             ];
         })))->values();
-        return view('backend.products.create', compact('mainCategories', 'categoryDetails', 'categories', 'attributeDefinitions', 'attributeOptions'));
+
+        return view('backend.products.create', compact('mainCategories', 'categoryDetails', 'categories', 'attributeDefinitions', 'attributeOptions', 'specificationTemplates'));
     }
 
     public function store(Request $request, ImageOptimizer $imageOptimizer)
@@ -116,26 +126,26 @@ class ProductController extends Controller
         ]);
 
         $validated = $request->validate([
-            'name'                  => ['required', 'string', 'max:255'],
-            'main_category_id'      => ['nullable', 'exists:main_categories,id'],
-            'category_detail_id'    => ['nullable', 'exists:category_details,id'],
-            'category_id'           => ['nullable', 'exists:categories,id'],
-            'status'                => ['required', Rule::in(['active', 'inactive'])],
-            'description'           => ['nullable', 'string'],
-            'is_redeem_product'     => ['nullable', 'boolean'],
-            'redeem_points'         => ['nullable', 'integer', 'min:1'],
-            'variants'              => ['required', 'array', 'min:1'],
-            'variants.*.price'      => ['required', 'numeric', 'min:0'],
-            'variants.*.stock'      => ['required', 'integer', 'min:0'],
+            'name' => ['required', 'string', 'max:255'],
+            'main_category_id' => ['nullable', 'exists:main_categories,id'],
+            'category_detail_id' => ['nullable', 'exists:category_details,id'],
+            'category_id' => ['nullable', 'exists:categories,id'],
+            'status' => ['required', Rule::in(['active', 'inactive'])],
+            'description' => ['nullable', 'string'],
+            'is_redeem_product' => ['nullable', 'boolean'],
+            'redeem_points' => ['nullable', 'integer', 'min:1'],
+            'variants' => ['required', 'array', 'min:1'],
+            'variants.*.price' => ['required', 'numeric', 'min:0'],
+            'variants.*.stock' => ['required', 'integer', 'min:0'],
             'variants.*.weight_grams' => ['required', 'integer', 'min:1'],
-            'variants.*.length_cm'  => ['nullable', 'numeric', 'min:0'],
-            'variants.*.width_cm'   => ['nullable', 'numeric', 'min:0'],
-            'variants.*.height_cm'  => ['nullable', 'numeric', 'min:0'],
+            'variants.*.length_cm' => ['nullable', 'numeric', 'min:0'],
+            'variants.*.width_cm' => ['nullable', 'numeric', 'min:0'],
+            'variants.*.height_cm' => ['nullable', 'numeric', 'min:0'],
             'variants.*.attributes' => ['nullable', 'array'],
             'variants.*.attributes.*.attribute_definition_id' => ['required', 'exists:attribute_definitions,id'],
             'variants.*.attributes.*.value_text' => ['nullable', 'string', 'max:255'],
             'variants.*.attributes.*.value_number' => ['nullable', 'numeric', 'min:0'],
-            'variants.*.image'      => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+            'variants.*.image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
         ], [
             'name.required' => 'Nama produk wajib diisi.',
             'status.required' => 'Status produk wajib dipilih.',
@@ -153,61 +163,67 @@ class ProductController extends Controller
                 ->withErrors(['redeem_points' => 'Harga point wajib diisi jika produk redeem diaktifkan.'])
                 ->withInput();
         }
-        if (!$request->boolean('is_redeem_product')) {
+        if (! $request->boolean('is_redeem_product')) {
             $validated['redeem_points'] = null;
         }
-        $detail = !empty($validated['category_detail_id'])
+        $detail = ! empty($validated['category_detail_id'])
             ? CategoryDetail::query()->find($validated['category_detail_id'])
             : null;
-        $category = !empty($validated['category_id'])
+        $category = ! empty($validated['category_id'])
             ? Category::query()->find($validated['category_id'])
             : null;
-        $mainCategory = !empty($validated['main_category_id'])
+        $mainCategory = ! empty($validated['main_category_id'])
             ? MainCategory::query()->find($validated['main_category_id'])
             : null;
-        if (!$detail && !$category && !$mainCategory) {
+        if (! $detail && ! $category && ! $mainCategory) {
             return back()
                 ->withErrors(['category_id' => 'Kategori wajib dipilih dari daftar yang tersedia.'])
                 ->withInput();
         }
+
+        $specificationTemplate = app(ProductSpecificationService::class)->resolve(
+            $detail?->id,
+            $detail?->main_category_id ?: $mainCategory?->id
+        );
+        app(ProductSpecificationService::class)->validateVariants($specificationTemplate, $validated['variants']);
 
         $files = $request->file('variants', []);
         $attributeDefinitions = AttributeDefinition::query()->get()->keyBy('id');
         $storedImages = [];
 
         try {
-            DB::transaction(function () use ($validated, $files, $detail, $category, $mainCategory, $imageOptimizer, $attributeDefinitions, $isRedeemProduct, &$storedImages) {
-            $slug = $this->makeUniqueProductSlug($validated['name']);
+            DB::transaction(function () use ($validated, $files, $detail, $category, $mainCategory, $imageOptimizer, $attributeDefinitions, $specificationTemplate, $isRedeemProduct, &$storedImages) {
+                $slug = $this->makeUniqueProductSlug($validated['name']);
 
-            $product = Product::create([
-                'company_id'  => $this->activeCompanyId(),
-                'name'        => $validated['name'],
-                'slug'        => $slug,
-                'main_category_id' => $detail ? (int) $detail->main_category_id : ($mainCategory?->id),
-                'category_detail_id' => $detail ? (int) $detail->id : null,
-                'category_id' => $category?->id,
-                'status'      => $validated['status'],
-                'description' => $validated['description'] ?? null,
-                'is_redeem_product' => $isRedeemProduct,
-                'redeem_points' => $validated['redeem_points'] ?? null,
-            ]);
+                $product = Product::create([
+                    'company_id' => $this->activeCompanyId(),
+                    'name' => $validated['name'],
+                    'slug' => $slug,
+                    'main_category_id' => $detail ? (int) $detail->main_category_id : ($mainCategory?->id),
+                    'category_detail_id' => $detail ? (int) $detail->id : null,
+                    'category_id' => $category?->id,
+                    'status' => $validated['status'],
+                    'description' => $validated['description'] ?? null,
+                    'is_redeem_product' => $isRedeemProduct,
+                    'redeem_points' => $validated['redeem_points'] ?? null,
+                ]);
 
-            foreach ($validated['variants'] as $i => $v) {
-                $attributes = $v['attributes'] ?? [];
-                unset($v['attributes']);
-                $v['image'] = isset($files[$i]['image'])
-                    ? $imageOptimizer->storeWebp($files[$i]['image'], 'product-variants', 1200, 1200, 82)
-                    : null;
-                if ($v['image']) {
-                    $storedImages[] = $v['image'];
+                foreach ($validated['variants'] as $i => $v) {
+                    $attributes = $v['attributes'] ?? [];
+                    unset($v['attributes']);
+                    $v['image'] = isset($files[$i]['image'])
+                        ? $imageOptimizer->storeWebp($files[$i]['image'], 'product-variants', 1200, 1200, 82)
+                        : null;
+                    if ($v['image']) {
+                        $storedImages[] = $v['image'];
+                    }
+                    $variantMeta = $this->resolveInternalVariant($attributes, $attributeDefinitions, $specificationTemplate);
+                    $v['variant_id'] = $variantMeta['variant_id'];
+                    $v['sku'] = $this->buildVariantSku($validated['name'], $variantMeta['label']);
+
+                    $productVariant = $product->productVariants()->create($v);
+                    $this->syncVariantAttributes($productVariant, $attributes, $attributeDefinitions);
                 }
-                $variantMeta = $this->resolveInternalVariant($attributes, $attributeDefinitions);
-                $v['variant_id'] = $variantMeta['variant_id'];
-                $v['sku'] = $this->buildVariantSku($validated['name'], $variantMeta['label']);
-
-                $productVariant = $product->productVariants()->create($v);
-                $this->syncVariantAttributes($productVariant, $attributes, $attributeDefinitions);
-            }
             });
         } catch (\Throwable $exception) {
             collect($storedImages)->each(fn ($path) => $imageOptimizer->deletePublicFile((string) $path));
@@ -222,11 +238,27 @@ class ProductController extends Controller
         abort(404);
     }
 
-    public function downloadImportTemplate()
+    public function downloadImportTemplate(Request $request)
     {
-        $spreadsheet = new Spreadsheet();
+        $template = null;
+        if ($request->filled('template')) {
+            $template = SpecificationTemplate::query()
+                ->where(fn ($query) => $query->where('id', $request->input('template'))->orWhere('code', $request->input('template')))
+                ->where('is_active', true)
+                ->with(['fields' => fn ($query) => $query->where('is_active', true)->with('definition')])
+                ->firstOrFail();
+        }
+
+        $rows = (new ProductImportTemplateExport)->array();
+        if ($template) {
+            $baseColumns = array_slice(self::IMPORT_TEMPLATE_COLUMNS, 0, 12);
+            $attributeColumns = $template->fields->pluck('definition.code')->filter()->values()->all();
+            $rows = [array_merge($baseColumns, $attributeColumns), array_fill(0, count($baseColumns) + count($attributeColumns), '')];
+        }
+
+        $spreadsheet = new Spreadsheet;
         $spreadsheet->getActiveSheet()->fromArray(
-            (new ProductImportTemplateExport())->array(),
+            $rows,
             null,
             'A1',
         );
@@ -237,7 +269,7 @@ class ProductController extends Controller
                 $writer->save('php://output');
                 $spreadsheet->disconnectWorksheets();
             },
-            'product-import-template.xlsx',
+            'product-import-template-'.($template?->code ?: 'legacy-bolt').'.xlsx',
             ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
         );
     }
@@ -263,17 +295,18 @@ class ProductController extends Controller
         }
 
         $header = collect($sheetRows[0] ?? [])->map(fn ($value) => strtolower(trim((string) $value)))->values()->all();
-        $expected = self::IMPORT_TEMPLATE_COLUMNS;
-        if ($header !== $expected) {
+        $baseColumns = array_slice(self::IMPORT_TEMPLATE_COLUMNS, 0, 12);
+        $expected = $header;
+        $requiredCodes = array_slice($header, count($baseColumns));
+        if (array_slice($header, 0, count($baseColumns)) !== $baseColumns || $requiredCodes === []) {
             throw ValidationException::withMessages([
                 'import_file' => 'Format kolom Excel tidak sesuai template. Silakan download ulang template dan jangan ubah nama/urutan kolom.',
             ]);
         }
 
         $attributeDefinitions = AttributeDefinition::query()->get()->keyBy('code');
-        $requiredCodes = ['diameter', 'length_mm', 'thread_type', 'grade', 'material'];
         foreach ($requiredCodes as $code) {
-            if (!$attributeDefinitions->has($code)) {
+            if (! $attributeDefinitions->has($code)) {
                 throw ValidationException::withMessages([
                     'import_file' => "Attribute definition untuk kode '{$code}' belum tersedia di sistem.",
                 ]);
@@ -289,10 +322,11 @@ class ProductController extends Controller
                     $assoc[$column] = trim((string) ($row[$i] ?? ''));
                 }
                 $assoc['_row_number'] = $index + 2;
+
                 return $assoc;
             })
-            ->filter(function (array $row) {
-                return collect(self::IMPORT_TEMPLATE_COLUMNS)
+            ->filter(function (array $row) use ($expected) {
+                return collect($expected)
                     ->contains(fn ($column) => $row[$column] !== '');
             })
             ->values();
@@ -337,7 +371,7 @@ class ProductController extends Controller
                 }
 
                 $status = strtolower(trim($first['status']));
-                if (!in_array($status, ['active', 'inactive'], true)) {
+                if (! in_array($status, ['active', 'inactive'], true)) {
                     throw ValidationException::withMessages([
                         'import_file' => "Baris {$rowNumber}: status harus active atau inactive.",
                     ]);
@@ -346,7 +380,7 @@ class ProductController extends Controller
                 $isRedeemProduct = in_array(strtolower($first['is_redeem_product']), ['1', 'true', 'yes', 'ya'], true);
                 $redeemPointsRaw = trim($first['redeem_points']);
                 $redeemPoints = $redeemPointsRaw === '' ? null : (int) preg_replace('/\D+/', '', $redeemPointsRaw);
-                if ($isRedeemProduct && (!$redeemPoints || $redeemPoints < 1)) {
+                if ($isRedeemProduct && (! $redeemPoints || $redeemPoints < 1)) {
                     throw ValidationException::withMessages([
                         'import_file' => "Baris {$rowNumber}: redeem_points wajib diisi >= 1 jika is_redeem_product aktif.",
                     ]);
@@ -357,10 +391,20 @@ class ProductController extends Controller
                         || strtolower(trim((string) $categoryDetail->getOriginal('name'))) === strtolower($detailName);
                 });
 
-                if (!$detail) {
+                if (! $detail) {
                     throw ValidationException::withMessages([
                         'import_file' => "Baris {$rowNumber}: category_detail '{$detailName}' tidak ditemukan.",
                     ]);
+                }
+
+                $specificationTemplate = app(ProductSpecificationService::class)->resolve((int) $detail->id, (int) $detail->main_category_id);
+                if ($specificationTemplate) {
+                    $templateCodes = $specificationTemplate->fields->pluck('definition.code')->filter()->values()->all();
+                    if ($templateCodes !== $requiredCodes) {
+                        throw ValidationException::withMessages([
+                            'import_file' => "Baris {$rowNumber}: kolom atribut tidak cocok dengan template {$specificationTemplate->name} pada kategori '{$detailName}'.",
+                        ]);
+                    }
                 }
 
                 $slug = $this->makeUniqueProductSlug($productName);
@@ -395,23 +439,27 @@ class ProductController extends Controller
                     $attributes = collect($requiredCodes)
                         ->map(function ($code) use ($row, $attributeDefinitions) {
                             $value = trim((string) ($row[$code] ?? ''));
+                            $definition = $attributeDefinitions->get($code);
+                            $isNumber = $definition->data_type === 'number';
+
                             return [
-                                'attribute_definition_id' => (int) $attributeDefinitions->get($code)->id,
-                                'value_text' => $value !== '' ? $value : null,
-                                'value_number' => null,
+                                'attribute_definition_id' => (int) $definition->id,
+                                'value_text' => ! $isNumber && $value !== '' ? $value : null,
+                                'value_number' => $isNumber && $value !== '' ? str_replace(',', '.', $value) : null,
                             ];
                         })
-                        ->filter(fn ($attribute) => $attribute['value_text'] !== null)
+                        ->filter(fn ($attribute) => $attribute['value_text'] !== null || $attribute['value_number'] !== null)
                         ->values()
                         ->all();
 
                     if ($attributes === []) {
                         throw ValidationException::withMessages([
-                            'import_file' => "Baris {$line}: minimal satu atribut teknis (diameter/length_mm/thread_type/grade/material) harus diisi.",
+                            'import_file' => "Baris {$line}: minimal satu atribut teknis harus diisi.",
                         ]);
                     }
 
-                    $variantMeta = $this->resolveInternalVariant($attributes, $attributeDefinitionsById);
+                    app(ProductSpecificationService::class)->validateVariants($specificationTemplate, [['attributes' => $attributes]]);
+                    $variantMeta = $this->resolveInternalVariant($attributes, $attributeDefinitionsById, $specificationTemplate);
                     $variant = $product->productVariants()->create([
                         'variant_id' => $variantMeta['variant_id'],
                         'sku' => $this->buildVariantSku($productName, $variantMeta['label']),
@@ -444,9 +492,10 @@ class ProductController extends Controller
             ->orderBy('name')
             ->get()
             ->map(function ($category) {
-                $category->name = ($category->mainCategory?->name ? $category->mainCategory->name . ' > ' : '') . $category->name;
+                $category->name = ($category->mainCategory?->name ? $category->mainCategory->name.' > ' : '').$category->name;
                 $category->group_name = (string) ($category->mainCategory?->name ?? 'Lainnya');
                 $category->detail_name = (string) $category->getOriginal('name');
+
                 return $category;
             });
         $attributeDefinitions = AttributeDefinition::query()
@@ -455,6 +504,7 @@ class ProductController extends Controller
             ->get();
 
         $attributeOptions = $this->buildAttributeOptions($attributeDefinitions);
+        $specificationTemplates = app(ProductSpecificationService::class)->templatePayload();
 
         $categories = $mainCategories->map(function ($category) {
             return [
@@ -463,15 +513,17 @@ class ProductController extends Controller
                 'name' => $category->name,
                 'group' => 'Kategori utama',
                 'detail' => $category->name,
+                'templateId' => $category->default_specification_template_id,
             ];
         })->concat($legacyCategories->map(function ($category) {
             return [
                 'id' => $category->id,
                 'type' => 'category',
-                'name' => $category->parent?->name ? $category->parent->name . ' > ' . $category->name : $category->name,
+                'name' => $category->parent?->name ? $category->parent->name.' > '.$category->name : $category->name,
                 'group' => $category->parent?->name ?? 'Kategori',
                 'detail_name' => $category->name,
                 'detail' => $category->name,
+                'templateId' => null,
             ];
         })->concat($categoryDetails->map(function ($category) {
             return [
@@ -481,9 +533,11 @@ class ProductController extends Controller
                 'group' => $category->group_name,
                 'detail_name' => $category->detail_name,
                 'detail' => $category->detail_name,
+                'templateId' => $category->specification_template_id ?: $category->mainCategory?->default_specification_template_id,
             ];
         })))->values();
-        return view('backend.products.edit', compact('product', 'mainCategories', 'categoryDetails', 'categories', 'attributeDefinitions', 'attributeOptions'));
+
+        return view('backend.products.edit', compact('product', 'mainCategories', 'categoryDetails', 'categories', 'attributeDefinitions', 'attributeOptions', 'specificationTemplates'));
     }
 
     public function update(Request $request, Product $product, ImageOptimizer $imageOptimizer)
@@ -495,27 +549,27 @@ class ProductController extends Controller
         ]);
 
         $validated = $request->validate([
-            'name'                  => ['required', 'string', 'max:255'],
-            'main_category_id'      => ['nullable', 'exists:main_categories,id'],
-            'category_detail_id'    => ['nullable', 'exists:category_details,id'],
-            'category_id'           => ['nullable', 'exists:categories,id'],
-            'status'                => ['required', Rule::in(['active', 'inactive'])],
-            'description'           => ['nullable', 'string'],
-            'is_redeem_product'     => ['nullable', 'boolean'],
-            'redeem_points'         => ['nullable', 'integer', 'min:1'],
-            'variants'              => ['required', 'array', 'min:1'],
+            'name' => ['required', 'string', 'max:255'],
+            'main_category_id' => ['nullable', 'exists:main_categories,id'],
+            'category_detail_id' => ['nullable', 'exists:category_details,id'],
+            'category_id' => ['nullable', 'exists:categories,id'],
+            'status' => ['required', Rule::in(['active', 'inactive'])],
+            'description' => ['nullable', 'string'],
+            'is_redeem_product' => ['nullable', 'boolean'],
+            'redeem_points' => ['nullable', 'integer', 'min:1'],
+            'variants' => ['required', 'array', 'min:1'],
             'variants.*.product_variant_id' => ['nullable', 'integer'],
-            'variants.*.price'      => ['required', 'numeric', 'min:0'],
-            'variants.*.stock'      => ['required', 'integer', 'min:0'],
+            'variants.*.price' => ['required', 'numeric', 'min:0'],
+            'variants.*.stock' => ['required', 'integer', 'min:0'],
             'variants.*.weight_grams' => ['required', 'integer', 'min:1'],
-            'variants.*.length_cm'  => ['nullable', 'numeric', 'min:0'],
-            'variants.*.width_cm'   => ['nullable', 'numeric', 'min:0'],
-            'variants.*.height_cm'  => ['nullable', 'numeric', 'min:0'],
+            'variants.*.length_cm' => ['nullable', 'numeric', 'min:0'],
+            'variants.*.width_cm' => ['nullable', 'numeric', 'min:0'],
+            'variants.*.height_cm' => ['nullable', 'numeric', 'min:0'],
             'variants.*.attributes' => ['nullable', 'array'],
             'variants.*.attributes.*.attribute_definition_id' => ['required', 'exists:attribute_definitions,id'],
             'variants.*.attributes.*.value_text' => ['nullable', 'string', 'max:255'],
             'variants.*.attributes.*.value_number' => ['nullable', 'numeric', 'min:0'],
-            'variants.*.image'      => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+            'variants.*.image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
         ], [
             'name.required' => 'Nama produk wajib diisi.',
             'status.required' => 'Status produk wajib dipilih.',
@@ -533,23 +587,29 @@ class ProductController extends Controller
                 ->withErrors(['redeem_points' => 'Harga point wajib diisi jika produk redeem diaktifkan.'])
                 ->withInput();
         }
-        if (!$request->boolean('is_redeem_product')) {
+        if (! $request->boolean('is_redeem_product')) {
             $validated['redeem_points'] = null;
         }
-        $detail = !empty($validated['category_detail_id'])
+        $detail = ! empty($validated['category_detail_id'])
             ? CategoryDetail::query()->find($validated['category_detail_id'])
             : null;
-        $category = !empty($validated['category_id'])
+        $category = ! empty($validated['category_id'])
             ? Category::query()->find($validated['category_id'])
             : null;
-        $mainCategory = !empty($validated['main_category_id'])
+        $mainCategory = ! empty($validated['main_category_id'])
             ? MainCategory::query()->find($validated['main_category_id'])
             : null;
-        if (!$detail && !$category && !$mainCategory) {
+        if (! $detail && ! $category && ! $mainCategory) {
             return back()
                 ->withErrors(['category_id' => 'Kategori wajib dipilih dari daftar yang tersedia.'])
                 ->withInput();
         }
+
+        $specificationTemplate = app(ProductSpecificationService::class)->resolve(
+            $detail?->id,
+            $detail?->main_category_id ?: $mainCategory?->id
+        );
+        app(ProductSpecificationService::class)->validateVariants($specificationTemplate, $validated['variants']);
 
         $files = $request->file('variants', []);
         $attributeDefinitions = AttributeDefinition::query()->get()->keyBy('id');
@@ -559,13 +619,14 @@ class ProductController extends Controller
             ->values()
             ->map(function (array $variant) {
                 $variant['product_variant_id'] = (int) ($variant['product_variant_id'] ?? 0) ?: null;
+
                 return $variant;
             });
 
         $keptVariantIds = $submittedVariants
             ->filter(function (array $variant) use ($existingVariants) {
                 $productVariantId = $variant['product_variant_id'] ?? null;
-                if (!$productVariantId) {
+                if (! $productVariantId) {
                     return false;
                 }
 
@@ -581,7 +642,7 @@ class ProductController extends Controller
         $variantsInUse = $this->getVariantUsageLabels($existingVariants, $variantIdsToDelete->all());
         if ($variantsInUse !== []) {
             throw ValidationException::withMessages([
-                'variants' => 'Varian berikut tidak bisa dihapus karena masih dipakai: ' . implode(', ', $variantsInUse) . '.',
+                'variants' => 'Varian berikut tidak bisa dihapus karena masih dipakai: '.implode(', ', $variantsInUse).'.',
             ]);
         }
 
@@ -590,59 +651,60 @@ class ProductController extends Controller
         $uploadedImages = [];
 
         try {
-            DB::transaction(function () use ($validated, $files, $request, $product, $detail, $category, $mainCategory, $imageOptimizer, $existingVariants, $submittedVariants, $keptVariantIds, $variantIdsToDelete, $attributeDefinitions, $isRedeemProduct, &$newImages, &$uploadedImages) {
-            $slug = $this->makeUniqueProductSlug($validated['name'], $product->id);
+            DB::transaction(function () use ($validated, $files, $request, $product, $detail, $category, $mainCategory, $imageOptimizer, $existingVariants, $submittedVariants, $keptVariantIds, $variantIdsToDelete, $attributeDefinitions, $specificationTemplate, $isRedeemProduct, &$newImages, &$uploadedImages) {
+                $slug = $this->makeUniqueProductSlug($validated['name'], $product->id);
 
-            $product->update([
-                'name'        => $validated['name'],
-                'slug'        => $slug,
-                'main_category_id' => $detail ? (int) $detail->main_category_id : ($mainCategory?->id),
-                'category_detail_id' => $detail ? (int) $detail->id : null,
-                'category_id' => $category?->id,
-                'status'      => $validated['status'],
-                'description' => $validated['description'] ?? null,
-                'is_redeem_product' => $isRedeemProduct,
-                'redeem_points' => $validated['redeem_points'] ?? null,
-            ]);
+                $product->update([
+                    'name' => $validated['name'],
+                    'slug' => $slug,
+                    'main_category_id' => $detail ? (int) $detail->main_category_id : ($mainCategory?->id),
+                    'category_detail_id' => $detail ? (int) $detail->id : null,
+                    'category_id' => $category?->id,
+                    'status' => $validated['status'],
+                    'description' => $validated['description'] ?? null,
+                    'is_redeem_product' => $isRedeemProduct,
+                    'redeem_points' => $validated['redeem_points'] ?? null,
+                ]);
 
-            if ($variantIdsToDelete->isNotEmpty()) {
-                $product->productVariants()
-                    ->whereIn('id', $variantIdsToDelete)
-                    ->delete();
-            }
-
-            foreach ($submittedVariants as $i => $v) {
-                $existingVariant = null;
-                if (!empty($v['product_variant_id']) && $keptVariantIds->contains($v['product_variant_id'])) {
-                    $existingVariant = $existingVariants->get($v['product_variant_id']);
-                }
-                $attributes = $v['attributes'] ?? [];
-                unset($v['attributes']);
-
-                if (isset($files[$i]['image'])) {
-                    $v['image'] = $imageOptimizer->storeWebp($files[$i]['image'], 'product-variants', 1200, 1200, 82);
-                    $uploadedImages[] = $v['image'];
-                } else {
-                    $existingImage = $request->input("variants.{$i}.existing_image");
-                    $v['image'] = $existingImage ?: null;
-                }
-                if (!empty($v['image'])) {
-                    $newImages[] = $v['image'];
-                }
-                $variantMeta = $this->resolveInternalVariant($attributes, $attributeDefinitions);
-                $v['variant_id'] = $variantMeta['variant_id'];
-                $v['sku'] = $this->buildVariantSku($validated['name'], $variantMeta['label']);
-                unset($v['product_variant_id']);
-
-                if ($existingVariant) {
-                    $existingVariant->update($v);
-                    $this->syncVariantAttributes($existingVariant, $attributes, $attributeDefinitions);
-                    continue;
+                if ($variantIdsToDelete->isNotEmpty()) {
+                    $product->productVariants()
+                        ->whereIn('id', $variantIdsToDelete)
+                        ->delete();
                 }
 
-                $productVariant = $product->productVariants()->create($v);
-                $this->syncVariantAttributes($productVariant, $attributes, $attributeDefinitions);
-            }
+                foreach ($submittedVariants as $i => $v) {
+                    $existingVariant = null;
+                    if (! empty($v['product_variant_id']) && $keptVariantIds->contains($v['product_variant_id'])) {
+                        $existingVariant = $existingVariants->get($v['product_variant_id']);
+                    }
+                    $attributes = $v['attributes'] ?? [];
+                    unset($v['attributes']);
+
+                    if (isset($files[$i]['image'])) {
+                        $v['image'] = $imageOptimizer->storeWebp($files[$i]['image'], 'product-variants', 1200, 1200, 82);
+                        $uploadedImages[] = $v['image'];
+                    } else {
+                        $existingImage = $request->input("variants.{$i}.existing_image");
+                        $v['image'] = $existingImage ?: null;
+                    }
+                    if (! empty($v['image'])) {
+                        $newImages[] = $v['image'];
+                    }
+                    $variantMeta = $this->resolveInternalVariant($attributes, $attributeDefinitions, $specificationTemplate);
+                    $v['variant_id'] = $variantMeta['variant_id'];
+                    $v['sku'] = $this->buildVariantSku($validated['name'], $variantMeta['label']);
+                    unset($v['product_variant_id']);
+
+                    if ($existingVariant) {
+                        $existingVariant->update($v);
+                        $this->syncVariantAttributes($existingVariant, $attributes, $attributeDefinitions);
+
+                        continue;
+                    }
+
+                    $productVariant = $product->productVariants()->create($v);
+                    $this->syncVariantAttributes($productVariant, $attributes, $attributeDefinitions);
+                }
             });
         } catch (\Throwable $exception) {
             collect($uploadedImages)->each(fn ($path) => $imageOptimizer->deletePublicFile((string) $path));
@@ -651,7 +713,7 @@ class ProductController extends Controller
 
         collect($oldImages)
             ->diff($newImages)
-            ->each(fn($path) => $imageOptimizer->deletePublicFile((string) $path));
+            ->each(fn ($path) => $imageOptimizer->deletePublicFile((string) $path));
 
         return redirect()->route('products.index')->with('success', 'Product berhasil diperbarui.');
     }
@@ -664,7 +726,7 @@ class ProductController extends Controller
         $product->productVariants()
             ->pluck('image')
             ->filter()
-            ->each(fn($path) => $imageOptimizer->deletePublicFile((string) $path));
+            ->each(fn ($path) => $imageOptimizer->deletePublicFile((string) $path));
 
         $product->delete();
 
@@ -685,7 +747,7 @@ class ProductController extends Controller
                 ->where('slug', $slug)
                 ->exists()
         ) {
-            $slug = $base . '-' . $counter;
+            $slug = $base.'-'.$counter;
             $counter++;
         }
 
@@ -706,22 +768,24 @@ class ProductController extends Controller
     {
         return collect($variants)
             ->map(function ($variant) {
-                if (!is_array($variant)) {
+                if (! is_array($variant)) {
                     return $variant;
                 }
 
                 foreach (['price', 'stock', 'weight_grams', 'length_cm', 'width_cm', 'height_cm'] as $field) {
-                    if (!array_key_exists($field, $variant)) {
+                    if (! array_key_exists($field, $variant)) {
                         continue;
                     }
 
                     if ($field === 'price') {
                         $variant[$field] = $this->normalizeMoneyInput($variant[$field]);
+
                         continue;
                     }
 
                     if (in_array($field, ['length_cm', 'width_cm', 'height_cm'], true)) {
                         $variant[$field] = $this->normalizeDecimalInput($variant[$field]);
+
                         continue;
                     }
 
@@ -731,7 +795,7 @@ class ProductController extends Controller
                 if (isset($variant['attributes']) && is_array($variant['attributes'])) {
                     $variant['attributes'] = collect($variant['attributes'])
                         ->map(function ($attribute) {
-                            if (!is_array($attribute)) {
+                            if (! is_array($attribute)) {
                                 return $attribute;
                             }
 
@@ -802,9 +866,9 @@ class ProductController extends Controller
         return $normalized;
     }
 
-    private function resolveInternalVariant(array $attributes, $attributeDefinitions): array
+    private function resolveInternalVariant(array $attributes, $attributeDefinitions, ?SpecificationTemplate $specificationTemplate = null): array
     {
-        $label = $this->buildInternalVariantLabel($attributes, $attributeDefinitions);
+        $label = app(ProductSpecificationService::class)->buildLabel($attributes, collect($attributeDefinitions), $specificationTemplate);
         $variant = Variant::query()->firstOrCreate([
             'name' => 'Varian SKU',
             'value' => $label,
@@ -816,60 +880,17 @@ class ProductController extends Controller
         ];
     }
 
-    private function buildInternalVariantLabel(array $attributes, $attributeDefinitions): string
-    {
-        $attributesByDefinition = collect($attributes)
-            ->filter(fn ($attribute) => is_array($attribute) && !empty($attribute['attribute_definition_id']))
-            ->keyBy(fn ($attribute) => (int) $attribute['attribute_definition_id']);
-
-        $segments = [];
-
-        foreach (['diameter', 'length_mm', 'thread_type', 'grade', 'material'] as $code) {
-            $definition = $attributeDefinitions->firstWhere('code', $code);
-            if (!$definition) {
-                continue;
-            }
-
-            $attribute = $attributesByDefinition->get((int) $definition->id);
-            if (!$attribute) {
-                continue;
-            }
-
-            $value = trim((string) ($attribute['value_text'] ?? ''));
-            if ($value === '' && isset($attribute['value_number']) && $attribute['value_number'] !== null && $attribute['value_number'] !== '') {
-                $value = rtrim(rtrim((string) $attribute['value_number'], '0'), '.');
-            }
-
-            if ($value === '') {
-                continue;
-            }
-
-            $segments[] = match ($code) {
-                'length_mm' => $value . 'mm',
-                default => $value,
-            };
-        }
-
-        if ($segments === []) {
-            throw ValidationException::withMessages([
-                'variants' => 'Setiap varian minimal harus memiliki satu atribut teknis agar kombinasi SKU bisa dibentuk.',
-            ]);
-        }
-
-        return implode(' - ', $segments);
-    }
-
     private function syncVariantAttributes(ProductVariant $productVariant, array $attributes, $attributeDefinitions): void
     {
         $attributesByDefinition = collect($attributes)
-            ->filter(fn ($attribute) => is_array($attribute) && !empty($attribute['attribute_definition_id']))
+            ->filter(fn ($attribute) => is_array($attribute) && ! empty($attribute['attribute_definition_id']))
             ->keyBy(fn ($attribute) => (int) $attribute['attribute_definition_id']);
 
         $keptDefinitionIds = [];
 
         foreach ($attributesByDefinition as $definitionId => $attribute) {
             $definition = $attributeDefinitions->get((int) $definitionId);
-            if (!$definition) {
+            if (! $definition) {
                 continue;
             }
 
@@ -878,7 +899,7 @@ class ProductController extends Controller
             $hasText = $valueText !== '';
             $hasNumber = $valueNumber !== null && $valueNumber !== '';
 
-            if (!$hasText && !$hasNumber) {
+            if (! $hasText && ! $hasNumber) {
                 continue;
             }
 
@@ -899,7 +920,7 @@ class ProductController extends Controller
             ->delete();
     }
 
-    private function buildAttributeOptions($attributeDefinitions): \Illuminate\Support\Collection
+    private function buildAttributeOptions($attributeDefinitions): Collection
     {
         $usedValues = ProductVariantAttribute::query()
             ->select('attribute_definition_id', 'value_text', 'value_number')
@@ -955,7 +976,7 @@ class ProductController extends Controller
                 $productVariant = $existingVariants->get($variantId);
                 $variantName = $productVariant?->attributeSummary() ?? '';
 
-                return $variantName !== '' ? $variantName : 'ID #' . $variantId;
+                return $variantName !== '' ? $variantName : 'ID #'.$variantId;
             })
             ->values()
             ->all();

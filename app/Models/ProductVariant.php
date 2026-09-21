@@ -54,7 +54,7 @@ class ProductVariant extends Model
             return strtolower((string) ($item->definition?->code ?? '')) === strtolower($code);
         });
 
-        if (!$attribute) {
+        if (! $attribute) {
             return null;
         }
 
@@ -78,16 +78,10 @@ class ProductVariant extends Model
             ? $this->attributeValues
             : $this->attributeValues()->with('definition')->get();
 
-        $priority = array_flip(['diameter', 'length_mm', 'thread_type', 'grade', 'material']);
         $segments = $items
             ->filter(fn ($item) => $item->definition)
-            ->sortBy(function ($item) use ($priority) {
-                $code = strtolower((string) ($item->definition?->code ?? ''));
-
-                return $priority[$code] ?? 999;
-            })
+            ->sortBy(fn ($item) => [(int) ($item->definition?->sort_order ?? 999), (int) $item->id])
             ->map(function ($item) {
-                $code = strtolower((string) ($item->definition?->code ?? ''));
                 $name = (string) ($item->definition?->name ?? 'Atribut');
                 $value = $item->value_text;
 
@@ -100,11 +94,12 @@ class ProductVariant extends Model
                     return null;
                 }
 
-                if ($code === 'length_mm' && !str_ends_with(strtolower($value), 'mm')) {
-                    $value .= 'mm';
+                $unit = trim((string) ($item->definition?->unit ?? ''));
+                if ($unit !== '' && ! str_ends_with(mb_strtolower($value), mb_strtolower($unit))) {
+                    $value .= ' '.$unit;
                 }
 
-                return $name . ': ' . $value;
+                return $name.': '.$value;
             })
             ->filter()
             ->values()
@@ -115,8 +110,8 @@ class ProductVariant extends Model
         }
 
         $fallback = trim(
-            ((string) ($this->variant?->name ?? '')) .
-            (((string) ($this->variant?->value ?? '')) !== '' ? ': ' . (string) $this->variant?->value : ''),
+            ((string) ($this->variant?->name ?? '')).
+            (((string) ($this->variant?->value ?? '')) !== '' ? ': '.(string) $this->variant?->value : ''),
             ': '
         );
 
@@ -125,15 +120,19 @@ class ProductVariant extends Model
 
     public function skuLabel(): string
     {
-        $diameter = $this->attributeValue('diameter');
-        $length = $this->attributeValue('length_mm');
-        $threadType = $this->attributeValue('thread_type');
+        $items = $this->relationLoaded('attributeValues')
+            ? $this->attributeValues
+            : $this->attributeValues()->with('definition')->get();
 
-        $segments = array_filter([
-            $diameter,
-            $length ? $length . 'mm' : null,
-            $threadType,
-        ]);
+        $segments = $items->filter(fn ($item) => $item->definition)
+            ->sortBy(fn ($item) => [(int) ($item->definition?->sort_order ?? 999), (int) $item->id])
+            ->take(3)
+            ->map(function ($item) {
+                $value = $item->value_text ?: rtrim(rtrim((string) $item->value_number, '0'), '.');
+                $unit = trim((string) ($item->definition?->unit ?? ''));
+
+                return $value !== '' && $unit !== '' ? $value.$unit : $value;
+            })->filter()->all();
 
         return $segments !== [] ? implode(' - ', $segments) : $this->attributeSummary();
     }

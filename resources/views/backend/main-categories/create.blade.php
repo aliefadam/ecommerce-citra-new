@@ -48,6 +48,14 @@
                         <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
                     @enderror
                 </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5">Template Spesifikasi Default</label>
+                    <select name="default_specification_template_id" class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Tidak ada default</option>
+                        @foreach ($specificationTemplates as $template)<option value="{{ $template->id }}" @selected((string) old('default_specification_template_id') === (string) $template->id)>{{ $template->name }}</option>@endforeach
+                    </select>
+                    <p class="mt-1 text-xs text-slate-400">Dipakai jika kategori detail tidak memiliki template sendiri.</p>
+                </div>
                 <div class="flex gap-3">
                     <a href="{{ route('main-categories.index') }}"
                         class="px-4 py-2.5 text-sm font-semibold border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-200 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700">Cancel</a>

@@ -1661,7 +1661,6 @@
 
         function normalizeVariantAttrValue(groupKey, value) {
             let normalized = String(value || '').trim().toLowerCase();
-            if (groupKey === 'length_mm') normalized = normalized.replace(/\s*mm$/i, '').trim();
             if (/^-?\d+(?:\.\d+)?$/.test(normalized)) return String(Number(normalized));
             return normalized.replace(/\s+/g, ' ');
         }
@@ -1669,7 +1668,7 @@
         function variantDisplayValue(groupKey, value) {
             const raw = String(value || '').trim();
             if (!raw) return '';
-            return groupKey === 'length_mm' && !/mm$/i.test(raw) ? `${raw}mm` : raw;
+            return raw;
         }
 
         function findBestVariantForSelection(changedKey, changedValue, selections) {

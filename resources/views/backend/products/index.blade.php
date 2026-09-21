@@ -140,8 +140,8 @@
 
                 <div class="px-6 pb-6 space-y-4">
                     {{-- Download template --}}
-                    <a href="{{ route('products.import-template') }}"
-                        class="flex items-center gap-3 p-3.5 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/50 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors group">
+                    <div class="rounded-xl border border-blue-100 bg-blue-50 p-3.5 dark:border-blue-800/50 dark:bg-blue-900/20">
+                        <div class="flex items-center gap-3">
                         <div
                             class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-800/50 flex items-center justify-center shrink-0">
                             <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24"
@@ -154,13 +154,16 @@
                             <p
                                 class="text-sm font-semibold text-blue-700 dark:text-blue-300 group-hover:text-blue-800 dark:group-hover:text-blue-200">
                                 Download Template Excel</p>
-                            <p class="text-xs text-blue-500 dark:text-blue-400">Belum punya template? Unduh di sini</p>
+                            <p class="text-xs text-blue-500 dark:text-blue-400">Pilih sesuai template kategori produk</p>
                         </div>
-                        <svg class="w-4 h-4 text-blue-400 dark:text-blue-500 shrink-0" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-                        </svg>
-                    </a>
+                        </div>
+                        <div class="mt-3 flex flex-wrap gap-2">
+                            @foreach ($specificationTemplates as $template)
+                                <a href="{{ route('products.import-template', ['template' => $template->code]) }}" class="rounded-lg border border-blue-200 bg-white px-2.5 py-1.5 text-xs font-bold text-blue-700 hover:bg-blue-100">{{ $template->name }}</a>
+                            @endforeach
+                            <a href="{{ route('products.import-template') }}" class="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-500 hover:bg-slate-100">Legacy Bolt</a>
+                        </div>
+                    </div>
 
                     <form action="{{ route('products.import') }}" method="POST" enctype="multipart/form-data"
                         class="space-y-4">

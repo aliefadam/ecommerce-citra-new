@@ -72,6 +72,7 @@
         <form action="{{ route('products.store') }}" method="POST" enctype="multipart/form-data"
             @submit.prevent="confirmOpen = true" x-data="productForm({
             categories: @js($categories),
+            specificationTemplates: @js($specificationTemplates),
             attributeDefinitions: @js($attributeDefinitions->map(fn($definition) => ['id' => $definition->id, 'code' => $definition->code, 'name' => $definition->name, 'dataType' => $definition->data_type, 'unit' => $definition->unit])->values()),
             oldProductName: @js(old('name')),
             oldCategoryId: @js($oldCatId),
@@ -316,7 +317,10 @@
                                     {{-- Spesifikasi Teknis --}}
                                     <div class="rounded-xl border border-slate-200 dark:border-slate-600 bg-white/70 dark:bg-slate-800/40 p-3">
                                         <div class="mb-3">
-                                            <h3 class="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide">Spesifikasi Teknis</h3>
+                                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                                <h3 class="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide">Spesifikasi Teknis</h3>
+                                                <span x-show="activeTemplate" class="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-blue-700" x-text="activeTemplate?.name"></span>
+                                            </div>
                                             <p class="text-[11px] text-slate-400 mt-0.5">Isi atribut yang relevan untuk varian ini agar bisa dipakai untuk filter dan informasi produk.</p>
                                         </div>
                                         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
@@ -329,10 +333,10 @@
                                                     $opts      = array_values((array) $attributeOptions->get($defId, []));
                                                     $placeholder = $definition->unit ?: 'Isi ' . strtolower($definition->name) . '...';
                                                 @endphp
-                                                <div x-data="{
+                                                <div x-show="isDefinitionActive({{ $defId }})" x-data="{
                                                         open: false,
                                                         query: '',
-                                                        opts: @js($opts),
+                                                        get opts() { return activeOptions({{ $defId }}, @js($opts)); },
                                                         get curVal() { return row.attributes['{{ $defId }}']['{{ $fieldKey }}']; },
                                                         set curVal(v) { row.attributes['{{ $defId }}']['{{ $fieldKey }}'] = v; },
                                                         get filtered() {
@@ -531,6 +535,7 @@
 
         function productForm({
             categories,
+            specificationTemplates,
             attributeDefinitions,
             oldProductName,
             oldCategoryId,
@@ -556,6 +561,7 @@
 
             return {
                 categories,
+                specificationTemplates,
                 attributeDefinitions,
                 productName: oldProductName || '',
                 categorySearch: oldCategoryName || '',
@@ -595,11 +601,42 @@
                         items: groups[name]
                     }));
                 },
+                get selectedCategory() {
+                    return this.categories.find((category) => String(category.id) === String(this.categoryId) && category.type === this.categoryType) || null;
+                },
+                get activeTemplate() {
+                    const templateId = this.selectedCategory?.templateId;
+                    return templateId ? (this.specificationTemplates[String(templateId)] || null) : null;
+                },
+                get activeAttributeDefinitions() {
+                    return this.activeTemplate?.fields || this.attributeDefinitions;
+                },
+                isDefinitionActive(definitionId) {
+                    return this.activeAttributeDefinitions.some((definition) => Number(definition.id) === Number(definitionId));
+                },
+                activeOptions(definitionId, legacyOptions = []) {
+                    const field = this.activeTemplate?.fields?.find((definition) => Number(definition.id) === Number(definitionId));
+                    return field ? (field.options || []) : legacyOptions;
+                },
                 selectCategory(cat) {
+                    const previousTemplateId = this.selectedCategory?.templateId || null;
+                    const hasSpecificationValues = this.rows.some((row) => Object.values(row.attributes || {}).some((attribute) =>
+                        String(attribute.valueText || '').trim() !== '' || String(attribute.valueNumber || '').trim() !== ''
+                    ));
+                    if (this.selectedCategory && String(previousTemplateId || '') !== String(cat.templateId || '') && hasSpecificationValues) {
+                        if (!window.confirm('Kategori memakai template spesifikasi berbeda. Nilai yang tidak kompatibel akan dikosongkan. Lanjutkan?')) return;
+                    }
                     this.categoryId = cat.id;
                     this.categoryType = cat.type;
                     this.categorySearch = cat.name;
                     this.categoryOpen = false;
+                    const allowedIds = new Set(this.activeAttributeDefinitions.map((definition) => String(definition.id)));
+                    this.rows.forEach((row) => Object.entries(row.attributes || {}).forEach(([id, attribute]) => {
+                        if (!allowedIds.has(String(id))) {
+                            attribute.valueText = '';
+                            attribute.valueNumber = '';
+                        }
+                    }));
                 },
                 submitConfirmed() {
                     if (this.isSubmitting) return;
@@ -639,11 +676,14 @@
                     return row.attributes?.[String(definition.id)] || null;
                 },
                 rowLabel(row) {
-                    const diameter = this.attributeState(row, 'diameter')?.valueText || '';
-                    const lengthMm = this.attributeState(row, 'length_mm')?.valueNumber || '';
-                    const threadType = this.attributeState(row, 'thread_type')?.valueText || '';
-
-                    return [diameter, lengthMm ? `${lengthMm}mm` : '', threadType].filter(Boolean).join(' - ') || 'Varian Baru';
+                    const values = this.activeAttributeDefinitions
+                        .filter((definition) => definition.affectsVariant !== false)
+                        .map((definition) => {
+                            const state = row.attributes?.[String(definition.id)] || {};
+                            const value = definition.dataType === 'number' ? state.valueNumber : state.valueText;
+                            return value && definition.unit ? `${value}${definition.unit}` : value;
+                        }).filter(Boolean);
+                    return values.join(' - ') || 'Varian Baru';
                 },
                 generatedSku(row) {
                     const parts = [

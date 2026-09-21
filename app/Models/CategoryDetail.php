@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CategoryDetail extends Model
 {
-    protected $fillable = ['main_category_id', 'name', 'slug'];
+    protected $fillable = ['main_category_id', 'specification_template_id', 'name', 'slug'];
 
     public function mainCategory(): BelongsTo
     {
@@ -18,5 +18,10 @@ class CategoryDetail extends Model
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);
+    }
+
+    public function specificationTemplate(): BelongsTo
+    {
+        return $this->belongsTo(SpecificationTemplate::class);
     }
 }

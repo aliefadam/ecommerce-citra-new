@@ -47,9 +47,10 @@ use App\Http\Controllers\ReturnRequestController;
 use App\Http\Controllers\SalesOrderController;
 use App\Http\Controllers\SalesReportController;
 use App\Http\Controllers\SeoController;
+use App\Http\Controllers\SpecificationTemplateController;
 use App\Http\Controllers\StockController;
-use App\Http\Controllers\StoreLocationController;
 use App\Http\Controllers\StorefrontSearchSuggestionController;
+use App\Http\Controllers\StoreLocationController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TransactionReviewController;
 use App\Http\Controllers\UserController;
@@ -106,6 +107,12 @@ Route::middleware(['auth', 'admin', 'company.scope'])->group(function () {
             ->middlewareFor(['create', 'store'], 'admin.permission:products.create')
             ->middlewareFor(['edit', 'update'], 'admin.permission:products.edit')
             ->middlewareFor(['destroy'], 'admin.permission:products.delete');
+        Route::resource('specification-templates', SpecificationTemplateController::class)->except(['show', 'destroy'])
+            ->middlewareFor(['index'], 'admin.permission:categories.index')
+            ->middlewareFor(['create', 'store'], 'admin.permission:categories.create')
+            ->middlewareFor(['edit', 'update'], 'admin.permission:categories.edit');
+        Route::post('specification-templates/{specification_template}/attributes', [SpecificationTemplateController::class, 'storeAttribute'])
+            ->name('specification-templates.attributes.store')->middleware('admin.permission:categories.edit');
         Route::get('products-import-template', [ProductController::class, 'downloadImportTemplate'])->name('products.import-template')->middleware('admin.permission:products.import');
         Route::post('products-import', [ProductController::class, 'import'])->name('products.import')->middleware('admin.permission:products.import');
         Route::get('/users', [UserController::class, 'index'])->name('users.index')->middleware('admin.permission:customers.index');

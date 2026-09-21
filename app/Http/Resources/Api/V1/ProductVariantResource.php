@@ -41,6 +41,8 @@ class ProductVariantResource extends JsonResource
                         'code' => (string) $attr->definition->code,
                         'name' => (string) $attr->definition->name,
                         'value' => $value !== null && $value !== '' ? (string) $value : null,
+                        'unit' => $attr->definition->unit,
+                        'sort_order' => (int) $attr->definition->sort_order,
                     ];
                 })
                 ->filter(fn ($a) => $a['value'] !== null)

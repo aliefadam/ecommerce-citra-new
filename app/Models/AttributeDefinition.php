@@ -23,4 +23,14 @@ class AttributeDefinition extends Model
     {
         return $this->hasMany(ProductVariantAttribute::class);
     }
+
+    public function templateFields()
+    {
+        return $this->hasMany(SpecificationTemplateField::class);
+    }
+
+    public function options()
+    {
+        return $this->hasMany(AttributeOption::class);
+    }
 }

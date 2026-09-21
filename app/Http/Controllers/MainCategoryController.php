@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\MainCategory;
+use App\Models\SpecificationTemplate;
 use App\Services\ImageOptimizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -13,12 +14,15 @@ class MainCategoryController extends Controller
     public function index()
     {
         $mainCategories = MainCategory::query()->latest()->get();
+
         return view('backend.main-categories.index', compact('mainCategories'));
     }
 
     public function create()
     {
-        return view('backend.main-categories.create');
+        $specificationTemplates = SpecificationTemplate::query()->where('is_active', true)->orderBy('name')->get();
+
+        return view('backend.main-categories.create', compact('specificationTemplates'));
     }
 
     public function store(Request $request, ImageOptimizer $imageOptimizer)
@@ -27,6 +31,7 @@ class MainCategoryController extends Controller
             'name' => ['required', 'string', 'max:255', Rule::unique('main_categories', 'name')],
             'image_url' => ['nullable', 'string', 'max:2048'],
             'image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
+            'default_specification_template_id' => ['nullable', 'exists:specification_templates,id'],
         ], $this->imageValidationMessages($request));
 
         try {
@@ -44,6 +49,7 @@ class MainCategoryController extends Controller
                 'name' => $validated['name'],
                 'slug' => $this->uniqueSlug($validated['name']),
                 'image' => $image,
+                'default_specification_template_id' => $validated['default_specification_template_id'] ?? null,
             ]);
         } catch (\Throwable $exception) {
             if ($request->hasFile('image_file')) {
@@ -51,6 +57,7 @@ class MainCategoryController extends Controller
             }
             throw $exception;
         }
+
         return redirect()->route('main-categories.index')->with('success', 'Kategori utama berhasil ditambahkan.');
     }
 
@@ -61,7 +68,9 @@ class MainCategoryController extends Controller
 
     public function edit(MainCategory $mainCategory)
     {
-        return view('backend.main-categories.edit', compact('mainCategory'));
+        $specificationTemplates = SpecificationTemplate::query()->where('is_active', true)->orderBy('name')->get();
+
+        return view('backend.main-categories.edit', compact('mainCategory', 'specificationTemplates'));
     }
 
     public function update(Request $request, MainCategory $mainCategory, ImageOptimizer $imageOptimizer)
@@ -70,6 +79,7 @@ class MainCategoryController extends Controller
             'name' => ['required', 'string', 'max:255', Rule::unique('main_categories', 'name')->ignore($mainCategory->id)],
             'image_url' => ['nullable', 'string', 'max:2048'],
             'image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
+            'default_specification_template_id' => ['nullable', 'exists:specification_templates,id'],
         ], $this->imageValidationMessages($request));
 
         $oldImage = (string) $mainCategory->image;
@@ -88,6 +98,7 @@ class MainCategoryController extends Controller
                 'name' => $validated['name'],
                 'slug' => $this->uniqueSlug($validated['name'], $mainCategory->id),
                 'image' => $image,
+                'default_specification_template_id' => $validated['default_specification_template_id'] ?? null,
             ]);
         } catch (\Throwable $exception) {
             if ($request->hasFile('image_file') && $image !== $oldImage) {
@@ -98,6 +109,7 @@ class MainCategoryController extends Controller
         if ($image !== $oldImage) {
             $imageOptimizer->deletePublicFile($oldImage);
         }
+
         return redirect()->route('main-categories.index')->with('success', 'Kategori utama berhasil diperbarui.');
     }
 
@@ -105,6 +117,7 @@ class MainCategoryController extends Controller
     {
         app(ImageOptimizer::class)->deletePublicFile((string) $mainCategory->image);
         $mainCategory->delete();
+
         return redirect()->route('main-categories.index')->with('success', 'Kategori utama berhasil dihapus.');
     }
 
@@ -114,8 +127,9 @@ class MainCategoryController extends Controller
         $slug = $base;
         $counter = 2;
         while (MainCategory::query()->when($ignore, fn ($q) => $q->where('id', '!=', $ignore))->where('slug', $slug)->exists()) {
-            $slug = $base . '-' . $counter++;
+            $slug = $base.'-'.$counter++;
         }
+
         return $slug;
     }
 

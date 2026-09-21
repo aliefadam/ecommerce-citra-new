@@ -84,4 +84,16 @@ class Product extends Model
 
         return filled($image) ? (string) $image : null;
     }
+
+    public function effectiveSpecificationTemplate(): ?SpecificationTemplate
+    {
+        $detailTemplate = $this->categoryDetail?->specificationTemplate;
+        if ($detailTemplate?->is_active) {
+            return $detailTemplate;
+        }
+
+        $mainTemplate = $this->mainCategory?->defaultSpecificationTemplate;
+
+        return $mainTemplate?->is_active ? $mainTemplate : null;
+    }
 }
