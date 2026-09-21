@@ -284,11 +284,11 @@
     .ec-mega-empty-icon { display: grid; width: 2.5rem; height: 2.5rem; flex: 0 0 2.5rem; place-items: center; border: 1px solid #d9e4f1; border-radius: 6px; background: #fff; color: #174d91; }
     .ec-mega-empty a { display: inline-flex; gap: .35rem; margin-top: .35rem; color: #1459aa; font-size: .72rem; font-weight: 700; }
     .ec-primary-links { display: flex; min-width: 0; flex: 1; align-items: stretch; }
-    .ec-primary-links a { position: relative; display: flex; min-height: 38px; align-items: center; padding: 0 clamp(.55rem, 1.1vw, 1rem); color: #1c2b41; font-size: .66rem; font-weight: 700; white-space: nowrap; }
+    .ec-primary-links a { position: relative; display: flex; min-height: 38px; align-items: center; padding: 0 clamp(.55rem, 1.1vw, 1rem); color: #1c2b41; font-size: .7rem; font-weight: 700; white-space: nowrap; }
     .ec-primary-links a::after { position: absolute; right: .7rem; bottom: 0; left: .7rem; height: 2px; transform: scaleX(0); background: #174d91; content: ''; transition: transform var(--ec-motion-fast); }
     .ec-primary-links a:hover, .ec-primary-links a.is-active { color: #174d91; }
     .ec-primary-links a:hover::after, .ec-primary-links a.is-active::after { transform: scaleX(1); }
-    .ec-quote-button { align-self: center; display: inline-flex; min-height: 31px; align-items: center; gap: .5rem; border-radius: 5px; background: #123f7b; padding: 0 .9rem; color: #fff; font-size: .67rem; font-weight: 800; white-space: nowrap; }
+    .ec-quote-button { align-self: center; display: inline-flex; min-height: 31px; align-items: center; gap: .5rem; border-radius: 5px; background: #123f7b; padding: 0 .9rem; color: #fff; font-size: .7rem; font-weight: 800; white-space: nowrap; }
     .ec-quote-button:hover { background: #0a3064; }
     .ec-mobile-menu-button { margin-left: auto; align-items: center; gap: .5rem; padding-inline: .75rem; color: #17335c; font-size: .8rem; font-weight: 800; }
     .ec-search-shell { display: flex; min-height: 46px; overflow: hidden; border: 1px solid var(--ec-steel-300); border-radius: var(--ec-radius-sm); background: var(--ec-white); }
