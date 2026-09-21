@@ -118,7 +118,7 @@
 
         .ts-wrapper.single .ts-control .item { width: 100%; text-align: center; }
         .ts-wrapper.is-single-option .ts-control { cursor: default; background: #f8fafc; color: #475569; }
-        .product-variant-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: .85rem 1rem; margin-bottom: 1.25rem; }
+        .product-variant-grid { grid-template-columns: minmax(0, 1fr); gap: .85rem 1rem; margin-bottom: 1.25rem; }
         .product-variant-field { min-width: 0; margin: 0; }
         @media (min-width: 1024px) {
             .product-variant-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -295,6 +295,9 @@
             bottom: 0;
             left: 0;
             right: 0;
+            width: 100vw;
+            max-width: none;
+            margin: 0;
             background: white;
             border-radius: 24px 24px 0 0;
             box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
@@ -873,7 +876,7 @@
     </div>
 
     <!-- STICKY BOTTOM BAR (Mobile) -->
-    <div id="mobileStickyActions" class="mobile-sticky-actions fixed inset-x-0 bottom-[64px] md:hidden bg-white border-t border-slate-200 px-3 py-2.5 flex flex-col gap-2 shadow-[0_-4px_16px_rgb(15_23_42/.08)]">
+    <div id="mobileStickyActions" class="mobile-sticky-actions fixed inset-x-0 bottom-0 md:hidden bg-white border-t border-slate-200 px-3 pt-2.5 pb-[max(.625rem,env(safe-area-inset-bottom))] flex flex-col gap-2 shadow-[0_-4px_16px_rgb(15_23_42/.08)]">
         <div class="flex items-center justify-between gap-3 text-xs text-slate-500">
             <div>
                 <div class="font-semibold text-slate-800" id="mobileStickyPrice">Rp {{ number_format($displayPrice, 0, ',', '.') }}</div>
@@ -920,7 +923,7 @@
         <div class="px-4 pb-3 border-b border-slate-100">
             <div class="flex items-center justify-between">
                 <h3 class="text-base font-bold text-slate-800">Pilih Varian</h3>
-                <button onclick="closeVariantDrawer()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-500">
+                <button type="button" onclick="closeVariantDrawer()" aria-label="Tutup pilihan varian" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-500">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -974,7 +977,7 @@
         </div>
 
         <!-- Drawer Actions -->
-        <div class="px-4 py-3 pb-20 border-t border-slate-100 bg-white">
+        <div class="border-t border-slate-100 bg-white px-4 pt-3 pb-[max(.75rem,env(safe-area-inset-bottom))]">
             <button id="drawerActionBtn" onclick="executeDrawerAction()"
                 class="w-full bg-blue-600 text-white font-semibold py-3 rounded-xl text-sm flex items-center justify-center gap-2 shadow-sm shadow-blue-100">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1171,6 +1174,9 @@
             drawer.classList.add('active');
             overlay.classList.add('active');
             document.body.style.overflow = 'hidden';
+            if (window.Tawk_API && typeof window.Tawk_API.hideWidget === 'function') {
+                window.Tawk_API.hideWidget();
+            }
         }
 
         function closeVariantDrawer() {
@@ -1181,6 +1187,9 @@
             drawer.style.transform = '';
             overlay.classList.remove('active');
             document.body.style.overflow = '';
+            if (window.Tawk_API && typeof window.Tawk_API.showWidget === 'function') {
+                window.Tawk_API.showWidget();
+            }
 
             // Sync drawer selections back to desktop
             syncDrawerToDesktop();

@@ -127,6 +127,54 @@
             text-align: right;
         }
 
+        .checkout-mobile-actions {
+            display: none;
+        }
+
+        @media (max-width: 767px) {
+            .checkout-page {
+                padding-bottom: 7rem;
+            }
+
+            .checkout-desktop-pay {
+                display: none;
+            }
+
+            .checkout-mobile-actions {
+                position: fixed;
+                z-index: 145;
+                right: 0;
+                bottom: 0;
+                left: 0;
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) minmax(10rem, 1.25fr);
+                align-items: center;
+                gap: .75rem;
+                border-top: 1px solid #dbe3ed;
+                background: rgb(255 255 255 / .96);
+                padding: .7rem 1rem max(.7rem, env(safe-area-inset-bottom));
+                box-shadow: 0 -8px 26px rgb(15 23 42 / .12);
+                backdrop-filter: blur(12px);
+            }
+
+            .checkout-mobile-total-label {
+                color: #64748b;
+                font-size: .68rem;
+                font-weight: 650;
+            }
+
+            .checkout-mobile-total-value {
+                display: block;
+                margin-top: .1rem;
+                overflow: hidden;
+                color: #0a3268;
+                font-size: 1rem;
+                font-weight: 800;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+        }
+
         @media (max-width: 430px) {
             .checkout-page {
                 padding-left: 0.75rem;
@@ -521,7 +569,7 @@
 
                         <!-- Bayar -->
                         <button onclick="processPayment()" id="payBtn"
-                            class="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-blue-200 hover:shadow-blue-300 flex items-center justify-center gap-2 mt-4 disabled:opacity-60 disabled:cursor-not-allowed disabled:pointer-events-none">
+                            class="checkout-desktop-pay w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-blue-200 hover:shadow-blue-300 flex items-center justify-center gap-2 mt-4 disabled:opacity-60 disabled:cursor-not-allowed disabled:pointer-events-none">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -551,6 +599,19 @@
             </div>
         </div>
     </div>
+
+    <div class="checkout-mobile-actions" aria-label="Aksi pembayaran">
+        <div class="min-w-0" aria-live="polite">
+            <span class="checkout-mobile-total-label">{{ $isRedeemCheckout ? 'Total ongkir' : 'Total pembayaran' }}</span>
+            <strong id="mobileCheckoutTotal" class="checkout-mobile-total-value">Rp 0</strong>
+        </div>
+        <button type="button" onclick="processPayment()" id="mobilePayBtn"
+            class="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-700 px-4 text-sm font-bold text-white shadow-lg shadow-blue-200 disabled:pointer-events-none disabled:opacity-60">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            {{ $isRedeemCheckout ? 'Bayar Ongkir' : 'Bayar Sekarang' }}
+        </button>
+    </div>
+
     <!-- ADD ADDRESS MODAL -->
     <div id="addressModal" class="fixed inset-0 z-[999] hidden items-center justify-center bg-black/50 p-4">
         <div class="bg-white rounded-2xl max-w-4xl w-full p-6 modal-enter max-h-[90vh] overflow-y-auto">
@@ -1089,18 +1150,20 @@
             }).join('');
 
             document.getElementById('summaryBreakdown').innerHTML = breakdownHtml || '<p class="text-xs text-slate-400">Keranjang kosong.</p>';
-            document.getElementById('grandTotal').textContent = 'Rp ' + grandTotal.toLocaleString('id-ID');
+            const formattedGrandTotal = 'Rp ' + grandTotal.toLocaleString('id-ID');
+            document.getElementById('grandTotal').textContent = formattedGrandTotal;
+            document.getElementById('mobileCheckoutTotal').textContent = formattedGrandTotal;
             document.getElementById('totalPaid').textContent = 'Rp ' + grandTotal.toLocaleString('id-ID');
 
-            const payBtn = document.getElementById('payBtn');
+            const payButtons = [document.getElementById('payBtn'), document.getElementById('mobilePayBtn')].filter(Boolean);
             const hintEl = document.getElementById('checkoutHintText');
-            if (payBtn) {
-                const shouldDisable = totalItems <= 0 || !hasSelectedAddress || !allShippingReady;
-                payBtn.disabled = shouldDisable;
-                payBtn.classList.toggle('opacity-60', shouldDisable);
-                payBtn.classList.toggle('cursor-not-allowed', shouldDisable);
-                payBtn.classList.toggle('pointer-events-none', shouldDisable);
-            }
+            const shouldDisable = totalItems <= 0 || !hasSelectedAddress || !allShippingReady;
+            payButtons.forEach((payButton) => {
+                payButton.disabled = shouldDisable;
+                payButton.classList.toggle('opacity-60', shouldDisable);
+                payButton.classList.toggle('cursor-not-allowed', shouldDisable);
+                payButton.classList.toggle('pointer-events-none', shouldDisable);
+            });
             if (hintEl) {
                 if (totalItems <= 0) {
                     hintEl.textContent = isRedeemCheckout ? 'Pilih produk redeem terlebih dahulu untuk melanjutkan penukaran.' : 'Pilih produk terlebih dahulu untuk melanjutkan pembayaran.';
@@ -1773,11 +1836,14 @@
                 return;
             }
 
-            const btn = document.getElementById('payBtn');
-            btn.disabled = true;
-            btn.innerHTML = `
+            const payButtons = [document.getElementById('payBtn'), document.getElementById('mobilePayBtn')].filter(Boolean);
+            const processingHtml = `
         <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
         ${isRedeemCheckout ? 'Memproses Pembayaran Ongkir...' : `Memproses ${groups.length > 1 ? groups.length + ' Pesanan' : 'Pembayaran'}...`}`;
+            payButtons.forEach((payButton) => {
+                payButton.disabled = true;
+                payButton.innerHTML = processingHtml;
+            });
 
             const checkedAddress = document.querySelector('input[name="address"]:checked');
             const selectedAddressId = checkedAddress ? Number(checkedAddress.dataset.addressId || 0) : null;
@@ -1859,8 +1925,10 @@
                 return;
             }
 
-            btn.disabled = false;
-            btn.innerHTML = payBtnIdleHtml();
+            payButtons.forEach((payButton) => {
+                payButton.disabled = false;
+                payButton.innerHTML = payBtnIdleHtml();
+            });
             alert(`Gagal membuat pesanan:\n` + failures.map((f) => `- ${f.companyName}: ${f.message}`).join('\n'));
         }
 

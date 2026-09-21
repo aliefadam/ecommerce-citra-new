@@ -24,6 +24,9 @@
                 'frontend.cart',
                 'frontend.profil'
             );
+            $mobileChatOffset = request()->routeIs('frontend.detail-produk')
+                ? '132px'
+                : (request()->routeIs('frontend.checkout*') ? '104px' : ($showMobileTaskNavigation ? '86px' : '16px'));
         @endphp
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -142,7 +145,7 @@
                     mobile: {
                         position: 'br',
                         xOffset: '16px',
-                        yOffset: '{{ $showMobileTaskNavigation ? '86px' : '16px' }}'
+                        yOffset: '{{ $mobileChatOffset }}'
                     }
                 }
             };

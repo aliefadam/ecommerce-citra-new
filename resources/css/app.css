@@ -327,7 +327,8 @@
 @keyframes ec-shimmer { to { transform: translateX(100%); } }
 
 @media (max-width: 767px) {
-    .ec-site-header { position: relative; top: auto; }
+    .ec-site-header { position: static; display: contents; }
+    .ec-header-main { position: sticky; z-index: var(--ec-z-navbar); top: 0; border-bottom: 1px solid #dce3ec; box-shadow: 0 5px 18px rgb(10 49 104 / .1); }
     .ec-toast-region { left: 1rem; right: 1rem; width: auto; }
     input, select, textarea { font-size: 16px; }
     .ec-utility-inner { justify-content: center; text-align: center; }
