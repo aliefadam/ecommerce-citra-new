@@ -5,9 +5,6 @@
     $cartCount = (int) ($customerNavigation['cartCount'] ?? 0);
     $megaCategories = $customerNavigation['megaCategories'] ?? [];
     $selectedSearchCategory = collect($megaCategories)->firstWhere('key', (string) request('parent'));
-    $quoteUrl = !empty($appStoreSettings['social_whatsapp'])
-        ? $appStoreSettings['social_whatsapp']
-        : route('frontend.pages.show', 'pusat-bantuan');
 @endphp
 
 <nav class="ec-site-header" aria-label="Navigasi utama" data-storefront-shell>
@@ -111,7 +108,6 @@
                     <a href="{{ $url }}" class="{{ $routeName && request()->routeIs($routeName) ? 'is-active' : '' }}" @if($routeName && request()->routeIs($routeName)) aria-current="page" @endif>{{ $label }}</a>
                 @endforeach
             </div>
-            <a href="{{ $quoteUrl }}" class="ec-quote-button" @if(!empty($appStoreSettings['social_whatsapp'])) target="_blank" rel="noopener noreferrer" @endif><i class="fi fi-rr-document" aria-hidden="true"></i><span>Minta Penawaran</span></a>
             <button id="ecMobileNavToggle" type="button" class="ec-mobile-menu-button md:hidden" aria-expanded="false" aria-controls="ecMobileNavDrawer"><i class="fi fi-rr-menu-burger" aria-hidden="true"></i>Menu</button>
         </div>
         <div id="ecMobileNavDrawer" class="border-t border-slate-200 bg-white p-3 md:hidden" hidden>
