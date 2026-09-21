@@ -36,6 +36,67 @@ class DynamicProductSpecificationTest extends TestCase
         $this->assertSame($pipe->id, $detail->fresh()->specification_template_id);
     }
 
+    public function test_creating_a_main_category_also_creates_and_opens_its_empty_template(): void
+    {
+        $response = $this->actingAs($this->admin())->post(route('main-categories.store'), [
+            'name' => 'Fastener Khusus',
+        ]);
+
+        $category = MainCategory::query()->where('name', 'Fastener Khusus')->firstOrFail();
+        $template = SpecificationTemplate::query()->findOrFail($category->default_specification_template_id);
+
+        $response->assertRedirect(route('specification-templates.edit', $template));
+        $this->assertSame('Fastener Khusus - Spesifikasi', $template->name);
+        $this->assertSame('fastener_khusus', $template->code);
+        $this->assertTrue($template->is_active);
+        $this->assertCount(0, $template->fields);
+    }
+
+    public function test_creating_a_detail_category_also_creates_and_opens_its_own_template(): void
+    {
+        $mainCategory = MainCategory::create([
+            'name' => 'Fastener',
+            'slug' => 'fastener',
+        ]);
+
+        $response = $this->actingAs($this->admin())->post(route('category-details.store'), [
+            'main_category_id' => $mainCategory->id,
+            'name' => 'Baut Tanam',
+        ]);
+
+        $category = CategoryDetail::query()->where('name', 'Baut Tanam')->firstOrFail();
+        $template = SpecificationTemplate::query()->findOrFail($category->specification_template_id);
+
+        $response->assertRedirect(route('specification-templates.edit', $template));
+        $this->assertSame('Baut Tanam - Spesifikasi', $template->name);
+        $this->assertSame('baut_tanam', $template->code);
+        $this->assertCount(0, $template->fields);
+    }
+
+    public function test_quick_added_detail_category_receives_an_automatic_template(): void
+    {
+        MainCategory::create([
+            'name' => 'Kategori Pertama',
+            'slug' => 'kategori-pertama',
+        ]);
+
+        $response = $this->actingAs($this->admin())->postJson(route('categories.quick-add'), [
+            'name' => 'Quick Coupling',
+        ]);
+
+        $category = CategoryDetail::query()->where('name', 'Quick Coupling')->firstOrFail();
+
+        $response->assertOk()
+            ->assertJsonPath('id', $category->id)
+            ->assertJsonPath('template_id', $category->specification_template_id);
+        $this->assertNotNull($category->specification_template_id);
+        $this->assertDatabaseHas('specification_templates', [
+            'id' => $category->specification_template_id,
+            'code' => 'quick_coupling',
+            'is_active' => true,
+        ]);
+    }
+
     public function test_existing_bolt_category_mapping_is_sent_to_the_product_form(): void
     {
         $bolt = SpecificationTemplate::query()->where('code', 'bolt')->firstOrFail();

@@ -120,6 +120,35 @@ class ProductUpdateTest extends TestCase
         ]);
     }
 
+    public function test_edit_product_exposes_storefront_shortcuts_in_a_new_tab(): void
+    {
+        [$product] = $this->createProductFixture();
+        $this->actingAs($this->makeAdminUser());
+
+        $response = $this->get(route('products.edit', $product));
+
+        $response->assertOk()
+            ->assertSee('data-testid="view-product-link"', false)
+            ->assertSee('href="'.route('frontend.detail-produk', ['slug' => $product->slug]).'"', false)
+            ->assertSee('data-testid="view-website-link"', false)
+            ->assertSee('href="'.route('frontend.index').'"', false)
+            ->assertSee('target="_blank"', false)
+            ->assertSee('rel="noopener noreferrer"', false);
+    }
+
+    public function test_inactive_product_edit_page_does_not_link_to_an_unavailable_storefront_page(): void
+    {
+        [$product] = $this->createProductFixture();
+        $product->update(['status' => 'inactive']);
+        $this->actingAs($this->makeAdminUser());
+
+        $this->get(route('products.edit', $product))
+            ->assertOk()
+            ->assertSee('data-testid="view-product-disabled"', false)
+            ->assertSee('Produk Belum Aktif')
+            ->assertDontSee('data-testid="view-product-link"', false);
+    }
+
     public function test_edit_product_does_not_multiply_untouched_or_localized_rupiah_prices(): void
     {
         [$product, $detail, , , $productVariant] = $this->createProductFixture();

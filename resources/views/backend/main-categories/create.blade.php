@@ -48,19 +48,24 @@
                         <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
                     @enderror
                 </div>
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5">Template Spesifikasi Default</label>
-                    <select name="default_specification_template_id" class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="">Tidak ada default</option>
-                        @foreach ($specificationTemplates as $template)<option value="{{ $template->id }}" @selected((string) old('default_specification_template_id') === (string) $template->id)>{{ $template->name }}</option>@endforeach
-                    </select>
-                    <p class="mt-1 text-xs text-slate-400">Dipakai jika kategori detail tidak memiliki template sendiri.</p>
+                <div class="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950/40">
+                    <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-blue-600 text-white">
+                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4Z" />
+                        </svg>
+                    </span>
+                    <div>
+                        <p class="text-sm font-semibold text-blue-900 dark:text-blue-200">Template spesifikasi dibuat otomatis</p>
+                        <p class="mt-1 text-xs leading-5 text-blue-700 dark:text-blue-300">Setelah kategori disimpan, Anda langsung diarahkan untuk memilih field spesifikasi yang diperlukan.</p>
+                    </div>
                 </div>
                 <div class="flex gap-3">
                     <a href="{{ route('main-categories.index') }}"
                         class="px-4 py-2.5 text-sm font-semibold border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-200 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700">Cancel</a>
                     <button type="submit"
-                        class="px-4 py-2.5 text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-xl">Save</button>
+                        class="px-4 py-2.5 text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-xl">Simpan & Atur Spesifikasi</button>
                 </div>
             </form>
         </div>

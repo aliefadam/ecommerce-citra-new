@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\MainCategory;
 use App\Models\SpecificationTemplate;
+use App\Services\CategorySpecificationTemplateService;
 use App\Services\ImageOptimizer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -20,18 +22,19 @@ class MainCategoryController extends Controller
 
     public function create()
     {
-        $specificationTemplates = SpecificationTemplate::query()->where('is_active', true)->orderBy('name')->get();
-
-        return view('backend.main-categories.create', compact('specificationTemplates'));
+        return view('backend.main-categories.create');
     }
 
-    public function store(Request $request, ImageOptimizer $imageOptimizer)
+    public function store(
+        Request $request,
+        ImageOptimizer $imageOptimizer,
+        CategorySpecificationTemplateService $templateService
+    )
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255', Rule::unique('main_categories', 'name')],
             'image_url' => ['nullable', 'string', 'max:2048'],
             'image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
-            'default_specification_template_id' => ['nullable', 'exists:specification_templates,id'],
         ], $this->imageValidationMessages($request));
 
         try {
@@ -45,12 +48,17 @@ class MainCategoryController extends Controller
         }
 
         try {
-            MainCategory::create([
-                'name' => $validated['name'],
-                'slug' => $this->uniqueSlug($validated['name']),
-                'image' => $image,
-                'default_specification_template_id' => $validated['default_specification_template_id'] ?? null,
-            ]);
+            [$mainCategory, $template] = DB::transaction(function () use ($validated, $image, $templateService) {
+                $template = $templateService->createFor($validated['name'], 'kategori utama');
+                $mainCategory = MainCategory::create([
+                    'name' => $validated['name'],
+                    'slug' => $this->uniqueSlug($validated['name']),
+                    'image' => $image,
+                    'default_specification_template_id' => $template->id,
+                ]);
+
+                return [$mainCategory, $template];
+            });
         } catch (\Throwable $exception) {
             if ($request->hasFile('image_file')) {
                 $imageOptimizer->deletePublicFile($image);
@@ -58,7 +66,8 @@ class MainCategoryController extends Controller
             throw $exception;
         }
 
-        return redirect()->route('main-categories.index')->with('success', 'Kategori utama berhasil ditambahkan.');
+        return redirect()->route('specification-templates.edit', $template)
+            ->with('success', "Kategori utama {$mainCategory->name} dan template spesifikasinya berhasil dibuat. Pilih field yang diperlukan.");
     }
 
     public function show()

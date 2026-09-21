@@ -40,6 +40,26 @@
         -->
 
         <div class="flex items-center gap-2 ml-auto">
+            <a href="{{ route('frontend.index') }}" target="_blank" rel="noopener noreferrer"
+                data-testid="view-website-link"
+                class="group inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-2.5 text-sm font-semibold text-blue-700 transition-colors hover:border-blue-300 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-blue-800 dark:bg-blue-950/50 dark:text-blue-300 dark:hover:border-blue-700 dark:hover:bg-blue-900/50 sm:px-3"
+                aria-label="Lihat Website (buka di tab baru)" title="Lihat Website">
+                <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="2" y1="12" x2="22" y2="12" />
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                </svg>
+                <span class="hidden md:inline">Lihat Website</span>
+                <svg class="hidden h-3.5 w-3.5 opacity-60 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 sm:block"
+                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M15 3h6v6" />
+                    <path d="M10 14 21 3" />
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                </svg>
+            </a>
+
             @if (($accessibleCompanies ?? collect())->count() > 1)
                 <div x-data="{ open: false }" class="relative">
                     <button @click="open = !open" @click.outside="open = false" data-testid="company-switcher"

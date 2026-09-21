@@ -111,9 +111,41 @@
     @endphp
 
     <main class="flex-1 p-4 sm:p-6 mt-6">
-        <div class="mb-6">
-            <h1 class="text-2xl font-bold text-slate-800 dark:text-white">Edit Product</h1>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Perbarui data produk yang dipilih.</p>
+        <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800 dark:text-white">Edit Product</h1>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Perbarui data produk yang dipilih.</p>
+            </div>
+
+            @if ($product->status === 'active')
+                <a href="{{ route('frontend.detail-produk', ['slug' => $product->slug]) }}" target="_blank"
+                    rel="noopener noreferrer" data-testid="view-product-link"
+                    class="group inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm font-semibold text-blue-700 transition-colors hover:border-blue-300 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-blue-800 dark:bg-blue-950/50 dark:text-blue-300 dark:hover:border-blue-700 dark:hover:bg-blue-900/50 sm:w-auto">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
+                        <circle cx="12" cy="12" r="3" />
+                    </svg>
+                    Lihat Produk
+                    <svg class="h-3.5 w-3.5 opacity-60 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M15 3h6v6" />
+                        <path d="M10 14 21 3" />
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                    </svg>
+                </a>
+            @else
+                <span data-testid="view-product-disabled" title="Aktifkan produk agar dapat dilihat di website"
+                    class="inline-flex min-h-11 w-full cursor-not-allowed items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500 sm:w-auto">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
+                        <circle cx="12" cy="12" r="3" />
+                    </svg>
+                    Produk Belum Aktif
+                </span>
+            @endif
         </div>
 
         <form action="{{ route('products.update', $product) }}" method="POST" enctype="multipart/form-data"
