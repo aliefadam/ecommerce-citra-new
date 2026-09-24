@@ -257,6 +257,14 @@
                                 {{ $message }}
                             </div>
                         @enderror
+                        @foreach ($errors->get('variants.*.image') as $imageMessages)
+                            @foreach ($imageMessages as $imageMessage)
+                                <div
+                                    class="mb-3 px-3 py-2 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-700 rounded-lg text-xs text-red-500">
+                                    {{ $imageMessage }}
+                                </div>
+                            @endforeach
+                        @endforeach
 
                         <div class="space-y-3">
                             <template x-for="(row, index) in rows" :key="row.id">
@@ -295,7 +303,8 @@
                                             class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Gambar</label>
                                         <div class="flex items-center gap-3">
                                             <div x-show="row.imagePreview" class="flex-shrink-0">
-                                                <img :src="row.imagePreview"
+                                                <img :src="row.imagePreview" alt="Preview gambar varian"
+                                                    x-on:error="row.imageError = 'Preview gambar gagal ditampilkan. Pilih file lain.'"
                                                     class="w-14 h-14 object-cover rounded-lg border border-slate-200 dark:border-slate-600" />
                                             </div>
                                             <label
@@ -310,10 +319,14 @@
                                                 <span class="text-xs text-slate-400 truncate"
                                                     x-text="row.imagePreview ? 'Ganti gambar...' : 'Pilih gambar...'"></span>
                                                 <input type="file" :name="`variants[${index}][image]`"
-                                                    accept="image/*" @change="handleImageChange(row, $event)"
+                                                    accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                                                    @change="handleImageChange(row, $event)"
                                                     class="hidden" />
                                             </label>
                                         </div>
+                                        <p class="mt-1.5 text-xs text-slate-400">JPG, PNG, atau WebP. Maksimal 12 MB.</p>
+                                        <p x-show="row.imageError" x-text="row.imageError"
+                                            class="mt-1.5 text-xs text-red-500" role="alert"></p>
                                     </div>
 
                                     {{-- SKU + Harga + Stok --}}
@@ -726,6 +739,7 @@
                     productVariantId: r.productVariantId || null,
                     imagePreview: r.imagePath || null,
                     imageStoredPath: r.imageStoredPath || '',
+                    imageError: '',
                     sku: r.sku || '',
                     price: r.price || '',
                     priceDisplay: '',
@@ -798,6 +812,7 @@
                         productVariantId: null,
                         imagePreview: null,
                         imageStoredPath: '',
+                        imageError: '',
                         sku: '',
                         price: '',
                         priceDisplay: '',
@@ -817,10 +832,29 @@
                 handleImageChange(row, event) {
                     const file = event.target.files[0];
                     if (!file) return;
+                    row.imageError = '';
+
+                    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+                    const allowedExtension = /\.(jpe?g|png|webp)$/i.test(file.name);
+                    if (!allowedTypes.includes(file.type) || !allowedExtension) {
+                        event.target.value = '';
+                        row.imageError = 'Format gambar harus JPG, PNG, atau WebP.';
+                        return;
+                    }
+
+                    if (file.size > 12 * 1024 * 1024) {
+                        event.target.value = '';
+                        row.imageError = 'Ukuran gambar maksimal 12 MB.';
+                        return;
+                    }
+
                     const reader = new FileReader();
                     reader.onload = (e) => {
                         row.imagePreview = e.target.result;
-                        row.imageStoredPath = '';
+                    };
+                    reader.onerror = () => {
+                        event.target.value = '';
+                        row.imageError = 'File gambar tidak dapat dibaca. Pilih file lain.';
                     };
                     reader.readAsDataURL(file);
                 },

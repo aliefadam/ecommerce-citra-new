@@ -11,6 +11,8 @@ use App\Models\ProductVariant;
 use App\Models\User;
 use App\Models\Variant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Tests\TestCase;
@@ -118,6 +120,75 @@ class ProductUpdateTest extends TestCase
             'name' => 'Varian SKU',
             'value' => 'M10',
         ]);
+    }
+
+    public function test_edit_product_replaces_existing_image_with_a_large_png(): void
+    {
+        Storage::fake('public');
+        [$product, $detail, , , $productVariant] = $this->createProductFixture();
+        $productVariant->update(['image' => 'product-variants/old.webp']);
+        Storage::disk('public')->put('product-variants/old.webp', 'old-image');
+        $this->actingAs($this->makeAdminUser());
+
+        $payload = $this->singleVariantUpdatePayload($product, $detail, $productVariant);
+        $payload['variants'][0]['image'] = UploadedFile::fake()
+            ->image('replacement.png', 2400, 1800)
+            ->size(7500);
+
+        $this->put(route('products.update', $product), $payload)
+            ->assertRedirect(route('products.index'))
+            ->assertSessionHasNoErrors();
+
+        $storedImage = $productVariant->fresh()->image;
+
+        $this->assertNotSame('product-variants/old.webp', $storedImage);
+        $this->assertStringEndsWith('.webp', $storedImage);
+        Storage::disk('public')->assertExists($storedImage);
+        Storage::disk('public')->assertMissing('product-variants/old.webp');
+        $this->assertSame('image/webp', getimagesizefromstring(Storage::disk('public')->get($storedImage))['mime']);
+    }
+
+    public function test_edit_product_does_not_trust_the_existing_image_path_from_the_browser(): void
+    {
+        Storage::fake('public');
+        [$product, $detail, , , $productVariant] = $this->createProductFixture();
+        $productVariant->update(['image' => 'product-variants/original.webp']);
+        Storage::disk('public')->put('product-variants/original.webp', 'original-image');
+        $this->actingAs($this->makeAdminUser());
+
+        $payload = $this->singleVariantUpdatePayload($product, $detail, $productVariant);
+        $payload['variants'][0]['existing_image'] = 'product-variants/tampered.webp';
+
+        $this->put(route('products.update', $product), $payload)
+            ->assertRedirect(route('products.index'))
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame('product-variants/original.webp', $productVariant->fresh()->image);
+        Storage::disk('public')->assertExists('product-variants/original.webp');
+    }
+
+    public function test_edit_product_rejects_an_image_over_twelve_megabytes_and_preserves_the_existing_image(): void
+    {
+        Storage::fake('public');
+        [$product, $detail, , , $productVariant] = $this->createProductFixture();
+        $productVariant->update(['image' => 'product-variants/original.webp']);
+        Storage::disk('public')->put('product-variants/original.webp', 'original-image');
+        $this->actingAs($this->makeAdminUser());
+
+        $payload = $this->singleVariantUpdatePayload($product, $detail, $productVariant);
+        $payload['variants'][0]['image'] = UploadedFile::fake()
+            ->image('too-large.png', 2400, 1800)
+            ->size(13000);
+
+        $this->from(route('products.edit', $product))
+            ->put(route('products.update', $product), $payload)
+            ->assertRedirect(route('products.edit', $product))
+            ->assertSessionHasErrors([
+                'variants.0.image' => 'Ukuran gambar varian maksimal 12 MB.',
+            ]);
+
+        $this->assertSame('product-variants/original.webp', $productVariant->fresh()->image);
+        Storage::disk('public')->assertExists('product-variants/original.webp');
     }
 
     public function test_edit_product_exposes_storefront_shortcuts_in_a_new_tab(): void
@@ -282,6 +353,28 @@ class ProductUpdateTest extends TestCase
         ]);
 
         return [$product, $detail, $firstVariant, $secondVariant, $productVariant];
+    }
+
+    private function singleVariantUpdatePayload(Product $product, CategoryDetail $detail, ProductVariant $productVariant): array
+    {
+        return [
+            'name' => $product->name,
+            'category_detail_id' => $detail->id,
+            'status' => 'active',
+            'variants' => [[
+                'product_variant_id' => $productVariant->id,
+                'existing_image' => $productVariant->image ?? '',
+                'price' => '10000',
+                'stock' => '5',
+                'weight_grams' => '1000',
+                'attributes' => [
+                    $this->diameterAttribute()->id => [
+                        'attribute_definition_id' => $this->diameterAttribute()->id,
+                        'value_text' => 'M8',
+                    ],
+                ],
+            ]],
+        ];
     }
 
     private function makeAdminUser(): User

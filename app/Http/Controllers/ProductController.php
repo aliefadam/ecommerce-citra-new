@@ -18,6 +18,7 @@ use App\Models\Variant;
 use App\Services\ImageOptimizer;
 use App\Services\ProductSpecificationService;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -145,7 +146,7 @@ class ProductController extends Controller
             'variants.*.attributes.*.attribute_definition_id' => ['required', 'exists:attribute_definitions,id'],
             'variants.*.attributes.*.value_text' => ['nullable', 'string', 'max:255'],
             'variants.*.attributes.*.value_number' => ['nullable', 'numeric', 'min:0'],
-            'variants.*.image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+            'variants.*.image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:12288', 'dimensions:max_width=8000,max_height=8000'],
         ], [
             'name.required' => 'Nama produk wajib diisi.',
             'status.required' => 'Status produk wajib dipilih.',
@@ -156,6 +157,11 @@ class ProductController extends Controller
             'variants.*.price.numeric' => 'Harga varian harus berupa angka.',
             'variants.*.stock.integer' => 'Stok varian harus berupa bilangan bulat.',
             'variants.*.weight_grams.integer' => 'Berat varian harus berupa bilangan bulat.',
+            'variants.*.image.uploaded' => 'Gambar varian gagal diunggah. Silakan pilih ulang gambar dan coba lagi.',
+            'variants.*.image.image' => 'File gambar varian harus berupa gambar yang valid.',
+            'variants.*.image.mimes' => 'Format gambar varian harus JPG, PNG, atau WebP.',
+            'variants.*.image.max' => 'Ukuran gambar varian maksimal 12 MB.',
+            'variants.*.image.dimensions' => 'Resolusi gambar varian maksimal 8000 x 8000 piksel.',
         ]);
         $isRedeemProduct = $request->boolean('is_redeem_product');
         if ($request->boolean('is_redeem_product') && empty($validated['redeem_points'])) {
@@ -213,7 +219,7 @@ class ProductController extends Controller
                     $attributes = $v['attributes'] ?? [];
                     unset($v['attributes']);
                     $v['image'] = isset($files[$i]['image'])
-                        ? $imageOptimizer->storeWebp($files[$i]['image'], 'product-variants', 1200, 1200, 82)
+                        ? $this->storeVariantImage($files[$i]['image'], $imageOptimizer, $i)
                         : null;
                     if ($v['image']) {
                         $storedImages[] = $v['image'];
@@ -570,7 +576,7 @@ class ProductController extends Controller
             'variants.*.attributes.*.attribute_definition_id' => ['required', 'exists:attribute_definitions,id'],
             'variants.*.attributes.*.value_text' => ['nullable', 'string', 'max:255'],
             'variants.*.attributes.*.value_number' => ['nullable', 'numeric', 'min:0'],
-            'variants.*.image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+            'variants.*.image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:12288', 'dimensions:max_width=8000,max_height=8000'],
         ], [
             'name.required' => 'Nama produk wajib diisi.',
             'status.required' => 'Status produk wajib dipilih.',
@@ -581,6 +587,11 @@ class ProductController extends Controller
             'variants.*.price.numeric' => 'Harga varian harus berupa angka.',
             'variants.*.stock.integer' => 'Stok varian harus berupa bilangan bulat.',
             'variants.*.weight_grams.integer' => 'Berat varian harus berupa bilangan bulat.',
+            'variants.*.image.uploaded' => 'Gambar varian gagal diunggah. Silakan pilih ulang gambar dan coba lagi.',
+            'variants.*.image.image' => 'File gambar varian harus berupa gambar yang valid.',
+            'variants.*.image.mimes' => 'Format gambar varian harus JPG, PNG, atau WebP.',
+            'variants.*.image.max' => 'Ukuran gambar varian maksimal 12 MB.',
+            'variants.*.image.dimensions' => 'Resolusi gambar varian maksimal 8000 x 8000 piksel.',
         ]);
         $isRedeemProduct = $request->boolean('is_redeem_product');
         if ($request->boolean('is_redeem_product') && empty($validated['redeem_points'])) {
@@ -653,7 +664,7 @@ class ProductController extends Controller
         $uploadedImages = [];
 
         try {
-            DB::transaction(function () use ($validated, $files, $request, $product, $detail, $category, $mainCategory, $imageOptimizer, $existingVariants, $submittedVariants, $keptVariantIds, $variantIdsToDelete, $attributeDefinitions, $specificationTemplate, $isRedeemProduct, &$newImages, &$uploadedImages) {
+            DB::transaction(function () use ($validated, $files, $product, $detail, $category, $mainCategory, $imageOptimizer, $existingVariants, $submittedVariants, $keptVariantIds, $variantIdsToDelete, $attributeDefinitions, $specificationTemplate, $isRedeemProduct, &$newImages, &$uploadedImages) {
                 $slug = $this->makeUniqueProductSlug($validated['name'], $product->id);
 
                 $product->update([
@@ -683,11 +694,10 @@ class ProductController extends Controller
                     unset($v['attributes']);
 
                     if (isset($files[$i]['image'])) {
-                        $v['image'] = $imageOptimizer->storeWebp($files[$i]['image'], 'product-variants', 1200, 1200, 82);
+                        $v['image'] = $this->storeVariantImage($files[$i]['image'], $imageOptimizer, $i);
                         $uploadedImages[] = $v['image'];
                     } else {
-                        $existingImage = $request->input("variants.{$i}.existing_image");
-                        $v['image'] = $existingImage ?: null;
+                        $v['image'] = $existingVariant?->image;
                     }
                     if (! empty($v['image'])) {
                         $newImages[] = $v['image'];
@@ -849,6 +859,19 @@ class ProductController extends Controller
         throw ValidationException::withMessages([
             'variants' => 'Format harga ambigu. Gunakan contoh 13000, 13.000,00, atau 13,000.00.',
         ]);
+    }
+
+    private function storeVariantImage(UploadedFile $file, ImageOptimizer $imageOptimizer, int $index): string
+    {
+        try {
+            return $imageOptimizer->storeWebp($file, 'product-variants', 1200, 1200, 82);
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            throw ValidationException::withMessages([
+                'variants.'.$index.'.image' => 'Gambar varian gagal diproses. Gunakan file JPG, PNG, atau WebP yang valid.',
+            ]);
+        }
     }
 
     private function normalizeDecimalInput(mixed $value): ?string
