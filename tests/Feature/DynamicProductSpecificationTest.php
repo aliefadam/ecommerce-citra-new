@@ -224,7 +224,8 @@ class DynamicProductSpecificationTest extends TestCase
 
         $this->assertNotSame('', $sku);
         $this->assertLessThanOrEqual(100, strlen($sku));
-        $this->assertStringStartsWith('KOMPONEN-SAMBUNGAN-INDUSTRI', $sku);
+        $this->assertMatchesRegularExpression('/^SKU-\d{6,}-\d{6,}$/', $sku);
+        $this->assertStringNotContainsString('KOMPONEN', $sku);
     }
 
     public function test_duplicate_dynamic_variant_combination_is_rejected(): void

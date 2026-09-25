@@ -12,7 +12,7 @@ async function loginAsAdmin(page) {
 }
 
 test('admin can log in and create a product', async ({ page }) => {
-    const productName = 'Produk Uji Playwright';
+    const productName = 'Half Coupling ISO 4144 merupakan komponen fitting pipa berkualitas tinggi yang dirancang untuk kebutuhan penyambungan pipa industri maupun perpipaan umum. Fitting ini memiliki ulir di bagian dalam (female thread) dan biasa dilas secara lang';
     const serverErrors = [];
 
     page.on('response', (response) => {
@@ -33,6 +33,7 @@ test('admin can log in and create a product', async ({ page }) => {
     await page.locator('input[x-model="row.priceDisplay"]').fill('125000');
     await page.locator('input[x-model="row.stockDisplay"]').fill('10');
     await page.locator('input[name="variants[0][weight_grams]"]').fill('500');
+    await expect(page.locator('input[\:value="generatedSku(row)"]')).toHaveValue('Dibuat otomatis setelah disimpan');
 
     await page.getByRole('button', { name: 'Save Product' }).click();
     await expect(page.getByRole('dialog')).toBeVisible();
@@ -40,5 +41,9 @@ test('admin can log in and create a product', async ({ page }) => {
 
     await page.waitForURL('**/admin/products', { waitUntil: 'domcontentloaded' });
     await expect(page.getByText(productName, { exact: true })).toBeVisible();
+
+    const productRow = page.locator('tr').filter({ hasText: productName });
+    await productRow.locator('a[title="Edit"]').click();
+    await expect(page.locator('input[\:value="generatedSku(row)"]')).toHaveValue(/^SKU-\d{6,}-\d{6,}$/);
     expect(serverErrors).toEqual([]);
 });

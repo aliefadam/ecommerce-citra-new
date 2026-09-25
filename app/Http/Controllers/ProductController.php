@@ -226,9 +226,9 @@ class ProductController extends Controller
                     }
                     $variantMeta = $this->resolveInternalVariant($attributes, $attributeDefinitions, $specificationTemplate);
                     $v['variant_id'] = $variantMeta['variant_id'];
-                    $v['sku'] = $this->buildVariantSku($validated['name'], $variantMeta['label']);
 
                     $productVariant = $product->productVariants()->create($v);
+                    $this->assignGeneratedSku($productVariant);
                     $this->syncVariantAttributes($productVariant, $attributes, $attributeDefinitions);
                 }
             });
@@ -469,7 +469,6 @@ class ProductController extends Controller
                     $variantMeta = $this->resolveInternalVariant($attributes, $attributeDefinitionsById, $specificationTemplate);
                     $variant = $product->productVariants()->create([
                         'variant_id' => $variantMeta['variant_id'],
-                        'sku' => $this->buildVariantSku($productName, $variantMeta['label']),
                         'image' => null,
                         'price' => $price,
                         'stock' => (int) $stock,
@@ -479,6 +478,7 @@ class ProductController extends Controller
                         'height_cm' => $heightCm,
                     ]);
 
+                    $this->assignGeneratedSku($variant);
                     $this->syncVariantAttributes($variant, $attributes, $attributeDefinitionsById);
                 }
             }
@@ -704,7 +704,6 @@ class ProductController extends Controller
                     }
                     $variantMeta = $this->resolveInternalVariant($attributes, $attributeDefinitions, $specificationTemplate);
                     $v['variant_id'] = $variantMeta['variant_id'];
-                    $v['sku'] = $this->buildVariantSku($validated['name'], $variantMeta['label']);
                     unset($v['product_variant_id']);
 
                     if ($existingVariant) {
@@ -715,6 +714,7 @@ class ProductController extends Controller
                     }
 
                     $productVariant = $product->productVariants()->create($v);
+                    $this->assignGeneratedSku($productVariant);
                     $this->syncVariantAttributes($productVariant, $attributes, $attributeDefinitions);
                 }
             });
@@ -766,14 +766,11 @@ class ProductController extends Controller
         return $slug;
     }
 
-    private function buildVariantSku(string $productName, ?string $variantDescriptor): string
+    private function assignGeneratedSku(ProductVariant $productVariant): void
     {
-        $productPart = Str::upper(Str::slug($productName, '-'));
-        $descriptorPart = Str::upper(Str::slug((string) $variantDescriptor, '-'));
-
-        $segments = array_filter([$productPart, $descriptorPart], fn ($s) => $s !== '');
-
-        return rtrim(Str::substr(implode('-', $segments), 0, 100), '-');
+        $productVariant->update([
+            'sku' => sprintf('SKU-%06d-%06d', $productVariant->product_id, $productVariant->id),
+        ]);
     }
 
     private function normalizeVariantNumericFields(array $variants): array

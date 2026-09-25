@@ -333,9 +333,8 @@
                                     <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
                                         <div>
                                             <label
-                                                class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">SKU</label>
-                                            <input type="text" :name="`variants[${index}][sku]`" :value="generatedSku(row)"
-                                                maxlength="100" readonly
+                                                class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">SKU (otomatis)</label>
+                                            <input type="text" :value="generatedSku(row)" readonly
                                                 class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-700/70 dark:text-slate-200 text-slate-600 focus:outline-none" />
                                         </div>
                                         <div>
@@ -777,11 +776,7 @@
                     return values.join(' - ') || 'Varian Baru';
                 },
                 generatedSku(row) {
-                    const parts = [
-                        this.slugify(this.productName),
-                        this.slugify(this.rowLabel(row)),
-                    ].filter(Boolean);
-                    return parts.join('-').slice(0, 100).replace(/-+$/, '');
+                    return row.sku || 'Dibuat otomatis setelah disimpan';
                 },
                 sanitizeNumericInput(value) {
                     const raw = String(value ?? '').trim();
