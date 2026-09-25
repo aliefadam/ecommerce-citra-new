@@ -107,6 +107,7 @@ class ProductUpdateTest extends TestCase
 
         $this->assertSame(15000.0, (float) $existingProductVariant->price);
         $this->assertSame(7, $existingProductVariant->stock);
+        $this->assertSame('PRODUK-LAMA-DIAMETER-M8', $existingProductVariant->sku);
         $this->assertSame($existingProductVariant->id, $cart->product_variant_id);
         $this->assertCount(2, $product->fresh()->productVariants);
         $newProductVariant = $product->fresh()->productVariants()
@@ -115,6 +116,7 @@ class ProductUpdateTest extends TestCase
             ->first();
 
         $this->assertNotNull($newProductVariant);
+        $this->assertMatchesRegularExpression('/^SKU-\d{6,}-\d{6,}$/', (string) $newProductVariant->sku);
         $this->assertDatabaseHas('variants', [
             'id' => $newProductVariant->variant_id,
             'name' => 'Varian SKU',

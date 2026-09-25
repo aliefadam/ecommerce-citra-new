@@ -33,7 +33,7 @@ test('admin can log in and create a product', async ({ page }) => {
     await page.locator('input[x-model="row.priceDisplay"]').fill('125000');
     await page.locator('input[x-model="row.stockDisplay"]').fill('10');
     await page.locator('input[name="variants[0][weight_grams]"]').fill('500');
-    await expect(page.locator('input[\:value="generatedSku(row)"]')).toHaveValue('Dibuat otomatis setelah disimpan');
+    await expect(page.getByTestId('variant-sku')).toHaveValue('Dibuat otomatis setelah disimpan');
 
     await page.getByRole('button', { name: 'Save Product' }).click();
     await expect(page.getByRole('dialog')).toBeVisible();
@@ -44,6 +44,6 @@ test('admin can log in and create a product', async ({ page }) => {
 
     const productRow = page.locator('tr').filter({ hasText: productName });
     await productRow.locator('a[title="Edit"]').click();
-    await expect(page.locator('input[\:value="generatedSku(row)"]')).toHaveValue(/^SKU-\d{6,}-\d{6,}$/);
+    await expect(page.getByTestId('variant-sku')).toHaveValue(/^SKU-\d{6,}-\d{6,}$/);
     expect(serverErrors).toEqual([]);
 });

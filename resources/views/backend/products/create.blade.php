@@ -246,7 +246,7 @@
                                         <div>
                                             <label
                                                 class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">SKU (otomatis)</label>
-                                            <input type="text" :value="generatedSku(row)" readonly
+                                            <input type="text" :value="generatedSku(row)" data-testid="variant-sku" readonly
                                                 class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-700/70 dark:text-slate-200 text-slate-600 focus:outline-none" />
                                         </div>
                                         <div>
