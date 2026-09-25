@@ -311,7 +311,7 @@ class FrontendController extends Controller
             ->all();
 
         if (empty($galleryImages)) {
-            $galleryImages = ['https://via.placeholder.com/700x700?text=No+Image'];
+            $galleryImages = [asset('imgs/product-placeholder.svg')];
         }
 
         $image = $galleryImages[0];
@@ -1203,7 +1203,7 @@ class FrontendController extends Controller
     private function normalizeImageUrl(string $image, string $fallbackSize = '400x400'): string
     {
         if ($image === '') {
-            return "https://via.placeholder.com/{$fallbackSize}?text=No+Image";
+            return asset('imgs/product-placeholder.svg');
         }
 
         if (str_starts_with($image, 'http://') || str_starts_with($image, 'https://')) {

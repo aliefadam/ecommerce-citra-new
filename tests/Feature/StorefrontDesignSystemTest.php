@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\ProductVariant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -37,6 +38,17 @@ class StorefrontDesignSystemTest extends TestCase
         $this->get(route('frontend.detail-produk', 'baut-hex-m8-x-25mm-galvanis'))
             ->assertOk()
             ->assertDontSee('aria-label="Navigasi cepat"', false);
+    }
+
+    public function test_product_without_an_image_uses_the_local_storefront_placeholder(): void
+    {
+        $this->seed();
+        ProductVariant::query()->firstOrFail()->update(['image' => null]);
+
+        $this->get(route('frontend.index'))
+            ->assertOk()
+            ->assertSee(asset('imgs/product-placeholder.svg'), false)
+            ->assertDontSee('via.placeholder.com', false);
     }
 
     public function test_legal_routes_have_accessible_fallback_content_without_database_pages(): void
