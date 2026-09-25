@@ -773,7 +773,7 @@ class ProductController extends Controller
 
         $segments = array_filter([$productPart, $descriptorPart], fn ($s) => $s !== '');
 
-        return implode('-', $segments);
+        return rtrim(Str::substr(implode('-', $segments), 0, 100), '-');
     }
 
     private function normalizeVariantNumericFields(array $variants): array

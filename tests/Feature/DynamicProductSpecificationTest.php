@@ -188,6 +188,45 @@ class DynamicProductSpecificationTest extends TestCase
             ->assertSee('ASTM A106');
     }
 
+    public function test_product_with_a_long_name_is_created_with_sku_within_column_limit(): void
+    {
+        [, $detail] = $this->categoryFixture('pipe');
+        $productName = implode(' ', array_fill(0, 8, 'Komponen Sambungan Industri'));
+
+        $response = $this->actingAs($this->admin())->post(route('products.store'), [
+            'name' => $productName,
+            'category_detail_id' => $detail->id,
+            'status' => 'active',
+            'variants' => [[
+                'price' => 13000,
+                'stock' => 1000,
+                'weight_grams' => 1000,
+                'attributes' => $this->attributePayload([
+                    'nominal_size' => '4',
+                    'schedule_class' => 'Sch 40',
+                    'material' => 'Carbon Steel',
+                    'thickness_mm' => '6.02',
+                    'pipe_length_m' => '6',
+                    'standard' => 'ASTM A106',
+                ]),
+            ]],
+        ]);
+
+        $response->assertRedirect(route('products.index'));
+        $response->assertSessionHasNoErrors();
+
+        $sku = (string) Product::query()
+            ->where('name', $productName)
+            ->firstOrFail()
+            ->productVariants()
+            ->firstOrFail()
+            ->sku;
+
+        $this->assertNotSame('', $sku);
+        $this->assertLessThanOrEqual(100, strlen($sku));
+        $this->assertStringStartsWith('KOMPONEN-SAMBUNGAN-INDUSTRI', $sku);
+    }
+
     public function test_duplicate_dynamic_variant_combination_is_rejected(): void
     {
         [, $detail] = $this->categoryFixture('nut');
