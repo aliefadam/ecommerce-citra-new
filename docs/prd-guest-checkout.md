@@ -1,5 +1,7 @@
 # PRD: Guest Checkout (Checkout Tanpa Login)
 
+> Status aktual (27 September 2026): **Implemented dan terverifikasi** untuk buy-now guest, transfer manual, Midtrans BOQ bersama, tracking, upload bukti, serta konversi akun. Pemisahan merchant Midtrans per perusahaan bukan scope fase saat ini.
+
 ## Ringkasan
 
 Saat ini seluruh alur checkout (cart, buy now, redeem point, pembayaran manual, Midtrans) terkunci di belakang middleware `auth` (`routes/web.php:306-343`), sehingga customer wajib login/daftar akun sebelum bisa belanja. Fitur ini membuka jalur checkout tanpa login khusus untuk pembelian satu produk langsung ("Beli Langsung"), tanpa merombak sistem cart multi-item dan alamat tersimpan yang sekarang terikat penuh ke akun.

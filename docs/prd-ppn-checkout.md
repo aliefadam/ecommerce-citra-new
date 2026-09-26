@@ -1,5 +1,7 @@
 # PRD: PPN Checkout End-to-End
 
+> Status aktual (27 September 2026): **Implemented dan terverifikasi**. Tarif per perusahaan, kalkulasi setelah diskon, snapshot transaksi, checkout manual/Midtrans, invoice, email, admin, dan riwayat customer sudah terintegrasi.
+
 ## Ringkasan
 
 Fitur ini menambahkan perhitungan PPN pada checkout ecommerce BOQ. Harga produk dianggap belum termasuk PPN. PPN ditambahkan saat checkout berdasarkan pengaturan toko yang dapat diatur administrator.
@@ -284,4 +286,3 @@ Minimal:
 - Apakah label "DPP" perlu ditampilkan ke customer atau cukup "PPN 11%"?
 - Apakah laporan perlu breakdown PPN pada fase pertama atau cukup di detail transaksi?
 - Apakah invoice print perlu format pajak yang lebih formal untuk kebutuhan akuntansi?
-

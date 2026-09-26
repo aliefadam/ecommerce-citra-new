@@ -1,11 +1,13 @@
 # PRD: Fondasi Multi-Perusahaan (Multi-Company Foundation)
 
-> Status: Siap dieksekusi — Fase 1 & Fase 2 sudah lengkap dengan keputusan bisnis & teknis (v2, 2026-07-19). Sisa Open Questions non-blocking (WA gateway, onboarding data perusahaan baru).
+> Status aktual (27 September 2026): **Implemented core v1**. Isolasi data, company switcher, checkout marketplace, pengaturan perusahaan, laporan, dan alur B2B sudah berjalan. E2E checkout dua perusahaan lulus. Untuk fase saat ini seluruh perusahaan sengaja memakai satu akun Midtrans milik BOQ; kredensial Midtrans per perusahaan ditunda sampai keputusan bisnis berubah.
+
+> Riwayat status: dokumen siap dieksekusi pada 19 Juli 2026; status pelaksanaan terkini tercatat di atas.
 > Prasyarat untuk: `prd-quotation-to-invoice-b2b.md` (perlu revisi company-aware setelah PRD ini disetujui)
 
 ## Ringkasan
 
-Sistem saat ini melayani satu perusahaan (BOQ). Pemilik bisnis memiliki beberapa perusahaan (PT) dan ingin semuanya dikelola lewat **satu sistem dan satu admin panel** — ini **bukan** multi-tenant SaaS; semua perusahaan milik satu grup pemilik yang sama.
+Sistem mengelola beberapa perusahaan (PT) lewat **satu sistem dan satu admin panel** — ini **bukan** multi-tenant SaaS; semua perusahaan milik satu grup pemilik yang sama. Data BOQ menjadi baseline perusahaan pertama dan perusahaan lain ditambahkan melalui fondasi multi-company.
 
 Keputusan utama:
 
@@ -136,6 +138,8 @@ Implikasi teknis (berdasarkan baseline di §4a):
 
 ### 4b. Payment Gateway per Perusahaan
 
+Keputusan sementara per 27 September 2026: seluruh perusahaan menggunakan satu akun Midtrans milik BOQ. Tabel `company_payment_credentials` dipertahankan sebagai fondasi untuk pemisahan merchant pada fase berikutnya, tetapi belum menjadi sumber kredensial runtime. Transfer manual dan rekening operasional tetap mengikuti pengaturan perusahaan. Ketentuan opt-in per perusahaan di bawah ini menjadi target fase lanjutan, bukan release blocker saat ini.
+
 Masalah nyata yang harus diantisipasi: situs bisa live untuk perusahaan baru sebelum merchant Midtrans PT tersebut disetujui (proses approval Midtrans per legal entity bisa makan waktu). Keputusan:
 
 - **Manual transfer aktif per-company sejak hari pertama**, tanpa syarat approval apa pun — ini sudah ada sebagai metode pembayaran existing (`manual_transfer` di checkout, lihat `resources/views/frontend/checkout.blade.php:1628`), tinggal dibuat company-aware lewat `company_settings` (`manual_payment_bank_name/account_number/account_name/instruction` per perusahaan).
@@ -191,10 +195,10 @@ Masalah nyata yang harus diantisipasi: situs bisa live untuk perusahaan baru seb
 - [ ] Owner bisa membuat perusahaan kedua dan menugaskan admin dengan role berbeda per perusahaan.
 - [ ] Admin ber-scope PT A tidak bisa mengakses data PT B lewat UI maupun manipulasi URL/ID (403/404).
 - [ ] Produk & stok hanya muncul dan bisa dikelola dalam konteks perusahaan pemiliknya.
-- [ ] Customer bisa checkout produk dari dua perusahaan sebagai dua transaksi terpisah, masing-masing dengan ongkir & pembayaran sendiri.
+- [x] Customer bisa checkout produk dari dua perusahaan sebagai dua transaksi terpisah, masing-masing dengan ongkir & pembayaran sendiri.
 - [ ] Klik "Checkout" pada keranjang berisi 2+ perusahaan langsung membuat N `Transaction` berstatus menunggu pembayaran (pola marketplace, §4b); customer bisa membayar tiap pesanan independen, kapan pun, tanpa harus menuntaskan semua dalam satu sesi.
 - [ ] Pembayaran salah satu perusahaan gagal/kadaluarsa tidak memengaruhi status/pembayaran pesanan perusahaan lain dalam checkout yang sama.
-- [ ] Perusahaan yang belum mengisi kredensial Midtrans (`company_payment_credentials`) tetap bisa menerima pesanan via manual transfer; opsi Midtrans otomatis tersembunyi untuk perusahaan itu.
+- [x] Pada fase shared merchant, seluruh perusahaan memakai Midtrans BOQ; manual transfer tetap tersedia dan informasi operasionalnya mengikuti perusahaan transaksi.
 - [ ] Kupon perusahaan A tidak bisa dipakai untuk item perusahaan B.
 - [ ] Report per perusahaan sesuai scope; `reports.consolidated` menampilkan gabungan + breakdown.
 - [ ] Nomor invoice unik per perusahaan dengan prefix masing-masing; nomor seri faktur pajak unik per NPWP.

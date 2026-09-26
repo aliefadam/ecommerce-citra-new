@@ -1,6 +1,6 @@
 # PRD: Modernisasi Frontend Customer
 
-Status: Draft siap implementasi bertahap  
+Status: Implementasi berjalan; Sprint 0-2 selesai, Sprint 3-7 belum ditutup
 Tanggal audit awal: 13 September 2026  
 Area: Storefront / B2C customer experience  
 Pendekatan delivery: sprint kecil dengan quality gate pada setiap tahap
@@ -25,14 +25,20 @@ besar agar setiap perubahan visual memiliki dasar teknis yang stabil.
 | Sprint 0 | Baseline dan inventory | Selesai | Tidak ada | [Report baseline + screenshot matrix](frontend-baseline/README.md) |
 | Sprint 1 | Asset pipeline dan performance foundation | Selesai | Sprint 0 | [Build, query report, test autocomplete](frontend-baseline/sprint-1-report.md) |
 | Sprint 2 | Design system dan global shell | Selesai | Sprint 1 | [Component catalog + responsive review](frontend-baseline/sprint-2-report.md) |
-| Sprint 3 | Homepage, katalog, search, dan product card | Belum dimulai | Sprint 2 | Screenshot + browser test katalog |
-| Sprint 4 | Detail produk dan cart | Belum dimulai | Sprint 3 | Browser test product-to-cart |
-| Sprint 5 | Checkout dan payment recovery | Belum dimulai | Sprint 4 | E2E guest/member/multi-company |
-| Sprint 6 | Profil, order, tracking, wishlist, dan content | Belum dimulai | Sprint 2-5 | Browser test account lifecycle |
-| Sprint 7 | Accessibility, performance, regression, dan release | Belum dimulai | Sprint 0-6 | Audit final + sign-off |
+| Sprint 3 | Homepage, katalog, search, dan product card | Berjalan | Sprint 2 | Katalog/search/product card/flash sale sudah berubah; bukti screenshot dan seluruh acceptance criteria belum ditutup |
+| Sprint 4 | Detail produk dan cart | Berjalan | Sprint 3 | Detail produk, variant state, dan cart sudah diperbarui; browser test product-to-cart khusus sprint belum lengkap |
+| Sprint 5 | Checkout dan payment recovery | Berjalan | Sprint 4 | E2E guest, member, negative path, dan multi-company lulus; review seluruh recovery/payment state belum ditutup |
+| Sprint 6 | Profil, order, tracking, wishlist, dan content | Berjalan | Sprint 2-5 | Profil, tracking, help center, content, SEO, dan PWA sudah berubah; account lifecycle matrix belum lengkap |
+| Sprint 7 | Accessibility, performance, regression, dan release | Berjalan | Sprint 0-6 | Backend 214 test, browser 18 skenario, dan build lulus; audit final, screenshot/manual book, performance budget, dan sign-off belum selesai |
 
 Nilai status yang digunakan: `Belum dimulai`, `Berjalan`, `Blocked`, dan `Selesai`. Status hanya boleh
 diubah menjadi `Selesai` jika seluruh acceptance criteria sprint dan quality gate memiliki bukti.
+
+Pemeriksaan ulang 27 September 2026 membuktikan implementasi Sprint 3-6 sudah berjalan sehingga status
+lama `Belum dimulai` tidak lagi akurat. Status tetap `Berjalan`, bukan `Selesai`, karena checklist dan
+bukti review visual/accessibility/performance per sprint belum seluruhnya tersedia. E2E checkout
+lintas perusahaan membuktikan dua perusahaan menghasilkan dua pesanan independen melalui transfer
+manual dengan satu akun Midtrans BOQ sebagai keputusan bisnis sementara.
 
 ## Latar Belakang dan Temuan Audit
 

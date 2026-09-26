@@ -1,5 +1,7 @@
 # PRD: API Katalog per Perusahaan (Company Catalog API)
 
+> Pemeriksaan ulang 27 September 2026: implementasi endpoint/resource masih tersedia dan build serta suite aplikasi lulus. Regression test khusus kontrak Open Catalog API belum ada pada suite test saat ini dan menjadi pekerjaan quality-hardening berikutnya.
+
 > Status: **Implemented v2** (2026-07-19) — model **Open API** (publik, tanpa key). Endpoint produk & kategori sudah dibangun, diuji end-to-end, dan berjalan. Lihat §Status Implementasi dan `docs/api-catalog-usage.md`.
 > Prasyarat: `prd-multi-company-foundation.md` (Fase 1 & skema `company_id` pada `products`). API ini mengonsumsi dimensi `company_id` yang diperkenalkan di sana.
 > Scope rilis pertama: **read-only (GET), publik**, hanya **kategori** dan **produk**.

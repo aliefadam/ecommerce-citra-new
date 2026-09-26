@@ -1,5 +1,7 @@
 # PRD: Production Readiness & Stabilization
 
+> Status aktual (27 September 2026): **Implementasi aplikasi selesai, keputusan release masih NO-GO**. Backend, E2E, build, guard, backup tooling, dan runbook tersedia; bukti feature freeze, sign-off, off-server backup/restore drill, load test, alert delivery, production smoke, serta sertifikasi Midtrans/RajaOngkir/email masih harus dipenuhi di environment release.
+
 > Addendum wajib: temuan audit terbaru dan urutan remediasinya didefinisikan dalam [PRD Remediasi Hasil Audit Sistem September 2026](prd-system-audit-remediation-2026-09.md). Seluruh temuan P0/P1 pada addendum tersebut menjadi release blocker dan harus ditutup sebelum keputusan go-live.
 
 ## Ringkasan

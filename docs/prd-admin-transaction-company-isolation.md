@@ -1,6 +1,8 @@
 # PRD — Isolasi Transaksi Admin per Perusahaan
 
-> Status: Disetujui untuk implementasi  
+> Status aktual (27 September 2026): **Implemented dan terverifikasi**. Daftar, detail, mutasi transaksi, data turunan, bulk label, dan regression test lintas perusahaan sudah mengikuti perusahaan aktif.
+
+> Riwayat status: disetujui untuk implementasi pada 30 Agustus 2026; implementasi terkini tercatat di atas.
 > Tanggal: 2026-08-30  
 > Area: Admin Transactions dan data operasional turunannya
 

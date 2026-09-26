@@ -1,6 +1,8 @@
 # PRD: Alur Dokumen Penjualan B2B (Quotation - Sales Order - Proforma Invoice - Surat Jalan - Packing List - Invoice)
 
-> Status: Siap dieksekusi — company-aware & urutan implementasi sudah lengkap (v2, 2026-07-20). Ini adalah Fase 3 dari `prd-multi-company-foundation.md`, dieksekusi setelah Fase 1 & Fase 2 (fondasi multi-perusahaan + marketplace/checkout) selesai dan sudah diverifikasi.
+> Status aktual (27 September 2026): **Implemented untuk scope MVP dan terverifikasi**. Quotation, Sales Order langsung/konversi, Proforma Invoice, pembayaran, Surat Jalan, Packing List, Invoice B2B, stok, serta company isolation tersedia. Item yang secara eksplisit ditunda di bagian MVP tetap berada di fase lanjutan.
+
+> Riwayat status: siap dieksekusi pada 20 Juli 2026; implementasi MVP terkini tercatat di atas.
 
 ## Ringkasan
 

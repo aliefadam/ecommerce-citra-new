@@ -1,5 +1,7 @@
 # PRD: Admin Transactions Usability
 
+> Status aktual (27 September 2026): **Implemented dan terverifikasi**. Filter, ringkasan, sumber transaksi, aksi utama, pembayaran/pengiriman manual, dan bulk shipping label dicakup test fitur.
+
 ## Ringkasan
 
 Fitur ini meningkatkan halaman admin `Transactions` agar lebih mudah dipakai sebagai halaman kerja operasional harian. Fokus utama adalah membantu admin cepat menemukan transaksi yang perlu ditindaklanjuti, memahami prioritas, dan menjalankan aksi utama tanpa terlalu banyak klik.

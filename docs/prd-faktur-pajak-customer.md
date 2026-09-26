@@ -1,5 +1,7 @@
 # PRD: Permintaan Faktur Pajak Customer
 
+> Status aktual (27 September 2026): **Implemented untuk scope MVP**. Request checkout/detail order, profil dan snapshot NPWP, queue admin, upload/download PDF, email, permission, masking, dan isolasi perusahaan sudah tersedia dan diuji.
+
 ## Ringkasan
 
 Fitur ini menambahkan alur permintaan faktur pajak untuk transaksi customer. Customer dapat mengisi data wajib pajak seperti nama NPWP, nomor NPWP, alamat NPWP, dan email penerima. Admin/finance kemudian memproses permintaan tersebut, membuat faktur pajak di sistem pajak resmi yang digunakan perusahaan, mengunggah file faktur pajak ke sistem, lalu mengirimkannya ke customer melalui email dan/atau menyediakan file download di detail transaksi.

@@ -1,11 +1,11 @@
 # PRD: Spesifikasi Produk Dinamis per Kategori
 
-Status: Implemented core v1; rollout mapping kategori menunggu konfigurasi admin  
+Status: Implemented core v1; mapping otomatis kategori yang dikenali selesai, kategori ambigu menunggu review admin
 Tanggal: 21 September 2026  
 Area: Katalog produk, varian, admin produk, storefront, import Excel, dan Open Catalog API  
 Pendekatan delivery: migrasi backward-compatible dengan quality gate pada setiap fase
 
-## Status Implementasi (21 September 2026)
+## Status Implementasi (diperbarui 27 September 2026)
 
 Core v1 sudah diimplementasikan dan diverifikasi:
 
@@ -18,11 +18,12 @@ Core v1 sudah diimplementasikan dan diverifikasi:
   daftar atribut Bolt.
 - Template dan import Excel dinamis per template; format Bolt lama tetap didukung.
 - Migrasi database bersifat backward-compatible dan tidak mengubah nilai atribut produk lama.
-- Automated regression: seluruh suite lulus, 201 test dengan 1.192 assertion.
+- Automated regression terbaru: seluruh suite backend lulus, 214 test dengan 1.285 assertion; browser E2E lulus 18 skenario setelah penambahan checkout multi-company.
 - Build frontend production dan kompilasi Blade lulus.
 
-Rollout data sengaja tidak memetakan kategori berdasarkan nama secara otomatis. Admin perlu memilih
-template pada Category Detail (atau fallback Main Category) setelah klasifikasi katalog dikonfirmasi.
+Rollout data memetakan kategori yang namanya dikenali secara konservatif ke template baseline. Nama
+ambigu seperti klem/clamp/bracket tetap tidak dipetakan dan perlu dipilih admin pada Category Detail
+(atau melalui fallback Main Category) setelah klasifikasi katalog dikonfirmasi.
 
 ## Ringkasan
 

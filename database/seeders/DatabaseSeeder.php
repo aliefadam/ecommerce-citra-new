@@ -24,5 +24,12 @@ class DatabaseSeeder extends Seeder
             BannerSeeder::class,
             StoreLocationSeeder::class,
         ]);
+
+        if (app()->environment('e2e')) {
+            $this->call([
+                CompanySeeder::class,
+                BrowserE2eSeeder::class,
+            ]);
+        }
     }
 }

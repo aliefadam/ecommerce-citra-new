@@ -1,5 +1,7 @@
 # PRD: Manual Admin Sales Order
 
+> Status aktual (27 September 2026): **Implemented dan terverifikasi**. Pembuatan multi-item, snapshot customer, pembayaran parsial/lunas, pengiriman/pickup, invoice, label, stok, dan company scope dicakup test fitur.
+
 ## Ringkasan
 
 Fitur ini menambahkan alur pembuatan transaksi manual oleh admin/staff untuk customer yang melakukan pemesanan di luar checkout ecommerce, misalnya melalui chat, telepon, atau komunikasi langsung. Admin mencatat customer, item, harga, pembayaran, dan pengiriman dari panel admin.
