@@ -43,6 +43,26 @@ class StorefrontDesignSystemTest extends TestCase
             ->assertDontSee('aria-label="Navigasi cepat"', false);
     }
 
+    public function test_mobile_pwa_install_entry_links_to_platform_instructions(): void
+    {
+        $this->seed();
+
+        $helpUrl = route('frontend.pages.show', 'pusat-bantuan').'?category=aplikasi#install-aplikasi';
+
+        $this->get(route('frontend.index'))
+            ->assertOk()
+            ->assertSee('data-pwa-install', false)
+            ->assertSee($helpUrl, false)
+            ->assertSee('Install Aplikasi');
+
+        $this->get(route('frontend.pages.show', 'pusat-bantuan'))
+            ->assertOk()
+            ->assertSee('id="install-aplikasi"', false)
+            ->assertSee('Android / tablet')
+            ->assertSee('iPhone / iPad')
+            ->assertSee('Add to Home Screen');
+    }
+
     public function test_product_without_an_image_uses_the_local_storefront_placeholder(): void
     {
         $this->seed();

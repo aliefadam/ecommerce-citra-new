@@ -38,4 +38,25 @@ test.describe('help center redesign', () => {
         await expect(returnTrigger).toHaveAttribute('aria-expanded', 'true');
         await expect(page.getByText(/Siapkan nomor pesanan, foto produk/)).toBeVisible();
     });
+
+    test('mobile install entry opens the platform-specific PWA guide', async ({ page }) => {
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+        const installEntry = page.locator('[data-pwa-install]');
+        await expect(installEntry).toBeVisible();
+        await expect(page.locator('.ec-utility-copy')).toBeHidden();
+        await expect(installEntry).toHaveAttribute('href', /category=aplikasi#install-aplikasi$/);
+
+        await page.goto('/pages/pusat-bantuan?category=aplikasi#install-aplikasi');
+        const installFaq = page.locator('#install-aplikasi');
+        await expect(installFaq).toBeVisible();
+        await expect(installFaq.getByText('Android / tablet')).toBeVisible();
+        await expect(installFaq.getByText('iPhone / iPad')).toBeVisible();
+
+        await page.setViewportSize({ width: 1440, height: 1000 });
+        await page.goto('/', { waitUntil: 'domcontentloaded' });
+        await expect(page.locator('[data-pwa-install]')).toBeHidden();
+        await expect(page.locator('.ec-utility-copy')).toBeVisible();
+    });
 });
