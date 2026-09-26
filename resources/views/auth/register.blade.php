@@ -25,6 +25,16 @@
                 <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-black/30"></div>
 
                 <div class="relative flex items-center gap-3 z-10 p-10">
+                    <div class="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center overflow-hidden">
+                        @if (!empty($appStoreLogoUrl))
+                            <img src="{{ $appStoreLogoUrl }}" alt="{{ $appStoreName }}" class="w-full h-full object-contain bg-white p-1">
+                        @else
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                            </svg>
+                        @endif
+                    </div>
                     <span class="text-xl font-extrabold tracking-tight">{{ $appStoreName ?? config('app.name') }}</span>
                 </div>
 
@@ -91,14 +101,14 @@
                             <div>
                                 <label
                                     class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Password</label>
-                                <input type="password" name="password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                                <input type="password" name="password" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;"
                                     class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200 placeholder-slate-400" />
                             </div>
                             <div>
                                 <label
                                     class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Konfirmasi
                                     Password</label>
-                                <input type="password" name="password_confirmation" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                                <input type="password" name="password_confirmation" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;"
                                     class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200 placeholder-slate-400" />
                             </div>
 

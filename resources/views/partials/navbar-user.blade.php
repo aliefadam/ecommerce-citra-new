@@ -31,7 +31,7 @@
     <div class="ec-header-main">
         <div class="ec-container ec-header-main-inner">
             <a href="{{ route('frontend.index') }}" class="ec-header-logo" aria-label="{{ $appStoreName }}, beranda">
-                <span>{{ $appStoreName }}</span>
+                <img src="{{ !empty($appStoreLogoUrl) ? $appStoreLogoUrl : asset('logo/BOQ.CO.ID/BOQ.CO.ID-1.png') }}" alt="{{ $appStoreName }}" width="116" height="52" />
             </a>
 
             <div class="ec-header-search-wrap">

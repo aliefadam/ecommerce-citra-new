@@ -2055,7 +2055,7 @@
                                     </div>
                                     <div class="flex-1 min-w-0">
                                         <p class="text-sm font-medium text-slate-800 leading-snug">${d.name}${d.variant ? " <span style='font-size:11px;color:#94a3b8;font-weight:400'>(" + d.variant + ")</span>" : ""}</p>
-                                        <p class="text-xs text-slate-500 mt-0.5">${d.qty} Ã— Rp ${Number(d.price || 0).toLocaleString('id-ID')}</p>
+                                        <p class="text-xs text-slate-500 mt-0.5">${d.qty} &times; Rp ${Number(d.price || 0).toLocaleString('id-ID')}</p>
                                     </div>
                                     <div class="text-sm font-semibold text-slate-800 shrink-0">Rp ${Number(d.subtotal || 0).toLocaleString('id-ID')}</div>
                                 </div>
@@ -2242,7 +2242,7 @@
             syncWishlistCount();
             if (!wishlistItems.length) {
                 grid.innerHTML =
-                    '<div class="col-span-2 sm:col-span-3 text-center py-12"><div class="text-5xl mb-3">â™¡</div><p class="text-slate-500">Wishlist kamu masih kosong</p></div>';
+                    '<div class="col-span-2 sm:col-span-3 text-center py-12"><div class="text-5xl mb-3">&#9825;</div><p class="text-slate-500">Wishlist kamu masih kosong</p></div>';
                 return;
             }
 
@@ -2252,7 +2252,7 @@
           <a href="{{ url('/detail-produk') }}/${w.slug}">
             <img src="${w.image}" class="w-full h-36 object-cover group-hover:scale-105 transition-transform duration-300" />
           </a>
-          <button onclick="removeWishlist(${w.product_id})" class="absolute top-2 right-2 w-7 h-7 bg-white/90 rounded-full flex items-center justify-center text-red-400 hover:text-red-500 text-xs opacity-0 group-hover:opacity-100 transition-all">âœ•</button>
+          <button onclick="removeWishlist(${w.product_id})" class="absolute top-2 right-2 w-7 h-7 bg-white/90 rounded-full flex items-center justify-center text-red-400 hover:text-red-500 text-xs opacity-0 group-hover:opacity-100 transition-all">&#10005;</button>
         </div>
         <div class="p-3">
           <a href="{{ url('/detail-produk') }}/${w.slug}" class="text-xs font-semibold text-slate-800 line-clamp-2 mb-1 block hover:text-blue-600">${w.name}</a>
@@ -2300,7 +2300,7 @@
             document.getElementById('trackingCourier').textContent = courier;
             document.getElementById('trackingStatusBadge').textContent = 'Dalam Pengiriman';
 
-            // Dummy timeline â€” ganti dengan API tracking nyata saat tersedia
+            // Dummy timeline - ganti dengan API tracking nyata saat tersedia
             const dummySteps = [
                 { done: true,  time: o.date,                            label: 'Pesanan Dibuat',           desc: 'Pesanan berhasil dibuat dan menunggu konfirmasi pembayaran.' },
                 { done: true,  time: '',                                 label: 'Pembayaran Diterima',      desc: 'Pembayaran telah dikonfirmasi oleh sistem.' },
