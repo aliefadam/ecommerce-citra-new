@@ -53,6 +53,7 @@ class SeoController extends Controller
 
         ContentPage::query()
             ->published()
+            ->where('slug', '!=', 'tentang-kami')
             ->select(['type', 'slug', 'updated_at'])
             ->orderBy('id')
             ->each(function ($page) use ($urls) {

@@ -40,13 +40,23 @@ class SeoFoundationTest extends TestCase
             'published_at' => now()->addDay(),
         ]);
 
+        ContentPage::query()->create([
+            'type' => ContentPage::TYPE_PAGE,
+            'title' => 'Tentang Kami',
+            'slug' => 'tentang-kami',
+            'content' => 'Profil perusahaan.',
+            'is_active' => true,
+            'published_at' => now()->subDay(),
+        ]);
+
         $response = $this->get('/sitemap.xml');
 
         $response->assertOk()
             ->assertHeader('Content-Type', 'application/xml; charset=UTF-8')
             ->assertSee(route('frontend.index'), false)
             ->assertSee(route('frontend.blog.show', $post->slug), false)
-            ->assertDontSee('artikel-belum-terbit', false);
+            ->assertDontSee('artikel-belum-terbit', false)
+            ->assertDontSee('tentang-kami', false);
     }
 
     public function test_public_layout_outputs_indexable_metadata(): void

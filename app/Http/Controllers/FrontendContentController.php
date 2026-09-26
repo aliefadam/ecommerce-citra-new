@@ -8,6 +8,8 @@ class FrontendContentController extends Controller
 {
     public function page(string $slug)
     {
+        abort_if($slug === 'tentang-kami', 404);
+
         $page = ContentPage::query()
             ->published()
             ->where('type', ContentPage::TYPE_PAGE)
@@ -28,10 +30,6 @@ class FrontendContentController extends Controller
             return view('frontend.help-center', compact('page'));
         }
 
-        if ($slug === 'tentang-kami') {
-            return view('frontend.about', compact('page'));
-        }
-
         return view('frontend.content-page', compact('page'));
     }
 
@@ -39,12 +37,6 @@ class FrontendContentController extends Controller
     private function legalFallbacks(): array
     {
         return [
-            'tentang-kami' => [
-                'title' => 'Tentang BOQ',
-                'excerpt' => 'Kebutuhan teknik dan material proyek, disusun agar lebih mudah ditemukan, dibandingkan, dan dipesan.',
-                'meta_description' => 'Kenali BOQ, platform pengadaan kebutuhan teknik dan material proyek untuk pekerjaan yang lebih terencana.',
-                'content' => '<p>BOQ membantu pelaku usaha, tim pengadaan, dan pekerja lapangan menemukan kebutuhan teknik dalam satu tempat. Kami menyajikan informasi produk secara jelas agar proses memilih, membandingkan, dan memesan barang terasa lebih sederhana.</p>',
-            ],
             'pusat-bantuan' => [
                 'title' => 'Pusat Bantuan',
                 'excerpt' => 'Panduan ringkas untuk pencarian produk, pemesanan, pembayaran, dan pengiriman.',

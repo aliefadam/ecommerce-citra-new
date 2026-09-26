@@ -12,9 +12,17 @@
         <div class="ec-container ec-utility-inner">
             <p class="ec-utility-copy">Solusi Kebutuhan Fastener &amp; Industrial Supply</p>
             <a href="{{ route('frontend.pages.show', 'pusat-bantuan') }}?category=aplikasi#install-aplikasi"
-                class="ec-mobile-install" data-pwa-install>
-                <i class="fi fi-rr-download" aria-hidden="true"></i>
-                <span>Install Aplikasi</span>
+                class="ec-mobile-install" data-pwa-install aria-label="Install aplikasi BOQ atau lihat panduan instalasi">
+                <span class="ec-mobile-install-icon" aria-hidden="true">
+                    <img src="{{ asset('pwa/icon-192.png') }}" alt="" width="32" height="32" />
+                </span>
+                <span class="ec-mobile-install-copy">
+                    <small>APLIKASI BOQ.CO.ID</small>
+                    <strong>Belanja lebih cepat dari HP</strong>
+                </span>
+                <span class="ec-mobile-install-action">
+                    INSTALL <i class="fi fi-rr-arrow-small-right" aria-hidden="true"></i>
+                </span>
             </a>
             <div class="ec-utility-links" aria-label="Keunggulan layanan">
                 <span><i class="fi fi-rr-shield-check" aria-hidden="true"></i> Trusted by Industry</span>
@@ -105,7 +113,6 @@
                     ['Beranda', route('frontend.index'), 'frontend.index'],
                     ['Produk', route('frontend.kategori'), 'frontend.kategori'],
                     ['Promo', route('frontend.flash-sale'), 'frontend.flash-sale'],
-                    ['Tentang Kami', route('frontend.pages.show', 'tentang-kami'), null],
                     ['Hubungi Kami', route('frontend.pages.show', 'pusat-bantuan'), null],
                 ] as [$label, $url, $routeName])
                     <a href="{{ $url }}" class="{{ $routeName && request()->routeIs($routeName) ? 'is-active' : '' }}" @if($routeName && request()->routeIs($routeName)) aria-current="page" @endif>{{ $label }}</a>
@@ -114,7 +121,7 @@
             <button id="ecMobileNavToggle" type="button" class="ec-mobile-menu-button md:hidden" aria-expanded="false" aria-controls="ecMobileNavDrawer"><i class="fi fi-rr-menu-burger" aria-hidden="true"></i>Menu</button>
         </div>
         <div id="ecMobileNavDrawer" class="border-t border-slate-200 bg-white p-3 md:hidden" hidden>
-            <div class="grid grid-cols-2 gap-1"><a href="{{ route('frontend.index') }}" class="flex min-h-11 items-center rounded-lg px-3 text-sm font-bold hover:bg-slate-100">Beranda</a><a href="{{ route('frontend.kategori') }}" class="flex min-h-11 items-center rounded-lg px-3 text-sm font-bold hover:bg-slate-100">Produk</a><a href="{{ route('frontend.flash-sale') }}" class="flex min-h-11 items-center rounded-lg px-3 text-sm font-bold hover:bg-slate-100">Promo</a><a href="{{ route('frontend.pages.show', 'tentang-kami') }}" class="flex min-h-11 items-center rounded-lg px-3 text-sm font-bold hover:bg-slate-100">Tentang Kami</a></div>
+            <div class="grid grid-cols-2 gap-1"><a href="{{ route('frontend.index') }}" class="flex min-h-11 items-center rounded-lg px-3 text-sm font-bold hover:bg-slate-100">Beranda</a><a href="{{ route('frontend.kategori') }}" class="flex min-h-11 items-center rounded-lg px-3 text-sm font-bold hover:bg-slate-100">Produk</a><a href="{{ route('frontend.flash-sale') }}" class="flex min-h-11 items-center rounded-lg px-3 text-sm font-bold hover:bg-slate-100">Promo</a></div>
         </div>
     </div>
 

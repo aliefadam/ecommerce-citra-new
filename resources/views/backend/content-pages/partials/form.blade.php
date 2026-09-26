@@ -17,7 +17,7 @@
         </div>
         <div>
             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Slug</label>
-            <input type="text" name="slug" value="{{ old('slug', $contentPage->slug ?? '') }}" class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50" placeholder="tentang-kami">
+            <input type="text" name="slug" value="{{ old('slug', $contentPage->slug ?? '') }}" class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50" placeholder="kebijakan-privasi">
             <p class="mt-1 text-xs text-slate-400">Kosongkan untuk membuat slug otomatis dari judul.</p>
         </div>
         <div>

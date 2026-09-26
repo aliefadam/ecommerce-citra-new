@@ -24,6 +24,8 @@ class StorefrontDesignSystemTest extends TestCase
             ->assertSee('aria-label="Navigasi cepat"', false)
             ->assertSee('rel="manifest"', false)
             ->assertSee(asset('manifest.webmanifest'), false)
+            ->assertSee(asset('favicon.ico').'?v=2', false)
+            ->assertSee(asset('pwa/favicon-32x32.png').'?v=2', false)
             ->assertSee('rel="apple-touch-icon"', false)
             ->assertSee(route('frontend.pages.show', 'kebijakan-privasi'), false)
             ->assertSee(route('frontend.pages.show', 'syarat-ketentuan'), false)
@@ -53,7 +55,8 @@ class StorefrontDesignSystemTest extends TestCase
             ->assertOk()
             ->assertSee('data-pwa-install', false)
             ->assertSee($helpUrl, false)
-            ->assertSee('Install Aplikasi');
+            ->assertSee('Belanja lebih cepat dari HP')
+            ->assertSee('INSTALL');
 
         $this->get(route('frontend.pages.show', 'pusat-bantuan'))
             ->assertOk()
@@ -89,16 +92,14 @@ class StorefrontDesignSystemTest extends TestCase
         $this->get('/pages/halaman-tidak-dikenal')->assertNotFound();
     }
 
-    public function test_about_page_has_a_fallback_and_duplicate_navigation_links_are_removed(): void
+    public function test_about_page_and_navigation_links_are_removed(): void
     {
-        $response = $this->get('/pages/tentang-kami');
-
-        $response
+        $this->get(route('frontend.index'))
             ->assertOk()
-            ->assertSee('Apa itu BOQ?')
-            ->assertSee('Bill of Quantities')
-            ->assertDontSee('>Brand</a>', false)
-            ->assertDontSee('>Proyek &amp; Industri</a>', false);
+            ->assertDontSee('Tentang Kami')
+            ->assertDontSee(route('frontend.pages.show', 'tentang-kami'), false);
+
+        $this->get('/pages/tentang-kami')->assertNotFound();
     }
 
     public function test_component_foundations_render_semantic_states(): void
