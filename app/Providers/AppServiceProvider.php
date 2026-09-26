@@ -43,7 +43,7 @@ class AppServiceProvider extends ServiceProvider
 
         $storeLogoPath = trim((string) ($storeSettings['store_logo_path'] ?? ''));
         View::share('appStoreSettings', $storeSettings);
-        View::share('appStoreName', (string) ($storeSettings['store_name'] ?? 'Ecommerce Citra'));
+        View::share('appStoreName', (string) config('app.name'));
         View::share('appStoreLogoUrl', $storeLogoPath !== '' ? asset('storage/'.ltrim($storeLogoPath, '/')) : null);
 
         View::composer(['layouts.user', 'partials.navbar-user'], function ($view): void {

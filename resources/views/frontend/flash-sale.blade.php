@@ -1,7 +1,7 @@
 @extends('layouts.user')
 
-@section('title', 'Flash Sale - ' . ($appStoreName ?? 'Ecommerce Citra'))
-@section('meta_description', 'Temukan promo dan harga spesial produk pilihan di '.($appStoreName ?? 'Ecommerce Citra').'.')
+@section('title', 'Flash Sale - ' . ($appStoreName ?? config('app.name')))
+@section('meta_description', 'Temukan promo dan harga spesial produk pilihan di '.($appStoreName ?? config('app.name')).'.')
 @section('canonical', route('frontend.flash-sale'))
 
 @section('style')

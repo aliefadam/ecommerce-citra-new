@@ -15,8 +15,7 @@
         <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
             <div>
                 <a href="{{ route('frontend.index') }}" class="inline-flex min-h-11 items-center gap-3 text-white">
-                    @if(!empty($appStoreLogoUrl))<img src="{{ $appStoreLogoUrl }}" alt="" width="140" height="44" class="h-10 w-auto max-w-36 object-contain" />
-                    @else<span class="ec-display grid size-10 place-items-center rounded-lg bg-white text-sm text-slate-950" aria-hidden="true">EC</span>@endif
+
                     <span class="ec-display text-xl">{{ $appStoreName }}</span>
                 </a>
                 <p class="mt-4 max-w-sm text-sm leading-6 text-slate-400">Mitra pengadaan baut, mur, fastener, anchor, dan perkakas teknik untuk bengkel, proyek, dan industri.</p>

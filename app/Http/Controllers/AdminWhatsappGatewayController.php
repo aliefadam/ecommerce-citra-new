@@ -39,7 +39,7 @@ class AdminWhatsappGatewayController extends Controller
         return $this->run(function () use ($gateway) {
             $settings = $this->settings();
             $result = $gateway->prepareStore(
-                StoreSetting::values()['store_name'] ?? 'Ecommerce Citra',
+                config('app.name'),
                 $settings['storeId'],
                 [
                     'perMinute' => $settings['limits']['perMinute'],
@@ -184,7 +184,7 @@ class AdminWhatsappGatewayController extends Controller
 
         $settings = $this->settings();
         $gateway->prepareStore(
-            StoreSetting::values()['store_name'] ?? 'Ecommerce Citra',
+            config('app.name'),
             $settings['storeId'],
             [
                 'perMinute' => $settings['limits']['perMinute'],

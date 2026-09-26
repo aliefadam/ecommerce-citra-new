@@ -18,7 +18,7 @@ class InvoiceOrder extends Mailable
 
     public function envelope(): Envelope
     {
-        $storeName = (string) (StoreSetting::values()['store_name'] ?? 'Ecommerce Citra');
+        $storeName = (string) (config('app.name'));
 
         return new Envelope(
             subject: 'Invoice Pesanan #' . $this->transaction->invoice_no . ' - ' . $storeName,

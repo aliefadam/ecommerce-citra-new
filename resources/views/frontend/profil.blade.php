@@ -1,6 +1,6 @@
 @extends('layouts.user')
 
-@section('title', 'Profil - ' . ($appStoreName ?? 'Ecommerce Citra'))
+@section('title', 'Profil - ' . ($appStoreName ?? config('app.name')))
 
 @section('style')
     <style>

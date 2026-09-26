@@ -1,7 +1,7 @@
 @extends('layouts.user')
 
-@section('title', ($productData['name'] ?? 'Detail Produk') . ' - ' . ($appStoreName ?? 'Ecommerce Citra'))
-@section('meta_description', \Illuminate\Support\Str::limit(trim(strip_tags((string) ($productData['description'] ?? ''))) ?: 'Beli '.($productData['name'] ?? 'produk').' secara online di '.($appStoreName ?? 'Ecommerce Citra').'.', 160))
+@section('title', ($productData['name'] ?? 'Detail Produk') . ' - ' . ($appStoreName ?? config('app.name')))
+@section('meta_description', \Illuminate\Support\Str::limit(trim(strip_tags((string) ($productData['description'] ?? ''))) ?: 'Beli '.($productData['name'] ?? 'produk').' secara online di '.($appStoreName ?? config('app.name')).'.', 160))
 @section('canonical', route('frontend.detail-produk', ['slug' => $productData['slug']]))
 @section('og_image', $productData['image'] ?? '')
 @section('og_type', 'product')
@@ -17,7 +17,7 @@
             'image' => $productData['images'],
             'sku' => $productData['sku'],
             'category' => $productData['categoryName'],
-            'brand' => ['@type' => 'Brand', 'name' => $productData['storeName'] ?: ($appStoreName ?? 'Ecommerce Citra')],
+            'brand' => ['@type' => 'Brand', 'name' => $productData['storeName'] ?: ($appStoreName ?? config('app.name'))],
             'offers' => [
                 '@type' => 'Offer',
                 'url' => route('frontend.detail-produk', ['slug' => $productData['slug']]),
@@ -657,7 +657,7 @@
                             @if (!empty($productData['storeLegalName']) && $productData['storeLegalName'] !== $productData['storeName'])
                                 <p class="mt-0.5 truncate text-[10px] text-slate-500">{{ $productData['storeLegalName'] }}</p>
                             @endif
-                            <p class="mt-1 flex items-center gap-1 text-[10px] font-semibold text-blue-700"><span class="h-1.5 w-1.5 rounded-full bg-blue-600"></span> Mitra pemasok BOQ</p>
+                            <p class="mt-1 flex items-center gap-1 text-[10px] font-semibold text-blue-700"><span class="h-1.5 w-1.5 rounded-full bg-blue-600"></span> Mitra pemasok {{ $appStoreName }}</p>
                         </div>
                     </div>
                     <div class="mt-4 grid grid-cols-2 gap-2">
@@ -2248,7 +2248,7 @@
             if (navigator.share) {
                 navigator.share({
                     title: productData.name,
-                    text: `Cek produk ini di ${@json($appStoreName ?? 'Ecommerce Citra')}!`,
+                    text: `Cek produk ini di ${@json($appStoreName ?? config('app.name'))}!`,
                     url: url
                 }).catch(() => {});
             } else {

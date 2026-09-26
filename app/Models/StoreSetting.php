@@ -14,7 +14,7 @@ class StoreSetting extends Model
     public static function defaults(): array
     {
         return [
-            'store_name' => 'Ecommerce Citra',
+            'store_name' => (string) config('app.name'),
             'store_logo_path' => '',
             'seo_home_title' => '',
             'seo_home_description' => 'Belanja produk teknik, kebutuhan proyek, dan perlengkapan industri dengan mudah dan aman.',
@@ -22,7 +22,7 @@ class StoreSetting extends Model
             'google_site_verification' => '',
             'manual_payment_bank_name' => 'BCA',
             'manual_payment_account_number' => '1234567890',
-            'manual_payment_account_name' => 'Ecommerce Citra',
+            'manual_payment_account_name' => (string) config('app.name'),
             'manual_payment_instruction' => 'Transfer sesuai nominal pesanan, lalu upload bukti pembayaran agar admin bisa memverifikasi.',
             'tax_enabled' => '1',
             'tax_name' => 'PPN',
@@ -45,10 +45,15 @@ class StoreSetting extends Model
 
     public static function values(): array
     {
-        return array_merge(
+        $values = array_merge(
             static::defaults(),
             static::query()->pluck('value', 'key')->all()
         );
+
+        // APP_NAME is the authoritative application identity on every surface.
+        $values['store_name'] = (string) config('app.name');
+
+        return $values;
     }
 
     public static function setMany(array $values): void

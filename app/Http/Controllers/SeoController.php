@@ -5,10 +5,51 @@ namespace App\Http\Controllers;
 use App\Models\ContentPage;
 use App\Models\Product;
 use App\Models\PromoPage;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 
 class SeoController extends Controller
 {
+    public function manifest(): JsonResponse
+    {
+        $name = (string) config('app.name');
+
+        return response()->json([
+            'id' => '/',
+            'name' => $name,
+            'short_name' => $name,
+            'description' => 'Belanja kebutuhan proyek dan teknik dengan mudah dan aman.',
+            'lang' => 'id-ID',
+            'dir' => 'ltr',
+            'start_url' => '/',
+            'scope' => '/',
+            'display' => 'standalone',
+            'orientation' => 'any',
+            'background_color' => '#f8fafc',
+            'theme_color' => '#0a3268',
+            'icons' => [
+                [
+                    'src' => asset('pwa/boq-icon-192-v2.png'),
+                    'sizes' => '192x192',
+                    'type' => 'image/png',
+                    'purpose' => 'any',
+                ],
+                [
+                    'src' => asset('pwa/boq-icon-512-v2.png'),
+                    'sizes' => '512x512',
+                    'type' => 'image/png',
+                    'purpose' => 'any',
+                ],
+                [
+                    'src' => asset('pwa/boq-icon-maskable-512-v2.png'),
+                    'sizes' => '512x512',
+                    'type' => 'image/png',
+                    'purpose' => 'maskable',
+                ],
+            ],
+        ])->header('Content-Type', 'application/manifest+json');
+    }
+
     public function robots(): Response
     {
         $content = implode("\n", [

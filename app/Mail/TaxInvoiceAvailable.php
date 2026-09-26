@@ -18,7 +18,7 @@ class TaxInvoiceAvailable extends Mailable
 
     public function envelope(): Envelope
     {
-        $storeName = (string) (StoreSetting::values()['store_name'] ?? 'Ecommerce Citra');
+        $storeName = (string) (config('app.name'));
 
         return new Envelope(
             subject: 'Faktur Pajak Tersedia untuk '.$this->taxInvoice->transaction->invoice_no.' - '.$storeName,

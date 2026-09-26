@@ -99,17 +99,6 @@
                 text-transform: uppercase;
             }
 
-            .brand__mark {
-                display: grid;
-                width: 2.3rem;
-                height: 2.3rem;
-                place-items: center;
-                border-radius: .55rem;
-                background: linear-gradient(145deg, var(--primary-700), var(--primary-900));
-                color: #fff;
-                letter-spacing: -.04em;
-                box-shadow: inset 0 -2px 0 rgb(0 0 0 / .18);
-            }
 
             .error-kicker {
                 margin: 2rem 0 .65rem;
@@ -188,9 +177,8 @@
                 <div class="error-card__bar" aria-hidden="true"></div>
                 <div class="error-card__body">
                     <div>
-                        <a class="brand" href="{{ url('/') }}" aria-label="Ecommerce Citra, beranda">
-                            <span class="brand__mark" aria-hidden="true">EC</span>
-                            <span>Ecommerce Citra</span>
+                        <a class="brand" href="{{ url('/') }}" aria-label="{{ config('app.name') }}, beranda">
+                            <span>{{ config('app.name') }}</span>
                         </a>
                         <p class="error-kicker">Kode error {{ $status }}</p>
                         <h1 id="error-title">{{ $title }}</h1>

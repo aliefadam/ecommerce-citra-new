@@ -24,7 +24,7 @@ class NewsletterCampaign extends Mailable
 
     public function envelope(): Envelope
     {
-        $storeName = (string) (StoreSetting::values()['store_name'] ?? 'Ecommerce Citra');
+        $storeName = (string) (config('app.name'));
 
         return new Envelope(
             subject: $this->subjectLine . ' - ' . $storeName,
@@ -42,7 +42,7 @@ class NewsletterCampaign extends Mailable
                 'ctaUrl' => $this->ctaUrl,
                 'heroImageUrl' => $this->heroImageUrl,
                 'unsubscribeUrl' => $this->unsubscribeUrl,
-                'storeName' => (string) (StoreSetting::values()['store_name'] ?? 'Ecommerce Citra'),
+                'storeName' => (string) (config('app.name')),
             ],
         );
     }

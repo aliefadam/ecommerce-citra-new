@@ -37,8 +37,13 @@ window.matchMedia('(display-mode: standalone)').addEventListener?.('change', syn
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js').catch((error) => {
-            console.warn('PWA service worker registration failed.', error);
-        });
+        navigator.serviceWorker.register('/service-worker.js?v=2', {
+            scope: '/',
+            updateViaCache: 'none',
+        })
+            .then((registration) => registration.update())
+            .catch((error) => {
+                console.warn('PWA service worker registration failed.', error);
+            });
     });
 }

@@ -372,14 +372,11 @@ class BackendController extends Controller
             return redirect()->route('pages.settings', ['tab' => 'seo'])->with('success', 'Pengaturan SEO berhasil disimpan.');
         }
 
-        $validated = $request->validate([
-            'store_name' => ['required', 'string', 'max:120'],
+        $request->validate([
             'store_logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
-        $values = [
-            'store_name' => $validated['store_name'],
-        ];
+        $values = [];
 
         if ($request->hasFile('store_logo')) {
             $currentLogo = (string) StoreSetting::values()['store_logo_path'];

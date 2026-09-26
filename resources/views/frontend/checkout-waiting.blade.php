@@ -1,6 +1,6 @@
 @extends('layouts.user')
 
-@section('title', 'Menunggu Pembayaran - ' . ($appStoreName ?? 'Ecommerce Citra'))
+@section('title', 'Menunggu Pembayaran - ' . ($appStoreName ?? config('app.name')))
 @section('body_class', 'bg-slate-50 text-slate-800 overflow-x-hidden')
 @section('style')
     <style>
@@ -202,7 +202,7 @@
                                 <p class="text-xs text-slate-500 mt-1">{{ $manualPaymentSettings['instruction'] ?? 'Transfer sesuai nominal, lalu upload bukti pembayaran di bawah ini.' }}</p>
                                 <div class="mt-3 rounded-xl bg-white p-3 text-sm text-slate-600">
                                     <p>Bank: <span class="font-semibold">{{ $manualPaymentSettings['bank_name'] ?? 'BCA' }} / {{ $manualPaymentSettings['account_number'] ?? '1234567890' }}</span></p>
-                                    <p>Atas nama: <span class="font-semibold">{{ $manualPaymentSettings['account_name'] ?? 'Ecommerce Citra' }}</span></p>
+                                    <p>Atas nama: <span class="font-semibold">{{ $manualPaymentSettings['account_name'] ?? config('app.name') }}</span></p>
                                 </div>
                             </div>
 
@@ -418,7 +418,7 @@
             </div>
 
             <h2 class="text-2xl font-extrabold text-slate-900 mb-2">Pembelian Berhasil! 🎉</h2>
-            <p class="text-slate-600 mb-5">Terima kasih sudah berbelanja di {{ $appStoreName ?? 'Ecommerce Citra' }}. Pesananmu sedang diproses!</p>
+            <p class="text-slate-600 mb-5">Terima kasih sudah berbelanja di {{ $appStoreName ?? config('app.name') }}. Pesananmu sedang diproses!</p>
 
             <div class="bg-slate-50 rounded-2xl p-4 mb-5 text-left">
                 <div class="space-y-2">

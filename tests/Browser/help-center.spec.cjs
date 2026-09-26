@@ -47,7 +47,7 @@ test.describe('help center redesign', () => {
         await expect(installEntry).toBeVisible();
         await expect(page.locator('.ec-utility-copy')).toBeHidden();
         await expect(installEntry).toHaveAttribute('href', /category=aplikasi#install-aplikasi$/);
-        await expect(installEntry.locator('.ec-mobile-install-icon img')).toHaveAttribute('src', /pwa\/icon-192\.png$/);
+        await expect(installEntry.locator('.ec-mobile-install-icon')).toHaveCount(0);
         await expect(installEntry.locator('.ec-mobile-install-copy')).toContainText('Belanja lebih cepat dari HP');
         await expect(installEntry.locator('.ec-mobile-install-action')).toContainText('INSTALL');
 

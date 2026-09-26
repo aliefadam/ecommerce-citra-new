@@ -60,6 +60,7 @@ use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\WishlistController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/app.webmanifest', [SeoController::class, 'manifest'])->name('pwa.manifest');
 Route::get('/robots.txt', [SeoController::class, 'robots'])->name('seo.robots');
 Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('seo.sitemap');
 

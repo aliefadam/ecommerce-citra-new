@@ -1,11 +1,11 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         @include('partials.pwa-meta')
-        <title>{{ $appStoreName ?? 'Ecommerce Citra' }} - Lupa Password</title>
+        <title>{{ $appStoreName ?? config('app.name') }} - Lupa Password</title>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
 

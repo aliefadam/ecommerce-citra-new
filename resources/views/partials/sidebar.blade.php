@@ -1,17 +1,10 @@
 <aside id="sidebar"
     class="fixed top-0 left-0 h-full w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 z-30 flex flex-col transition-transform duration-300 -translate-x-full lg:translate-x-0 shadow-xl lg:shadow-none">
     <div class="relative flex min-h-[80px] items-center px-5 py-4 border-b border-slate-200 dark:border-slate-700">
-        <div class="flex min-w-0 flex-1 items-center">
-            @if (!empty($appStoreLogoUrl))
-                <img src="{{ $appStoreLogoUrl }}" alt="{{ $appStoreName }}"
-                    class="block h-12 w-auto max-w-[170px] object-contain object-left">
-            @else
-                <svg class="h-11 w-11 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-label="{{ $appStoreName }}">
-                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                </svg>
-            @endif
-        </div>
+        <a href="{{ route('pages.index') }}" class="min-w-0 flex-1 truncate text-sm font-extrabold uppercase tracking-wide text-blue-950 dark:text-white"
+            aria-label="{{ $appStoreName }}, dashboard">
+            {{ $appStoreName }}
+        </a>
         <button onclick="toggleSidebar()"
             class="ml-3 shrink-0 rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-200 lg:hidden"
             aria-label="Tutup sidebar">

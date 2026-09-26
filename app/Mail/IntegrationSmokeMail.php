@@ -16,7 +16,7 @@ class IntegrationSmokeMail extends Mailable
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: '[SMOKE TEST] Ecommerce Citra email integration');
+        return new Envelope(subject: '[SMOKE TEST] '.config('app.name').' email integration');
     }
 
     public function content(): Content

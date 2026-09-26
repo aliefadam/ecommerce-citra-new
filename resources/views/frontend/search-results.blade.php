@@ -1,6 +1,6 @@
 @extends('layouts.user')
 
-@section('title', 'Hasil Pencarian - ' . ($appStoreName ?? 'Ecommerce Citra'))
+@section('title', 'Hasil Pencarian - ' . ($appStoreName ?? config('app.name')))
 
 @section('style')
     <style>

@@ -1,6 +1,6 @@
 @extends('layouts.user')
 
-@section('title', 'Checkout - ' . ($appStoreName ?? 'Ecommerce Citra'))
+@section('title', 'Checkout - ' . ($appStoreName ?? config('app.name')))
 @section('body_class', 'bg-slate-50 text-slate-800 overflow-x-hidden')
 
 @section('style')
@@ -563,7 +563,7 @@
                         <!-- Info -->
                         <div class="bg-blue-50 rounded-xl p-3 flex gap-2 items-start">
                             <span class="text-blue-500 mt-0.5">ℹ️</span>
-                            <p class="text-xs text-blue-700">Transaksi dilindungi sistem keamanan {{ $appStoreName ?? 'Ecommerce Citra' }}. Uang
+                            <p class="text-xs text-blue-700">Transaksi dilindungi sistem keamanan {{ $appStoreName ?? config('app.name') }}. Uang
                                 dikembalikan jika barang tidak sampai.</p>
                         </div>
 
@@ -832,7 +832,7 @@
             </div>
 
             <h2 class="text-2xl font-extrabold text-slate-900 mb-2">Pembelian Berhasil! 🎉</h2>
-            <p class="text-slate-600 mb-5">Terima kasih sudah berbelanja di {{ $appStoreName ?? 'Ecommerce Citra' }}. Pesananmu sedang diproses!</p>
+            <p class="text-slate-600 mb-5">Terima kasih sudah berbelanja di {{ $appStoreName ?? config('app.name') }}. Pesananmu sedang diproses!</p>
 
             <div class="bg-slate-50 rounded-2xl p-4 mb-5 text-left">
                 <div class="space-y-2">

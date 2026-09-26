@@ -1,7 +1,7 @@
 @extends('layouts.user')
 
-@section('title', 'Pusat Bantuan - ' . ($appStoreName ?? 'BOQ'))
-@section('meta_description', $page->meta_description ?: 'Temukan panduan pemesanan, pembayaran, pengiriman, retur, akun, dan kebutuhan proyek di BOQ.')
+@section('title', 'Pusat Bantuan - ' . ($appStoreName ?? config('app.name')))
+@section('meta_description', $page->meta_description ?: 'Temukan panduan pemesanan, pembayaran, pengiriman, retur, akun, dan kebutuhan proyek di '.$appStoreName.'.')
 @section('canonical', $page->public_url)
 @section('og_image', asset('imgs/help-center/hero-help-center.webp'))
 
@@ -15,7 +15,7 @@
         'aplikasi' => ['label' => 'Install Aplikasi', 'icon' => 'download'],
         'produk' => ['label' => 'Produk & Stok', 'icon' => 'box'],
         'penawaran' => ['label' => 'Penawaran Proyek', 'icon' => 'document'],
-        'tentang' => ['label' => 'Tentang BOQ', 'icon' => 'info'],
+        'tentang' => ['label' => 'Tentang '.$appStoreName, 'icon' => 'info'],
     ];
 
     $faqs = [
@@ -25,30 +25,30 @@
         ['category' => 'pembayaran', 'question' => 'Bagaimana jika pembayaran belum terverifikasi?', 'answer' => 'Periksa kembali status pesanan dan pastikan instruksi pembayaran telah diikuti. Jika Anda menggunakan pembayaran manual, unggah bukti pembayaran pada alur pesanan agar dapat diverifikasi.'],
         ['category' => 'pengiriman', 'question' => 'Bagaimana cara mengecek status pesanan?', 'answer' => 'Buka halaman Lacak Pesanan, lalu masukkan nomor pesanan dan data verifikasi yang diminta. Status terbaru akan ditampilkan setelah data berhasil diverifikasi.'],
         ['category' => 'pengiriman', 'question' => 'Di mana saya dapat melihat nomor resi?', 'answer' => 'Nomor resi akan tersedia pada detail atau pelacakan pesanan setelah pengiriman diproses dan informasi resi telah diterbitkan.'],
-        ['category' => 'retur', 'question' => 'Bagaimana proses retur atau komplain produk?', 'answer' => 'Siapkan nomor pesanan, foto produk, dan penjelasan kendala. Hubungi kanal dukungan resmi BOQ agar tim dapat memeriksa kelayakan dan bukti yang diperlukan untuk proses berikutnya.'],
-        ['category' => 'akun', 'question' => 'Bagaimana menjaga keamanan akun saya?', 'answer' => 'Gunakan kata sandi yang kuat, jangan membagikan kredensial atau kode verifikasi, dan pastikan Anda mengakses BOQ melalui alamat situs resmi.'],
+        ['category' => 'retur', 'question' => 'Bagaimana proses retur atau komplain produk?', 'answer' => 'Siapkan nomor pesanan, foto produk, dan penjelasan kendala. Hubungi kanal dukungan resmi '.$appStoreName.' agar tim dapat memeriksa kelayakan dan bukti yang diperlukan untuk proses berikutnya.'],
+        ['category' => 'akun', 'question' => 'Bagaimana menjaga keamanan akun saya?', 'answer' => 'Gunakan kata sandi yang kuat, jangan membagikan kredensial atau kode verifikasi, dan pastikan Anda mengakses '.$appStoreName.' melalui alamat situs resmi.'],
         [
             'id' => 'install-aplikasi',
             'category' => 'aplikasi',
-            'question' => 'Bagaimana cara menginstal aplikasi Ecommerce Citra di Android atau iPhone?',
-            'answer' => 'Ecommerce Citra dapat dipasang dari browser tanpa mengunduh aplikasi melalui Play Store atau App Store.',
+            'question' => 'Bagaimana cara menginstal aplikasi '.$appStoreName.' di Android atau iPhone?',
+            'answer' => $appStoreName.' dapat dipasang dari browser tanpa mengunduh aplikasi melalui Play Store atau App Store.',
             'platforms' => [
                 'Android / tablet' => [
-                    'Buka situs Ecommerce Citra menggunakan Google Chrome.',
+                    'Buka situs '.$appStoreName.' menggunakan Google Chrome.',
                     'Tekan Install Aplikasi pada bagian atas halaman. Jika dialog belum muncul, buka menu Chrome lalu pilih Install app atau Tambahkan ke layar utama.',
                     'Tekan Install untuk mengonfirmasi. Ikon aplikasi akan muncul di layar utama perangkat.',
                 ],
                 'iPhone / iPad' => [
-                    'Buka situs Ecommerce Citra menggunakan Safari.',
+                    'Buka situs '.$appStoreName.' menggunakan Safari.',
                     'Tekan tombol Share atau Bagikan pada toolbar Safari.',
                     'Pilih Add to Home Screen atau Tambahkan ke Layar Utama.',
                     'Tekan Add atau Tambah untuk menyelesaikan instalasi.',
                 ],
             ],
         ],
-        ['category' => 'produk', 'question' => 'Bagaimana memastikan spesifikasi dan stok produk?', 'answer' => 'Periksa nama, SKU, ukuran, material, varian, satuan jual, dan informasi stok pada halaman produk. Konsultasikan dengan tim BOQ bila spesifikasi teknis masih perlu dipastikan.'],
-        ['category' => 'penawaran', 'question' => 'Apakah saya bisa meminta penawaran untuk pembelian dalam jumlah besar?', 'answer' => 'Ya. Gunakan tombol Minta Penawaran atau hubungi tim BOQ melalui kanal resmi untuk menyampaikan daftar produk, jumlah, serta spesifikasi kebutuhan proyek Anda.'],
-        ['category' => 'tentang', 'question' => 'Produk apa yang tersedia di BOQ?', 'answer' => 'BOQ menyediakan kebutuhan fastener, fitting, perlengkapan teknik, dan industrial supply untuk kebutuhan operasional maupun pengadaan proyek.'],
+        ['category' => 'produk', 'question' => 'Bagaimana memastikan spesifikasi dan stok produk?', 'answer' => 'Periksa nama, SKU, ukuran, material, varian, satuan jual, dan informasi stok pada halaman produk. Konsultasikan dengan tim '.$appStoreName.' bila spesifikasi teknis masih perlu dipastikan.'],
+        ['category' => 'penawaran', 'question' => 'Apakah saya bisa meminta penawaran untuk pembelian dalam jumlah besar?', 'answer' => 'Ya. Gunakan tombol Minta Penawaran atau hubungi tim '.$appStoreName.' melalui kanal resmi untuk menyampaikan daftar produk, jumlah, serta spesifikasi kebutuhan proyek Anda.'],
+        ['category' => 'tentang', 'question' => 'Produk apa yang tersedia di '.$appStoreName.'?', 'answer' => $appStoreName.' menyediakan kebutuhan fastener, fitting, perlengkapan teknik, dan industrial supply untuk kebutuhan operasional maupun pengadaan proyek.'],
     ];
 
     $quoteUrl = !empty($appStoreSettings['social_whatsapp'])
@@ -206,7 +206,7 @@
                     <h2 id="projectHeading">Butuh bantuan untuk kebutuhan proyek?</h2>
                     <p>Tim kami siap membantu pembelian dalam jumlah besar dan kebutuhan spesifikasi tertentu untuk proyek Anda.</p>
                     <div class="help-project-actions">
-                        <a href="#hubungi-kami" class="is-light"><i class="fi fi-rr-comment-alt" aria-hidden="true"></i> Hubungi Tim BOQ</a>
+                        <a href="#hubungi-kami" class="is-light"><i class="fi fi-rr-comment-alt" aria-hidden="true"></i> Hubungi Tim {{ $appStoreName }}</a>
                         <a href="{{ $quoteUrl }}" class="is-primary" @if($quoteIsExternal) target="_blank" rel="noopener noreferrer" @endif><i class="fi fi-rr-document" aria-hidden="true"></i> Minta Penawaran</a>
                     </div>
                 </div>

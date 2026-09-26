@@ -290,7 +290,7 @@
     <main class="label">
         <div class="top">
             <div class="brand">
-                {{ $appStoreName ?? 'Ecommerce Citra' }}
+                {{ $appStoreName ?? config('app.name') }}
                 <small>ONLINE STORE</small>
             </div>
             <div class="courier">
@@ -328,7 +328,7 @@
             </div>
             <div class="party">
                 <div class="title">Pengirim:</div>
-                <div class="name">{{ $appStoreName ?? 'Ecommerce Citra' }}</div>
+                <div class="name">{{ $appStoreName ?? config('app.name') }}</div>
                 <div class="address">{{ $senderAddress }}</div>
                 <div class="phone">Nomor Telepon:<br>{{ $senderPhone }}</div>
             </div>

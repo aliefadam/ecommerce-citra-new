@@ -1,11 +1,10 @@
-const CACHE_NAME = 'ecommerce-citra-pwa-v1';
+const CACHE_NAME = 'ecommerce-citra-pwa-v2';
 const PWA_ASSETS = [
     '/offline.html',
-    '/manifest.webmanifest',
-    '/pwa/icon-192.png',
-    '/pwa/icon-512.png',
-    '/pwa/icon-maskable-512.png',
-    '/pwa/apple-touch-icon.png',
+    '/pwa/boq-icon-192-v2.png',
+    '/pwa/boq-icon-512-v2.png',
+    '/pwa/boq-icon-maskable-512-v2.png',
+    '/pwa/boq-apple-touch-icon-v2.png',
 ];
 
 self.addEventListener('install', (event) => {

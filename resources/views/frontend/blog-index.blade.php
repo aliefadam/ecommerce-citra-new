@@ -1,7 +1,7 @@
 @extends('layouts.user')
 
-@section('title', 'Blog - ' . ($appStoreName ?? 'Ecommerce Citra'))
-@section('meta_description', 'Artikel, panduan produk, dan informasi teknis terbaru dari '.($appStoreName ?? 'Ecommerce Citra').'.')
+@section('title', 'Blog - ' . ($appStoreName ?? config('app.name')))
+@section('meta_description', 'Artikel, panduan produk, dan informasi teknis terbaru dari '.($appStoreName ?? config('app.name')).'.')
 
 @section('content')
     @include('partials.navbar-user')

@@ -1,6 +1,6 @@
 @extends('layouts.user')
 
-@section('title', 'Redeem Point - ' . ($appStoreName ?? 'Ecommerce Citra'))
+@section('title', 'Redeem Point - ' . ($appStoreName ?? config('app.name')))
 
 @section('content')
     @include('partials.navbar-user')

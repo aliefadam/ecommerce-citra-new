@@ -1,6 +1,6 @@
 @extends('layouts.user')
 
-@section('title', 'Pesanan Dibuat - ' . ($appStoreName ?? 'Ecommerce Citra'))
+@section('title', 'Pesanan Dibuat - ' . ($appStoreName ?? config('app.name')))
 @section('body_class', 'bg-slate-50 text-slate-800 overflow-x-hidden')
 
 @section('content')

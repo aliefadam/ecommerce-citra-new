@@ -1,6 +1,6 @@
 @extends('layouts.user')
 
-@section('title', $appStoreSettings['seo_home_title'] ?: (($appStoreName ?? 'Ecommerce Citra') . ' - Belanja Online Terpercaya'))
+@section('title', $appStoreSettings['seo_home_title'] ?: (($appStoreName ?? config('app.name')) . ' - Belanja Online Terpercaya'))
 @section('meta_description', $appStoreSettings['seo_home_description'] ?? 'Belanja online dengan mudah dan aman.')
 
 @push('structured_data')
@@ -10,8 +10,8 @@
         $homeSchema = [
             '@context' => 'https://schema.org',
             '@graph' => [
-                ['@type' => 'WebSite', '@id' => route('frontend.index').'#website', 'url' => route('frontend.index'), 'name' => $appStoreName ?? 'Ecommerce Citra', 'inLanguage' => 'id-ID'],
-                array_filter(['@type' => 'Organization', '@id' => route('frontend.index').'#organization', 'name' => $appStoreName ?? 'Ecommerce Citra', 'url' => route('frontend.index'), 'logo' => $appStoreLogoUrl ?? null, 'sameAs' => $sameAs]),
+                ['@type' => 'WebSite', '@id' => route('frontend.index').'#website', 'url' => route('frontend.index'), 'name' => $appStoreName ?? config('app.name'), 'inLanguage' => 'id-ID'],
+                array_filter(['@type' => 'Organization', '@id' => route('frontend.index').'#organization', 'name' => $appStoreName ?? config('app.name'), 'url' => route('frontend.index'), 'logo' => $appStoreLogoUrl ?? null, 'sameAs' => $sameAs]),
             ],
         ];
     @endphp

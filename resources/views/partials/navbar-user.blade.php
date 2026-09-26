@@ -12,12 +12,9 @@
         <div class="ec-container ec-utility-inner">
             <p class="ec-utility-copy">Solusi Kebutuhan Fastener &amp; Industrial Supply</p>
             <a href="{{ route('frontend.pages.show', 'pusat-bantuan') }}?category=aplikasi#install-aplikasi"
-                class="ec-mobile-install" data-pwa-install aria-label="Install aplikasi BOQ atau lihat panduan instalasi">
-                <span class="ec-mobile-install-icon" aria-hidden="true">
-                    <img src="{{ asset('pwa/icon-192.png') }}" alt="" width="32" height="32" />
-                </span>
+                class="ec-mobile-install" data-pwa-install aria-label="Install aplikasi {{ $appStoreName }} atau lihat panduan instalasi">
                 <span class="ec-mobile-install-copy">
-                    <small>APLIKASI BOQ.CO.ID</small>
+                    <small>APLIKASI {{ strtoupper($appStoreName) }}</small>
                     <strong>Belanja lebih cepat dari HP</strong>
                 </span>
                 <span class="ec-mobile-install-action">
@@ -34,7 +31,7 @@
     <div class="ec-header-main">
         <div class="ec-container ec-header-main-inner">
             <a href="{{ route('frontend.index') }}" class="ec-header-logo" aria-label="{{ $appStoreName }}, beranda">
-                <img src="{{ !empty($appStoreLogoUrl) ? $appStoreLogoUrl : asset('logo/BOQ.CO.ID/BOQ.CO.ID-1.png') }}" alt="{{ $appStoreName }}" width="116" height="52" />
+                <span>{{ $appStoreName }}</span>
             </a>
 
             <div class="ec-header-search-wrap">

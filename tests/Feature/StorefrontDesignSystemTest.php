@@ -23,10 +23,13 @@ class StorefrontDesignSystemTest extends TestCase
             ->assertSee('aria-controls="ecCategoryDropdown"', false)
             ->assertSee('aria-label="Navigasi cepat"', false)
             ->assertSee('rel="manifest"', false)
-            ->assertSee(asset('manifest.webmanifest'), false)
+            ->assertSee(route('pwa.manifest').'?v=4', false)
+            ->assertSee('name="application-name" content="'.config('app.name').'"', false)
+            ->assertSee('name="apple-mobile-web-app-title" content="'.config('app.name').'"', false)
             ->assertSee(asset('favicon.ico').'?v=2', false)
             ->assertSee(asset('pwa/favicon-32x32.png').'?v=2', false)
             ->assertSee('rel="apple-touch-icon"', false)
+            ->assertSee(asset('pwa/boq-apple-touch-icon-v2.png'), false)
             ->assertSee(route('frontend.pages.show', 'kebijakan-privasi'), false)
             ->assertSee(route('frontend.pages.show', 'syarat-ketentuan'), false)
             ->assertDontSee('footerModalOpen', false);
@@ -56,7 +59,15 @@ class StorefrontDesignSystemTest extends TestCase
             ->assertSee('data-pwa-install', false)
             ->assertSee($helpUrl, false)
             ->assertSee('Belanja lebih cepat dari HP')
-            ->assertSee('INSTALL');
+            ->assertSee('INSTALL')
+            ->assertDontSee('ec-mobile-install-icon', false)
+            ->assertSee('APLIKASI '.strtoupper((string) config('app.name')));
+
+        $this->get(route('pwa.manifest'))
+            ->assertOk()
+            ->assertHeader('Content-Type', 'application/manifest+json')
+            ->assertJsonPath('name', config('app.name'))
+            ->assertJsonPath('short_name', config('app.name'));
 
         $this->get(route('frontend.pages.show', 'pusat-bantuan'))
             ->assertOk()

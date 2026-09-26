@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
     <head>
@@ -14,7 +14,7 @@
                 else html.classList.remove('dark');
             })();
         </script>
-        <title>{{ $appStoreName ?? 'Ecommerce Citra' }} Admin - @yield('title', 'Dashboard')</title>
+        <title>{{ $appStoreName ?? config('app.name') }} Admin - @yield('title', 'Dashboard')</title>
         @vite(['resources/css/app.css', 'resources/js/admin.js'])
         <script src="{{ asset('vendor/chart.js/chart.umd.min.js') }}"></script>
         <style>

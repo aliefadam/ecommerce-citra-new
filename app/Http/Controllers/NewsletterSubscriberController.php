@@ -75,7 +75,7 @@ class NewsletterSubscriberController extends Controller
             'ctaLabel' => $payload['cta_label'],
             'ctaUrl' => $payload['cta_url'],
             'heroImageUrl' => $payload['hero_image'],
-            'storeName' => (string) ($request->attributes->get('appStoreName') ?? 'Ecommerce Citra'),
+            'storeName' => (string) ($request->attributes->get('appStoreName') ?? config('app.name')),
             'unsubscribeUrl' => url('/newsletter/unsubscribe/preview-only'),
         ]);
     }

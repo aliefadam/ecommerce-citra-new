@@ -3,7 +3,7 @@
 
     <head>
         @php
-            $seoTitle = trim($__env->yieldContent('title', $appStoreName ?? 'Ecommerce Citra'));
+            $seoTitle = trim($__env->yieldContent('title', $appStoreName ?? config('app.name')));
             $seoDescription = trim($__env->yieldContent('meta_description', $appStoreSettings['seo_home_description'] ?? 'Belanja online dengan mudah dan aman.'));
             $seoCanonical = trim($__env->yieldContent('canonical', url()->current()));
             $seoImage = trim($__env->yieldContent('og_image', $appStoreSettings['seo_default_image_url'] ?: ($appStoreLogoUrl ?? '')));
@@ -37,7 +37,7 @@
         <link rel="canonical" href="{{ $seoCanonical }}" />
         <meta property="og:locale" content="id_ID" />
         <meta property="og:type" content="@yield('og_type', 'website')" />
-        <meta property="og:site_name" content="{{ $appStoreName ?? 'Ecommerce Citra' }}" />
+        <meta property="og:site_name" content="{{ $appStoreName ?? config('app.name') }}" />
         <meta property="og:title" content="{{ $seoTitle }}" />
         <meta property="og:description" content="{{ $seoDescription }}" />
         <meta property="og:url" content="{{ $seoCanonical }}" />

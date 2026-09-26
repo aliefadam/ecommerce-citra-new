@@ -89,7 +89,7 @@
                         <input type="hidden" name="section" value="store">
 
                         <h2 class="font-bold text-slate-800 dark:text-white mb-1">Profil Toko</h2>
-                        <p class="text-xs text-slate-400 mb-6">Atur nama toko dan logo yang dipakai sebagai identitas toko.</p>
+                        <p class="text-xs text-slate-400 mb-6">Nama aplikasi mengikuti APP_NAME pada environment. Logo toko dapat diatur terpisah.</p>
 
                         <div class="flex flex-col sm:flex-row gap-5 mb-6 pb-6 border-b border-slate-100 dark:border-slate-700">
                             <div class="w-24 h-24 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700 flex items-center justify-center overflow-hidden">
@@ -109,8 +109,9 @@
 
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Nama Toko</label>
-                            <input type="text" name="store_name" value="{{ old('store_name', $storeSettings['store_name'] ?? 'Ecommerce Citra') }}" required
-                                class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200">
+                            <input type="text" value="{{ config('app.name') }}" readonly
+                                class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                            <p class="text-xs text-slate-400 mt-1.5">Ubah nilai APP_NAME di file environment untuk mengganti nama di seluruh aplikasi.</p>
                         </div>
 
                         <div class="flex justify-end mt-5">
@@ -132,7 +133,7 @@
                             <div>
                                 <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Judul SEO Beranda</label>
                                 <input type="text" name="seo_home_title" maxlength="70" value="{{ old('seo_home_title', $storeSettings['seo_home_title'] ?? '') }}"
-                                    placeholder="{{ ($storeSettings['store_name'] ?? 'Ecommerce Citra').' - Toko Teknik Online' }}"
+                                    placeholder="{{ config('app.name').' - Toko Teknik Online' }}"
                                     class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200">
                                 <p class="text-xs text-slate-400 mt-1.5">Gunakan satu topik utama dan nama toko; maksimal 70 karakter.</p>
                             </div>

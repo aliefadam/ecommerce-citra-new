@@ -1,6 +1,6 @@
 @extends('layouts.user')
 
-@section('title', 'Unsubscribe Newsletter - ' . ($appStoreName ?? 'Ecommerce Citra'))
+@section('title', 'Unsubscribe Newsletter - ' . ($appStoreName ?? config('app.name')))
 
 @section('content')
     @include('partials.navbar-user')
@@ -12,7 +12,7 @@
             </div>
             <h1 class="text-2xl font-extrabold text-slate-900 mb-3">Kamu berhasil unsubscribe</h1>
             <p class="text-slate-600 leading-7">
-                Email <strong>{{ $subscriber->email }}</strong> sudah tidak akan menerima newsletter lagi dari {{ $appStoreName ?? 'Ecommerce Citra' }}.
+                Email <strong>{{ $subscriber->email }}</strong> sudah tidak akan menerima newsletter lagi dari {{ $appStoreName ?? config('app.name') }}.
             </p>
             <a href="{{ route('frontend.index') }}" class="mt-6 inline-flex items-center justify-center rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-700 transition-colors">
                 Kembali ke Beranda

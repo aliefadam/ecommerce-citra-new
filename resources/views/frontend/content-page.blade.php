@@ -1,6 +1,6 @@
 @extends('layouts.user')
 
-@section('title', ($page->meta_title ?: $page->title) . ' - ' . ($appStoreName ?? 'Ecommerce Citra'))
+@section('title', ($page->meta_title ?: $page->title) . ' - ' . ($appStoreName ?? config('app.name')))
 @section('meta_description', $page->meta_description ?: \Illuminate\Support\Str::limit(trim(strip_tags((string) ($page->excerpt ?: $page->content))), 160))
 @section('canonical', $page->public_url)
 @section('og_image', $page->hero_image ?? '')
@@ -18,8 +18,8 @@
                 'datePublished' => $page->published_at?->toAtomString(),
                 'dateModified' => $page->updated_at?->toAtomString(),
                 'mainEntityOfPage' => $page->public_url,
-                'author' => ['@type' => 'Organization', 'name' => $appStoreName ?? 'Ecommerce Citra'],
-                'publisher' => ['@type' => 'Organization', 'name' => $appStoreName ?? 'Ecommerce Citra'],
+                'author' => ['@type' => 'Organization', 'name' => $appStoreName ?? config('app.name')],
+                'publisher' => ['@type' => 'Organization', 'name' => $appStoreName ?? config('app.name')],
             ]);
         @endphp
         <script type="application/ld+json">{!! json_encode($articleSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) !!}</script>
@@ -60,7 +60,7 @@
                         <div class="mt-6 flex flex-wrap items-center gap-3 text-sm text-slate-500">
                             <span class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5">
                                 <i class="fi fi-rr-user text-xs"></i>
-                                {{ $appStoreName ?? 'BOQ' }}
+                                {{ $appStoreName ?? config('app.name') }}
                             </span>
                             @if ($isPost && $page->published_at)
                                 <span class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5">
@@ -86,7 +86,7 @@
                         @endif
                         <div class="absolute -bottom-4 left-6 right-6 rounded-2xl border border-white/70 bg-white/90 p-4 shadow-xl backdrop-blur">
                             <p class="text-xs font-bold uppercase tracking-[0.2em] text-blue-600">{{ $isPost ? 'Artikel Teknik' : 'Informasi' }}</p>
-                            <p class="mt-1 text-sm font-semibold text-slate-700">{{ $appStoreName ?? 'BOQ' }}</p>
+                            <p class="mt-1 text-sm font-semibold text-slate-700">{{ $appStoreName ?? config('app.name') }}</p>
                         </div>
                     </div>
                 </div>
@@ -182,7 +182,7 @@
 
                 <article class="info-article">
                     <header>
-                        <p>BOQ Customer Care</p>
+                        <p>{{ $appStoreName }} Customer Care</p>
                         <h2>{{ $page->title }}</h2>
                     </header>
                     <div class="content-body">

@@ -1,7 +1,7 @@
 @extends('layouts.user')
 
-@section('title', ($selectedLabel ?? 'Kategori Produk') . ' - ' . ($appStoreName ?? 'Ecommerce Citra'))
-@section('meta_description', 'Temukan pilihan '.strtolower($selectedLabel ?? 'produk teknik').' dari '.($appStoreName ?? 'Ecommerce Citra').' untuk kebutuhan proyek dan industri.')
+@section('title', ($selectedLabel ?? 'Kategori Produk') . ' - ' . ($appStoreName ?? config('app.name')))
+@section('meta_description', 'Temukan pilihan '.strtolower($selectedLabel ?? 'produk teknik').' dari '.($appStoreName ?? config('app.name')).' untuk kebutuhan proyek dan industri.')
 @section('canonical', route('frontend.kategori'))
 
 @section('style')
