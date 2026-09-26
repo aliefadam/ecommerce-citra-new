@@ -1,5 +1,6 @@
 import Alpine from 'alpinejs';
 import * as lucide from 'lucide';
+import './pwa';
 
 const createLucideIcons = (options = {}) => {
     lucide.createIcons({

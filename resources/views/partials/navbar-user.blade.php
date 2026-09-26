@@ -10,7 +10,12 @@
 <nav class="ec-site-header" aria-label="Navigasi utama" data-storefront-shell>
     <div class="ec-utility-bar">
         <div class="ec-container ec-utility-inner">
-            <p>Solusi Kebutuhan Fastener &amp; Industrial Supply</p>
+            <p class="ec-utility-copy">Solusi Kebutuhan Fastener &amp; Industrial Supply</p>
+            <a href="{{ route('frontend.pages.show', 'pusat-bantuan') }}?category=aplikasi#install-aplikasi"
+                class="ec-mobile-install" data-pwa-install>
+                <i class="fi fi-rr-download" aria-hidden="true"></i>
+                <span>Install Aplikasi</span>
+            </a>
             <div class="ec-utility-links" aria-label="Keunggulan layanan">
                 <span><i class="fi fi-rr-shield-check" aria-hidden="true"></i> Trusted by Industry</span>
                 <span><i class="fi fi-rr-marker" aria-hidden="true"></i> Pengiriman ke Seluruh Indonesia</span>

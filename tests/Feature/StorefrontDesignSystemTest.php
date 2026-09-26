@@ -22,6 +22,9 @@ class StorefrontDesignSystemTest extends TestCase
             ->assertSee('data-category-value="baut"', false)
             ->assertSee('aria-controls="ecCategoryDropdown"', false)
             ->assertSee('aria-label="Navigasi cepat"', false)
+            ->assertSee('rel="manifest"', false)
+            ->assertSee(asset('manifest.webmanifest'), false)
+            ->assertSee('rel="apple-touch-icon"', false)
             ->assertSee(route('frontend.pages.show', 'kebijakan-privasi'), false)
             ->assertSee(route('frontend.pages.show', 'syarat-ketentuan'), false)
             ->assertDontSee('footerModalOpen', false);
