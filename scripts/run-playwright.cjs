@@ -14,7 +14,7 @@ const e2eEnv = {
     DB_CONNECTION: 'sqlite',
     DB_DATABASE: database,
     SESSION_DRIVER: 'database',
-    CACHE_STORE: 'array',
+    CACHE_STORE: 'database',
     MAIL_MAILER: 'array',
     E2E_DATABASE_PREPARED: '1',
 };

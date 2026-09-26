@@ -56,6 +56,8 @@ return Application::configure(basePath: dirname(__DIR__))
                 $payload['errors'] = $e->errors();
             }
 
-            return response()->json($payload, $status);
+            $headers = $e instanceof HttpExceptionInterface ? $e->getHeaders() : [];
+
+            return response()->json($payload, $status, $headers);
         });
     })->create();

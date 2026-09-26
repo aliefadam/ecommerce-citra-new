@@ -29,7 +29,7 @@ besar agar setiap perubahan visual memiliki dasar teknis yang stabil.
 | Sprint 4 | Detail produk dan cart | Berjalan | Sprint 3 | Detail produk, variant state, dan cart sudah diperbarui; browser test product-to-cart khusus sprint belum lengkap |
 | Sprint 5 | Checkout dan payment recovery | Berjalan | Sprint 4 | E2E guest, member, negative path, dan multi-company lulus; review seluruh recovery/payment state belum ditutup |
 | Sprint 6 | Profil, order, tracking, wishlist, dan content | Berjalan | Sprint 2-5 | Profil, tracking, help center, content, SEO, dan PWA sudah berubah; account lifecycle matrix belum lengkap |
-| Sprint 7 | Accessibility, performance, regression, dan release | Berjalan | Sprint 0-6 | Backend 214 test, browser 18 skenario, dan build lulus; audit final, screenshot/manual book, performance budget, dan sign-off belum selesai |
+| Sprint 7 | Accessibility, performance, regression, dan release | Berjalan | Sprint 0-6 | Backend 214 test, browser 19 skenario, dan build lulus; audit final, screenshot/manual book, performance budget, dan sign-off belum selesai |
 
 Nilai status yang digunakan: `Belum dimulai`, `Berjalan`, `Blocked`, dan `Selesai`. Status hanya boleh
 diubah menjadi `Selesai` jika seluruh acceptance criteria sprint dan quality gate memiliki bukti.

@@ -18,7 +18,7 @@ Core v1 sudah diimplementasikan dan diverifikasi:
   daftar atribut Bolt.
 - Template dan import Excel dinamis per template; format Bolt lama tetap didukung.
 - Migrasi database bersifat backward-compatible dan tidak mengubah nilai atribut produk lama.
-- Automated regression terbaru: seluruh suite backend lulus, 214 test dengan 1.285 assertion; browser E2E lulus 18 skenario setelah penambahan checkout multi-company.
+- Automated regression terbaru: seluruh suite backend lulus, 214 test dengan 1.285 assertion; browser E2E lulus 19 skenario setelah penambahan kontrak Company Catalog API.
 - Build frontend production dan kompilasi Blade lulus.
 
 Rollout data memetakan kategori yang namanya dikenali secara konservatif ke template baseline. Nama

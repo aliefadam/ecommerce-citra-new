@@ -1,6 +1,6 @@
 # PRD: API Katalog per Perusahaan (Company Catalog API)
 
-> Pemeriksaan ulang 27 September 2026: implementasi endpoint/resource masih tersedia dan build serta suite aplikasi lulus. Regression test khusus kontrak Open Catalog API belum ada pada suite test saat ini dan menjadi pekerjaan quality-hardening berikutnya.
+> Pemeriksaan ulang 27 September 2026: implementasi endpoint/resource tersedia dan regression test Playwright khusus kontrak Open Catalog API sudah ditambahkan. Seluruh suite browser lulus 19/19 skenario.
 
 > Status: **Implemented v2** (2026-07-19) — model **Open API** (publik, tanpa key). Endpoint produk & kategori sudah dibangun, diuji end-to-end, dan berjalan. Lihat §Status Implementasi dan `docs/api-catalog-usage.md`.
 > Prasyarat: `prd-multi-company-foundation.md` (Fase 1 & skema `company_id` pada `products`). API ini mengonsumsi dimensi `company_id` yang diperkenalkan di sana.
@@ -19,6 +19,8 @@ Sudah diimplementasikan & diverifikasi (server `php artisan serve`, curl end-to-
 - Taksonomi kategori yang diekspos = **MainCategory → CategoryDetail** (jalur `Category` self-referential kosong di data, tidak dipakai).
 
 Terverifikasi: listing+paginasi, detail+varian (tanpa angka stok), isolasi antar perusahaan (produk PT lain → 404), filter `category_slug`/`main_category_id`/`category_detail_id`/`search`/`in_stock`, sort harga/nama, kategori flat + `parent_id` + `with_counts`, header `Cache-Control`/`ETag`/304/`X-RateLimit-*`/CORS, dan tidak ada kebocoran field `stock`/`is_redeem_product`/`redeem_points`/`company_id`.
+
+Regression otomatis: `tests/Browser/catalog-api.spec.cjs` menjalankan kontrak tersebut terhadap server Laravel dan database SQLite nyata, termasuk perusahaan/produk nonaktif, produk habis, isolasi dua perusahaan, serta respons throttle `429` dengan `Retry-After`.
 
 ## Ringkasan
 
@@ -151,15 +153,15 @@ Karena open, fokus keamanan bergeser dari "siapa yang boleh akses" ke "membatasi
 
 ## Acceptance Criteria
 
-- [ ] `GET /api/v1/companies/{slug}/products` mengembalikan hanya produk **aktif** milik perusahaan slug tsb, dengan paginasi, filter kategori, search, dan sort berfungsi.
-- [ ] `{slug}` perusahaan nonaktif atau tidak ada → `404`.
-- [ ] `GET /api/v1/companies/{slug}/categories` hanya mengembalikan kategori yang punya produk aktif milik perusahaan tsb, dalam bentuk flat + `parent_id`.
-- [ ] Detail produk menampilkan varian dengan harga, gambar, atribut, dan `in_stock` — **tanpa** angka `stock`.
-- [ ] Response **tidak** memuat: `stock` angka, `is_redeem_product`, `redeem_points`, `company_id` mentah, atau field sensitif lain.
-- [ ] Melewati rate limit per-IP → `429` dengan `Retry-After`.
-- [ ] Response menyertakan header cache (`Cache-Control`/`ETag`) dan dapat dilayani dari cache tanpa menyentuh DB pada hit.
-- [ ] CORS aktif: endpoint bisa dipanggil dari browser website konsumen.
-- [ ] Produk milik PT lain lewat slug berbeda tidak pernah muncul (uji dua perusahaan, tidak tumpang tindih).
+- [x] `GET /api/v1/companies/{slug}/products` mengembalikan hanya produk **aktif** milik perusahaan slug tsb, dengan paginasi, filter kategori, search, dan sort berfungsi.
+- [x] `{slug}` perusahaan nonaktif atau tidak ada → `404`.
+- [x] `GET /api/v1/companies/{slug}/categories` hanya mengembalikan kategori yang punya produk aktif milik perusahaan tsb, dalam bentuk flat + `parent_id`.
+- [x] Detail produk menampilkan varian dengan harga, gambar, atribut, dan `in_stock` — **tanpa** angka `stock`.
+- [x] Response **tidak** memuat: `stock` angka, `is_redeem_product`, `redeem_points`, `company_id` mentah, atau field sensitif lain.
+- [x] Melewati rate limit per-IP → `429` dengan `Retry-After`.
+- [x] Response menyertakan header cache (`Cache-Control`/`ETag`) dan dapat dilayani dari cache tanpa menyentuh DB pada hit.
+- [x] CORS aktif: endpoint bisa dipanggil dari browser website konsumen.
+- [x] Produk milik PT lain lewat slug berbeda tidak pernah muncul (uji dua perusahaan, tidak tumpang tindih).
 - [ ] Kontrak `/api/v1` terdokumentasi (OpenAPI/Postman) dan tidak berubah breaking tanpa naik versi.
 
 ## Edge Cases
