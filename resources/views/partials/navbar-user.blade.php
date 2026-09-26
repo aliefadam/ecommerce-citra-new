@@ -99,9 +99,7 @@
                 @foreach ([
                     ['Beranda', route('frontend.index'), 'frontend.index'],
                     ['Produk', route('frontend.kategori'), 'frontend.kategori'],
-                    ['Brand', route('frontend.kategori', ['view' => 'brand']), null],
                     ['Promo', route('frontend.flash-sale'), 'frontend.flash-sale'],
-                    ['Proyek & Industri', route('frontend.kategori'), null],
                     ['Tentang Kami', route('frontend.pages.show', 'tentang-kami'), null],
                     ['Hubungi Kami', route('frontend.pages.show', 'pusat-bantuan'), null],
                 ] as [$label, $url, $routeName])

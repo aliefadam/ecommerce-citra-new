@@ -66,6 +66,18 @@ class StorefrontDesignSystemTest extends TestCase
         $this->get('/pages/halaman-tidak-dikenal')->assertNotFound();
     }
 
+    public function test_about_page_has_a_fallback_and_duplicate_navigation_links_are_removed(): void
+    {
+        $response = $this->get('/pages/tentang-kami');
+
+        $response
+            ->assertOk()
+            ->assertSee('Apa itu BOQ?')
+            ->assertSee('Bill of Quantities')
+            ->assertDontSee('>Brand</a>', false)
+            ->assertDontSee('>Proyek &amp; Industri</a>', false);
+    }
+
     public function test_component_foundations_render_semantic_states(): void
     {
         $button = $this->blade('<x-ui.button variant="primary" disabled>Simpan</x-ui.button>');
