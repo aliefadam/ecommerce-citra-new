@@ -2,6 +2,32 @@
 
 @section('title', 'Keranjang - ' . ($appStoreName ?? config('app.name')))
 
+@section('style')
+    <style>
+        .cart-mobile-actions { display: none; }
+
+        @media (max-width: 767px) {
+            .cart-page { padding-bottom: 7rem; }
+            .cart-desktop-summary { display: none; }
+            .cart-mobile-actions {
+                position: fixed;
+                z-index: 145;
+                right: 0;
+                bottom: 0;
+                left: 0;
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) minmax(10rem, 1.25fr);
+                align-items: center;
+                gap: .75rem;
+                border-top: 1px solid #dbe3ed;
+                background: rgb(255 255 255 / .96);
+                padding: .7rem 1rem max(.7rem, env(safe-area-inset-bottom));
+                box-shadow: 0 -8px 26px rgb(15 23 42 / .12);
+                backdrop-filter: blur(12px);
+            }
+        }
+    </style>
+@endsection
 @section('content')
     @include('partials.navbar-user')
 
@@ -13,7 +39,7 @@
         </div>
     </div>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-5">
+    <div class="cart-page max-w-7xl mx-auto px-4 sm:px-6 py-5">
         <div class="grid lg:grid-cols-3 gap-8">
             <div class="lg:col-span-2">
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
@@ -34,7 +60,7 @@
                     <div id="cartItems" class="divide-y divide-slate-100 p-4 space-y-0"></div>
                 </div>
             </div>
-            <aside>
+            <aside class="cart-desktop-summary">
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 sticky top-20">
                     <h3 class="font-bold text-slate-800 mb-4">Ringkasan Belanja</h3>
                     <div class="space-y-2 text-sm">
@@ -51,13 +77,23 @@
                         <span class="font-semibold text-slate-700">Total</span>
                         <span id="grandTotal" class="font-extrabold text-blue-600">Rp 0</span>
                     </div>
-                    <a href="{{ route('frontend.checkout') }}" id="checkoutBtn"
+                    <a href="{{ route('frontend.checkout') }}" id="checkoutBtn" data-cart-checkout
                         class="mt-5 w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold py-3 rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all shadow-lg shadow-blue-200">
                         Checkout
                     </a>
                 </div>
             </aside>
         </div>
+    </div>
+    <div class="cart-mobile-actions" aria-label="Aksi checkout">
+        <div class="min-w-0" aria-live="polite">
+            <span class="block text-[.68rem] font-semibold text-slate-500">Total belanja</span>
+            <strong data-cart-total class="mt-0.5 block truncate text-base font-extrabold text-[#0a3268]">Rp 0</strong>
+        </div>
+        <a href="{{ route('frontend.checkout') }}" id="mobileCheckoutBtn" data-cart-checkout
+            class="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-700 px-4 text-sm font-bold text-white shadow-lg shadow-blue-200">
+            Checkout
+        </a>
     </div>
 @endsection
 
@@ -107,13 +143,12 @@
 
         function setCheckoutLoadingState(isLoading) {
             isCheckoutLoading = isLoading;
-            const checkoutBtn = document.getElementById('checkoutBtn');
-            if (!checkoutBtn) return;
-
-            checkoutBtn.classList.toggle('pointer-events-none', isLoading);
-            checkoutBtn.classList.toggle('opacity-60', isLoading);
-            checkoutBtn.setAttribute('aria-disabled', isLoading ? 'true' : 'false');
-            checkoutBtn.textContent = isLoading ? 'Menyiapkan Checkout...' : 'Checkout';
+            document.querySelectorAll('[data-cart-checkout]').forEach((checkoutBtn) => {
+                checkoutBtn.classList.toggle('pointer-events-none', isLoading);
+                checkoutBtn.classList.toggle('opacity-60', isLoading);
+                checkoutBtn.setAttribute('aria-disabled', isLoading ? 'true' : 'false');
+                checkoutBtn.textContent = isLoading ? 'Menyiapkan...' : 'Checkout';
+            });
         }
 
         function updateSummary() {
@@ -124,11 +159,15 @@
             document.getElementById('sumItems').textContent = totalItems + ' item';
             document.getElementById('subtotalAmt').textContent = formatCurrency(subtotal);
             document.getElementById('grandTotal').textContent = formatCurrency(subtotal);
-            const checkoutBtn = document.getElementById('checkoutBtn');
+            document.querySelectorAll('[data-cart-total]').forEach((total) => {
+                total.textContent = formatCurrency(subtotal);
+            });
             const shouldDisableCheckout = totalItems <= 0 || isCheckoutLoading;
-            checkoutBtn.classList.toggle('pointer-events-none', shouldDisableCheckout);
-            checkoutBtn.classList.toggle('opacity-60', shouldDisableCheckout);
-            checkoutBtn.setAttribute('aria-disabled', shouldDisableCheckout ? 'true' : 'false');
+            document.querySelectorAll('[data-cart-checkout]').forEach((checkoutBtn) => {
+                checkoutBtn.classList.toggle('pointer-events-none', shouldDisableCheckout);
+                checkoutBtn.classList.toggle('opacity-60', shouldDisableCheckout);
+                checkoutBtn.setAttribute('aria-disabled', shouldDisableCheckout ? 'true' : 'false');
+            });
             const selectAll = document.getElementById('selectAllCart');
             if (selectAll) {
                 const activeTotal = cartItems.length;
@@ -453,7 +492,9 @@
             updateSummary();
         }
 
-        document.getElementById('checkoutBtn')?.addEventListener('click', proceedCheckout);
+        document.querySelectorAll('[data-cart-checkout]').forEach((checkoutBtn) => {
+            checkoutBtn.addEventListener('click', proceedCheckout);
+        });
         renderCart();
     </script>
 @endsection
