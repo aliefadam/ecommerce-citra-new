@@ -347,8 +347,7 @@
         }
 
         .drawer-variant-select-wrap {
-            width: min(52%, 180px);
-            min-width: 140px;
+            width: 100%;
         }
 
         .drawer-variant-select-wrap .ts-wrapper,
