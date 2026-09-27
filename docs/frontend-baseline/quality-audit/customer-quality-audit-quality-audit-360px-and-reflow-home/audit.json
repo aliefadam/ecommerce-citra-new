@@ -1,0 +1,806 @@
+{
+  "lcp": 2684,
+  "cls": 0.0938811359998915,
+  "width": 360,
+  "scrollWidth": 360,
+  "reducedMotion": true,
+  "navigation": {
+    "name": "http://127.0.0.1:8765/",
+    "entryType": "navigation",
+    "startTime": 0,
+    "duration": 2111.699999988079,
+    "navigationId": 3010,
+    "initiatorType": "navigation",
+    "deliveryType": "",
+    "nextHopProtocol": "http/1.1",
+    "renderBlockingStatus": "non-blocking",
+    "contentType": "text/html",
+    "contentEncoding": "",
+    "workerStart": 0,
+    "workerRouterEvaluationStart": 0,
+    "workerCacheLookupStart": 0,
+    "workerMatchedSourceType": "",
+    "workerFinalSourceType": "",
+    "redirectStart": 0,
+    "redirectEnd": 0,
+    "fetchStart": 4.699999988079071,
+    "domainLookupStart": 4.699999988079071,
+    "domainLookupEnd": 4.699999988079071,
+    "connectStart": 4.699999988079071,
+    "secureConnectionStart": 0,
+    "connectEnd": 4.699999988079071,
+    "requestStart": 10.299999997019768,
+    "responseStart": 1209.699999988079,
+    "firstInterimResponseStart": 0,
+    "finalResponseHeadersStart": 1209.699999988079,
+    "responseEnd": 1217.5999999940395,
+    "transferSize": 167828,
+    "encodedBodySize": 167528,
+    "decodedBodySize": 167528,
+    "responseStatus": 200,
+    "serverTiming": [],
+    "unloadEventStart": 0,
+    "unloadEventEnd": 0,
+    "domInteractive": 1967.5,
+    "domContentLoadedEventStart": 1975.5999999940395,
+    "domContentLoadedEventEnd": 1976.3999999910593,
+    "domComplete": 2108.7999999970198,
+    "loadEventStart": 2109.199999988079,
+    "loadEventEnd": 2111.699999988079,
+    "type": "navigate",
+    "redirectCount": 0,
+    "activationStart": 0,
+    "criticalCHRestart": 0,
+    "notRestoredReasons": null,
+    "confidence": {
+      "randomizedTriggerRate": 0.4994798,
+      "value": "high"
+    }
+  },
+  "contrastSamples": [
+    {
+      "text": "Reset",
+      "ratio": 8.24,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Tutup",
+      "ratio": 8.48,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Menampilkan 12 dari 15 produk",
+      "ratio": 2.04,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Mur Hex M8 PT Dua E2E",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "baut",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 1.250",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Stok 100 pcs · Satuan pcs",
+      "ratio": 8.48,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Mur Hex M10 PT Dua E2E",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "baut",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 2.250",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Stok habis · Satuan pcs",
+      "ratio": 8.48,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Baut Hex M8 x 25mm Galvanis",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "baut",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 850",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Stok 12.450 pcs · Satuan pcs",
+      "ratio": 8.48,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Mur Hex M8 Baja Galvanis",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "mur",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 450",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Stok 18.000 pcs · Satuan pcs",
+      "ratio": 8.48,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Ring Plat M8 Galvanis",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "ring-washer",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 250",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Stok 22.500 pcs · Satuan pcs",
+      "ratio": 8.48,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Sekrup SDS 12 x 20mm",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "sekrup",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 650",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Stok 9.600 pcs · Satuan pcs",
+      "ratio": 8.48,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Dynabolt M10 x 75mm",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "anchor",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 3.500",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Stok 4.200 pcs · Satuan pcs",
+      "ratio": 8.48,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Baut L Stainless M6 x 30mm",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "baut",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 1.200",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Stok 7.300 pcs · Satuan pcs",
+      "ratio": 8.48,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Kunci L Set 9 Pcs",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "tools",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 45.000",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Stok 850 pcs · Satuan pcs",
+      "ratio": 8.48,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Mur Nyloc M10",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "mur",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 950",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Stok 6.400 pcs · Satuan pcs",
+      "ratio": 8.48,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Mata Bor Besi HSS 6mm",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "tools",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 12.500",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Stok 1.500 pcs · Satuan pcs",
+      "ratio": 8.48,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Fischer S6 Nylon Anchor",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "anchor",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 500",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Stok 12.000 pcs · Satuan pcs",
+      "ratio": 8.48,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Sudah tampil 12 dari 15 produk",
+      "ratio": 2.04,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Mur Hex M8 PT Dua E2E",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "baut",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 1.250",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Stok 100 pcs · Satuan pcs",
+      "ratio": 8.48,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Mur Hex M10 PT Dua E2E",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "baut",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 2.250",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Stok habis · Satuan pcs",
+      "ratio": 8.48,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Baut Hex M8 x 25mm Galvanis",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "baut",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 850",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Stok 12,450 pcs · Satuan pcs",
+      "ratio": 8.48,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Mur Hex M8 Baja Galvanis",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "mur",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 450",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Stok 18,000 pcs · Satuan pcs",
+      "ratio": 8.48,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Ring Plat M8 Galvanis",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "ring-washer",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 250",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Stok 22,500 pcs · Satuan pcs",
+      "ratio": 8.48,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Sekrup SDS 12 x 20mm",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "sekrup",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 650",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Stok 9,600 pcs · Satuan pcs",
+      "ratio": 8.48,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Dynabolt M10 x 75mm",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "anchor",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 3.500",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Stok 4,200 pcs · Satuan pcs",
+      "ratio": 8.48,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Baut L Stainless M6 x 30mm",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "baut",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 1.200",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Stok 7,300 pcs · Satuan pcs",
+      "ratio": 8.48,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Kunci L Set 9 Pcs",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "tools",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 45.000",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Stok 850 pcs · Satuan pcs",
+      "ratio": 8.48,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Mur Nyloc M10",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "mur",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 950",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Stok 6,400 pcs · Satuan pcs",
+      "ratio": 8.48,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Alamat email",
+      "ratio": 1,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Mitra pengadaan baut, mur, fastener, anchor, dan perkakas teknik untuk",
+      "ratio": 1.04,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Professional partner for your professional results",
+      "ratio": 1.06,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Semua produk",
+      "ratio": 1.06,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Promo aktif",
+      "ratio": 1.06,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Produk terbaru",
+      "ratio": 1.06,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    }
+  ],
+  "contrastCandidates": [
+    {
+      "text": "Menampilkan 12 dari 15 produk",
+      "ratio": 2.04,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Sudah tampil 12 dari 15 produk",
+      "ratio": 2.04,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Alamat email",
+      "ratio": 1,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Mitra pengadaan baut, mur, fastener, anchor, dan perkakas teknik untuk",
+      "ratio": 1.04,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Professional partner for your professional results",
+      "ratio": 1.06,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Semua produk",
+      "ratio": 1.06,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Promo aktif",
+      "ratio": 1.06,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Produk terbaru",
+      "ratio": 1.06,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    }
+  ]
+}

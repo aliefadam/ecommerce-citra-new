@@ -499,7 +499,7 @@ import, export, dan API resource.
 - [ ] Create dan edit memakai template dan aturan validasi yang sama.
 - [ ] Field wajib kosong ditolak pada field/baris yang tepat.
 - [ ] Atribut dari template lain ditolak server.
-- [ ] Dua kombinasi varian identik dalam satu produk ditolak.
+- [x] Dua kombinasi varian identik dalam satu produk ditolak.
 - [ ] Harga, stok, gambar, dan data logistik tetap tersimpan per varian.
 - [ ] Pergantian kategori dengan data terisi meminta konfirmasi dan tidak menghapus data diam-diam.
 - [ ] Produk legacy tanpa mapping tetap dapat dibuka dan disimpan melalui mode kompatibilitas.
@@ -514,13 +514,20 @@ import, export, dan API resource.
 
 ### Import, API, dan regresi
 
-- [ ] Template Excel dapat diunduh per Category Detail/template.
+- [x] Template Excel dapat diunduh per Category Detail/template.
 - [ ] Import menolak file dengan versi/template yang tidak cocok dan memberikan error per baris.
 - [ ] Format Bolt legacy tetap didukung selama masa transisi yang ditetapkan.
 - [ ] Open Catalog API tetap backward-compatible dan mengembalikan atribut generik.
 - [ ] API tidak mengekspos angka stok atau konfigurasi admin internal.
 - [ ] Cart, checkout, wishlist, flash sale, redeem point, laporan stok, dan transaksi tetap lulus test.
 - [ ] Tidak ada N+1 query baru pada halaman katalog dan detail produk.
+
+Audit tambahan 27 September 2026: duplicate-combination dan download Excel template Pipe terbukti
+oleh `DynamicProductSpecificationTest`. Item gabungan lain tetap terbuka bila test hanya mencakup
+sebagian persyaratan. Baseline kategori 13 query, detail 47 query dengan 11 bentuk berulang;
+ini belum membuktikan bebas N+1. E2E terbaru memiliki satu kegagalan rate-limit API.
+Review mapping aktual tertunda karena MySQL lokal tidak menerima koneksi.
+Bukti dan batasan: [laporan audit kualitas](frontend-baseline/quality-audit/README.md).
 
 ## Edge Cases
 

@@ -1,0 +1,736 @@
+{
+  "lcp": 2804,
+  "cls": 0.00037189331054687504,
+  "width": 360,
+  "scrollWidth": 360,
+  "reducedMotion": true,
+  "navigation": {
+    "name": "http://127.0.0.1:8765/detail-produk/baut-mur-baja-109",
+    "entryType": "navigation",
+    "startTime": 0,
+    "duration": 2168.2000000029802,
+    "navigationId": 8335,
+    "initiatorType": "navigation",
+    "deliveryType": "",
+    "nextHopProtocol": "http/1.1",
+    "renderBlockingStatus": "non-blocking",
+    "contentType": "text/html",
+    "contentEncoding": "",
+    "workerStart": 0,
+    "workerRouterEvaluationStart": 0,
+    "workerCacheLookupStart": 0,
+    "workerMatchedSourceType": "",
+    "workerFinalSourceType": "",
+    "redirectStart": 0,
+    "redirectEnd": 0,
+    "fetchStart": 0.9000000059604645,
+    "domainLookupStart": 0.9000000059604645,
+    "domainLookupEnd": 0.9000000059604645,
+    "connectStart": 0.9000000059604645,
+    "secureConnectionStart": 0,
+    "connectEnd": 0.9000000059604645,
+    "requestStart": 2.300000011920929,
+    "responseStart": 1147.7000000029802,
+    "firstInterimResponseStart": 0,
+    "finalResponseHeadersStart": 1147.7000000029802,
+    "responseEnd": 1157.2000000029802,
+    "transferSize": 336723,
+    "encodedBodySize": 336423,
+    "decodedBodySize": 336423,
+    "responseStatus": 200,
+    "serverTiming": [],
+    "unloadEventStart": 0,
+    "unloadEventEnd": 0,
+    "domInteractive": 1868.7000000029802,
+    "domContentLoadedEventStart": 1878,
+    "domContentLoadedEventEnd": 1878.7000000029802,
+    "domComplete": 2167.2000000029802,
+    "loadEventStart": 2167.7000000029802,
+    "loadEventEnd": 2168.2000000029802,
+    "type": "navigate",
+    "redirectCount": 0,
+    "activationStart": 0,
+    "criticalCHRestart": 0,
+    "notRestoredReasons": null,
+    "confidence": {
+      "randomizedTriggerRate": 0.4994798,
+      "value": "low"
+    }
+  },
+  "contrastSamples": [
+    {
+      "text": "Beranda",
+      "ratio": 8.48,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Baut",
+      "ratio": 8.48,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Baut HTB",
+      "ratio": 8.48,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Klik gambar untuk memperbesar",
+      "ratio": 2.04,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "BOQ",
+      "ratio": 8.12,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Chat Penjual",
+      "ratio": 8.12,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Lihat Produk",
+      "ratio": 8.49,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Butuh jumlah besar?",
+      "ratio": 7.8,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Ajukan harga khusus untuk kebutuhan proyek, pembelian volume, atau per",
+      "ratio": 8.11,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Minta Penawaran",
+      "ratio": 8.12,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Data teknis",
+      "ratio": 2.14,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Katalog SKU",
+      "ratio": 2.14,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "dari 0 ulasan",
+      "ratio": 2.04,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Belum ada ulasan untuk produk ini.",
+      "ratio": 2.04,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Diskusikan spesifikasi, kompatibilitas, atau kebutuhan proyek dengan p",
+      "ratio": 2.04,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Mulai Diskusi",
+      "ratio": 2.14,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "BOQ",
+      "ratio": 2.14,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Threadlocker Medium Strength",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Kemasan: Pcs",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 38.000",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "U Bolt M10 Galvanis",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Diameter: M10",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 8.500",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Fischer S6 Nylon Anchor",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Diameter: M6",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 500",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Mata Bor Besi HSS 6mm",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Diameter: M6",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 12.500",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Mur Nyloc M10",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Diameter: M10",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 950",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Kunci L Set 9 Pcs",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Kemasan: Pcs",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 45.000",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Baut L Stainless M6 x 30mm",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Material: Stainless 304",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 1.200",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Dynabolt M10 x 75mm",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Diameter: M10",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 3.500",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Sekrup SDS 12 x 20mm",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Panjang: 25mm",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 650",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Ring Plat M8 Galvanis",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Diameter: M8",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 250",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Mur Hex M8 PT Dua E2E",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Diameter: M8",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 1.250",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Mur Hex M10 PT Dua E2E",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Diameter: M8",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 2.250",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Baut Hex M8 x 25mm Galvanis",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Diameter: M8",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 850",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Baut L Stainless M6 x 30mm",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Material: Stainless 304",
+      "ratio": 4.7,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Rp 1.200",
+      "ratio": 14.87,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "−",
+      "ratio": 8.49,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "+",
+      "ratio": 8.49,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Mitra pengadaan baut, mur, fastener, anchor, dan perkakas teknik untuk",
+      "ratio": 1.04,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Professional partner for your professional results",
+      "ratio": 1.06,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Semua produk",
+      "ratio": 1.06,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Promo aktif",
+      "ratio": 1.06,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Produk terbaru",
+      "ratio": 1.06,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Lacak pesanan",
+      "ratio": 1.06,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Pusat bantuan",
+      "ratio": 1.06,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Cara belanja",
+      "ratio": 1.06,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Kebijakan privasi",
+      "ratio": 1.06,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Syarat & ketentuan",
+      "ratio": 1.06,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Senin–Sabtu, 08.00–17.00 WIB. Konsultasikan spesifikasi sebelum memesa",
+      "ratio": 1.04,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Buka pusat bantuan",
+      "ratio": 8.16,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "© 2026 Laravel. Hak cipta dilindungi.",
+      "ratio": 1.04,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "PT Citra Abadi Teknik Indonesia · Indonesia",
+      "ratio": 1.04,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    }
+  ],
+  "contrastCandidates": [
+    {
+      "text": "Klik gambar untuk memperbesar",
+      "ratio": 2.04,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Data teknis",
+      "ratio": 2.14,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Katalog SKU",
+      "ratio": 2.14,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "dari 0 ulasan",
+      "ratio": 2.04,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Belum ada ulasan untuk produk ini.",
+      "ratio": 2.04,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Diskusikan spesifikasi, kompatibilitas, atau kebutuhan proyek dengan p",
+      "ratio": 2.04,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Mulai Diskusi",
+      "ratio": 2.14,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "BOQ",
+      "ratio": 2.14,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Mitra pengadaan baut, mur, fastener, anchor, dan perkakas teknik untuk",
+      "ratio": 1.04,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Professional partner for your professional results",
+      "ratio": 1.06,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Semua produk",
+      "ratio": 1.06,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Promo aktif",
+      "ratio": 1.06,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Produk terbaru",
+      "ratio": 1.06,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Lacak pesanan",
+      "ratio": 1.06,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Pusat bantuan",
+      "ratio": 1.06,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Cara belanja",
+      "ratio": 1.06,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Kebijakan privasi",
+      "ratio": 1.06,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Syarat & ketentuan",
+      "ratio": 1.06,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "Senin–Sabtu, 08.00–17.00 WIB. Konsultasikan spesifikasi sebelum memesa",
+      "ratio": 1.04,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "© 2026 Laravel. Hak cipta dilindungi.",
+      "ratio": 1.04,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    },
+    {
+      "text": "PT Citra Abadi Teknik Indonesia · Indonesia",
+      "ratio": 1.04,
+      "threshold": 4.5,
+      "transition": "1e-05s",
+      "animation": "1e-05s"
+    }
+  ]
+}

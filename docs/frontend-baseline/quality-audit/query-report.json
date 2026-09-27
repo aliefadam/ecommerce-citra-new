@@ -1,0 +1,76 @@
+{
+    "generated_at": "2026-09-27T19:44:59+07:00",
+    "database": "sqlite",
+    "measurements": [
+        {
+            "page": "homepage",
+            "status": 200,
+            "query_count": 17,
+            "duplicate_query_count": 1,
+            "repeated_query_shapes": {
+                "select * from \"main_categories\" order by \"name\" asc": 2
+            },
+            "duration_ms": 10705.54,
+            "response_bytes": 165758
+        },
+        {
+            "page": "category",
+            "status": 200,
+            "query_count": 13,
+            "duplicate_query_count": 0,
+            "repeated_query_shapes": [],
+            "duration_ms": 296.01,
+            "response_bytes": 137040
+        },
+        {
+            "page": "product_detail",
+            "status": 200,
+            "query_count": 47,
+            "duplicate_query_count": 11,
+            "repeated_query_shapes": {
+                "select * from \"companies\" where \"companies\".\"id\" in (1)": 5,
+                "select * from \"main_categories\" where \"main_categories\".\"id\" in (1)": 3,
+                "select * from \"category_details\" where \"category_details\".\"id\" in (2, 5)": 2,
+                "select * from \"product_variants\" where \"product_variants\".\"product_id\" in (6, 13)": 2,
+                "select * from \"variants\" where \"variants\".\"id\" in (2, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173)": 2,
+                "select \"flash_sale_items\".*, \"product_variants\".\"product_id\" as \"laravel_through_key\" from \"flash_sale_items\" inner join \"product_variants\" on \"product_variants\".\"id\" = \"flash_sale_items\".\"product_variant_id\" where \"product_variants\".\"product_id\" in (6, 13)": 2,
+                "select * from \"attribute_definitions\" where \"attribute_definitions\".\"id\" in (1, 2, 3, 4, 5)": 2
+            },
+            "duration_ms": 5782.76,
+            "response_bytes": 153434
+        },
+        {
+            "page": "cart",
+            "status": 200,
+            "query_count": 10,
+            "duplicate_query_count": 1,
+            "repeated_query_shapes": {
+                "select sum(\"quantity\") as \"aggregate\" from \"carts\" where \"carts\".\"user_id\" = ? and \"carts\".\"user_id\" is not null": 2
+            },
+            "duration_ms": 328.76,
+            "response_bytes": 63794
+        },
+        {
+            "page": "checkout",
+            "status": 200,
+            "query_count": 12,
+            "duplicate_query_count": 1,
+            "repeated_query_shapes": {
+                "select sum(\"quantity\") as \"aggregate\" from \"carts\" where \"carts\".\"user_id\" = ? and \"carts\".\"user_id\" is not null": 2
+            },
+            "duration_ms": 720.48,
+            "response_bytes": 145058
+        },
+        {
+            "page": "profile",
+            "status": 200,
+            "query_count": 10,
+            "duplicate_query_count": 1,
+            "repeated_query_shapes": {
+                "select sum(\"quantity\") as \"aggregate\" from \"carts\" where \"carts\".\"user_id\" = ? and \"carts\".\"user_id\" is not null": 2
+            },
+            "duration_ms": 771.25,
+            "response_bytes": 200259
+        }
+    ]
+}

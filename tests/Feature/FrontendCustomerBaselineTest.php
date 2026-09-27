@@ -80,6 +80,7 @@ class FrontendCustomerBaselineTest extends TestCase
             'status' => $response->getStatusCode(),
             'query_count' => count($queries),
             'duplicate_query_count' => count($normalizedQueries) - count(array_unique($normalizedQueries)),
+            'repeated_query_shapes' => array_filter(array_count_values($normalizedQueries), fn (int $count) => $count > 1),
             'duration_ms' => round($durationMs, 2),
             'response_bytes' => strlen((string) $response->getContent()),
         ];

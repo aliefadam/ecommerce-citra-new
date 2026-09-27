@@ -26,8 +26,8 @@ besar agar setiap perubahan visual memiliki dasar teknis yang stabil.
 | Sprint 1 | Asset pipeline dan performance foundation | Selesai | Sprint 0 | [Build, query report, test autocomplete](frontend-baseline/sprint-1-report.md) |
 | Sprint 2 | Design system dan global shell | Selesai | Sprint 1 | [Component catalog + responsive review](frontend-baseline/sprint-2-report.md) |
 | Sprint 3 | Homepage, katalog, search, dan product card | Selesai | Sprint 2 | [Report homepage, katalog, search, dan product card](frontend-baseline/sprint-3-report.md) |
-| Sprint 4 | Detail produk dan cart | Berjalan | Sprint 3 | Detail produk, variant state, mobile add-to-cart, serta quantity/delete recovery cart sudah dicakup browser test; review seluruh acceptance criteria belum ditutup |
-| Sprint 5 | Checkout dan payment recovery | Berjalan | Sprint 4 | E2E guest, member, negative path, dan multi-company lulus; review seluruh recovery/payment state belum ditutup |
+| Sprint 4 | Detail produk dan cart | Berjalan | Sprint 3 | Audit 27 September 2026: 5/6 acceptance criteria terbukti; informasi seller, satuan, dan item tidak tersedia pada cart belum lengkap |
+| Sprint 5 | Checkout dan payment recovery | Berjalan | Sprint 4 | Audit 27 September 2026: 4/7 acceptance criteria terbukti; konfigurasi payment per perusahaan, CTA saat keyboard aktif, dan recovery popup payment belum ditutup |
 | Sprint 6 | Profil, order, tracking, wishlist, dan content | Berjalan | Sprint 2-5 | E2E account lifecycle/profil mencakup auth guard, registrasi, biodata, empty state, perubahan password, login ulang, logout, dan permintaan reset password; review order/tracking/wishlist/content lengkap belum ditutup |
 | Sprint 7 | Accessibility, performance, regression, dan release | Berjalan | Sprint 0-6 | Backend 217 test, browser 23 skenario, dan build lulus; audit final, screenshot/manual book, performance budget, dan sign-off belum selesai |
 
@@ -753,12 +753,16 @@ Scope:
 
 Acceptance criteria:
 
-- [ ] Harga, stok, gambar, dan CTA sinkron terhadap varian terpilih.
-- [ ] Variant unavailable tidak dapat dibeli.
-- [ ] Desktop purchase panel sticky tanpa menutup konten.
-- [ ] Mobile purchase action tidak bertumpuk dengan bottom navigation/chat.
+- [x] Harga, stok, gambar, dan CTA sinkron terhadap varian terpilih.
+- [x] Variant unavailable tidak dapat dibeli.
+- [x] Desktop purchase panel sticky tanpa menutup konten.
+- [x] Mobile purchase action tidak bertumpuk dengan bottom navigation/chat.
 - [ ] Cart menjelaskan seller, varian, satuan, subtotal, dan item tidak tersedia.
-- [ ] Update quantity dan delete memiliki pending/error/recovery state.
+- [x] Update quantity dan delete memiliki pending/error/recovery state.
+
+Audit 27 September 2026: sinkronisasi varian serta recovery quantity/delete lulus E2E. Cart saat
+ini menampilkan varian, harga, subtotal, dan stok, tetapi belum merender seller/satuan serta masih
+menghapus item tidak tersedia dari payload. Sprint tetap `Berjalan` sampai kriteria tersebut selesai.
 
 ### Sprint 5 - Checkout dan Payment Recovery
 
@@ -772,13 +776,18 @@ Scope:
 
 Acceptance criteria:
 
-- [ ] Guest dan member checkout tetap lulus end-to-end.
-- [ ] Multi-company menghasilkan transaksi independen sesuai business rule existing.
-- [ ] Ongkir, diskon, PPN, faktur pajak, dan total per perusahaan transparan.
+- [x] Guest dan member checkout tetap lulus end-to-end.
+- [x] Multi-company menghasilkan transaksi independen sesuai business rule existing.
+- [x] Ongkir, diskon, PPN, faktur pajak, dan total per perusahaan transparan.
 - [ ] Payment method mengikuti konfigurasi masing-masing perusahaan.
 - [ ] CTA selalu terlihat tetapi tidak menutup form/keyboard.
 - [ ] Provider error dan popup close memiliki recovery action.
-- [ ] Tidak ada duplicate order, payment, atau stock movement.
+- [x] Tidak ada duplicate order, payment, atau stock movement.
+
+Audit 27 September 2026: guest/member, negative path, dan dua order lintas perusahaan lulus E2E;
+reservation, webhook, coupon, dan stock movement juga lulus test idempotensi. Payment masih memakai
+satu akun Midtrans BOQ sesuai keputusan bisnis sementara. Review viewport dengan keyboard aktif dan
+recovery ketika popup/provider payment ditutup belum memiliki bukti browser sehingga tidak dicentang.
 
 ### Sprint 6 - Profile, Orders, Tracking, Wishlist, dan Content
 
@@ -799,6 +808,11 @@ Acceptance criteria:
 - [ ] Semua tab memiliki loading, empty, error, dan retry state.
 
 ### Sprint 7 - Accessibility, Performance, Regression, dan Release
+
+Audit tambahan 27 September 2026: [laporan kualitas customer](frontend-baseline/quality-audit/README.md).
+E2E 360px/reflow dan keyboard menu lulus 4/4; sampling kontras masih memiliki kandidat masalah,
+Web Vitals produksi belum tersedia, satu E2E rate-limit API gagal, dan sign-off owner masih menunggu.
+Angka full regression pada tracker adalah hasil historis, bukan hasil audit tambahan ini.
 
 Scope:
 
