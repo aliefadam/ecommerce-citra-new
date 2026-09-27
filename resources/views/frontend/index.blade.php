@@ -254,8 +254,8 @@
             top: .65rem;
             right: .65rem;
             display: grid;
-            width: 2rem;
-            height: 2rem;
+            width: 2.75rem;
+            height: 2.75rem;
             place-items: center;
             border-radius: 999px;
             background: rgb(255 255 255 / .9);
@@ -523,7 +523,7 @@
 
     @if ($flashSaleItems->isNotEmpty())
         <!-- FLASH SALE SECTION -->
-        <section class="flash-sale-panel py-7 sm:py-9">
+        <section id="homeFlashSaleSection" class="flash-sale-panel py-7 sm:py-9">
             <div class="max-w-7xl mx-auto px-4 sm:px-6">
                 <div class="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                     <div class="flex items-center gap-3">
@@ -654,11 +654,11 @@
                     <div class="flex items-center gap-2 sm:gap-3">
                         <div class="flex items-center gap-2 sm:hidden">
                             <button type="button" onclick="openMobileFilter()"
-                                class="w-9 h-9 rounded-xl border border-slate-200 bg-white text-slate-600 flex items-center justify-center hover:bg-slate-50 transition-colors">
+                                class="w-11 h-11 rounded-xl border border-slate-200 bg-white text-slate-600 flex items-center justify-center hover:bg-slate-50 transition-colors">
                                 <i class="ri-filter-3-line text-base"></i>
                             </button>
                             <button type="button" onclick="cycleSortMobile()"
-                                class="w-9 h-9 rounded-xl border border-slate-200 bg-white text-slate-600 flex items-center justify-center hover:bg-slate-50 transition-colors">
+                                class="w-11 h-11 rounded-xl border border-slate-200 bg-white text-slate-600 flex items-center justify-center hover:bg-slate-50 transition-colors">
                                 <i class="ri-arrow-up-down-line text-base"></i>
                             </button>
                         </div>
@@ -686,6 +686,15 @@
 
                 <!-- Products Grid -->
                 <div id="productGrid" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
+                </div>
+
+                <div id="homeEmptyState" class="hidden rounded-2xl border border-slate-200 bg-white px-6 py-14 text-center">
+                    <h3 class="text-lg font-bold text-slate-800">Katalog belum tersedia</h3>
+                    <p class="mx-auto mt-2 max-w-md text-sm text-slate-500">Produk sedang disiapkan. Silakan lihat kembali nanti atau hubungi tim kami untuk bantuan pengadaan.</p>
+                    <a href="{{ route('frontend.pages.show', 'pusat-bantuan') }}"
+                        class="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl bg-blue-700 px-5 text-sm font-semibold text-white hover:bg-blue-800">
+                        Hubungi Kami
+                    </a>
                 </div>
 
                 <!-- Load More -->
@@ -750,6 +759,7 @@
                         <a href="{{ url('/detail-produk/' . $rp['slug']) }}" class="store-product-name line-clamp-2 hover:text-blue-700">{{ $rp['name'] }}</a>
                         <p class="store-product-variant truncate">{{ $rpVariant ?: ($rp['category'] ?? 'Produk industri') }}</p>
                         <p class="store-product-price">Rp {{ number_format((int) ($rp['price'] ?? 0), 0, ',', '.') }}</p>
+                        <p class="mt-1 text-[11px] font-medium text-slate-500">{{ (int) ($rp['stock'] ?? 0) > 0 ? 'Stok '.number_format((int) $rp['stock']).' pcs' : 'Stok habis' }} &middot; Satuan pcs</p>
                         <p class="store-product-seller"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 10.5V20h16v-9.5M3 4h18l-1.5 6a2.5 2.5 0 0 1-4.5 1.1 2.5 2.5 0 0 1-4.5 0A2.5 2.5 0 0 1 6 10L4.5 4M9 20v-5h6v5"/></svg><span>{{ $rp['storeName'] ?: 'Mitra industri' }}</span></p>
                         <div class="store-product-meta">
                             <span class="store-product-rating"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.7 2.83 5.73 6.32.92-4.58 4.46 1.08 6.3L12 17.14l-5.65 2.97 1.08-6.3-4.58-4.46 6.32-.92L12 2.7Z"/></svg>{{ number_format((float) ($rp['rating'] ?? 0), 1) }} <span class="font-normal text-slate-400">({{ number_format((int) ($rp['reviews'] ?? 0)) }})</span></span>
@@ -900,6 +910,7 @@
 
         function renderProducts(prods, resetVisible = true) {
             const grid = document.getElementById('productGrid');
+            const emptyState = document.getElementById('homeEmptyState');
             const loadMoreWrapper = document.getElementById('homeLoadMoreWrapper');
             const loadMoreBtn = document.getElementById('homeLoadMoreBtn');
             const loadMoreInfo = document.getElementById('homeLoadMoreInfo');
@@ -910,6 +921,8 @@
 
             document.getElementById('productCount').textContent =
                 `Menampilkan ${visibleProducts.length} dari ${currentRenderedProducts.length} produk`;
+            emptyState?.classList.toggle('hidden', currentRenderedProducts.length > 0);
+            grid.classList.toggle('hidden', currentRenderedProducts.length === 0);
             loadMoreWrapper.classList.toggle('hidden', currentRenderedProducts.length <= productPageSize);
             loadMoreBtn.classList.toggle('hidden', visibleProducts.length >= currentRenderedProducts.length);
             loadMoreInfo.textContent = `Sudah tampil ${visibleProducts.length} dari ${currentRenderedProducts.length} produk`;
@@ -945,6 +958,7 @@
               <a href="${productUrl}" class="store-product-name line-clamp-2 hover:text-blue-700">${productName}</a>
               <p class="store-product-variant truncate">${escapeHtml(variantLabel)}</p>
               <p class="store-product-price">${priceLabel}</p>
+              <p class="mt-1 text-[11px] font-medium text-slate-500">${Number(p.stock || 0) > 0 ? `Stok ${Number(p.stock).toLocaleString('id-ID')} ${escapeHtml(p.unit || 'pcs')}` : 'Stok habis'} &middot; Satuan ${escapeHtml(p.unit || 'pcs')}</p>
               <p class="store-product-seller"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 10.5V20h16v-9.5M3 4h18l-1.5 6a2.5 2.5 0 0 1-4.5 1.1 2.5 2.5 0 0 1-4.5 0A2.5 2.5 0 0 1 6 10L4.5 4M9 20v-5h6v5"/></svg><span>${sellerName}</span></p>
               <div class="store-product-meta">
                 <span class="store-product-rating"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.7 2.83 5.73 6.32.92-4.58 4.46 1.08 6.3L12 17.14l-5.65 2.97 1.08-6.3-4.58-4.46 6.32-.92L12 2.7Z"/></svg>${Number(p.rating || 0).toFixed(1)} <span class="font-normal text-slate-400">(${Number(p.reviews || 0).toLocaleString('id-ID')})</span></span>
@@ -1676,6 +1690,10 @@
         function updateTimer() {
             const now = new Date();
             const end = flashSaleEndAt ? new Date(flashSaleEndAt) : null;
+            if (end && end <= now) {
+                document.getElementById('homeFlashSaleSection')?.classList.add('hidden');
+                return;
+            }
             const diff = end ? Math.max(end - now, 0) : 0;
             const h = Math.floor(diff / 3600000);
             const m = Math.floor((diff % 3600000) / 60000);

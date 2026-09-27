@@ -1913,19 +1913,32 @@
                 .join(' | ');
             const price = productData.isFlashSale && productData.flashSalePrice ? productData.flashSalePrice : productData
                 .price;
-            const res = await fetch(cartStoreUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-                body: JSON.stringify({
-                    product_variant_id: variantId,
-                    quantity: qty,
-                }),
-            });
-            if (!res.ok) return;
+            let res;
+            try {
+                res = await fetch(cartStoreUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: JSON.stringify({
+                        product_variant_id: variantId,
+                        quantity: qty,
+                    }),
+                });
+            } catch (error) {
+                showToast('Gagal menghubungi server. Silakan coba lagi.');
+                return;
+            }
+            if (!res.ok) {
+                let data = null;
+                try {
+                    data = await res.json();
+                } catch (error) {}
+                showToast(data?.message || 'Produk gagal ditambahkan ke keranjang.');
+                return;
+            }
 
             showToast(
                 `${productData.name}${variantText ? ' (' + variantText + ')' : ''} (${qty} item) ditambahkan ke keranjang!`

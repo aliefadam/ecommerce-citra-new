@@ -3,6 +3,9 @@
 API **read-only, publik** untuk menampilkan katalog satu perusahaan di website eksternal.
 Tidak butuh API key. Perusahaan ditentukan lewat **slug** di URL.
 
+Spesifikasi mesin-readable untuk Swagger UI, code generation, atau import Postman:
+[`openapi-company-catalog-v1.yaml`](openapi-company-catalog-v1.yaml).
+
 Base URL: `https://<domain>/api/v1/companies/{companySlug}`
 
 - `{companySlug}` = slug perusahaan (mis. `boq`, `pt-dua-sejahtera`).

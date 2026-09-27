@@ -12,7 +12,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
             <div class="grid gap-8 lg:grid-cols-2 items-center">
                 <div>
-                    <p class="inline-flex rounded-full bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-orange-600 shadow-sm mb-4">Promo Campaign</p>
+                    <p class="inline-flex rounded-full bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-orange-600 shadow-sm mb-4">Kampanye Promo</p>
                     <h1 class="text-3xl sm:text-5xl font-extrabold text-slate-900 leading-tight mb-4">{{ $promo->title }}</h1>
                     @if ($promo->subtitle)
                         <p class="text-lg text-slate-700 mb-4">{{ $promo->subtitle }}</p>

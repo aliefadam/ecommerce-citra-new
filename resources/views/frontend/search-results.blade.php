@@ -116,7 +116,7 @@
                     <p class="text-sm text-slate-500" id="resultCount">Menampilkan 0 produk</p>
                     <div class="flex flex-wrap items-center gap-2 sm:gap-3">
                         <div class="flex items-center gap-2 sm:hidden">
-                            <button type="button" onclick="openMobileFilter()" class="w-9 h-9 rounded-xl border border-slate-200 bg-white text-slate-600 flex items-center justify-center"><i class="ri-filter-3-line"></i></button>
+                            <button type="button" onclick="openMobileFilter()" class="w-11 h-11 rounded-xl border border-slate-200 bg-white text-slate-600 flex items-center justify-center"><i class="ri-filter-3-line"></i></button>
                         </div>
                         <select id="sortSel" onchange="applyFilters()" class="border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-blue-400 bg-white">
                             <option value="relevant">Paling Relevan</option>
@@ -378,6 +378,7 @@
                     <a href="${productUrl}" class="store-product-name line-clamp-2 hover:text-blue-700">${escapeHtml(p.name)}</a>
                     <p class="store-product-variant truncate">${escapeHtml(variantLabel)}</p>
                     <p class="store-product-price">Rp ${Number(p.price || 0).toLocaleString('id-ID')}</p>
+                    <p class="mt-1 text-[11px] font-medium text-slate-500">${Number(p.stock || 0) > 0 ? `Stok ${Number(p.stock).toLocaleString('id-ID')} ${escapeHtml(p.unit || 'pcs')}` : 'Stok habis'} &middot; Satuan ${escapeHtml(p.unit || 'pcs')}</p>
                     <p class="store-product-seller"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 10.5V20h16v-9.5M3 4h18l-1.5 6a2.5 2.5 0 0 1-4.5 1.1 2.5 2.5 0 0 1-4.5 0A2.5 2.5 0 0 1 6 10L4.5 4M9 20v-5h6v5"/></svg><span>${escapeHtml(p.storeName || 'Mitra industri')}</span></p>
                     <div class="store-product-meta">
                         <span class="store-product-rating"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.7 2.83 5.73 6.32.92-4.58 4.46 1.08 6.3L12 17.14l-5.65 2.97 1.08-6.3-4.58-4.46 6.32-.92L12 2.7Z"/></svg>${Number(p.rating || 0).toFixed(1)} <span class="font-normal text-slate-400">(${Number(p.reviews || 0).toLocaleString('id-ID')})</span></span>

@@ -24,6 +24,32 @@ class BrowserE2eSeeder extends Seeder
             ->firstOrFail();
         $sourceVariant = $sourceProduct->productVariants->firstOrFail();
 
+        $multiVariantProduct = Product::query()
+            ->with(['productVariants.attributeValues.definition'])
+            ->where('company_id', $primaryCompany->id)
+            ->where('slug', 'baut-mur-baja-109')
+            ->firstOrFail();
+
+        $findVariant = fn (string $diameter, string $length) => $multiVariantProduct->productVariants
+            ->firstOrFail(fn (ProductVariant $variant) => $variant->attributeValue('diameter') === $diameter
+                && $variant->attributeValue('length_mm') === $length);
+
+        $findVariant('M10', '20')->update([
+            'price' => 3111,
+            'stock' => 9,
+            'image' => 'https://images.unsplash.com/photo-1609205807107-e8ec2120f9de?variant=e2e-m10-20',
+        ]);
+        $findVariant('M10', '25')->update([
+            'price' => 3222,
+            'stock' => 8,
+            'image' => 'https://images.unsplash.com/photo-1609205807107-e8ec2120f9de?variant=e2e-m10-25',
+        ]);
+        $findVariant('M12', '25')->update([
+            'price' => 4333,
+            'stock' => 7,
+            'image' => 'https://images.unsplash.com/photo-1609205807107-e8ec2120f9de?variant=e2e-m12-25',
+        ]);
+
         $product = Product::query()->updateOrCreate(
             ['slug' => 'mur-hex-m8-pt-dua-e2e'],
             [

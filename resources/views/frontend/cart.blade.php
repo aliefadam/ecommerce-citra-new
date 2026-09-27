@@ -150,8 +150,9 @@
         async function persistCartQty(idx, nextQty, options = {}) {
             const item = cartItems[idx];
             if (!item || pendingCartIds.has(Number(item.cartId))) return;
+            const previousQuantity = Number(item.qty || 1);
             nextQty = normalizeCartQty(nextQty, item);
-            if (!options.force && nextQty === Number(item.qty || 1)) {
+            if (!options.force && nextQty === previousQuantity) {
                 renderCart();
                 return;
             }
@@ -183,6 +184,7 @@
                 }
                 window.dispatchEvent(new Event('cart:updated'));
             } catch (error) {
+                cartItems[idx].qty = previousQuantity;
                 showToast(getErrorMessage(error, 'Gagal memperbarui jumlah item.'));
             } finally {
                 pendingCartIds.delete(Number(item.cartId));
@@ -199,9 +201,7 @@
         function handleCartQtyInput(idx, input) {
             const item = cartItems[idx];
             if (!item || !input.value) return;
-            item.qty = normalizeCartQty(input.value, item);
-            input.value = String(item.qty);
-            updateSummary();
+            input.value = String(normalizeCartQty(input.value, item));
         }
 
         async function commitCartQtyInput(idx, input) {

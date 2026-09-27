@@ -1,6 +1,6 @@
 # PRD: Modernisasi Frontend Customer
 
-Status: Implementasi berjalan; Sprint 0-2 selesai, Sprint 3-7 belum ditutup
+Status: Implementasi berjalan; Sprint 0-3 selesai, Sprint 4-7 belum ditutup
 Tanggal audit awal: 13 September 2026  
 Area: Storefront / B2C customer experience  
 Pendekatan delivery: sprint kecil dengan quality gate pada setiap tahap
@@ -25,18 +25,18 @@ besar agar setiap perubahan visual memiliki dasar teknis yang stabil.
 | Sprint 0 | Baseline dan inventory | Selesai | Tidak ada | [Report baseline + screenshot matrix](frontend-baseline/README.md) |
 | Sprint 1 | Asset pipeline dan performance foundation | Selesai | Sprint 0 | [Build, query report, test autocomplete](frontend-baseline/sprint-1-report.md) |
 | Sprint 2 | Design system dan global shell | Selesai | Sprint 1 | [Component catalog + responsive review](frontend-baseline/sprint-2-report.md) |
-| Sprint 3 | Homepage, katalog, search, dan product card | Berjalan | Sprint 2 | Katalog/search/product card/flash sale sudah berubah; bukti screenshot dan seluruh acceptance criteria belum ditutup |
-| Sprint 4 | Detail produk dan cart | Berjalan | Sprint 3 | Detail produk, variant state, dan cart sudah diperbarui; browser test product-to-cart khusus sprint belum lengkap |
+| Sprint 3 | Homepage, katalog, search, dan product card | Selesai | Sprint 2 | [Report homepage, katalog, search, dan product card](frontend-baseline/sprint-3-report.md) |
+| Sprint 4 | Detail produk dan cart | Berjalan | Sprint 3 | Detail produk, variant state, mobile add-to-cart, serta quantity/delete recovery cart sudah dicakup browser test; review seluruh acceptance criteria belum ditutup |
 | Sprint 5 | Checkout dan payment recovery | Berjalan | Sprint 4 | E2E guest, member, negative path, dan multi-company lulus; review seluruh recovery/payment state belum ditutup |
-| Sprint 6 | Profil, order, tracking, wishlist, dan content | Berjalan | Sprint 2-5 | Profil, tracking, help center, content, SEO, dan PWA sudah berubah; account lifecycle matrix belum lengkap |
-| Sprint 7 | Accessibility, performance, regression, dan release | Berjalan | Sprint 0-6 | Backend 214 test, browser 19 skenario, dan build lulus; audit final, screenshot/manual book, performance budget, dan sign-off belum selesai |
+| Sprint 6 | Profil, order, tracking, wishlist, dan content | Berjalan | Sprint 2-5 | E2E account lifecycle/profil mencakup auth guard, registrasi, biodata, empty state, perubahan password, login ulang, logout, dan permintaan reset password; review order/tracking/wishlist/content lengkap belum ditutup |
+| Sprint 7 | Accessibility, performance, regression, dan release | Berjalan | Sprint 0-6 | Backend 217 test, browser 23 skenario, dan build lulus; audit final, screenshot/manual book, performance budget, dan sign-off belum selesai |
 
 Nilai status yang digunakan: `Belum dimulai`, `Berjalan`, `Blocked`, dan `Selesai`. Status hanya boleh
 diubah menjadi `Selesai` jika seluruh acceptance criteria sprint dan quality gate memiliki bukti.
 
-Pemeriksaan ulang 27 September 2026 membuktikan implementasi Sprint 3-6 sudah berjalan sehingga status
-lama `Belum dimulai` tidak lagi akurat. Status tetap `Berjalan`, bukan `Selesai`, karena checklist dan
-bukti review visual/accessibility/performance per sprint belum seluruhnya tersedia. E2E checkout
+Pemeriksaan ulang 27 September 2026 membuktikan Sprint 3 telah memenuhi seluruh acceptance criteria
+dan quality gate sehingga statusnya ditutup sebagai `Selesai`. Implementasi Sprint 4-6 sudah berjalan,
+tetapi tetap berstatus `Berjalan` sampai review visual/accessibility/performance masing-masing lengkap. E2E checkout
 lintas perusahaan membuktikan dua perusahaan menghasilkan dua pesanan independen melalui transfer
 manual dengan satu akun Midtrans BOQ sebagai keputusan bisnis sementara.
 
@@ -733,12 +733,14 @@ Scope:
 
 Acceptance criteria:
 
-- [ ] Produk utama terlihat lebih cepat pada mobile.
-- [ ] Product card menampilkan seller, harga, stok, satuan, dan spesifikasi minimum.
-- [ ] Istilah Bahasa Indonesia konsisten.
-- [ ] Filter/sort bertahan ketika kembali dari detail.
-- [ ] Promo berakhir tidak meninggalkan countdown palsu.
-- [ ] Empty catalog setelah reset production tetap terlihat profesional dan actionable.
+- [x] Produk utama terlihat lebih cepat pada mobile.
+- [x] Product card menampilkan seller, harga, stok, satuan, dan spesifikasi minimum.
+- [x] Istilah Bahasa Indonesia konsisten.
+- [x] Filter/sort bertahan ketika kembali dari detail.
+- [x] Promo berakhir tidak meninggalkan countdown palsu.
+- [x] Empty catalog setelah reset production tetap terlihat profesional dan actionable.
+
+Bukti: [Sprint 3 Homepage, Katalog, Search, dan Product Card](frontend-baseline/sprint-3-report.md).
 
 ### Sprint 4 - Detail Produk dan Cart
 
@@ -841,8 +843,8 @@ Acceptance criteria:
 - [ ] Seluruh halaman menggunakan design token dan component state yang konsisten.
 - [ ] Identitas visual industrial-modern diterapkan tanpa gradient/dekorasi generik berlebihan.
 - [ ] Body text, form, metadata, dan CTA memenuhi readability target.
-- [ ] Homepage memiliki hierarki search -> kategori -> produk -> promo -> trust/content.
-- [ ] Product card menampilkan informasi teknis minimum dan seller.
+- [x] Homepage memiliki hierarki search -> kategori -> produk -> promo -> trust/content.
+- [x] Product card menampilkan informasi teknis minimum dan seller.
 - [ ] Detail produk memiliki variant, stock, price, shipping, specification, dan CTA yang jelas.
 - [ ] Cart dan checkout memiliki sticky summary/CTA yang aman pada mobile.
 - [ ] Multi-company, guest checkout, Midtrans, manual transfer, RajaOngkir, PPN, point, dan faktur pajak tetap berfungsi.

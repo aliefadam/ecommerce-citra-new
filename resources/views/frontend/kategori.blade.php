@@ -373,11 +373,11 @@
                     <div class="flex flex-wrap items-center gap-2 sm:gap-3">
                         <div class="flex items-center gap-2 sm:hidden">
                             <button type="button" onclick="openMobileFilter()"
-                                class="w-9 h-9 rounded-xl border border-slate-200 bg-white text-slate-600 flex items-center justify-center">
+                                class="w-11 h-11 rounded-xl border border-slate-200 bg-white text-slate-600 flex items-center justify-center">
                                 <i class="ri-filter-3-line text-base"></i>
                             </button>
                             <button type="button" onclick="cycleSortMobile()"
-                                class="w-9 h-9 rounded-xl border border-slate-200 bg-white text-slate-600 flex items-center justify-center">
+                                class="w-11 h-11 rounded-xl border border-slate-200 bg-white text-slate-600 flex items-center justify-center">
                                 <i class="ri-arrow-up-down-line text-base"></i>
                             </button>
                         </div>
@@ -460,6 +460,7 @@
         const wishlistStatusUrl = @json(route('frontend.wishlist.status'));
         const csrfToken = @json(csrf_token());
         const wishedProductIds = new Set();
+        const catalogStateKey = `storefront-catalog-state:${window.location.pathname}${window.location.search}`;
 
         let selectedVariantFilters = {};
         let activeCategorySlug = initialCategorySlug;
@@ -473,6 +474,52 @@
 
         function getLoginRedirectUrl() {
             return `${loginUrl}?redirect=${encodeURIComponent(window.location.href)}`;
+        }
+
+        function saveCatalogState() {
+            const variants = Array.from(document.querySelectorAll('.filter-variant:checked')).map((input) => ({
+                name: input.dataset.variantName || '',
+                value: input.dataset.variantValue || '',
+            }));
+            const state = {
+                categories: Array.from(document.querySelectorAll('.filter-cat:checked')).map((input) => input.value),
+                variants,
+                priceMin: document.getElementById('priceMin')?.value || '',
+                priceMax: document.getElementById('priceMax')?.value || '',
+                promoOnly: document.getElementById('filterPromo')?.checked || false,
+                stockOnly: document.getElementById('filterStock')?.checked || false,
+                ratingMin: document.getElementById('ratingMin')?.value || '0',
+                sort: document.getElementById('sortSel')?.value || 'newest',
+                viewMode,
+            };
+            sessionStorage.setItem(catalogStateKey, JSON.stringify(state));
+        }
+
+        function restoreCatalogState() {
+            let state;
+            try {
+                state = JSON.parse(sessionStorage.getItem(catalogStateKey) || 'null');
+            } catch (_) {
+                sessionStorage.removeItem(catalogStateKey);
+                return;
+            }
+            if (!state) return;
+
+            document.querySelectorAll('.filter-cat').forEach((input) => {
+                input.checked = Array.isArray(state.categories) && state.categories.includes(input.value);
+            });
+            document.querySelectorAll('.filter-variant').forEach((input) => {
+                input.checked = Array.isArray(state.variants) && state.variants.some((variant) =>
+                    variant.name === (input.dataset.variantName || '') && variant.value === (input.dataset.variantValue || '')
+                );
+            });
+            document.getElementById('priceMin').value = state.priceMin || '';
+            document.getElementById('priceMax').value = state.priceMax || '';
+            document.getElementById('filterPromo').checked = Boolean(state.promoOnly);
+            document.getElementById('filterStock').checked = Boolean(state.stockOnly);
+            document.getElementById('ratingMin').value = state.ratingMin || '0';
+            document.getElementById('sortSel').value = state.sort || 'newest';
+            viewMode = state.viewMode === 'list' ? 'list' : 'grid';
         }
 
         function getFiltered() {
@@ -565,7 +612,7 @@
                   <a href="{{ url('/detail-produk') }}/${p.slug}" class="inline-flex items-center justify-center rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-semibold text-blue-600 transition-colors hover:border-blue-500 hover:bg-blue-500 hover:text-white">
                     Detail
                   </a>
-                  <button onclick="toggleWishlist(${p.id})" data-wishlist-btn data-product-id="${p.id}" class="w-9 h-9 rounded-full border border-slate-200 text-pink-500 flex items-center justify-center hover:bg-pink-50">
+                  <button onclick="toggleWishlist(${p.id})" data-wishlist-btn data-product-id="${p.id}" class="w-11 h-11 rounded-full border border-slate-200 text-pink-500 flex items-center justify-center hover:bg-pink-50">
                     <svg class="w-4 h-4" fill="${p.isWishlisted ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
                   </button>
                 </div>
@@ -590,6 +637,7 @@
             <a href="${productUrl}" class="store-product-name line-clamp-2 hover:text-blue-700">${escapeHtml(p.name)}</a>
             <p class="store-product-variant truncate">${escapeHtml(variantLabel)}</p>
             <p class="store-product-price">${priceLabel}</p>
+            <p class="mt-1 text-[11px] font-medium text-slate-500">${Number(p.stock || 0) > 0 ? `Stok ${Number(p.stock).toLocaleString('id-ID')} ${escapeHtml(p.unit || 'pcs')}` : 'Stok habis'} &middot; Satuan ${escapeHtml(p.unit || 'pcs')}</p>
             <p class="store-product-seller"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 10.5V20h16v-9.5M3 4h18l-1.5 6a2.5 2.5 0 0 1-4.5 1.1 2.5 2.5 0 0 1-4.5 0A2.5 2.5 0 0 1 6 10L4.5 4M9 20v-5h6v5"/></svg><span>${escapeHtml(p.storeName || 'Mitra industri')}</span></p>
             <div class="store-product-meta">
               <span class="store-product-rating"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.7 2.83 5.73 6.32.92-4.58 4.46 1.08 6.3L12 17.14l-5.65 2.97 1.08-6.3-4.58-4.46 6.32-.92L12 2.7Z"/></svg>${Number(p.rating || 0).toFixed(1)} <span class="font-normal text-slate-400">(${Number(p.reviews || 0).toLocaleString('id-ID')})</span></span>
@@ -863,6 +911,7 @@
             else if (val === 'sold') prods.sort((a, b) => b.sold - a.sold);
             else prods.sort((a, b) => b.id - a.id);
             render(prods);
+            saveCatalogState();
         }
 
         function loadMoreProducts() {
@@ -919,6 +968,7 @@
             startY: 0,
             currentY: 0,
             initialized: false,
+            returnFocus: null,
         };
 
         function getMobileFilterElements() {
@@ -964,6 +1014,7 @@
             } = getMobileFilterElements();
             if (!sidebar || !panel || window.innerWidth >= 1024) return;
 
+            mobileFilterDrawer.returnFocus = document.activeElement;
             syncMobileFilterDrawerMode();
             clearTimeout(mobileFilterDrawer.closeTimer);
             sidebar.classList.remove('hidden');
@@ -973,6 +1024,7 @@
 
             requestAnimationFrame(() => {
                 sidebar.classList.add('mobile-filter-open');
+                panel.querySelector('button, input, select, [tabindex]:not([tabindex="-1"])')?.focus();
             });
         }
 
@@ -987,6 +1039,9 @@
             panel.style.transition = '';
             sidebar.classList.remove('mobile-filter-open');
             document.body.classList.remove('overflow-hidden');
+            if (mobileFilterDrawer.returnFocus instanceof HTMLElement) {
+                mobileFilterDrawer.returnFocus.focus();
+            }
 
             if (immediate) {
                 sidebar.classList.add('hidden');
@@ -999,6 +1054,12 @@
                 }
             }, 320);
         }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && document.getElementById('filterSidebar')?.classList.contains('mobile-filter-open')) {
+                closeMobileFilter();
+            }
+        });
 
         function initMobileFilterDrawer() {
             if (mobileFilterDrawer.initialized) return;
@@ -1163,7 +1224,8 @@
 
         renderFilterCategories();
         renderFilterVariants();
-        applyFilter();
+        restoreCatalogState();
+        applyVariantFilter();
         initWishlistStatus();
 
         // Navbar mega dropdown

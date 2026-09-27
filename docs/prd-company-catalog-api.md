@@ -1,8 +1,8 @@
 # PRD: API Katalog per Perusahaan (Company Catalog API)
 
-> Pemeriksaan ulang 27 September 2026: implementasi endpoint/resource tersedia dan regression test Playwright khusus kontrak Open Catalog API sudah ditambahkan. Seluruh suite browser lulus 19/19 skenario.
+> Pemeriksaan ulang 27 September 2026: implementasi endpoint/resource tersedia dan regression test Playwright khusus kontrak Open Catalog API sudah ditambahkan. Seluruh suite browser lulus 23/23 skenario.
 
-> Status: **Implemented v2** (2026-07-19) — model **Open API** (publik, tanpa key). Endpoint produk & kategori sudah dibangun, diuji end-to-end, dan berjalan. Lihat §Status Implementasi dan `docs/api-catalog-usage.md`.
+> Status: **Implemented v2** (2026-07-19) — model **Open API** (publik, tanpa key). Endpoint produk & kategori sudah dibangun, diuji end-to-end, berjalan, dan memiliki kontrak OpenAPI 3.0. Lihat §Status Implementasi, `docs/api-catalog-usage.md`, dan `docs/openapi-company-catalog-v1.yaml`.
 > Prasyarat: `prd-multi-company-foundation.md` (Fase 1 & skema `company_id` pada `products`). API ini mengonsumsi dimensi `company_id` yang diperkenalkan di sana.
 > Scope rilis pertama: **read-only (GET), publik**, hanya **kategori** dan **produk**.
 
@@ -17,6 +17,7 @@ Sudah diimplementasikan & diverifikasi (server `php artisan serve`, curl end-to-
 - CORS: `config/cors.php` (paths `api/*`, GET publik). Cache: middleware `cache.headers` (ETag + `max-age=300`) + cache server-side (`Cache::remember`, TTL 300s) di `ApiController`.
 - Error API selalu JSON bersih (tanpa stack trace/nama model) via `withExceptions` di `bootstrap/app.php`.
 - Taksonomi kategori yang diekspos = **MainCategory → CategoryDetail** (jalur `Category` self-referential kosong di data, tidak dipakai).
+- Kontrak OpenAPI 3.0: `docs/openapi-company-catalog-v1.yaml`, dapat diimpor ke Swagger/Postman.
 
 Terverifikasi: listing+paginasi, detail+varian (tanpa angka stok), isolasi antar perusahaan (produk PT lain → 404), filter `category_slug`/`main_category_id`/`category_detail_id`/`search`/`in_stock`, sort harga/nama, kategori flat + `parent_id` + `with_counts`, header `Cache-Control`/`ETag`/304/`X-RateLimit-*`/CORS, dan tidak ada kebocoran field `stock`/`is_redeem_product`/`redeem_points`/`company_id`.
 
@@ -162,7 +163,7 @@ Karena open, fokus keamanan bergeser dari "siapa yang boleh akses" ke "membatasi
 - [x] Response menyertakan header cache (`Cache-Control`/`ETag`) dan dapat dilayani dari cache tanpa menyentuh DB pada hit.
 - [x] CORS aktif: endpoint bisa dipanggil dari browser website konsumen.
 - [x] Produk milik PT lain lewat slug berbeda tidak pernah muncul (uji dua perusahaan, tidak tumpang tindih).
-- [ ] Kontrak `/api/v1` terdokumentasi (OpenAPI/Postman) dan tidak berubah breaking tanpa naik versi.
+- [x] Kontrak `/api/v1` terdokumentasi (OpenAPI/Postman) dan tidak berubah breaking tanpa naik versi.
 
 ## Edge Cases
 

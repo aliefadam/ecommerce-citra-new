@@ -1,0 +1,676 @@
+openapi: 3.0.3
+info:
+  title: Company Catalog API
+  version: 1.0.0
+  description: >-
+    API katalog publik read-only yang terisolasi berdasarkan slug perusahaan.
+    API tidak memerlukan autentikasi dan tidak mengekspos angka stok,
+    company_id, atau data poin dan redeem.
+servers:
+  - url: https://{domain}/api/v1
+    description: Server aplikasi
+    variables:
+      domain:
+        default: example.com
+        description: Domain deployment aplikasi
+security: []
+tags:
+  - name: Products
+    description: Produk aktif milik perusahaan pada URL
+  - name: Categories
+    description: Kategori yang memiliki produk aktif milik perusahaan pada URL
+
+paths:
+  /companies/{companySlug}/products:
+    get:
+      operationId: listCompanyProducts
+      summary: Daftar produk perusahaan
+      description: >-
+        Mengembalikan produk aktif milik perusahaan dalam paginated collection.
+        Nilai per_page dibatasi antara 1 dan 100.
+      tags:
+        - Products
+      parameters:
+        - $ref: '#/components/parameters/CompanySlug'
+        - $ref: '#/components/parameters/IfNoneMatch'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PerPage'
+        - $ref: '#/components/parameters/MainCategoryId'
+        - $ref: '#/components/parameters/CategoryDetailId'
+        - $ref: '#/components/parameters/CategoryId'
+        - $ref: '#/components/parameters/CategorySlug'
+        - $ref: '#/components/parameters/Search'
+        - $ref: '#/components/parameters/InStock'
+        - $ref: '#/components/parameters/Sort'
+      responses:
+        '200':
+          description: Daftar produk aktif
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControl'
+            ETag:
+              $ref: '#/components/headers/ETag'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            Access-Control-Allow-Origin:
+              $ref: '#/components/headers/AllowOrigin'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListEnvelope'
+        '304':
+          $ref: '#/components/responses/NotModified'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /companies/{companySlug}/products/{identifier}:
+    get:
+      operationId: getCompanyProduct
+      summary: Detail produk perusahaan
+      description: >-
+        Menerima ID numerik atau slug. Produk nonaktif dan produk milik
+        perusahaan lain dikembalikan sebagai 404.
+      tags:
+        - Products
+      parameters:
+        - $ref: '#/components/parameters/CompanySlug'
+        - $ref: '#/components/parameters/ProductIdentifier'
+        - $ref: '#/components/parameters/IfNoneMatch'
+      responses:
+        '200':
+          description: Detail produk aktif beserta variannya
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControl'
+            ETag:
+              $ref: '#/components/headers/ETag'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            Access-Control-Allow-Origin:
+              $ref: '#/components/headers/AllowOrigin'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDetailEnvelope'
+        '304':
+          $ref: '#/components/responses/NotModified'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /companies/{companySlug}/categories:
+    get:
+      operationId: listCompanyCategories
+      summary: Daftar kategori perusahaan
+      description: >-
+        Mengembalikan kategori dalam bentuk flat. Node detail memakai parent_id
+        yang menunjuk ID main category.
+      tags:
+        - Categories
+      parameters:
+        - $ref: '#/components/parameters/CompanySlug'
+        - $ref: '#/components/parameters/IfNoneMatch'
+        - $ref: '#/components/parameters/WithCounts'
+      responses:
+        '200':
+          description: Kategori yang memiliki produk aktif
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControl'
+            ETag:
+              $ref: '#/components/headers/ETag'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            Access-Control-Allow-Origin:
+              $ref: '#/components/headers/AllowOrigin'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryListEnvelope'
+        '304':
+          $ref: '#/components/responses/NotModified'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /companies/{companySlug}/categories/{identifier}:
+    get:
+      operationId: getCompanyCategory
+      summary: Detail kategori perusahaan
+      description: >-
+        Menerima ID numerik atau slug. Main category memuat child category
+        yang relevan dan detail category memiliki children kosong.
+      tags:
+        - Categories
+      parameters:
+        - $ref: '#/components/parameters/CompanySlug'
+        - $ref: '#/components/parameters/CategoryIdentifier'
+        - $ref: '#/components/parameters/IfNoneMatch'
+      responses:
+        '200':
+          description: Detail kategori
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControl'
+            ETag:
+              $ref: '#/components/headers/ETag'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            Access-Control-Allow-Origin:
+              $ref: '#/components/headers/AllowOrigin'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryDetailEnvelope'
+        '304':
+          $ref: '#/components/responses/NotModified'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+components:
+  parameters:
+    CompanySlug:
+      name: companySlug
+      in: path
+      required: true
+      description: Slug perusahaan aktif
+      schema:
+        type: string
+      example: boq
+    ProductIdentifier:
+      name: identifier
+      in: path
+      required: true
+      description: ID numerik atau slug produk
+      schema:
+        type: string
+      example: baut-hex-m8-x-25mm-galvanis
+    CategoryIdentifier:
+      name: identifier
+      in: path
+      required: true
+      description: ID numerik atau slug kategori
+      schema:
+        type: string
+      example: baut
+    IfNoneMatch:
+      name: If-None-Match
+      in: header
+      required: false
+      description: ETag response sebelumnya untuk conditional request
+      schema:
+        type: string
+    Page:
+      name: page
+      in: query
+      required: false
+      description: Nomor halaman
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PerPage:
+      name: per_page
+      in: query
+      required: false
+      description: Jumlah produk per halaman
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    MainCategoryId:
+      name: main_category_id
+      in: query
+      required: false
+      description: Filter ID main category
+      schema:
+        type: integer
+        minimum: 1
+    CategoryDetailId:
+      name: category_detail_id
+      in: query
+      required: false
+      description: Filter ID category detail
+      schema:
+        type: integer
+        minimum: 1
+    CategoryId:
+      name: category_id
+      in: query
+      required: false
+      description: Filter ID main category atau category detail
+      schema:
+        type: integer
+        minimum: 1
+    CategorySlug:
+      name: category_slug
+      in: query
+      required: false
+      description: Filter slug main category atau category detail
+      schema:
+        type: string
+    Search:
+      name: search
+      in: query
+      required: false
+      description: Pencarian case-insensitive pada nama produk atau SKU varian
+      schema:
+        type: string
+    InStock:
+      name: in_stock
+      in: query
+      required: false
+      description: Bila true hanya tampilkan produk dengan varian tersedia
+      schema:
+        type: boolean
+    Sort:
+      name: sort
+      in: query
+      required: false
+      description: Urutan daftar produk
+      schema:
+        type: string
+        enum:
+          - newest
+          - name_asc
+          - name_desc
+          - price_asc
+          - price_desc
+        default: newest
+    WithCounts:
+      name: with_counts
+      in: query
+      required: false
+      description: Sertakan jumlah produk aktif pada setiap kategori
+      schema:
+        type: boolean
+        default: false
+
+  headers:
+    CacheControl:
+      description: Kebijakan cache publik dengan TTL 300 detik
+      schema:
+        type: string
+        example: public, max-age=300
+    ETag:
+      description: Validator representasi untuk conditional request
+      schema:
+        type: string
+    RateLimitLimit:
+      description: Batas request per menit untuk IP pemanggil
+      schema:
+        type: integer
+        example: 120
+    RateLimitRemaining:
+      description: Sisa request pada window rate limit saat ini
+      schema:
+        type: integer
+        minimum: 0
+    RetryAfter:
+      description: Detik hingga request dapat dicoba kembali
+      schema:
+        type: integer
+        minimum: 0
+    AllowOrigin:
+      description: Origin yang diizinkan oleh CORS
+      schema:
+        type: string
+        example: '*'
+
+  responses:
+    NotModified:
+      description: Representasi belum berubah sejak ETag yang dikirim
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControl'
+        ETag:
+          $ref: '#/components/headers/ETag'
+    NotFound:
+      description: Resource tidak tersedia dalam scope perusahaan
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Resource tidak ditemukan.
+    TooManyRequests:
+      description: Rate limit 120 request per menit per IP terlampaui
+      headers:
+        Retry-After:
+          $ref: '#/components/headers/RetryAfter'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Terlalu banyak permintaan. Coba lagi nanti.
+    ServerError:
+      description: Kesalahan internal tanpa stack trace atau detail model
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Terjadi kesalahan pada server.
+
+  schemas:
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+    ProductCategory:
+      type: object
+      required:
+        - main_category_id
+        - main_category
+        - category_detail_id
+        - category_detail
+      properties:
+        main_category_id:
+          type: integer
+          nullable: true
+        main_category:
+          type: string
+          nullable: true
+        category_detail_id:
+          type: integer
+          nullable: true
+        category_detail:
+          type: string
+          nullable: true
+    ProductSummary:
+      type: object
+      required:
+        - id
+        - name
+        - slug
+        - category
+        - image
+        - price_min
+        - price_max
+        - in_stock
+        - created_at
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        slug:
+          type: string
+        category:
+          $ref: '#/components/schemas/ProductCategory'
+        image:
+          type: string
+          format: uri
+          nullable: true
+        price_min:
+          type: integer
+          minimum: 0
+          nullable: true
+        price_max:
+          type: integer
+          minimum: 0
+          nullable: true
+        in_stock:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          nullable: true
+    ProductDetail:
+      allOf:
+        - $ref: '#/components/schemas/ProductSummary'
+        - type: object
+          required:
+            - description
+            - images
+            - variants
+          properties:
+            description:
+              type: string
+              nullable: true
+            images:
+              type: array
+              items:
+                type: string
+                format: uri
+            variants:
+              type: array
+              items:
+                $ref: '#/components/schemas/ProductVariant'
+    ProductVariant:
+      type: object
+      required:
+        - id
+        - sku
+        - price
+        - in_stock
+        - image
+        - weight_grams
+        - dimensions
+        - attributes
+        - attribute_summary
+      properties:
+        id:
+          type: integer
+        sku:
+          type: string
+          nullable: true
+        price:
+          type: integer
+          minimum: 0
+          nullable: true
+        in_stock:
+          type: boolean
+        image:
+          type: string
+          format: uri
+          nullable: true
+        weight_grams:
+          type: integer
+          minimum: 0
+          nullable: true
+        dimensions:
+          $ref: '#/components/schemas/Dimensions'
+        attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductAttribute'
+        attribute_summary:
+          type: string
+          nullable: true
+    Dimensions:
+      type: object
+      required:
+        - length_cm
+        - width_cm
+        - height_cm
+      properties:
+        length_cm:
+          type: number
+          format: float
+          minimum: 0
+          nullable: true
+        width_cm:
+          type: number
+          format: float
+          minimum: 0
+          nullable: true
+        height_cm:
+          type: number
+          format: float
+          minimum: 0
+          nullable: true
+    ProductAttribute:
+      type: object
+      required:
+        - code
+        - name
+        - value
+        - unit
+        - sort_order
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        value:
+          type: string
+        unit:
+          type: string
+          nullable: true
+        sort_order:
+          type: integer
+    PaginationLinks:
+      type: object
+      required:
+        - first
+        - last
+        - prev
+        - next
+      properties:
+        first:
+          type: string
+          format: uri
+        last:
+          type: string
+          format: uri
+        prev:
+          type: string
+          format: uri
+          nullable: true
+        next:
+          type: string
+          format: uri
+          nullable: true
+    PaginationMeta:
+      type: object
+      required:
+        - current_page
+        - per_page
+        - total
+        - last_page
+      properties:
+        current_page:
+          type: integer
+          minimum: 1
+        per_page:
+          type: integer
+          minimum: 1
+          maximum: 100
+        total:
+          type: integer
+          minimum: 0
+        last_page:
+          type: integer
+          minimum: 1
+      additionalProperties: true
+    ProductListEnvelope:
+      type: object
+      required:
+        - data
+        - links
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductSummary'
+        links:
+          $ref: '#/components/schemas/PaginationLinks'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+    ProductDetailEnvelope:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: '#/components/schemas/ProductDetail'
+    Category:
+      type: object
+      required:
+        - id
+        - type
+        - name
+        - slug
+        - parent_id
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum:
+            - main
+            - detail
+        name:
+          type: string
+        slug:
+          type: string
+        parent_id:
+          type: integer
+          nullable: true
+        image:
+          type: string
+          format: uri
+          nullable: true
+        products_count:
+          type: integer
+          minimum: 0
+    CategoryWithChildren:
+      allOf:
+        - $ref: '#/components/schemas/Category'
+        - type: object
+          required:
+            - children
+          properties:
+            children:
+              type: array
+              items:
+                $ref: '#/components/schemas/Category'
+    CategoryListEnvelope:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+    CategoryDetailEnvelope:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: '#/components/schemas/CategoryWithChildren'

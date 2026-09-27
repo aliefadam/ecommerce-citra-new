@@ -83,7 +83,7 @@
 
                     <div class="mt-5 flex items-center gap-5">
                         <div>
-                            <p class="text-xs text-slate-500">Campaign aktif</p>
+                            <p class="text-xs text-slate-500">Kampanye aktif</p>
                             <p class="text-xl font-extrabold text-slate-950">{{ $campaignCount }}</p>
                         </div>
                         <div class="h-8 w-px bg-slate-200"></div>
@@ -121,6 +121,7 @@
                                     <div class="text-[11px] uppercase tracking-wide text-red-100">Detik</div>
                                 </div>
                             </div>
+                            <p data-expired-message class="hidden rounded-lg bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-700">Promo telah berakhir.</p>
                         </div>
                     </div>
                 </div>
@@ -130,7 +131,7 @@
 
     <section id="flash-sale-list" class="mx-auto max-w-7xl space-y-10 px-4 py-8 sm:px-6 sm:py-10">
         @forelse (($flashSaleCampaigns ?? []) as $campaign)
-            <div>
+            <div data-campaign-container>
                 <div class="mb-5 border-b border-slate-200 pb-4"
                     data-end-at="{{ $campaign['end_at'] ?? '' }}">
                     <div class="flex items-center justify-between gap-4 flex-wrap">
@@ -191,6 +192,12 @@
             const endAt = container.getAttribute('data-end-at');
             const end = endAt ? new Date(endAt) : null;
             const now = new Date();
+            if (end && end <= now) {
+                container.closest('[data-campaign-container]')?.classList.add('hidden');
+                container.querySelector('.sale-timer')?.classList.add('hidden');
+                container.querySelector('[data-expired-message]')?.classList.remove('hidden');
+                return;
+            }
             const diff = end ? Math.max(end - now, 0) : 0;
 
             const hh = String(Math.floor(diff / 3600000)).padStart(2, '0');

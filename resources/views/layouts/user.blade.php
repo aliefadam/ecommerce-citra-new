@@ -132,6 +132,7 @@
             </a>
         @endif
 
+        @production
         <!--Start of Tawk.to Script-->
         <script type="text/javascript">
             var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
@@ -178,6 +179,7 @@
             }
         </script>
         <!--End of Tawk.to Script-->
+        @endproduction
 
         @include('partials.file-dropzone')
         @yield('script')
