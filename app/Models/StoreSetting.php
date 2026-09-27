@@ -16,8 +16,8 @@ class StoreSetting extends Model
         return [
             'store_name' => (string) config('app.name'),
             'store_logo_path' => '',
-            'seo_home_title' => '',
-            'seo_home_description' => 'Belanja produk teknik, kebutuhan proyek, dan perlengkapan industri dengan mudah dan aman.',
+            'seo_home_title' => 'BOQ - Toko Baut, Mur & Fastener Online Terlengkap',
+            'seo_home_description' => 'Belanja baut, mur, sekrup, washer, anchor, fastener, perkakas, dan kebutuhan industri di BOQ. Produk lengkap dan pengiriman ke seluruh Indonesia.',
             'seo_default_image_url' => '',
             'google_site_verification' => '',
             'manual_payment_bank_name' => 'BCA',

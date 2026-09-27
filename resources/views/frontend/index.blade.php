@@ -1,7 +1,7 @@
 @extends('layouts.user')
 
-@section('title', $appStoreSettings['seo_home_title'] ?: (($appStoreName ?? config('app.name')) . ' - Belanja Online Terpercaya'))
-@section('meta_description', $appStoreSettings['seo_home_description'] ?? 'Belanja online dengan mudah dan aman.')
+@section('title', $appStoreSettings['seo_home_title'] ?: 'BOQ - Toko Baut, Mur & Fastener Online Terlengkap')
+@section('meta_description', $appStoreSettings['seo_home_description'] ?: 'Belanja baut, mur, sekrup, washer, anchor, fastener, perkakas, dan kebutuhan industri di BOQ. Produk lengkap dan pengiriman ke seluruh Indonesia.')
 
 @push('structured_data')
     @php
@@ -10,8 +10,20 @@
         $homeSchema = [
             '@context' => 'https://schema.org',
             '@graph' => [
-                ['@type' => 'WebSite', '@id' => route('frontend.index').'#website', 'url' => route('frontend.index'), 'name' => $appStoreName ?? config('app.name'), 'inLanguage' => 'id-ID'],
-                array_filter(['@type' => 'Organization', '@id' => route('frontend.index').'#organization', 'name' => $appStoreName ?? config('app.name'), 'url' => route('frontend.index'), 'logo' => $appStoreLogoUrl ?? null, 'sameAs' => $sameAs]),
+                [
+                    '@type' => 'WebSite',
+                    '@id' => route('frontend.index').'#website',
+                    'url' => route('frontend.index'),
+                    'name' => $appStoreName ?? config('app.name'),
+                    'description' => $appStoreSettings['seo_home_description'],
+                    'inLanguage' => 'id-ID',
+                    'potentialAction' => [
+                        '@type' => 'SearchAction',
+                        'target' => route('frontend.search').'?q={search_term_string}',
+                        'query-input' => 'required name=search_term_string',
+                    ],
+                ],
+                array_filter(['@type' => 'OnlineStore', '@id' => route('frontend.index').'#organization', 'name' => $appStoreName ?? config('app.name'), 'description' => $appStoreSettings['seo_home_description'], 'url' => route('frontend.index'), 'logo' => $appStoreLogoUrl ?? null, 'sameAs' => $sameAs]),
             ],
         ];
     @endphp
