@@ -30,6 +30,11 @@
 
     <div class="ec-header-main">
         <div class="ec-container ec-header-main-inner">
+            <div class="ec-mobile-leading-actions md:hidden">
+                <button id="ecMobileNavToggle" type="button" class="ec-header-icon-button" aria-expanded="false" aria-controls="ecMobileNavDrawer" aria-label="Buka menu navigasi"><i class="fi fi-rr-menu-burger" aria-hidden="true"></i></button>
+                <button id="ecMobileSearchToggle" class="ec-header-icon-button" type="button" aria-expanded="false" aria-controls="ecMobileSearch" aria-label="Buka pencarian"><i class="fi fi-rr-search" aria-hidden="true"></i></button>
+            </div>
+
             <a href="{{ route('frontend.index') }}" class="ec-header-logo" aria-label="{{ $appStoreName }}, beranda">
                 <img src="{{ !empty($appStoreLogoUrl) ? $appStoreLogoUrl : asset('logo/BOQ.CO.ID/BOQ.CO.ID-1.png') }}" alt="{{ $appStoreName }}" width="116" height="52" />
             </a>
@@ -67,7 +72,6 @@
             </div>
 
             <div class="ec-header-actions">
-                <button id="ecMobileSearchToggle" class="ec-header-icon-button md:hidden" type="button" aria-expanded="false" aria-controls="ecMobileSearch" aria-label="Buka pencarian"><i class="fi fi-rr-search" aria-hidden="true"></i></button>
                 @auth
                     <div class="relative">
                         <button id="ecAccountTrigger" type="button" class="ec-header-action" aria-expanded="false" aria-controls="ecAccountDropdown">
@@ -115,10 +119,16 @@
                     <a href="{{ $url }}" class="{{ $routeName && request()->routeIs($routeName) ? 'is-active' : '' }}" @if($routeName && request()->routeIs($routeName)) aria-current="page" @endif>{{ $label }}</a>
                 @endforeach
             </div>
-            <button id="ecMobileNavToggle" type="button" class="ec-mobile-menu-button md:hidden" aria-expanded="false" aria-controls="ecMobileNavDrawer"><i class="fi fi-rr-menu-burger" aria-hidden="true"></i>Menu</button>
         </div>
-        <div id="ecMobileNavDrawer" class="border-t border-slate-200 bg-white p-3 md:hidden" hidden>
-            <div class="grid grid-cols-2 gap-1"><a href="{{ route('frontend.index') }}" class="flex min-h-11 items-center rounded-lg px-3 text-sm font-bold hover:bg-slate-100">Beranda</a><a href="{{ route('frontend.kategori') }}" class="flex min-h-11 items-center rounded-lg px-3 text-sm font-bold hover:bg-slate-100">Produk</a><a href="{{ route('frontend.flash-sale') }}" class="flex min-h-11 items-center rounded-lg px-3 text-sm font-bold hover:bg-slate-100">Promo</a></div>
+    </div>
+
+    <div id="ecMobileNavDrawer" class="border-t border-slate-200 bg-white p-3 shadow-lg md:hidden" hidden>
+        <div class="grid gap-1">
+            <a href="{{ route('frontend.kategori') }}" class="flex min-h-11 items-center justify-between rounded-lg bg-slate-50 px-3 text-sm font-bold text-slate-900 hover:bg-slate-100"><span class="flex items-center gap-3"><i class="fi fi-rr-apps" aria-hidden="true"></i>Semua Kategori</span><i class="fi fi-rr-angle-small-right" aria-hidden="true"></i></a>
+            <a href="{{ route('frontend.index') }}" class="flex min-h-11 items-center rounded-lg px-3 text-sm font-bold hover:bg-slate-100">Beranda</a>
+            <a href="{{ route('frontend.kategori') }}" class="flex min-h-11 items-center rounded-lg px-3 text-sm font-bold hover:bg-slate-100">Produk</a>
+            <a href="{{ route('frontend.flash-sale') }}" class="flex min-h-11 items-center rounded-lg px-3 text-sm font-bold hover:bg-slate-100">Promo</a>
+            <a href="{{ route('frontend.pages.show', 'pusat-bantuan') }}" class="flex min-h-11 items-center rounded-lg px-3 text-sm font-bold hover:bg-slate-100">Hubungi Kami</a>
         </div>
     </div>
 
