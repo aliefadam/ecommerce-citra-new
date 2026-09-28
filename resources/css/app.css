@@ -362,7 +362,7 @@
     .store-product-seller { margin-top: .55rem; }
     .ec-cart-action { margin-left: 0; padding-left: .45rem; }
     .ec-cart-action::before { display: none; }
-    .ec-primary-nav { display: none; }
+    .ec-primary-nav { display: none !important; }
     .ec-category-mega { width: calc(100vw - 2rem); max-height: min(31rem, calc(100vh - 10rem)); grid-template-columns: minmax(8.5rem, 38%) minmax(0, 62%); }
     .ec-mega-family-panel { padding: .75rem .45rem; }
     .ec-mega-family-panel > .ec-mega-eyebrow { padding-inline: .5rem; }

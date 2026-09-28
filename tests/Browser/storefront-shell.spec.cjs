@@ -32,9 +32,12 @@ test('global shell supports keyboard menus and stable mobile navigation', async 
     await expect(categoryTrigger).toHaveAttribute('aria-expanded', 'false');
     await expect(categoryDropdown).toBeHidden();
 
-    await page.setViewportSize({ width: 390, height: 844 });
+    await page.setViewportSize({ width: 542, height: 844 });
     await expect(page.locator('.ec-site-header')).toHaveCSS('display', 'contents');
     await expect(page.locator('.ec-header-main')).toHaveCSS('position', 'sticky');
+    await expect(page.locator('.ec-primary-nav')).toBeHidden();
+
+    await page.setViewportSize({ width: 390, height: 844 });
     const mobileSearchTrigger = page.locator('#ecMobileSearchToggle');
     await mobileSearchTrigger.click();
     await expect(page.locator('#ecNavSearchMobile')).toBeFocused();
@@ -44,8 +47,7 @@ test('global shell supports keyboard menus and stable mobile navigation', async 
     await page.screenshot({ path: testInfo.outputPath('sprint-2-shell-mobile.png'), fullPage: false });
     await page.evaluate(() => window.scrollTo(0, 600));
     await expect.poll(async () => Math.round((await page.locator('.ec-header-main').boundingBox()).y)).toBe(0);
-    const primaryNavBox = await page.locator('.ec-primary-nav').boundingBox();
-    expect(primaryNavBox.y + primaryNavBox.height).toBeLessThan(0);
+    await expect(page.locator('.ec-primary-nav')).toBeHidden();
 
     await page.goto('/detail-produk/baut-hex-m8-x-25mm-galvanis', { waitUntil: 'domcontentloaded' });
     await expect(page.locator('nav[aria-label="Navigasi cepat"]')).toHaveCount(0);
