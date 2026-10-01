@@ -1,6 +1,6 @@
 @extends('layouts.user')
 
-@section('title', $appStoreSettings['seo_home_title'] ?: 'BOQ - Toko Baut, Mur & Fastener Online Terlengkap')
+@section('title', $appStoreSettings['seo_home_title'] ?: 'BOQ - Bill Of Quantity')
 @section('meta_description', $appStoreSettings['seo_home_description'] ?: 'Belanja baut, mur, sekrup, washer, anchor, fastener, perkakas, dan kebutuhan industri di BOQ. Produk lengkap dan pengiriman ke seluruh Indonesia.')
 
 @push('structured_data')
