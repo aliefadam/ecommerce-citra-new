@@ -448,15 +448,15 @@
     </div>
     @php
         $projectTypes = [
-            ['name' => 'Oil & Gas', 'icon' => 'fi fi-rr-oil-can'],
-            ['name' => 'Mining', 'icon' => 'fi fi-rr-pickaxe'],
-            ['name' => 'Power Plant', 'icon' => 'fi fi-rr-bolt'],
-            ['name' => 'Water Infrastructure', 'icon' => 'fi fi-rr-water'],
-            ['name' => 'Gas Network', 'icon' => 'fi fi-rr-gas-pump'],
-            ['name' => 'Chemical & Petrochemical', 'icon' => 'fi fi-rr-flask'],
-            ['name' => 'Food, Beverage & Pharmaceutical', 'icon' => 'fi fi-rr-capsules'],
-            ['name' => 'HVAC Circulation', 'icon' => 'fi fi-rr-air-conditioner'],
-            ['name' => 'Hydrant', 'icon' => 'fi fi-rr-fire-flame-curved'],
+            ['name' => __('storefront.project_types.oil_gas'), 'icon' => 'ri-oil-line'],
+            ['name' => __('storefront.project_types.mining'), 'icon' => 'ri-hammer-line'],
+            ['name' => __('storefront.project_types.power_plant'), 'icon' => 'ri-flashlight-line'],
+            ['name' => __('storefront.project_types.water_infrastructure'), 'icon' => 'ri-drop-line'],
+            ['name' => __('storefront.project_types.gas_network'), 'icon' => 'ri-gas-station-line'],
+            ['name' => __('storefront.project_types.chemical_petrochemical'), 'icon' => 'ri-flask-line'],
+            ['name' => __('storefront.project_types.food_beverage_pharmaceutical'), 'icon' => 'ri-capsule-line'],
+            ['name' => __('storefront.project_types.hvac_circulation'), 'icon' => 'ri-windy-line'],
+            ['name' => __('storefront.project_types.hydrant'), 'icon' => 'ri-fire-line'],
         ];
         $whatsappUrl = trim((string) ($appStoreSettings['social_whatsapp'] ?? ''));
         $hasWhatsApp = $whatsappUrl !== '';
@@ -466,7 +466,7 @@
                 return route('frontend.pages.show', 'pusat-bantuan');
             }
 
-            $message = "Halo, saya sedang mengerjakan proyek {$project} dan membutuhkan bantuan memilih produk serta spesifikasi yang sesuai.";
+            $message = __('storefront.project_whatsapp_message', ['project' => $project]);
 
             return $whatsappUrl.$whatsappSeparator.http_build_query(['text' => $message], '', '&', PHP_QUERY_RFC3986);
         };
@@ -478,45 +478,45 @@
             <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-stretch">
                 <div>
                     <div class="mb-5 max-w-2xl">
-                        <span class="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-700">
-                            <span class="h-px w-7 bg-emerald-600" aria-hidden="true"></span>
-                            Project Assist
+                        <span class="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--ec-primary-700)]">
+                            <span class="h-px w-7 bg-[var(--ec-primary-600)]" aria-hidden="true"></span>
+                            {{ __('storefront.project_assist') }}
                         </span>
-                        <h2 id="projectConsultationTitle" class="mt-2 text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl">Sedang garap proyek apa?</h2>
-                        <p class="mt-2 text-sm leading-6 text-slate-600">Pilih bidang proyek Anda. Tim kami siap membantu menentukan fastener, tools, dan spesifikasi yang paling sesuai.</p>
+                        <h2 id="projectConsultationTitle" class="mt-2 text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl">{{ __('storefront.project_assist_heading') }}</h2>
+                        <p class="mt-2 text-sm leading-6 text-slate-600">{{ __('storefront.project_assist_copy') }}</p>
                     </div>
 
                     <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
                         @foreach ($projectTypes as $project)
                             <a href="{{ $consultationUrl($project['name']) }}"
                                 @if ($hasWhatsApp) target="_blank" rel="noopener noreferrer" @endif
-                                class="group flex min-h-14 items-center gap-3 rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 shadow-[0_1px_2px_rgb(15_23_42/.04)] transition duration-200 hover:-translate-y-0.5 hover:border-emerald-500 hover:bg-emerald-50/50 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
-                                aria-label="Konsultasi proyek {{ $project['name'] }}">
-                                <span class="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-emerald-50 text-lg text-emerald-700 transition-colors group-hover:bg-emerald-600 group-hover:text-white" aria-hidden="true">
+                                class="group flex min-h-14 items-center gap-3 rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 shadow-[0_1px_2px_rgb(15_23_42/.04)] transition duration-200 hover:-translate-y-0.5 hover:border-[var(--ec-primary-600)] hover:bg-blue-50/50 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ec-primary-600)] focus-visible:ring-offset-2"
+                                aria-label="{{ __('storefront.project_consultation_label', ['project' => $project['name']]) }}">
+                                <span class="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-[var(--ec-primary-100)] text-lg text-[var(--ec-primary-700)] transition-colors group-hover:bg-[var(--ec-primary-600)] group-hover:text-white" aria-hidden="true">
                                     <i class="{{ $project['icon'] }}"></i>
                                 </span>
                                 <strong class="min-w-0 flex-1 text-xs font-semibold leading-5 text-slate-800 sm:text-[13px]">{{ $project['name'] }}</strong>
-                                <i class="fi fi-rr-arrow-small-right text-sm text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-emerald-700" aria-hidden="true"></i>
+                                <i class="ri-arrow-right-line text-sm text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-[var(--ec-primary-700)]" aria-hidden="true"></i>
                             </a>
                         @endforeach
                     </div>
                 </div>
 
-                <aside class="flex flex-col justify-between overflow-hidden rounded-xl border border-slate-200 bg-white p-5 text-slate-950 shadow-[0_1px_2px_rgb(15_23_42/.04)] sm:p-6" aria-label="Bantuan konsultasi proyek">
+                <aside class="flex flex-col justify-between overflow-hidden rounded-xl border border-slate-200 bg-white p-5 text-slate-950 shadow-[0_1px_2px_rgb(15_23_42/.04)] sm:p-6" aria-label="{{ __('storefront.project_consultation_panel') }}">
                     <div>
-                        <span class="grid h-11 w-11 place-items-center rounded-lg bg-emerald-50 text-xl text-emerald-700" aria-hidden="true">
-                            <i class="fi fi-rr-headset"></i>
+                        <span class="grid h-11 w-11 place-items-center rounded-lg bg-[var(--ec-primary-100)] text-xl text-[var(--ec-primary-700)]" aria-hidden="true">
+                            <i class="ri-headphone-line"></i>
                         </span>
-                        <p class="mt-4 text-xs font-bold uppercase tracking-[0.16em] text-emerald-800">Support · Assist · Guide · Advice</p>
-                        <h3 class="mt-2 text-xl font-extrabold leading-snug">Belum tahu produk yang dibutuhkan?</h3>
-                        <p class="mt-2 text-sm leading-6 text-slate-600">Ceritakan kebutuhan, lingkungan kerja, dan target proyek Anda. Kami bantu mulai dari spesifikasinya.</p>
+                        <p class="mt-4 text-xs font-bold uppercase tracking-[0.16em] text-[var(--ec-primary-800)]">{{ __('storefront.project_support_eyebrow') }}</p>
+                        <h3 class="mt-2 text-xl font-extrabold leading-snug">{{ __('storefront.project_support_heading') }}</h3>
+                        <p class="mt-2 text-sm leading-6 text-slate-600">{{ __('storefront.project_support_copy') }}</p>
                     </div>
 
-                    <a href="{{ $consultationUrl('industri') }}"
+                    <a href="{{ $consultationUrl(__('storefront.industry_project')) }}"
                         @if ($hasWhatsApp) target="_blank" rel="noopener noreferrer" @endif
-                        class="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 focus-visible:ring-offset-white">
-                        <i class="{{ $hasWhatsApp ? 'fi fi-brands-whatsapp' : 'fi fi-rr-comment-alt' }} text-lg" aria-hidden="true"></i>
-                        {{ $hasWhatsApp ? 'Konsultasi via WhatsApp' : 'Hubungi Tim Kami' }}
+                        class="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[var(--ec-primary-600)] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[var(--ec-primary-700)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ec-primary-600)] focus-visible:ring-offset-2 focus-visible:ring-offset-white">
+                        <i class="{{ $hasWhatsApp ? 'ri-whatsapp-line' : 'ri-chat-1-line' }} text-lg" aria-hidden="true"></i>
+                        {{ $hasWhatsApp ? __('storefront.whatsapp_consultation') : __('storefront.project_contact_team') }}
                     </a>
                 </aside>
             </div>
@@ -592,12 +592,12 @@
                 <div id="filterPanel" class="flat-filter-panel sticky top-20 flex max-h-[calc(100vh-6rem)] flex-col">
                     <div id="filterDrawerHandle" class="filter-drawer-handle lg:hidden"></div>
                     <div class="flat-filter-title flex flex-shrink-0 items-center justify-between">
-                        <h3 class="text-sm font-bold uppercase tracking-wide text-slate-950">Filter</h3>
+                        <h3 class="text-sm font-bold uppercase tracking-wide text-slate-950">{{ __('storefront.filter') }}</h3>
                         <div class="flex items-center gap-3">
                             <button onclick="resetFilter()"
-                                class="text-xs text-blue-600 hover:text-blue-700 font-medium">Reset</button>
+                                class="text-xs font-medium text-[var(--ec-primary-600)] hover:text-[var(--ec-primary-700)]">{{ __('storefront.reset') }}</button>
                             <button onclick="closeMobileFilter()"
-                                class="lg:hidden text-xs text-slate-500 hover:text-slate-700 font-medium">Tutup</button>
+                                class="lg:hidden text-xs text-slate-500 hover:text-slate-700 font-medium">{{ __('storefront.close') }}</button>
                         </div>
                     </div>
 
@@ -605,13 +605,13 @@
                         <div class="flat-filter-section">
                             <button type="button" class="flex w-full items-center justify-between gap-3 text-left"
                                 aria-expanded="true" aria-controls="homeCategoryPanel" onclick="toggleFilterSection(this, 'homeCategoryPanel')">
-                                <span class="text-sm font-medium text-slate-950">Kategori</span>
+                                <span class="text-sm font-medium text-slate-950">{{ __('storefront.categories') }}</span>
                                 <i class="ri-arrow-down-s-line rotate-180 text-lg text-slate-400 transition-transform"></i>
                             </button>
                             <div id="homeCategoryPanel" class="pt-3">
                                 <div class="relative mb-3">
                                     <i class="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400"></i>
-                                    <input id="homeCategorySearch" type="search" placeholder="Cari kategori..."
+                                    <input id="homeCategorySearch" type="search" placeholder="{{ __('storefront.search_categories_placeholder') }}"
                                         class="w-full rounded border border-slate-300 bg-transparent py-2 pl-8 pr-3 text-sm outline-none transition focus:border-blue-500"
                                         oninput="searchCategoryOptions(this, 'homeCategoryOptions', 'homeCategoryEmpty')" />
                                 </div>
@@ -623,7 +623,7 @@
                                                 class="text-sm text-slate-700 group-hover:text-slate-950">{{ $cat['name'] }}</span></label>
                                     @endforeach
                                 </div>
-                                <p id="homeCategoryEmpty" class="hidden py-2 text-xs text-slate-400">Kategori tidak ditemukan.</p>
+                                <p id="homeCategoryEmpty" class="hidden py-2 text-xs text-slate-400">{{ __('storefront.category_not_found') }}</p>
                             </div>
                         </div>
 
@@ -637,8 +637,8 @@
                 <!-- Sort & View -->
                 <div class="flex items-center justify-between mb-6">
                     <div>
-                        <h2 class="text-2xl font-extrabold tracking-tight text-slate-950">Produk <span class="text-blue-700">Terlaris</span></h2>
-                        <p class="text-xs sm:text-sm text-slate-500 mt-0.5" id="productCount">Menampilkan 12 produk</p>
+                        <h2 class="text-2xl font-extrabold tracking-tight text-slate-950">{{ __('storefront.best_selling_heading_lead') }} <span class="text-[var(--ec-primary-700)]">{{ __('storefront.best_selling_heading_accent') }}</span></h2>
+                        <p class="text-xs sm:text-sm text-slate-500 mt-0.5" id="productCount">{{ __('storefront.showing_products', ['count' => min(12, collect($productsJson ?? [])->count())]) }}</p>
                     </div>
                     <div class="flex items-center gap-2 sm:gap-3">
                         <div class="flex items-center gap-2 sm:hidden">
@@ -653,10 +653,10 @@
                         </div>
                         <select id="sortSelect" onchange="sortProducts()"
                             class="hidden sm:block border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 outline-none focus:border-blue-400 bg-white cursor-pointer">
-                            <option value="newest">Terbaru</option>
-                            <option value="price-low">Harga Terendah</option>
-                            <option value="price-high">Harga Tertinggi</option>
-                            <option value="popular" selected>Terpopuler</option>
+                            <option value="newest">{{ __('storefront.sort_newest') }}</option>
+                            <option value="price-low">{{ __('storefront.sort_price_low') }}</option>
+                            <option value="price-high">{{ __('storefront.sort_price_high') }}</option>
+                            <option value="popular" selected>{{ __('storefront.sort_best_selling') }}</option>
                         </select>
                         <div class="flex bg-slate-100 rounded-xl p-1 gap-1">
                             <button onclick="setView('grid')" id="gridBtn" class="p-1.5 rounded-lg bg-blue-500 text-white transition-all">
@@ -879,6 +879,17 @@
         const wishlistToggleUrl = @json(route('frontend.wishlist.toggle'));
         const wishlistStatusUrl = @json(route('frontend.wishlist.status'));
         const csrfToken = @json(csrf_token());
+        const storefrontText = {
+            showingProductRange: @json(__('storefront.showing_product_range', ['visible' => '__VISIBLE__', 'total' => '__TOTAL__'])),
+            displayedProductRange: @json(__('storefront.displayed_product_range', ['visible' => '__VISIBLE__', 'total' => '__TOTAL__'])),
+            sortChanged: @json(__('storefront.sort_changed')),
+            sortLabels: {
+                newest: @json(__('storefront.sort_newest')),
+                'price-low': @json(__('storefront.sort_price_low')),
+                'price-high': @json(__('storefront.sort_price_high')),
+                popular: @json(__('storefront.sort_best_selling')),
+            },
+        };
         const wishedProductIds = new Set();
         const carouselTotal = document.querySelectorAll('#carouselTrack > div').length || 1;
 
@@ -889,6 +900,13 @@
         const filterOptionPreviewLimit = 4;
         let visibleProductCount = productPageSize;
         let currentRenderedProducts = [...products];
+
+        function formatStorefrontText(template, replacements) {
+            return Object.entries(replacements).reduce(
+                (text, [key, value]) => text.replaceAll(`__${key.toUpperCase()}__`, String(value)),
+                template,
+            );
+        }
 
         function getLoginRedirectUrl() {
             return `${loginUrl}?redirect=${encodeURIComponent(window.location.href)}`;
@@ -905,13 +923,18 @@
             if (resetVisible) visibleProductCount = productPageSize;
             const visibleProducts = currentRenderedProducts.slice(0, visibleProductCount);
 
-            document.getElementById('productCount').textContent =
-                `Menampilkan ${visibleProducts.length} dari ${currentRenderedProducts.length} produk`;
+            document.getElementById('productCount').textContent = formatStorefrontText(storefrontText.showingProductRange, {
+                visible: visibleProducts.length,
+                total: currentRenderedProducts.length,
+            });
             emptyState?.classList.toggle('hidden', currentRenderedProducts.length > 0);
             grid.classList.toggle('hidden', currentRenderedProducts.length === 0);
             loadMoreWrapper.classList.toggle('hidden', currentRenderedProducts.length <= productPageSize);
             loadMoreBtn.classList.toggle('hidden', visibleProducts.length >= currentRenderedProducts.length);
-            loadMoreInfo.textContent = `Sudah tampil ${visibleProducts.length} dari ${currentRenderedProducts.length} produk`;
+            loadMoreInfo.textContent = formatStorefrontText(storefrontText.displayedProductRange, {
+                visible: visibleProducts.length,
+                total: currentRenderedProducts.length,
+            });
 
             grid.innerHTML = visibleProducts.map(p => {
                 const discount = p.originalPrice > p.price ? Math.round((1 - p.price / p.originalPrice) * 100) : 0;
@@ -1279,13 +1302,7 @@
             const current = order.indexOf(select.value);
             select.value = order[(current + 1) % order.length];
             sortProducts();
-            const labels = {
-                'newest': 'Urut: Terbaru',
-                'price-low': 'Urut: Termurah',
-                'price-high': 'Urut: Termahal',
-                'popular': 'Urut: Terpopuler'
-            };
-            showToast(labels[select.value] || 'Urutan diubah');
+            showToast(storefrontText.sortLabels[select.value] || storefrontText.sortChanged);
         }
 
         function setView(v) {
