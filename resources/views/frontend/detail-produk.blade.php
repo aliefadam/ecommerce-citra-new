@@ -1,7 +1,7 @@
 @extends('layouts.user')
 
-@section('title', ($productData['name'] ?? 'Detail Produk') . ' - ' . ($appStoreName ?? config('app.name')))
-@section('meta_description', \Illuminate\Support\Str::limit(trim(strip_tags((string) ($productData['description'] ?? ''))) ?: 'Beli '.($productData['name'] ?? 'produk').' secara online di '.($appStoreName ?? config('app.name')).'.', 160))
+@section('title', ($productData['name'] ?? __('storefront.product_detail.title')) . ' - ' . ($appStoreName ?? config('app.name')))
+@section('meta_description', \Illuminate\Support\Str::limit(trim(strip_tags((string) ($productData['description'] ?? ''))) ?: __('storefront.product_detail.meta_description', ['product' => $productData['name'] ?? __('storefront.products'), 'store' => $appStoreName ?? config('app.name')]), 160))
 @section('canonical', route('frontend.detail-produk', ['slug' => $productData['slug']]))
 @section('og_image', $productData['image'] ?? '')
 @section('og_type', 'product')
@@ -455,24 +455,24 @@
                     @foreach ($productData['images'] ?? [$productData['image']] as $idx => $thumb)
                         <button onclick="setImg({{ $idx }})"
                             class="thumb-btn flex-shrink-0 w-16 h-16 rounded-md overflow-hidden border bg-[#f7f8fa] transition-all {{ $idx === 0 ? 'thumb-active border-blue-700' : 'border-slate-200 hover:border-slate-400' }}">
-                            <img src="{{ $thumb }}" alt="Tampilan {{ $idx + 1 }} {{ $productData['name'] }}" class="w-full h-full object-contain p-1" />
+                            <img src="{{ $thumb }}" alt="{{ __('storefront.product_detail.view_image', ['number' => $idx + 1, 'product' => $productData['name']]) }}" class="w-full h-full object-contain p-1" />
                         </button>
                     @endforeach
                 </div>
-                <p class="text-center text-[11px] text-slate-400 lg:col-start-2">Klik gambar untuk memperbesar</p>
+                <p class="text-center text-[11px] text-slate-400 lg:col-start-2">{{ __('storefront.product_detail.enlarge_image') }}</p>
             </div>
 
             <!-- RIGHT: Product Info -->
             <div class="product-summary">
                 <!-- Brand & Status -->
                 <div class="flex items-center justify-between mb-2">
-                    <span class="text-[11px] font-bold uppercase tracking-[.12em] text-blue-800">{{ $productData['categoryName'] }} <span class="text-slate-300">&bull;</span> Industrial Supply</span>
+                    <span class="text-[11px] font-bold uppercase tracking-[.12em] text-blue-800">{{ $productData['categoryName'] }} <span class="text-slate-300">&bull;</span> {{ __('storefront.product_detail.industrial_supply') }}</span>
                     <div class="flex items-center gap-2">
                         <span id="stockStatusBadge" class="text-xs font-medium flex items-center gap-1 rounded-full px-2.5 py-1 {{ ($productData['stock'] ?? 0) <= 0 ? 'bg-red-50 text-red-600' : (($productData['stock'] ?? 0) <= 5 ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-700') }}">
                             <span id="stockStatusDot" class="w-2 h-2 rounded-full {{ ($productData['stock'] ?? 0) <= 0 ? 'bg-red-500' : (($productData['stock'] ?? 0) <= 5 ? 'bg-amber-500' : 'bg-emerald-500') }}"></span>
-                            <span id="stockStatusText">{{ ($productData['stock'] ?? 0) <= 0 ? 'Stok Habis' : (($productData['stock'] ?? 0) <= 5 ? 'Stok Terbatas' : 'Stok Tersedia') }}</span>
+                            <span id="stockStatusText">{{ ($productData['stock'] ?? 0) <= 0 ? __('storefront.product_detail.stock_empty') : (($productData['stock'] ?? 0) <= 5 ? __('storefront.product_detail.stock_limited') : __('storefront.product_detail.stock_available')) }}</span>
                         </span>
-                        <button onclick="shareProduct()" title="Bagikan produk"
+                        <button onclick="shareProduct()" title="{{ __('storefront.product_detail.share_product') }}"
                             class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-blue-50 hover:text-blue-600 text-slate-500 transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -486,7 +486,7 @@
                     {{ $productData['name'] }}</h1>
 
                 @if (!empty($productData['storeName']))
-                    <p class="text-xs sm:text-sm text-slate-500 mb-3">Dijual oleh <span class="font-semibold text-slate-700">{{ $productData['storeName'] }}</span></p>
+                    <p class="text-xs sm:text-sm text-slate-500 mb-3">{{ __('storefront.product_detail.sold_by') }} <span class="font-semibold text-slate-700">{{ $productData['storeName'] }}</span></p>
                 @endif
 
                 <!-- Rating & Sales -->
@@ -510,13 +510,13 @@
                             @endfor
                         </div>
                         <span class="font-bold text-slate-800 text-xs sm:text-sm">{{ number_format($productData['rating'], 1) }}</span>
-                        <span class="text-slate-500 text-xs">({{ number_format($productData['reviews']) }} ulasan)</span>
+                        <span class="text-slate-500 text-xs">({{ __('storefront.product_detail.reviews_count', ['count' => number_format($productData['reviews'])]) }})</span>
                     </div>
                     @else
-                        <span class="text-xs text-slate-500">Belum ada ulasan</span>
+                        <span class="text-xs text-slate-500">{{ __('storefront.product_detail.no_reviews') }}</span>
                     @endif
                     <span class="text-slate-300 hidden sm:inline">|</span>
-                    <span class="text-slate-600 text-xs"><span class="font-semibold text-slate-700">{{ number_format($productData['sold']) }}</span> terjual</span>
+                    <span class="text-slate-600 text-xs">{{ __('storefront.product_detail.sold_count', ['count' => number_format($productData['sold'])]) }}</span>
                     @if (!empty($productData['isRedeemProduct']))
                         <span class="text-slate-300 hidden sm:inline">|</span>
                         <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 border border-amber-200">
@@ -535,7 +535,7 @@
                     </div>
                     <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
                         <span>SKU: <strong id="productSku" class="font-semibold text-slate-700">{{ $productData['sku'] ?: '-' }}</strong></span>
-                        <span>Satuan: <strong class="font-semibold text-slate-700">pcs</strong></span>
+                        <span>{{ __('storefront.product_detail.unit_label') }}: <strong class="font-semibold text-slate-700">pcs</strong></span>
                     </div>
                 </div>
 
@@ -560,14 +560,14 @@
 
                 @if ($otherGroups->isNotEmpty())
                     <button type="button" onclick="openVariantDrawer('buy')" class="mb-3 flex w-full items-center justify-between rounded-md border border-slate-300 px-3 py-3 text-left md:hidden">
-                        <span><span class="block text-xs font-bold text-slate-900">Pilih varian</span><span id="mobileVariantSummary" class="mt-1 block max-w-[16rem] truncate text-xs text-slate-500">{{ collect($defaultOther)->filter()->implode(' · ') }}</span></span>
+                        <span><span class="block text-xs font-bold text-slate-900">{{ __('storefront.product_detail.select_variant') }}</span><span id="mobileVariantSummary" class="mt-1 block max-w-[16rem] truncate text-xs text-slate-500">{{ collect($defaultOther)->filter()->implode(' · ') }}</span></span>
                         <svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
                     </button>
                 @endif
 
                 @if ($otherGroups->isNotEmpty())
                     <div class="hidden rounded-md border border-slate-200 bg-slate-50/70 md:block">
-                        <div class="border-b border-slate-200 px-3 py-2 text-xs font-bold uppercase tracking-[.08em] text-slate-600">Spesifikasi varian</div>
+                        <div class="border-b border-slate-200 px-3 py-2 text-xs font-bold uppercase tracking-[.08em] text-slate-600">{{ __('storefront.product_detail.variant_specifications') }}</div>
                         <dl class="divide-y divide-slate-200/80">
                             @foreach ($otherGroups as $group)
                                 <div class="grid grid-cols-[8rem_1fr] px-3 py-2 text-xs">
@@ -584,60 +584,60 @@
             <!-- RIGHT: Purchase & seller panel -->
             <aside class="product-buy-column">
                 <div class="product-buy-panel hidden md:block">
-                    <h2 class="text-sm font-bold text-slate-900">Atur pembelian</h2>
+                    <h2 class="text-sm font-bold text-slate-900">{{ __('storefront.product_detail.purchase_options') }}</h2>
                     @if ($productData['isFlashSale'])
                         <div class="mt-1.5 flex items-center gap-1.5 text-[11px]">
                             <span class="font-semibold text-rose-600">Flash Sale</span>
-                            <span class="text-slate-400">berakhir</span>
+                            <span class="text-slate-400">{{ __('storefront.product_detail.ends_in') }}</span>
                             <span class="font-mono font-bold text-rose-600" id="saleTimer">00:00:00</span>
                         </div>
                     @endif
 
                     <div class="mt-3 flex items-center gap-2 text-xs text-slate-600">
                         <span id="stockStatusDotSide" class="h-2 w-2 rounded-full {{ ($productData['stock'] ?? 0) > 0 ? 'bg-emerald-500' : 'bg-rose-500' }}"></span>
-                        <span>Stok tersisa: <strong id="productStock" class="font-semibold text-slate-800">{{ number_format((int) $productData['stock']) }} pcs</strong></span>
+                        <span>{!! __('storefront.product_detail.remaining_stock', ['count' => '<strong id="productStock" class="font-semibold text-slate-800">'.number_format((int) $productData['stock']).'</strong>']) !!}</span>
                     </div>
 
                     <div class="mt-4">
-                        <span class="mb-2 block text-xs font-semibold text-slate-700">Jumlah</span>
+                        <span class="mb-2 block text-xs font-semibold text-slate-700">{{ __('storefront.quantity') }}</span>
                         <div class="flex w-fit items-center overflow-hidden rounded-md border border-slate-200 bg-white">
-                            <button onclick="changeQty(-1)" class="grid h-9 w-9 place-items-center text-slate-600 hover:bg-slate-50" aria-label="Kurangi jumlah">−</button>
+                            <button onclick="changeQty(-1)" class="grid h-9 w-9 place-items-center text-slate-600 hover:bg-slate-50" aria-label="{{ __('storefront.decrease_quantity') }}">−</button>
                             <input id="qtyDisplay" type="number" min="1" max="{{ max(1, (int) ($productData['stock'] ?? 1)) }}" value="1"
                                 inputmode="numeric" oninput="handleQtyInput(this)" onblur="commitQtyInput(this)"
                                 class="h-9 w-12 border-x border-slate-200 text-center text-sm font-bold text-slate-800 outline-none" />
-                            <button onclick="changeQty(1)" class="grid h-9 w-9 place-items-center text-slate-600 hover:bg-slate-50" aria-label="Tambah jumlah">+</button>
+                            <button onclick="changeQty(1)" class="grid h-9 w-9 place-items-center text-slate-600 hover:bg-slate-50" aria-label="{{ __('storefront.increase_quantity') }}">+</button>
                         </div>
-                        <p class="mt-1.5 text-[10px] text-slate-400">Minimum pembelian 1 pcs</p>
+                        <p class="mt-1.5 text-[10px] text-slate-400">{{ __('storefront.product_detail.minimum_purchase') }}</p>
                     </div>
 
                     <div class="mt-4 flex items-end justify-between border-t border-slate-200 pt-3">
-                        <span class="text-xs text-slate-500">Subtotal</span>
+                        <span class="text-xs text-slate-500">{{ __('storefront.product_detail.subtotal') }}</span>
                         <strong id="productSubtotal" class="text-lg font-extrabold tracking-tight text-slate-950">Rp {{ number_format($displayPrice, 0, ',', '.') }}</strong>
                     </div>
 
                     <div class="mt-4 hidden flex-col gap-2 md:flex">
                         <button id="buyNowBtn" type="button" onclick="buyNow()"
                             class="product-buy-primary flex h-11 w-full items-center justify-center rounded-md text-sm font-bold text-white transition">
-                            <span class="btn-label">Beli Sekarang</span>
+                            <span class="btn-label">{{ __('storefront.product_detail.buy_now') }}</span>
                         </button>
                         <button id="addToCartBtn" onclick="addToCart()"
                             class="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-blue-50 text-sm font-semibold text-blue-700 transition hover:bg-blue-100">
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13 5.4 5M7 13l-2.3 2.3c-.6.6-.2 1.7.7 1.7H17m0 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-8 2a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"/></svg>
-                            <span class="btn-label">Tambah ke Keranjang</span>
+                            <span class="btn-label">{{ __('storefront.product_detail.add_to_cart') }}</span>
                         </button>
                         @if (!empty($productData['isRedeemProduct']))
-                            <button type="button" onclick="redeemNow()" class="flex h-10 w-full items-center justify-center rounded-md bg-amber-500 text-sm font-semibold text-white hover:bg-amber-600">Redeem Point</button>
+                            <button type="button" onclick="redeemNow()" class="flex h-10 w-full items-center justify-center rounded-md bg-amber-500 text-sm font-semibold text-white hover:bg-amber-600">{{ __('storefront.product_detail.redeem_points') }}</button>
                         @endif
                     </div>
 
                     <div class="mt-4 grid grid-cols-2 border-t border-slate-100 pt-3 text-[11px] font-medium text-slate-600">
                         <button onclick="toggleWishlist()" class="flex items-center justify-center gap-1.5 border-r border-slate-100 hover:text-rose-600">
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4.3 6.3a4.5 4.5 0 0 0 0 6.4L12 20.4l7.7-7.7a4.5 4.5 0 0 0-6.4-6.4L12 7.6l-1.3-1.3a4.5 4.5 0 0 0-6.4 0Z"/></svg>
-                            Wishlist
+                            {{ __('storefront.product_detail.wishlist') }}
                         </button>
                         <button onclick="shareProduct()" class="flex items-center justify-center gap-1.5 hover:text-blue-700">
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8.7 13.3a3 3 0 1 0 0-2.6m0 2.6 6.6 3.4m-6.6-6 6.6-3.4m0 0a3 3 0 1 0 5.4-2.6 3 3 0 0 0-5.4 2.6Zm0 9.4a3 3 0 1 0 5.4 2.6 3 3 0 0 0-5.4-2.6Z"/></svg>
-                            Bagikan
+                            {{ __('storefront.product_detail.share') }}
                         </button>
                     </div>
                 </div>
@@ -652,67 +652,67 @@
                             @endif
                         </span>
                         <div class="min-w-0">
-                            <p class="truncate text-sm font-bold text-slate-900">{{ $productData['storeName'] ?: 'Mitra industri' }}</p>
+                            <p class="truncate text-sm font-bold text-slate-900">{{ $productData['storeName'] ?: __('storefront.industrial_partner') }}</p>
                             @if (!empty($productData['storeLegalName']) && $productData['storeLegalName'] !== $productData['storeName'])
                                 <p class="mt-0.5 truncate text-[10px] text-slate-500">{{ $productData['storeLegalName'] }}</p>
                             @endif
-                            <p class="mt-1 flex items-center gap-1 text-[10px] font-semibold text-blue-700"><span class="h-1.5 w-1.5 rounded-full bg-blue-600"></span> Mitra pemasok {{ $appStoreName }}</p>
+                            <p class="mt-1 flex items-center gap-1 text-[10px] font-semibold text-blue-700"><span class="h-1.5 w-1.5 rounded-full bg-blue-600"></span> {{ __('storefront.product_detail.supplier_partner', ['store' => $appStoreName]) }}</p>
                         </div>
                     </div>
                     <div class="mt-4 grid grid-cols-2 gap-2">
-                        <button type="button" onclick="openSellerChat()" class="h-9 rounded-md border border-blue-700 text-xs font-semibold text-blue-800 hover:bg-blue-50">Chat Penjual</button>
-                        <a href="{{ route('frontend.kategori') }}" class="flex h-9 items-center justify-center rounded-md border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50">Lihat Produk</a>
+                        <button type="button" onclick="openSellerChat()" class="h-9 rounded-md border border-blue-700 text-xs font-semibold text-blue-800 hover:bg-blue-50">{{ __('storefront.product_detail.seller_chat') }}</button>
+                        <a href="{{ route('frontend.kategori') }}" class="flex h-9 items-center justify-center rounded-md border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50">{{ __('storefront.product_detail.view_products') }}</a>
                     </div>
                 </div>
 
                 <div class="product-rfq">
-                    <p class="text-sm font-bold text-slate-950">Butuh jumlah besar?</p>
-                    <p class="mt-1 text-[11px] leading-5 text-slate-600">Ajukan harga khusus untuk kebutuhan proyek, pembelian volume, atau permintaan perusahaan.</p>
-                    <button type="button" onclick="requestQuotation()" class="mt-3 flex h-9 w-full items-center justify-center rounded-md border border-blue-700 bg-white text-xs font-bold text-blue-800 hover:bg-blue-50">Minta Penawaran</button>
+                    <p class="text-sm font-bold text-slate-950">{{ __('storefront.product_detail.bulk_order_heading') }}</p>
+                    <p class="mt-1 text-[11px] leading-5 text-slate-600">{{ __('storefront.product_detail.bulk_order_copy') }}</p>
+                    <button type="button" onclick="requestQuotation()" class="mt-3 flex h-9 w-full items-center justify-center rounded-md border border-blue-700 bg-white text-xs font-bold text-blue-800 hover:bg-blue-50">{{ __('storefront.product_detail.request_quote') }}</button>
                 </div>
             </aside>
         </div>
 
         <!-- Product information navigation -->
         <div class="mt-10" id="detail-produk">
-            <nav class="product-section-tabs -mx-4 mb-8 flex gap-6 overflow-x-auto border-y border-slate-200 px-4 sm:mx-0 sm:px-0" aria-label="Informasi produk">
-                <a href="#detail-produk">Detail Produk</a>
-                <a href="#spesifikasi">Spesifikasi</a>
-                <a href="#daftar-varian">Varian</a>
-                <a href="#ulasan">Ulasan</a>
-                <a href="#diskusi">Diskusi</a>
+            <nav class="product-section-tabs -mx-4 mb-8 flex gap-6 overflow-x-auto border-y border-slate-200 px-4 sm:mx-0 sm:px-0" aria-label="{{ __('storefront.product_detail.product_information') }}">
+                <a href="#detail-produk">{{ __('storefront.product_detail.title') }}</a>
+                <a href="#spesifikasi">{{ __('storefront.product_detail.specifications') }}</a>
+                <a href="#daftar-varian">{{ __('storefront.product_detail.variants') }}</a>
+                <a href="#ulasan">{{ __('storefront.product_detail.reviews') }}</a>
+                <a href="#diskusi">{{ __('storefront.product_detail.discussion') }}</a>
             </nav>
 
             <section id="spesifikasi" class="scroll-mt-40 border-b border-slate-200 pb-9">
                 <div class="mb-5 flex items-end justify-between gap-4">
                     <div>
-                        <p class="text-[11px] font-bold uppercase tracking-[.14em] text-blue-800">Data teknis</p>
-                        <h2 class="mt-1 text-lg font-extrabold text-slate-950">Spesifikasi Produk</h2>
+                        <p class="text-[11px] font-bold uppercase tracking-[.14em] text-blue-800">{{ __('storefront.product_detail.technical_data') }}</p>
+                        <h2 class="mt-1 text-lg font-extrabold text-slate-950">{{ __('storefront.product_detail.product_specifications') }}</h2>
                     </div>
                     <span class="hidden text-xs text-slate-400 sm:block">SKU {{ $productData['sku'] ?: '-' }}</span>
                 </div>
                 <dl class="product-spec-table max-w-3xl">
-                    <div class="product-spec-row"><dt>Nama Produk</dt><dd>{{ $productData['name'] }}</dd></div>
-                    <div class="product-spec-row"><dt>Kategori</dt><dd>{{ $productData['categoryName'] }}</dd></div>
+                    <div class="product-spec-row"><dt>{{ __('storefront.product_detail.product_name') }}</dt><dd>{{ $productData['name'] }}</dd></div>
+                    <div class="product-spec-row"><dt>{{ __('storefront.product_detail.category') }}</dt><dd>{{ $productData['categoryName'] }}</dd></div>
                     @foreach ($otherGroups as $group)
                         <div class="product-spec-row"><dt>{{ $group['label'] }}</dt><dd data-variant-spec="{{ $group['key'] }}">{{ $defaultOther[$group['key']] ?? '-' }}</dd></div>
                     @endforeach
                     <div class="product-spec-row"><dt>SKU</dt><dd id="productSpecSku">{{ $productData['sku'] ?: '-' }}</dd></div>
-                    <div class="product-spec-row"><dt>Stok</dt><dd id="productSpecStock">{{ number_format((int) $productData['stock']) }} pcs</dd></div>
+                    <div class="product-spec-row"><dt>{{ __('storefront.product_detail.stock') }}</dt><dd id="productSpecStock">{{ number_format((int) $productData['stock']) }} pcs</dd></div>
                 </dl>
             </section>
 
             <section id="content-desc" class="scroll-mt-40 border-b border-slate-200 py-9">
-                <h2 class="mb-4 text-lg font-extrabold text-slate-950">Tentang Produk</h2>
+                <h2 class="mb-4 text-lg font-extrabold text-slate-950">{{ __('storefront.product_detail.about_product') }}</h2>
                 <div class="product-copy prose prose-slate max-w-none">
-                    {!! $productData['description'] ?: '<p>Belum ada deskripsi produk.</p>' !!}
+                    {!! $productData['description'] ?: '<p>'.e(__('storefront.product_detail.no_description')).'</p>' !!}
                 </div>
             </section>
 
             <section id="daftar-varian" class="scroll-mt-40 border-b border-slate-200 py-9">
                 <div class="mb-4">
-                    <p class="text-[11px] font-bold uppercase tracking-[.14em] text-blue-800">Katalog SKU</p>
-                    <h2 class="mt-1 text-lg font-extrabold text-slate-950">Daftar Varian</h2>
+                    <p class="text-[11px] font-bold uppercase tracking-[.14em] text-blue-800">{{ __('storefront.product_detail.sku_catalog') }}</p>
+                    <h2 class="mt-1 text-lg font-extrabold text-slate-950">{{ __('storefront.product_detail.variant_list') }}</h2>
                 </div>
                 <div class="overflow-x-auto border-y border-slate-200">
                     <table class="w-full min-w-[680px] text-left text-sm">
@@ -720,8 +720,8 @@
                             <tr>
                                 @foreach ($otherGroups as $group)<th class="px-4 py-3 font-semibold">{{ $group['label'] }}</th>@endforeach
                                 <th class="px-4 py-3 font-semibold">SKU</th>
-                                <th class="px-4 py-3 font-semibold">Stok</th>
-                                <th class="px-4 py-3 font-semibold">Harga</th>
+                                <th class="px-4 py-3 font-semibold">{{ __('storefront.product_detail.stock') }}</th>
+                                <th class="px-4 py-3 font-semibold">{{ __('storefront.product_detail.price') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
@@ -735,7 +735,7 @@
                                     <td class="px-4 py-3 font-semibold text-slate-900">Rp {{ number_format($option['displayPrice'] ?? $option['price'] ?? 0, 0, ',', '.') }}</td>
                                 </tr>
                             @empty
-                                <tr><td colspan="{{ max(3, $otherGroups->count() + 3) }}" class="px-4 py-4 text-slate-500">Belum ada data varian.</td></tr>
+                                <tr><td colspan="{{ max(3, $otherGroups->count() + 3) }}" class="px-4 py-4 text-slate-500">{{ __('storefront.product_detail.no_variants') }}</td></tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -743,12 +743,12 @@
             </section>
 
             <section id="ulasan" class="scroll-mt-40 border-b border-slate-200 py-9">
-                <h2 class="mb-6 text-lg font-extrabold text-slate-950">Ulasan Produk</h2>
+                <h2 class="mb-6 text-lg font-extrabold text-slate-950">{{ __('storefront.product_detail.product_reviews') }}</h2>
                 <div class="grid md:grid-cols-3 gap-6 mb-8">
                     <div class="text-center">
                         <div class="text-4xl sm:text-5xl md:text-6xl font-extrabold text-slate-800 mb-1">{{ number_format($productData['rating'], 1) }}</div>
                         <div class="text-yellow-400 text-lg sm:text-2xl mb-2">★★★★★</div>
-                        <p class="text-slate-500 text-xs sm:text-sm">dari {{ number_format($productData['reviews']) }} ulasan</p>
+                        <p class="text-slate-500 text-xs sm:text-sm">{{ __('storefront.product_detail.reviews_summary', ['count' => number_format($productData['reviews'])]) }}</p>
                     </div>
                     <div class="md:col-span-2 space-y-2">
                         @foreach ($reviewDistribution as $dist)
@@ -770,8 +770,8 @@
 
             <section id="diskusi" class="scroll-mt-40 py-9">
                 <div class="flex flex-col justify-between gap-4 border-l-2 border-blue-700 pl-4 sm:flex-row sm:items-center">
-                    <div><h2 class="text-base font-bold text-slate-950">Perlu konfirmasi teknis?</h2><p class="mt-1 text-sm text-slate-500">Diskusikan spesifikasi, kompatibilitas, atau kebutuhan proyek dengan penjual.</p></div>
-                    <button type="button" onclick="openSellerChat()" class="h-10 shrink-0 rounded-md border border-blue-700 px-4 text-sm font-semibold text-blue-800 hover:bg-blue-50">Mulai Diskusi</button>
+                    <div><h2 class="text-base font-bold text-slate-950">{{ __('storefront.product_detail.technical_confirmation') }}</h2><p class="mt-1 text-sm text-slate-500">{{ __('storefront.product_detail.discussion_copy') }}</p></div>
+                    <button type="button" onclick="openSellerChat()" class="h-10 shrink-0 rounded-md border border-blue-700 px-4 text-sm font-semibold text-blue-800 hover:bg-blue-50">{{ __('storefront.product_detail.start_discussion') }}</button>
                 </div>
             </section>
         </div>
@@ -780,8 +780,8 @@
             <section class="mt-10 border-t border-slate-200 pt-8 sm:mt-12">
                 <div class="mb-4 flex items-center justify-between gap-4">
                     <div>
-                        <p class="text-[11px] font-bold uppercase tracking-[.14em] text-blue-800">{{ $productData['storeName'] ?: 'Mitra industri' }}</p>
-                        <h2 class="mt-1 text-lg font-extrabold text-slate-950">Produk Lain dari Toko Ini</h2>
+                        <p class="text-[11px] font-bold uppercase tracking-[.14em] text-blue-800">{{ $productData['storeName'] ?: __('storefront.industrial_partner') }}</p>
+                        <h2 class="mt-1 text-lg font-extrabold text-slate-950">{{ __('storefront.product_detail.more_from_store') }}</h2>
                     </div>
                 </div>
                 <div class="flex snap-x gap-3 overflow-x-auto pb-3 sm:grid sm:grid-cols-3 sm:overflow-visible md:grid-cols-5">
@@ -790,9 +790,9 @@
                             <div class="store-product-media"><a href="{{ $sp['url'] }}" class="block h-full"><img src="{{ $sp['image'] }}" alt="{{ $sp['name'] }}" loading="lazy"></a></div>
                             <div class="store-product-body">
                                 <a href="{{ $sp['url'] }}" class="store-product-name line-clamp-2 hover:text-blue-700">{{ $sp['name'] }}</a>
-                                <p class="store-product-variant truncate">{{ $sp['variant'] ?: 'Produk industri' }}</p>
+                                <p class="store-product-variant truncate">{{ $sp['variant'] ?: __('storefront.industrial_product') }}</p>
                                 <p class="store-product-price">Rp {{ number_format($sp['price'], 0, ',', '.') }}</p>
-                                <p class="store-product-seller"><span>{{ $sp['storeName'] ?: 'Mitra industri' }}</span></p>
+                                <p class="store-product-seller"><span>{{ $sp['storeName'] ?: __('storefront.industrial_partner') }}</span></p>
                             </div>
                         </article>
                     @endforeach
@@ -805,25 +805,25 @@
                 <div class="flex items-center justify-between mb-4 sm:mb-5">
                     <div class="flex items-center gap-3">
                         <div class="w-1 h-6 sm:h-7 bg-slate-400 rounded-full"></div>
-                        <h2 class="text-base sm:text-xl font-bold text-slate-800">Terakhir Dilihat</h2>
+                        <h2 class="text-base sm:text-xl font-bold text-slate-800">{{ __('storefront.product_detail.recently_viewed') }}</h2>
                     </div>
                 </div>
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                     @foreach ($recentlyViewedProductsJson as $rv)
                         <article class="store-product-card group">
                             <div class="store-product-media">
-                                <a href="{{ $rv['url'] }}" class="block h-full" aria-label="Lihat {{ $rv['name'] }}">
+                                <a href="{{ $rv['url'] }}" class="block h-full" aria-label="{{ __('storefront.product_detail.view_product', ['product' => $rv['name']]) }}">
                                     <img src="{{ $rv['image'] }}" alt="{{ $rv['name'] }}" loading="lazy" />
                                 </a>
                             </div>
                             <div class="store-product-body">
                                 <a href="{{ $rv['url'] }}" class="store-product-name line-clamp-2 hover:text-blue-700">{{ $rv['name'] }}</a>
-                                <p class="store-product-variant truncate">{{ $rv['variant'] ?: 'Produk industri' }}</p>
+                                <p class="store-product-variant truncate">{{ $rv['variant'] ?: __('storefront.industrial_product') }}</p>
                                 <p class="store-product-price">Rp {{ number_format($rv['price'], 0, ',', '.') }}</p>
-                                <p class="store-product-seller"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 10.5V20h16v-9.5M3 4h18l-1.5 6a2.5 2.5 0 0 1-4.5 1.1 2.5 2.5 0 0 1-4.5 0A2.5 2.5 0 0 1 6 10L4.5 4M9 20v-5h6v5"/></svg><span>{{ $rv['storeName'] ?: 'Mitra industri' }}</span></p>
+                                <p class="store-product-seller"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 10.5V20h16v-9.5M3 4h18l-1.5 6a2.5 2.5 0 0 1-4.5 1.1 2.5 2.5 0 0 1-4.5 0A2.5 2.5 0 0 1 6 10L4.5 4M9 20v-5h6v5"/></svg><span>{{ $rv['storeName'] ?: __('storefront.industrial_partner') }}</span></p>
                                 <div class="store-product-meta">
                                     <span class="store-product-rating"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.7 2.83 5.73 6.32.92-4.58 4.46 1.08 6.3L12 17.14l-5.65 2.97 1.08-6.3-4.58-4.46 6.32-.92L12 2.7Z"/></svg>{{ number_format((float) $rv['rating'], 1) }} <span class="font-normal text-slate-400">({{ number_format((int) $rv['reviews']) }})</span></span>
-                                    <span>Terjual {{ number_format((int) $rv['sold']) }}</span>
+                                    <span>{{ __('storefront.product_detail.sold_count', ['count' => number_format((int) $rv['sold'])]) }}</span>
                                 </div>
                             </div>
                         </article>
@@ -837,18 +837,18 @@
             <div class="flex items-center justify-between mb-4 sm:mb-5">
                 <div class="flex items-center gap-3">
                     <div class="w-1 h-6 sm:h-7 bg-blue-700 rounded-full"></div>
-                    <h2 class="text-base sm:text-xl font-bold text-slate-800">Produk Serupa</h2>
+                    <h2 class="text-base sm:text-xl font-bold text-slate-800">{{ __('storefront.product_detail.similar_products') }}</h2>
                 </div>
                 <a href="{{ route('frontend.kategori') }}"
                     class="text-blue-600 hover:text-blue-700 font-semibold text-sm flex items-center gap-1 transition-colors">
-                    Lihat Semua <i class="ri-arrow-right-s-line text-base"></i>
+                    {{ __('storefront.product_detail.view_all') }} <i class="ri-arrow-right-s-line text-base"></i>
                 </a>
             </div>
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 @forelse ($relatedProductsJson as $rp)
                     <article class="store-product-card group">
                         <div class="store-product-media">
-                            <a href="{{ url('/detail-produk/' . $rp['slug']) }}" class="block h-full" aria-label="Lihat {{ $rp['name'] }}">
+                            <a href="{{ url('/detail-produk/' . $rp['slug']) }}" class="block h-full" aria-label="{{ __('storefront.product_detail.view_product', ['product' => $rp['name']]) }}">
                                 <img src="{{ $rp['image'] }}" alt="{{ $rp['name'] }}" loading="lazy" />
                             </a>
                             @if ($rp['isFlashSale'] && $rp['originalPrice'] > $rp['price'])
@@ -858,17 +858,17 @@
                         </div>
                         <div class="store-product-body">
                             <a href="{{ url('/detail-produk/' . $rp['slug']) }}" class="store-product-name line-clamp-2 hover:text-blue-700">{{ $rp['name'] }}</a>
-                            <p class="store-product-variant truncate">{{ $rp['variant'] ?: 'Produk industri' }}</p>
+                            <p class="store-product-variant truncate">{{ $rp['variant'] ?: __('storefront.industrial_product') }}</p>
                             <p class="store-product-price">Rp {{ number_format($rp['price'], 0, ',', '.') }}</p>
-                            <p class="store-product-seller"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 10.5V20h16v-9.5M3 4h18l-1.5 6a2.5 2.5 0 0 1-4.5 1.1 2.5 2.5 0 0 1-4.5 0A2.5 2.5 0 0 1 6 10L4.5 4M9 20v-5h6v5"/></svg><span>{{ $rp['storeName'] ?: 'Mitra industri' }}</span></p>
+                            <p class="store-product-seller"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 10.5V20h16v-9.5M3 4h18l-1.5 6a2.5 2.5 0 0 1-4.5 1.1 2.5 2.5 0 0 1-4.5 0A2.5 2.5 0 0 1 6 10L4.5 4M9 20v-5h6v5"/></svg><span>{{ $rp['storeName'] ?: __('storefront.industrial_partner') }}</span></p>
                             <div class="store-product-meta">
                                 <span class="store-product-rating"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.7 2.83 5.73 6.32.92-4.58 4.46 1.08 6.3L12 17.14l-5.65 2.97 1.08-6.3-4.58-4.46 6.32-.92L12 2.7Z"/></svg>{{ number_format((float) $rp['rating'], 1) }} <span class="font-normal text-slate-400">({{ number_format((int) $rp['reviews']) }})</span></span>
-                                <span>Terjual {{ number_format((int) $rp['sold']) }}</span>
+                                <span>{{ __('storefront.product_detail.sold_count', ['count' => number_format((int) $rp['sold'])]) }}</span>
                             </div>
                         </div>
                     </article>
                 @empty
-                    <div class="col-span-full text-center py-10 text-slate-400 text-sm">Belum ada produk rekomendasi.</div>
+                    <div class="col-span-full text-center py-10 text-slate-400 text-sm">{{ __('storefront.product_detail.no_recommendations') }}</div>
                 @endforelse
             </div>
         </div>
@@ -879,10 +879,10 @@
         <div class="flex items-center justify-between gap-3 text-xs text-slate-500">
             <div>
                 <div class="font-semibold text-slate-800" id="mobileStickyPrice">Rp {{ number_format($displayPrice, 0, ',', '.') }}</div>
-                <div id="mobileStickyStock">Stok {{ number_format((int) ($productData['stock'] ?? 0)) }} item</div>
+                <div id="mobileStickyStock">{{ __('storefront.product_detail.stock_items', ['count' => number_format((int) ($productData['stock'] ?? 0))]) }}</div>
             </div>
             <div id="mobileStickyStatus" class="text-right font-semibold {{ ($productData['stock'] ?? 0) <= 0 ? 'text-red-600' : (($productData['stock'] ?? 0) <= 5 ? 'text-amber-600' : 'text-blue-600') }}">
-                {{ ($productData['stock'] ?? 0) <= 0 ? 'Stok habis' : (($productData['stock'] ?? 0) <= 5 ? 'Stok terbatas' : 'Siap dibeli') }}
+                {{ ($productData['stock'] ?? 0) <= 0 ? __('storefront.product_detail.stock_empty') : (($productData['stock'] ?? 0) <= 5 ? __('storefront.product_detail.stock_limited') : __('storefront.product_detail.ready_to_buy')) }}
             </div>
         </div>
         <div class="flex gap-2">
@@ -892,14 +892,14 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
-                <span class="btn-label">Keranjang</span>
+                <span class="btn-label">{{ __('storefront.cart') }}</span>
             </button>
             <button id="mobileBuyNowBtn" type="button" onclick="openVariantDrawer('buy')"
                 class="flex-1 bg-blue-600 text-white font-semibold py-2.5 rounded-xl text-sm flex items-center justify-center gap-1.5 shadow-sm shadow-blue-100">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
-                <span class="btn-label">Beli Sekarang</span>
+                <span class="btn-label">{{ __('storefront.product_detail.buy_now') }}</span>
             </button>
         </div>
         @if (!empty($productData['isRedeemProduct']))
@@ -908,7 +908,7 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-10V6m0 12v2m9-8a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                Redeem dengan Poin
+                {{ __('storefront.product_detail.redeem_points') }}
             </button>
         @endif
     </div>
@@ -921,8 +921,8 @@
         <div class="drawer-handle" id="drawerHandle"></div>
         <div class="px-4 pb-3 border-b border-slate-100">
             <div class="flex items-center justify-between">
-                <h3 class="text-base font-bold text-slate-800">Pilih Varian</h3>
-                <button type="button" onclick="closeVariantDrawer()" aria-label="Tutup pilihan varian" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-500">
+                <h3 class="text-base font-bold text-slate-800">{{ __('storefront.product_detail.select_variant') }}</h3>
+                <button type="button" onclick="closeVariantDrawer()" aria-label="{{ __('storefront.product_detail.close_variant_selection') }}" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-500">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -936,7 +936,7 @@
                 <img id="drawerProductImage" src="{{ $productData['image'] }}" alt="{{ $productData['name'] }}" class="w-20 h-20 rounded-xl object-cover border border-slate-200">
                 <div class="flex-1">
                     <div id="drawerProductPrice" class="text-xl font-bold text-blue-600 mb-1">Rp {{ number_format($displayPrice, 0, ',', '.') }}</div>
-                    <div id="drawerProductStock" class="text-xs text-slate-500">Stok: {{ number_format((int) ($productData['stock'] ?? 0)) }} item</div>
+                    <div id="drawerProductStock" class="text-xs text-slate-500">{{ __('storefront.product_detail.stock_label', ['count' => number_format((int) ($productData['stock'] ?? 0))]) }}</div>
                 </div>
             </div>
 
@@ -962,7 +962,7 @@
 
             <!-- Quantity -->
             <div class="mb-5">
-                <span class="text-sm font-semibold text-slate-700 block mb-2">Jumlah</span>
+                <span class="text-sm font-semibold text-slate-700 block mb-2">{{ __('storefront.quantity') }}</span>
                 <div class="flex items-center border-2 border-slate-200 rounded-xl overflow-hidden w-40">
                     <button onclick="changeQtyDrawer(-1)"
                         class="w-10 py-2 text-slate-600 hover:bg-slate-50 font-bold text-sm transition-colors">−</button>
@@ -982,7 +982,7 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
-                <span id="drawerActionLabel">Beli Sekarang</span>
+                <span id="drawerActionLabel">{{ __('storefront.product_detail.buy_now') }}</span>
             </button>
         </div>
     </div>
@@ -1002,14 +1002,14 @@
     <div id="reviewImageModal" class="fixed inset-0 z-[99999] hidden items-center justify-center bg-black/70 p-4">
         <div class="relative max-w-3xl w-full">
             <button type="button" onclick="closeReviewImageModal()"
-                class="absolute -top-10 right-0 text-white text-sm font-semibold">Tutup</button>
+                class="absolute -top-10 right-0 text-white text-sm font-semibold">{{ __('storefront.close') }}</button>
             <img id="reviewImageModalImg" src="" alt="Review Image"
                 class="w-full max-h-[80vh] object-contain rounded-xl bg-white" />
         </div>
     </div>
 
     <div id="productImageModal" class="fixed inset-0 z-[100000] hidden items-center justify-center bg-slate-950/90 p-4 backdrop-blur-sm" onclick="closeProductImageModal(event)">
-        <button type="button" onclick="closeProductImageModal()" class="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full bg-white/10 text-2xl text-white hover:bg-white/20" aria-label="Tutup gambar">&times;</button>
+        <button type="button" onclick="closeProductImageModal()" class="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full bg-white/10 text-2xl text-white hover:bg-white/20" aria-label="{{ __('storefront.product_detail.close_image') }}">&times;</button>
         <img id="productImageModalImg" src="" alt="{{ $productData['name'] }}" class="max-h-[90vh] max-w-[92vw] rounded-lg bg-white object-contain shadow-2xl" />
     </div>
 @endsection
@@ -1024,6 +1024,37 @@
         const wishlistToggleUrl = @json(route('frontend.wishlist.toggle'));
         const sellerSupportUrl = @json($appStoreSettings['social_whatsapp'] ?? '');
         const csrfToken = @json(csrf_token());
+        const productDetailI18n = {
+            addToCart: @json(__('storefront.product_detail.add_to_cart')),
+            buyNow: @json(__('storefront.product_detail.buy_now')),
+            cart: @json(__('storefront.cart')),
+            redeemPoints: @json(__('storefront.product_detail.redeem_points')),
+            chooseAnotherProduct: @json(__('storefront.product_detail.choose_another_product')),
+            stockAvailable: @json(__('storefront.product_detail.stock_available')),
+            stockLimited: @json(__('storefront.product_detail.stock_limited')),
+            stockEmpty: @json(__('storefront.product_detail.stock_empty')),
+            readyToBuy: @json(__('storefront.product_detail.ready_to_buy')),
+            stockItems: @json(__('storefront.product_detail.stock_items', ['count' => '__COUNT__'])),
+            stockLabel: @json(__('storefront.product_detail.stock_label', ['count' => '__COUNT__'])),
+            productOutOfStock: @json(__('storefront.product_detail.product_out_of_stock')),
+            variantUnavailable: @json(__('storefront.product_detail.variant_unavailable')),
+            serverUnreachable: @json(__('storefront.product_detail.server_unreachable')),
+            cartAddFailed: @json(__('storefront.product_detail.cart_add_failed')),
+            cartAdded: @json(__('storefront.product_detail.cart_added', ['product' => '__PRODUCT__', 'count' => '__COUNT__'])),
+            wishlistFailed: @json(__('storefront.wishlist_failed')),
+            wishlistAdded: @json(__('storefront.product_detail.wishlist_added')),
+            wishlistRemoved: @json(__('storefront.product_detail.wishlist_removed')),
+            reviewPhoto: @json(__('storefront.product_detail.review_photo')),
+            noProductReviews: @json(__('storefront.product_detail.no_product_reviews')),
+            shareText: @json(__('storefront.product_detail.share_text', ['store' => $appStoreName ?? config('app.name')])),
+            linkCopied: @json(__('storefront.product_detail.link_copied')),
+            linkCopyFailed: @json(__('storefront.product_detail.link_copy_failed')),
+            sellerChatUnavailable: @json(__('storefront.product_detail.seller_chat_unavailable')),
+            quoteChatPrompt: @json(__('storefront.product_detail.quote_chat_prompt')),
+            quoteUnavailable: @json(__('storefront.product_detail.quote_unavailable')),
+        };
+        const translateProductDetail = (message, replacements = {}) => Object.entries(replacements)
+            .reduce((text, [key, value]) => text.replaceAll(`__${key.toUpperCase()}__`, String(value)), message);
         const pendingAuthActionKey = 'ec_pending_auth_action';
         const images = (productData.images && productData.images.length ? productData.images : [productData.image]);
         let currentImg = 0;
@@ -1140,7 +1171,7 @@
 
         function openVariantDrawer(action) {
             if (Number(productData.stock || 0) <= 0) {
-                showToast('Stok produk ini sedang habis.');
+                showToast(productDetailI18n.productOutOfStock);
                 return;
             }
 
@@ -1160,13 +1191,13 @@
 
             // Update button label based on action
             if (action === 'cart') {
-                actionLabel.textContent = 'Tambah ke Keranjang';
+                actionLabel.textContent = productDetailI18n.addToCart;
                 actionBtn.className = 'w-full bg-blue-50 border-2 border-blue-300 text-blue-700 font-semibold py-3 rounded-xl text-sm flex items-center justify-center gap-2';
             } else if (action === 'redeem') {
-                actionLabel.textContent = 'Redeem dengan Poin';
+                actionLabel.textContent = productDetailI18n.redeemPoints;
                 actionBtn.className = 'w-full bg-amber-500 text-white font-semibold py-3 rounded-xl text-sm flex items-center justify-center gap-2 shadow-sm shadow-amber-100';
             } else {
-                actionLabel.textContent = 'Beli Sekarang';
+                actionLabel.textContent = productDetailI18n.buyNow;
                 actionBtn.className = 'w-full bg-blue-600 text-white font-semibold py-3 rounded-xl text-sm flex items-center justify-center gap-2 shadow-sm shadow-blue-100';
             }
 
@@ -1274,7 +1305,7 @@
             if (drawerPrice) drawerPrice.textContent = formatRupiah(displayPrice);
 
             const drawerStockEl = document.getElementById('drawerProductStock');
-            if (drawerStockEl) drawerStockEl.textContent = `Stok: ${Number(selectedVariant.stock || 0)} item`;
+            if (drawerStockEl) drawerStockEl.textContent = translateProductDetail(productDetailI18n.stockLabel, { count: Number(selectedVariant.stock || 0) });
 
             const drawerImage = document.getElementById('drawerProductImage');
             if (drawerImage && selectedVariant.image) drawerImage.src = selectedVariant.image;
@@ -1451,16 +1482,16 @@
             const mobileAddToCartBtn = document.getElementById('mobileAddToCartBtn');
             const mobileBuyNowBtn = document.getElementById('mobileBuyNowBtn');
 
-            let label = 'Stok Tersedia';
+            let label = productDetailI18n.stockAvailable;
             let badgeClass = ['bg-emerald-50', 'text-emerald-700'];
             let dotClass = 'bg-emerald-500';
 
             if (stock <= 0) {
-                label = 'Stok Habis';
+                label = productDetailI18n.stockEmpty;
                 badgeClass = ['bg-red-50', 'text-red-600'];
                 dotClass = 'bg-red-500';
             } else if (stock <= 5) {
-                label = 'Stok Terbatas';
+                label = productDetailI18n.stockLimited;
                 badgeClass = ['bg-amber-50', 'text-amber-600'];
                 dotClass = 'bg-amber-500';
             }
@@ -1470,9 +1501,9 @@
             if (sideStatusDot) sideStatusDot.className = `h-2 w-2 rounded-full ${stock > 0 ? 'bg-emerald-500' : 'bg-rose-500'}`;
             if (statusBadge) statusBadge.className = `text-xs font-medium flex items-center gap-1 rounded-full px-2.5 py-1 ${badgeClass.join(' ')}`;
             if (stockEl) stockEl.textContent = `${stock} pcs`;
-            if (mobileStock) mobileStock.textContent = `Stok ${stock} item`;
+            if (mobileStock) mobileStock.textContent = translateProductDetail(productDetailI18n.stockItems, { count: stock });
             if (mobileStatus) {
-                mobileStatus.textContent = stock <= 0 ? 'Stok habis' : (stock <= 5 ? 'Stok terbatas' : 'Siap dibeli');
+                mobileStatus.textContent = stock <= 0 ? productDetailI18n.stockEmpty : (stock <= 5 ? productDetailI18n.stockLimited : productDetailI18n.readyToBuy);
                 mobileStatus.className = `text-right font-semibold ${stock <= 0 ? 'text-red-600' : (stock <= 5 ? 'text-amber-600' : 'text-blue-600')}`;
             }
 
@@ -1487,10 +1518,10 @@
             const desktopBuyLabel = buyNowBtn?.querySelector('.btn-label');
             const mobileCartLabel = mobileAddToCartBtn?.querySelector('.btn-label');
             const mobileBuyLabel = mobileBuyNowBtn?.querySelector('.btn-label');
-            if (desktopCartLabel) desktopCartLabel.textContent = stock <= 0 ? 'Stok Habis' : 'Tambah ke Keranjang';
-            if (desktopBuyLabel) desktopBuyLabel.textContent = stock <= 0 ? 'Pilih Produk Lain' : 'Beli Sekarang';
-            if (mobileCartLabel) mobileCartLabel.textContent = stock <= 0 ? 'Stok Habis' : 'Keranjang';
-            if (mobileBuyLabel) mobileBuyLabel.textContent = stock <= 0 ? 'Pilih Produk Lain' : 'Beli Sekarang';
+            if (desktopCartLabel) desktopCartLabel.textContent = stock <= 0 ? productDetailI18n.stockEmpty : productDetailI18n.addToCart;
+            if (desktopBuyLabel) desktopBuyLabel.textContent = stock <= 0 ? productDetailI18n.chooseAnotherProduct : productDetailI18n.buyNow;
+            if (mobileCartLabel) mobileCartLabel.textContent = stock <= 0 ? productDetailI18n.stockEmpty : productDetailI18n.cart;
+            if (mobileBuyLabel) mobileBuyLabel.textContent = stock <= 0 ? productDetailI18n.chooseAnotherProduct : productDetailI18n.buyNow;
         }
 
         function formatRupiah(value) {
@@ -1544,7 +1575,7 @@
                     }),
                 });
                 if (res.ok) {
-                    showToast(`${productData.name} (${quantity} item) ditambahkan ke keranjang!`);
+                    showToast(translateProductDetail(productDetailI18n.cartAdded, { product: productData.name, count: quantity }));
                     window.dispatchEvent(new Event('cart:updated'));
                 }
                 return;
@@ -1855,12 +1886,12 @@
             });
             const json = await res.json().catch(() => ({}));
             if (!res.ok) {
-                showToast('Gagal memproses wishlist');
+                showToast(productDetailI18n.wishlistFailed);
                 return;
             }
             isWishlisted = Boolean(json.wished);
             syncWishIcon();
-            showToast(isWishlisted ? 'Ditambahkan ke wishlist!' : 'Dihapus dari wishlist!');
+            showToast(isWishlisted ? productDetailI18n.wishlistAdded : productDetailI18n.wishlistRemoved);
             window.dispatchEvent(new Event('wishlist:updated'));
         }
 
@@ -1890,11 +1921,11 @@
             syncMainQtyInput();
             const variantId = resolveSelectedVariantId();
             if (!variantId) {
-                showToast('Kombinasi varian yang dipilih tidak tersedia. Silakan pilih ulang varian.');
+                showToast(productDetailI18n.variantUnavailable);
                 return;
             }
             if (Number(productData.stock || 0) <= 0) {
-                showToast('Stok produk ini sedang habis.');
+                showToast(productDetailI18n.productOutOfStock);
                 return;
             }
             if (!isAuthenticated) {
@@ -1927,7 +1958,7 @@
                     }),
                 });
             } catch (error) {
-                showToast('Gagal menghubungi server. Silakan coba lagi.');
+                showToast(productDetailI18n.serverUnreachable);
                 return;
             }
             if (!res.ok) {
@@ -1935,12 +1966,12 @@
                 try {
                     data = await res.json();
                 } catch (error) {}
-                showToast(data?.message || 'Produk gagal ditambahkan ke keranjang.');
+                showToast(data?.message || productDetailI18n.cartAddFailed);
                 return;
             }
 
             showToast(
-                `${productData.name}${variantText ? ' (' + variantText + ')' : ''} (${qty} item) ditambahkan ke keranjang!`
+                translateProductDetail(productDetailI18n.cartAdded, { product: `${productData.name}${variantText ? ' (' + variantText + ')' : ''}`, count: qty })
                 );
             window.dispatchEvent(new Event('cart:updated'));
         }
@@ -1949,11 +1980,11 @@
             syncMainQtyInput();
             const variantId = resolveSelectedVariantId();
             if (!variantId) {
-                showToast('Kombinasi varian yang dipilih tidak tersedia. Silakan pilih ulang varian.');
+                showToast(productDetailI18n.variantUnavailable);
                 return false;
             }
             if (Number(productData.stock || 0) <= 0) {
-                showToast('Stok produk ini sedang habis.');
+                showToast(productDetailI18n.productOutOfStock);
                 return false;
             }
             const form = document.getElementById('buyNowForm');
@@ -1970,11 +2001,11 @@
             syncMainQtyInput();
             const variantId = resolveSelectedVariantId();
             if (!variantId) {
-                showToast('Kombinasi varian yang dipilih tidak tersedia. Silakan pilih ulang varian.');
+                showToast(productDetailI18n.variantUnavailable);
                 return false;
             }
             if (Number(productData.stock || 0) <= 0) {
-                showToast('Stok produk ini sedang habis.');
+                showToast(productDetailI18n.productOutOfStock);
                 return false;
             }
             if (!isAuthenticated) {
@@ -2030,10 +2061,10 @@
             <div class="text-yellow-400 text-sm mb-1">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</div>
             ${r.variant ? '<div class="flex gap-2 mb-2"><span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded">' + r.variant + '</span></div>' : ''}
             <p class="text-sm text-slate-600 leading-relaxed">${r.text}</p>
-            ${Array.isArray(r.photos) && r.photos.length ? `<div class="mt-3 flex flex-wrap gap-2">${r.photos.map((photo) => `<button type="button" onclick="openReviewImageModal('${String(photo).replace(/'/g, "\\'")}')" class="block"><img src="${photo}" alt="Foto ulasan" class="w-14 h-14 rounded-lg object-cover border border-slate-200" /></button>`).join('')}</div>` : ''}
+            ${Array.isArray(r.photos) && r.photos.length ? `<div class="mt-3 flex flex-wrap gap-2">${r.photos.map((photo) => `<button type="button" onclick="openReviewImageModal('${String(photo).replace(/'/g, "\\'")}')" class="block"><img src="${photo}" alt="${productDetailI18n.reviewPhoto}" class="w-14 h-14 rounded-lg object-cover border border-slate-200" /></button>`).join('')}</div>` : ''}
           </div>
         </div>
-      </div>`).join('') : '<p class="text-sm text-slate-500">Belum ada ulasan untuk produk ini.</p>';
+      </div>`).join('') : `<p class="text-sm text-slate-500">${productDetailI18n.noProductReviews}</p>`;
 
         function openReviewImageModal(src) {
             const modal = document.getElementById('reviewImageModal');
@@ -2260,14 +2291,14 @@
             if (navigator.share) {
                 navigator.share({
                     title: productData.name,
-                    text: `Cek produk ini di ${@json($appStoreName ?? config('app.name'))}!`,
+                    text: productDetailI18n.shareText,
                     url: url
                 }).catch(() => {});
             } else {
                 navigator.clipboard.writeText(url).then(() => {
-                    showToast('Link produk berhasil disalin!');
+                    showToast(productDetailI18n.linkCopied);
                 }).catch(() => {
-                    showToast('Gagal menyalin link.');
+                    showToast(productDetailI18n.linkCopyFailed);
                 });
             }
         }
@@ -2281,20 +2312,20 @@
                 window.open(sellerSupportUrl, '_blank', 'noopener,noreferrer');
                 return;
             }
-            showToast('Layanan chat penjual belum tersedia.');
+            showToast(productDetailI18n.sellerChatUnavailable);
         }
 
         function requestQuotation() {
             if (window.Tawk_API && typeof window.Tawk_API.maximize === 'function') {
                 window.Tawk_API.maximize();
-                showToast('Sampaikan jumlah dan kebutuhan proyek Anda melalui chat.');
+                showToast(productDetailI18n.quoteChatPrompt);
                 return;
             }
             if (sellerSupportUrl) {
                 window.open(sellerSupportUrl, '_blank', 'noopener,noreferrer');
                 return;
             }
-            showToast('Kanal permintaan penawaran belum tersedia.');
+            showToast(productDetailI18n.quoteUnavailable);
         }
 
         setMegaCategory('rumah-tangga');

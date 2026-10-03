@@ -49,6 +49,21 @@ test('global shell supports keyboard menus and stable mobile navigation', async 
     await expect.poll(async () => Math.round((await page.locator('.ec-header-main').boundingBox()).y)).toBe(0);
     await expect(page.locator('.ec-primary-nav')).toBeHidden();
 
+    const mobileNavTrigger = page.locator('#ecMobileNavToggle');
+    const mobileNavDrawer = page.locator('#ecMobileNavDrawer');
+    await mobileNavTrigger.click();
+    await expect(mobileNavDrawer).toBeVisible();
+    await expect(mobileNavDrawer).toHaveCSS('position', 'fixed');
+    const mobileHeaderBox = await page.locator('.ec-header-main').boundingBox();
+    const mobileNavDrawerBox = await mobileNavDrawer.boundingBox();
+    const mobileBottomNavBox = await page.locator('.ec-bottom-nav').boundingBox();
+    expect(Math.abs(mobileNavDrawerBox.y - (mobileHeaderBox.y + mobileHeaderBox.height))).toBeLessThanOrEqual(1);
+    expect(mobileNavDrawerBox.y + mobileNavDrawerBox.height).toBeLessThanOrEqual(mobileBottomNavBox.y);
+    await mobileNavDrawer.evaluate((drawer) => { drawer.scrollTop = drawer.scrollHeight; });
+    await expect(mobileNavDrawer.locator('a').last()).toBeVisible();
+    await mobileNavTrigger.click();
+    await expect(mobileNavDrawer).toBeHidden();
+
     await page.goto('/detail-produk/baut-hex-m8-x-25mm-galvanis', { waitUntil: 'domcontentloaded' });
     await expect(page.locator('nav[aria-label="Navigasi cepat"]')).toHaveCount(0);
     await expect(page.locator('.product-variant-grid')).toBeHidden();

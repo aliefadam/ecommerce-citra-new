@@ -90,11 +90,18 @@ function setupStorefrontShell() {
     const configNode = document.getElementById('ec-shell-config');
     const config = configNode ? JSON.parse(configNode.textContent) : {};
     const get = (id) => document.getElementById(id);
+    const mobileNavDrawer = get('ecMobileNavDrawer');
+    const syncMobileNavPosition = () => {
+        if (!mobileNavDrawer || mobileNavDrawer.hidden) return;
+        const headerBottom = root.querySelector('.ec-header-main')?.getBoundingClientRect().bottom ?? 60;
+        mobileNavDrawer.style.setProperty('--ec-mobile-drawer-top', `${Math.max(0, Math.round(headerBottom))}px`);
+    };
     const toggle = (trigger, panel, force) => {
         if (!trigger || !panel) return false;
         const opening = force ?? panel.hidden;
         panel.hidden = !opening;
         trigger.setAttribute('aria-expanded', String(opening));
+        if (opening && panel === mobileNavDrawer) syncMobileNavPosition();
         return opening;
     };
     const closables = [
@@ -121,6 +128,8 @@ function setupStorefrontShell() {
         closables.forEach(([trigger, panel]) => toggle(trigger, panel, false));
         event.target.closest('button, a, input')?.focus();
     });
+    window.addEventListener('scroll', syncMobileNavPosition, { passive: true });
+    window.addEventListener('resize', syncMobileNavPosition, { passive: true });
 
     const searchCategory = root.querySelector('[data-search-category]');
     const searchCategoryTrigger = get('ecNavCategoryTrigger');

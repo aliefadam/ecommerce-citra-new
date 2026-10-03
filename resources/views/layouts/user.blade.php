@@ -57,7 +57,7 @@
         @stack('structured_data')
     </head>
 
-    <body class="@yield('body_class', 'bg-stone-50 text-slate-800') {{ $showMobileTaskNavigation ? 'pb-20 md:pb-0' : '' }}">
+    <body class="@yield('body_class', 'bg-stone-50 text-slate-800') {{ $showMobileTaskNavigation ? 'ec-has-bottom-nav pb-20 md:pb-0' : '' }}">
         <div class="min-h-screen">
             @yield('content')
         </div>
