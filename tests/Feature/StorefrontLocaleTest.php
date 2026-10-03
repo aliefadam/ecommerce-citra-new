@@ -86,4 +86,51 @@ class StorefrontLocaleTest extends TestCase
             ->assertOk()
             ->assertSee('Cart Summary');
     }
+
+    public function test_help_center_uses_complete_english_copy_without_mixed_labels(): void
+    {
+        $this->withSession(['locale' => 'en'])
+            ->get(route('frontend.pages.show', 'pusat-bantuan'))
+            ->assertOk()
+            ->assertSee('Help Categories')
+            ->assertSee('Frequently Asked Questions')
+            ->assertSee('How do I place an order?')
+            ->assertSee('Products &amp; Stock', false)
+            ->assertSee('Need help with a project?')
+            ->assertDontSee('Kategori Bantuan')
+            ->assertDontSee('Cara Pemesanan')
+            ->assertDontSee('Products &amp; Stok', false)
+            ->assertDontSee('Butuh bantuan untuk kebutuhan proyek?');
+    }
+
+    public function test_secondary_customer_pages_render_english_interface_copy(): void
+    {
+        $this->seed();
+
+        $this->withSession(['locale' => 'en'])
+            ->get(route('frontend.order-tracking.index'))
+            ->assertOk()
+            ->assertSee('Track your order')
+            ->assertSee('Order Email')
+            ->assertDontSee('Lacak perjalanan pesananmu');
+
+        $this->withSession(['locale' => 'en'])
+            ->get(route('frontend.flash-sale'))
+            ->assertOk()
+            ->assertSee('Limited-Time Offers')
+            ->assertSee('View Offers')
+            ->assertDontSee('Promo Terbatas');
+
+        $this->withSession(['locale' => 'en'])
+            ->get(route('frontend.redeem-point'))
+            ->assertOk()
+            ->assertSee('Redeem your points for selected products')
+            ->assertDontSee('Tukarkan point kamu dengan produk pilihan');
+
+        $this->withSession(['locale' => 'en'])
+            ->get(route('frontend.blog.index'))
+            ->assertOk()
+            ->assertSee('Articles & Insights', false)
+            ->assertDontSee('Artikel &amp; Informasi', false);
+    }
 }

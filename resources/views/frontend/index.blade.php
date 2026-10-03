@@ -831,7 +831,7 @@
                 <div class="w-full max-w-[650px]">
                     <p class="mb-3 flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.24em] text-blue-200">
                         <span class="h-px w-8 bg-blue-300/80" aria-hidden="true"></span>
-                        Newsletter
+                        Small Parts, Big Impact
                     </p>
                     <h2 id="newsletter-heading" class="max-w-xl text-3xl font-extrabold leading-[1.12] tracking-[-0.025em] sm:text-4xl">
                         Dapatkan Update<br class="hidden sm:block"> Promo &amp; Produk Terbaru
@@ -868,9 +868,6 @@
                     </form>
                 </div>
 
-                <p class="absolute right-8 top-10 hidden rotate-[-7deg] text-right font-serif text-2xl italic leading-tight text-white/85 drop-shadow-md xl:block" aria-hidden="true">
-                    Small Parts<br>Big Impact
-                </p>
         </div>
     </section>
 

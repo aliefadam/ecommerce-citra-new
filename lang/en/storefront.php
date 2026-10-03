@@ -10,6 +10,9 @@ return [
     'home' => 'Home',
     'products' => 'Products',
     'promotion' => 'Promotions',
+    'technical' => 'Technical',
+    'project' => 'Project',
+    'about_boq' => 'About BOQ',
     'contact_us' => 'Contact Us',
     'categories' => 'Categories',
     'all_categories' => 'All Categories',
@@ -133,4 +136,6 @@ return [
     'search_variant_placeholder' => 'Search :variant...',
     'variant_not_found' => 'No matching options found.',
     'sort_changed' => 'Sort order updated',
+    'service_benefits' => 'Service benefits',
+    'app_name' => ':store APP',
 ];

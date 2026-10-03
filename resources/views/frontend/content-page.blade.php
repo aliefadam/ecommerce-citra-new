@@ -34,7 +34,10 @@
         $readMinutes = max(1, ceil(str_word_count(strip_tags((string) $page->content)) / 180));
         $relatedPosts = $relatedPosts ?? collect();
         $informationPages = [
+            'technical' => ['label' => 'Technical', 'icon' => 'settings'],
+            'project' => ['label' => 'Project', 'icon' => 'briefcase'],
             'cara-belanja' => ['label' => 'Cara Belanja', 'icon' => 'shopping-cart'],
+            'tentang-boq' => ['label' => 'Tentang BOQ', 'icon' => 'document'],
             'kebijakan-privasi' => ['label' => 'Kebijakan Privasi', 'icon' => 'shield-check'],
             'syarat-ketentuan' => ['label' => 'Syarat & Ketentuan', 'icon' => 'document-signed'],
         ];

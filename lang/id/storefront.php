@@ -10,6 +10,9 @@ return [
     'home' => 'Beranda',
     'products' => 'Produk',
     'promotion' => 'Promo',
+    'technical' => 'Technical',
+    'project' => 'Project',
+    'about_boq' => 'Tentang BOQ',
     'contact_us' => 'Hubungi Kami',
     'categories' => 'Kategori',
     'all_categories' => 'Semua Kategori',
@@ -133,4 +136,6 @@ return [
     'search_variant_placeholder' => 'Cari :variant...',
     'variant_not_found' => 'Tidak ada varian yang cocok.',
     'sort_changed' => 'Urutan diubah',
+    'service_benefits' => 'Keunggulan layanan',
+    'app_name' => 'APLIKASI :store',
 ];

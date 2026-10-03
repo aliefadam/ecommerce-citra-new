@@ -1,55 +1,27 @@
 @extends('layouts.user')
 
-@section('title', 'Pusat Bantuan - ' . ($appStoreName ?? config('app.name')))
-@section('meta_description', $page->meta_description ?: 'Temukan panduan pemesanan, pembayaran, pengiriman, retur, akun, dan kebutuhan proyek di '.$appStoreName.'.')
+@section('title', __('help.title') . ' - ' . ($appStoreName ?? config('app.name')))
+@section('meta_description', app()->getLocale() === 'en' ? __('help.meta_description') : ($page->meta_description ?: __('help.meta_description')))
 @section('canonical', $page->public_url)
 @section('og_image', asset('imgs/help-center/hero-help-center.webp'))
 
 @php
-    $categories = [
-        'pemesanan' => ['label' => 'Cara Pemesanan', 'icon' => 'shopping-cart'],
-        'pembayaran' => ['label' => 'Pembayaran', 'icon' => 'credit-card'],
-        'pengiriman' => ['label' => 'Pengiriman', 'icon' => 'truck-side'],
-        'retur' => ['label' => 'Retur & Komplain', 'icon' => 'box-open-full'],
-        'akun' => ['label' => 'Akun & Keamanan', 'icon' => 'user'],
-        'aplikasi' => ['label' => 'Install Aplikasi', 'icon' => 'download'],
-        'produk' => ['label' => 'Produk & Stok', 'icon' => 'box'],
-        'penawaran' => ['label' => 'Penawaran Proyek', 'icon' => 'document'],
-        'tentang' => ['label' => 'Tentang '.$appStoreName, 'icon' => 'info'],
+    $help = trans('help');
+    $categoryIcons = [
+        'pemesanan' => 'shopping-cart',
+        'pembayaran' => 'credit-card',
+        'pengiriman' => 'truck-side',
+        'retur' => 'box-open-full',
+        'akun' => 'user',
+        'aplikasi' => 'download',
+        'produk' => 'box',
+        'penawaran' => 'document',
+        'tentang' => 'info',
     ];
-
-    $faqs = [
-        ['category' => 'pemesanan', 'question' => 'Bagaimana cara melakukan pemesanan?', 'answer' => 'Cari produk berdasarkan nama, SKU, ukuran, atau material. Pilih varian dan jumlah yang diperlukan, lalu tambahkan ke keranjang. Periksa kembali produk, perusahaan penjual, alamat, dan pilihan pengiriman sebelum melanjutkan checkout.'],
-        ['category' => 'pemesanan', 'question' => 'Apa yang perlu diperiksa sebelum checkout?', 'answer' => 'Pastikan SKU, spesifikasi, varian, satuan jual, jumlah, perusahaan penjual, alamat penerima, dan pilihan pengiriman sudah sesuai kebutuhan Anda.'],
-        ['category' => 'pembayaran', 'question' => 'Metode pembayaran apa saja yang tersedia?', 'answer' => 'Metode pembayaran yang dapat digunakan ditampilkan pada proses checkout. Pilih salah satu metode yang tersedia dan ikuti instruksi pembayaran pada pesanan Anda.'],
-        ['category' => 'pembayaran', 'question' => 'Bagaimana jika pembayaran belum terverifikasi?', 'answer' => 'Periksa kembali status pesanan dan pastikan instruksi pembayaran telah diikuti. Jika Anda menggunakan pembayaran manual, unggah bukti pembayaran pada alur pesanan agar dapat diverifikasi.'],
-        ['category' => 'pengiriman', 'question' => 'Bagaimana cara mengecek status pesanan?', 'answer' => 'Buka halaman Lacak Pesanan, lalu masukkan nomor pesanan dan data verifikasi yang diminta. Status terbaru akan ditampilkan setelah data berhasil diverifikasi.'],
-        ['category' => 'pengiriman', 'question' => 'Di mana saya dapat melihat nomor resi?', 'answer' => 'Nomor resi akan tersedia pada detail atau pelacakan pesanan setelah pengiriman diproses dan informasi resi telah diterbitkan.'],
-        ['category' => 'retur', 'question' => 'Bagaimana proses retur atau komplain produk?', 'answer' => 'Siapkan nomor pesanan, foto produk, dan penjelasan kendala. Hubungi kanal dukungan resmi '.$appStoreName.' agar tim dapat memeriksa kelayakan dan bukti yang diperlukan untuk proses berikutnya.'],
-        ['category' => 'akun', 'question' => 'Bagaimana menjaga keamanan akun saya?', 'answer' => 'Gunakan kata sandi yang kuat, jangan membagikan kredensial atau kode verifikasi, dan pastikan Anda mengakses '.$appStoreName.' melalui alamat situs resmi.'],
-        [
-            'id' => 'install-aplikasi',
-            'category' => 'aplikasi',
-            'question' => 'Bagaimana cara menginstal aplikasi '.$appStoreName.' di Android atau iPhone?',
-            'answer' => $appStoreName.' dapat dipasang dari browser tanpa mengunduh aplikasi melalui Play Store atau App Store.',
-            'platforms' => [
-                'Android / tablet' => [
-                    'Buka situs '.$appStoreName.' menggunakan Google Chrome.',
-                    'Tekan Install Aplikasi pada bagian atas halaman. Jika dialog belum muncul, buka menu Chrome lalu pilih Install app atau Tambahkan ke layar utama.',
-                    'Tekan Install untuk mengonfirmasi. Ikon aplikasi akan muncul di layar utama perangkat.',
-                ],
-                'iPhone / iPad' => [
-                    'Buka situs '.$appStoreName.' menggunakan Safari.',
-                    'Tekan tombol Share atau Bagikan pada toolbar Safari.',
-                    'Pilih Add to Home Screen atau Tambahkan ke Layar Utama.',
-                    'Tekan Add atau Tambah untuk menyelesaikan instalasi.',
-                ],
-            ],
-        ],
-        ['category' => 'produk', 'question' => 'Bagaimana memastikan spesifikasi dan stok produk?', 'answer' => 'Periksa nama, SKU, ukuran, material, varian, satuan jual, dan informasi stok pada halaman produk. Konsultasikan dengan tim '.$appStoreName.' bila spesifikasi teknis masih perlu dipastikan.'],
-        ['category' => 'penawaran', 'question' => 'Apakah saya bisa meminta penawaran untuk pembelian dalam jumlah besar?', 'answer' => 'Ya. Gunakan tombol Minta Penawaran atau hubungi tim '.$appStoreName.' melalui kanal resmi untuk menyampaikan daftar produk, jumlah, serta spesifikasi kebutuhan proyek Anda.'],
-        ['category' => 'tentang', 'question' => 'Produk apa yang tersedia di '.$appStoreName.'?', 'answer' => $appStoreName.' menyediakan kebutuhan fastener, fitting, perlengkapan teknik, dan industrial supply untuk kebutuhan operasional maupun pengadaan proyek.'],
-    ];
+    $categories = collect($help['categories'])
+        ->map(fn ($label, $key) => ['label' => $label, 'icon' => $categoryIcons[$key]])
+        ->all();
+    $faqs = $help['faqs'];
 
     $quoteUrl = !empty($appStoreSettings['social_whatsapp'])
         ? $appStoreSettings['social_whatsapp']
@@ -66,34 +38,34 @@
 
     <main class="help-center" data-help-center>
         <nav class="help-breadcrumb ec-container" aria-label="Breadcrumb">
-            <a href="{{ route('frontend.index') }}"><i class="fi fi-rr-home" aria-hidden="true"></i><span>Beranda</span></a>
+            <a href="{{ route('frontend.index') }}"><i class="fi fi-rr-home" aria-hidden="true"></i><span>{{ $help['home'] }}</span></a>
             <i class="fi fi-rr-angle-small-right" aria-hidden="true"></i>
-            <span aria-current="page">Pusat Bantuan</span>
+            <span aria-current="page">{{ $help['title'] }}</span>
         </nav>
 
         <section class="help-hero" aria-labelledby="helpHeroTitle">
             <img src="{{ asset('imgs/help-center/hero-help-center.webp') }}" alt="" width="2048" height="768" fetchpriority="high" aria-hidden="true">
             <div class="help-hero-shade" aria-hidden="true"></div>
             <div class="help-hero-content ec-container">
-                <h1 id="helpHeroTitle">Pusat Bantuan</h1>
-                <p class="help-hero-kicker">Ada yang bisa kami bantu?</p>
-                <p class="help-hero-copy">Temukan jawaban seputar pemesanan, pembayaran, pengiriman, hingga kebutuhan penawaran proyek.</p>
+                <h1 id="helpHeroTitle">{{ $help['title'] }}</h1>
+                <p class="help-hero-kicker">{{ $help['hero_kicker'] }}</p>
+                <p class="help-hero-copy">{{ $help['hero_copy'] }}</p>
                 <form class="help-search" role="search" data-help-search-form>
-                    <label class="sr-only" for="helpSearch">Cari pertanyaan atau topik bantuan</label>
+                    <label class="sr-only" for="helpSearch">{{ $help['search_label'] }}</label>
                     <i class="fi fi-rr-search" aria-hidden="true"></i>
-                    <input id="helpSearch" type="search" placeholder="Cari pertanyaan atau topik bantuan..." autocomplete="off" data-help-search>
-                    <button type="submit">Cari</button>
+                    <input id="helpSearch" type="search" placeholder="{{ $help['search_placeholder'] }}" autocomplete="off" data-help-search>
+                    <button type="submit">{{ $help['search'] }}</button>
                 </form>
             </div>
         </section>
 
         <section class="help-main ec-container" aria-labelledby="faqHeading">
             <aside class="help-sidebar" aria-labelledby="categoryHeading">
-                <h2 id="categoryHeading">Kategori Bantuan</h2>
+                <h2 id="categoryHeading">{{ $help['help_categories'] }}</h2>
                 <div class="help-mobile-category">
-                    <label for="helpCategorySelect">Pilih kategori bantuan</label>
+                    <label for="helpCategorySelect">{{ $help['choose_category'] }}</label>
                     <select id="helpCategorySelect" data-help-category-select>
-                        <option value="all">Semua Kategori</option>
+                        <option value="all">{{ $help['all_categories'] }}</option>
                         @foreach ($categories as $key => $category)
                             <option value="{{ $key }}" @selected($key === 'pemesanan')>{{ $category['label'] }}</option>
                         @endforeach
@@ -110,9 +82,9 @@
                 <div class="help-sidebar-box">
                     <i class="fi fi-rr-comment-alt" aria-hidden="true"></i>
                     <div>
-                        <h3>Tidak menemukan jawaban?</h3>
-                        <p>Hubungi tim kami untuk bantuan lebih lanjut.</p>
-                        <a href="#hubungi-kami">Hubungi Kami <i class="fi fi-rr-arrow-small-right" aria-hidden="true"></i></a>
+                        <h3>{{ $help['no_answer'] }}</h3>
+                        <p>{{ $help['contact_more_help'] }}</p>
+                        <a href="#hubungi-kami">{{ $help['contact_us'] }} <i class="fi fi-rr-arrow-small-right" aria-hidden="true"></i></a>
                     </div>
                 </div>
             </aside>
@@ -120,12 +92,12 @@
             <div class="help-content">
                 <div class="help-section-head">
                     <div>
-                        <h2 id="faqHeading">Pertanyaan yang Sering Ditanyakan</h2>
-                        <p>Jawaban cepat untuk pertanyaan yang paling sering ditanyakan pelanggan.</p>
+                        <h2 id="faqHeading">{{ $help['faq_title'] }}</h2>
+                        <p>{{ $help['faq_intro'] }}</p>
                     </div>
-                    <label class="sr-only" for="helpDesktopCategory">Filter kategori FAQ</label>
+                    <label class="sr-only" for="helpDesktopCategory">{{ $help['faq_filter'] }}</label>
                     <select id="helpDesktopCategory" data-help-category-select>
-                        <option value="all">Semua Kategori</option>
+                        <option value="all">{{ $help['all_categories'] }}</option>
                         @foreach ($categories as $key => $category)
                             <option value="{{ $key }}" @selected($key === 'pemesanan')>{{ $category['label'] }}</option>
                         @endforeach
@@ -159,7 +131,7 @@
                                     </div>
                                 @endif
                                 @if ($faq['category'] === 'pengiriman' && str_contains($faq['question'], 'status'))
-                                    <a href="{{ route('frontend.order-tracking.index') }}">Buka Lacak Pesanan <i class="fi fi-rr-arrow-small-right" aria-hidden="true"></i></a>
+                                    <a href="{{ route('frontend.order-tracking.index') }}">{{ $help['open_tracking'] }} <i class="fi fi-rr-arrow-small-right" aria-hidden="true"></i></a>
                                 @endif
                             </div>
                         </article>
@@ -167,30 +139,30 @@
                 </div>
                 <div class="help-empty" data-help-empty hidden>
                     <i class="fi fi-rr-search" aria-hidden="true"></i>
-                    <h3>Jawaban belum ditemukan</h3>
-                    <p>Coba kata kunci lain atau pilih Semua Kategori.</p>
-                    <button type="button" data-help-reset>Reset pencarian</button>
+                    <h3>{{ $help['no_results'] }}</h3>
+                    <p>{{ $help['try_another_search'] }}</p>
+                    <button type="button" data-help-reset>{{ $help['reset_search'] }}</button>
                 </div>
 
                 <section class="help-popular" aria-labelledby="popularHeading">
                     <div class="help-section-head">
                         <div>
-                            <h2 id="popularHeading">Topik Populer</h2>
-                            <p>Temukan informasi yang Anda butuhkan dengan lebih cepat.</p>
+                            <h2 id="popularHeading">{{ $help['popular_topics'] }}</h2>
+                            <p>{{ $help['popular_intro'] }}</p>
                         </div>
                     </div>
                     <div class="help-topic-grid">
                         <a href="{{ route('frontend.pages.show', 'cara-belanja') }}" class="help-topic-card">
-                            <i class="fi fi-rr-shopping-cart" aria-hidden="true"></i><h3>Cara Belanja</h3><p>Panduan lengkap berbelanja dan menyelesaikan pesanan.</p><span>Lihat Panduan <i class="fi fi-rr-arrow-small-right" aria-hidden="true"></i></span>
+                            <i class="fi fi-rr-shopping-cart" aria-hidden="true"></i><h3>{{ $help['shopping_guide'] }}</h3><p>{{ $help['shopping_guide_copy'] }}</p><span>{{ $help['view_guide'] }} <i class="fi fi-rr-arrow-small-right" aria-hidden="true"></i></span>
                         </a>
                         <button type="button" class="help-topic-card" data-topic-category="pembayaran">
-                            <i class="fi fi-rr-credit-card" aria-hidden="true"></i><h3>Pembayaran</h3><p>Metode pembayaran dan proses verifikasi.</p><span>Lihat Panduan <i class="fi fi-rr-arrow-small-right" aria-hidden="true"></i></span>
+                            <i class="fi fi-rr-credit-card" aria-hidden="true"></i><h3>{{ $categories['pembayaran']['label'] }}</h3><p>{{ $help['payment_copy'] }}</p><span>{{ $help['view_guide'] }} <i class="fi fi-rr-arrow-small-right" aria-hidden="true"></i></span>
                         </button>
                         <a href="{{ route('frontend.order-tracking.index') }}" class="help-topic-card">
-                            <i class="fi fi-rr-truck-side" aria-hidden="true"></i><h3>Pengiriman</h3><p>Status, resi, dan pelacakan pesanan Anda.</p><span>Lacak Pesanan <i class="fi fi-rr-arrow-small-right" aria-hidden="true"></i></span>
+                            <i class="fi fi-rr-truck-side" aria-hidden="true"></i><h3>{{ $categories['pengiriman']['label'] }}</h3><p>{{ $help['shipping_copy'] }}</p><span>{{ $help['track_order'] }} <i class="fi fi-rr-arrow-small-right" aria-hidden="true"></i></span>
                         </a>
                         <a href="{{ $quoteUrl }}" class="help-topic-card" @if($quoteIsExternal) target="_blank" rel="noopener noreferrer" @endif>
-                            <i class="fi fi-rr-document" aria-hidden="true"></i><h3>Minta Penawaran</h3><p>Pembelian jumlah besar dan kebutuhan proyek.</p><span>Hubungi Tim <i class="fi fi-rr-arrow-small-right" aria-hidden="true"></i></span>
+                            <i class="fi fi-rr-document" aria-hidden="true"></i><h3>{{ $help['quote'] }}</h3><p>{{ $help['quote_copy'] }}</p><span>{{ $help['contact_team'] }} <i class="fi fi-rr-arrow-small-right" aria-hidden="true"></i></span>
                         </a>
                     </div>
                 </section>
@@ -198,16 +170,16 @@
         </section>
 
         <section class="help-project ec-container" aria-labelledby="projectHeading">
-            <img src="{{ asset('imgs/help-center/project-assistance.webp') }}" alt="Fasilitas industri dengan struktur baja dan sistem perpipaan" width="2048" height="864" loading="lazy">
+            <img src="{{ asset('imgs/help-center/project-assistance.webp') }}" alt="{{ $help['facility_alt'] }}" width="2048" height="864" loading="lazy">
             <div class="help-project-overlay" aria-hidden="true"></div>
             <div class="help-project-copy">
                 <i class="fi fi-rr-building" aria-hidden="true"></i>
                 <div>
-                    <h2 id="projectHeading">Butuh bantuan untuk kebutuhan proyek?</h2>
-                    <p>Tim kami siap membantu pembelian dalam jumlah besar dan kebutuhan spesifikasi tertentu untuk proyek Anda.</p>
+                    <h2 id="projectHeading">{{ $help['project_help'] }}</h2>
+                    <p>{{ $help['project_help_copy'] }}</p>
                     <div class="help-project-actions">
-                        <a href="#hubungi-kami" class="is-light"><i class="fi fi-rr-comment-alt" aria-hidden="true"></i> Hubungi Tim {{ $appStoreName }}</a>
-                        <a href="{{ $quoteUrl }}" class="is-primary" @if($quoteIsExternal) target="_blank" rel="noopener noreferrer" @endif><i class="fi fi-rr-document" aria-hidden="true"></i> Minta Penawaran</a>
+                        <a href="#hubungi-kami" class="is-light"><i class="fi fi-rr-comment-alt" aria-hidden="true"></i> {{ $help['contact_team'] }} {{ $appStoreName }}</a>
+                        <a href="{{ $quoteUrl }}" class="is-primary" @if($quoteIsExternal) target="_blank" rel="noopener noreferrer" @endif><i class="fi fi-rr-document" aria-hidden="true"></i> {{ $help['quote'] }}</a>
                     </div>
                 </div>
             </div>
@@ -217,29 +189,29 @@
         <section id="hubungi-kami" class="help-contact ec-container" aria-labelledby="contactHeading">
             <div class="help-section-head">
                 <div>
-                    <h2 id="contactHeading">Masih butuh bantuan?</h2>
-                    <p>Tim kami siap membantu Anda melalui kanal komunikasi yang tersedia.</p>
+                    <h2 id="contactHeading">{{ $help['still_need_help'] }}</h2>
+                    <p>{{ $help['contact_intro'] }}</p>
                 </div>
             </div>
             <div class="help-contact-grid">
                 <article class="help-contact-card help-contact-whatsapp">
                     <i class="fi fi-brands-whatsapp" aria-hidden="true"></i>
-                    <div><h3>WhatsApp</h3><p>Chat langsung dengan tim kami pada jam operasional.</p></div>
+                    <div><h3>WhatsApp</h3><p>{{ $help['whatsapp_copy'] }}</p></div>
                     @if (!empty($appStoreSettings['social_whatsapp']))
-                        <a href="{{ $appStoreSettings['social_whatsapp'] }}" target="_blank" rel="noopener noreferrer">Chat via WhatsApp</a>
+                        <a href="{{ $appStoreSettings['social_whatsapp'] }}" target="_blank" rel="noopener noreferrer">{{ $help['chat_whatsapp'] }}</a>
                     @else
-                        <span class="is-unavailable">Belum tersedia</span>
+                        <span class="is-unavailable">{{ $help['unavailable'] }}</span>
                     @endif
                 </article>
                 <article class="help-contact-card">
                     <i class="fi fi-rr-envelope" aria-hidden="true"></i>
-                    <div><h3>Email</h3>@if($supportEmail)<p>Kirim pertanyaan Anda ke<br><strong>{{ $supportEmail }}</strong></p>@else<p>Alamat email dukungan belum dikonfigurasi.</p>@endif</div>
-                    @if($supportEmail)<a href="mailto:{{ $supportEmail }}">Kirim Email</a>@else<span class="is-unavailable">Belum tersedia</span>@endif
+                    <div><h3>Email</h3>@if($supportEmail)<p>{{ $help['email_copy'] }}<br><strong>{{ $supportEmail }}</strong></p>@else<p>{{ $help['email_unconfigured'] }}</p>@endif</div>
+                    @if($supportEmail)<a href="mailto:{{ $supportEmail }}">{{ $help['send_email'] }}</a>@else<span class="is-unavailable">{{ $help['unavailable'] }}</span>@endif
                 </article>
                 <article class="help-contact-card">
                     <i class="fi fi-rr-headset" aria-hidden="true"></i>
-                    <div><h3>Jam Operasional</h3><p>Senin–Sabtu<br><strong>08.00–17.00 WIB</strong></p></div>
-                    <a href="#categoryHeading">Lihat Topik Bantuan</a>
+                    <div><h3>{{ $help['business_hours'] }}</h3><p>{{ $help['business_hours_value'] }}<br><strong>08.00–17.00 WIB</strong></p></div>
+                    <a href="#categoryHeading">{{ $help['view_help_topics'] }}</a>
                 </article>
             </div>
         </section>
@@ -261,6 +233,8 @@
         (() => {
             const root = document.querySelector('[data-help-center]');
             if (!root) return;
+            const answersFound = @json($help['answers_found']);
+            const languageLocale = @json(app()->getLocale() === 'en' ? 'en-US' : 'id-ID');
             const faqItems = [...root.querySelectorAll('[data-help-faq]')];
             const categoryButtons = [...root.querySelectorAll('[data-category]')];
             const categorySelects = [...root.querySelectorAll('[data-help-category-select]')];
@@ -273,7 +247,7 @@
             let activeCategory = new URLSearchParams(window.location.search).get('category') || hashFaq?.dataset.category || 'pemesanan';
             if (activeCategory !== 'all' && !categoryButtons.some(button => button.dataset.category === activeCategory)) activeCategory = 'pemesanan';
 
-            const normalize = value => value.toLocaleLowerCase('id-ID').trim();
+            const normalize = value => value.toLocaleLowerCase(languageLocale).trim();
             const closeFaq = item => {
                 const trigger = item.querySelector('[data-faq-trigger]');
                 const panel = item.querySelector('[role="region"]');
@@ -304,7 +278,9 @@
                     button.setAttribute('aria-pressed', selected ? 'true' : 'false');
                 });
                 categorySelects.forEach(select => select.value = activeCategory);
-                summary.textContent = query ? `${visible} jawaban ditemukan untuk “${searchInput.value.trim()}”` : '';
+                summary.textContent = query
+                    ? answersFound.replace(':count', visible).replace(':query', searchInput.value.trim())
+                    : '';
                 empty.hidden = visible !== 0;
                 faqList.hidden = visible === 0;
                 if (openFirst) openFirstVisible();

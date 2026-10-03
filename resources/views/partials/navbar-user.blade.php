@@ -14,14 +14,14 @@
             <a href="{{ route('frontend.pages.show', 'pusat-bantuan') }}?category=aplikasi#install-aplikasi"
                 class="ec-mobile-install" data-pwa-install aria-label="{{ __('storefront.install_app_label', ['store' => $appStoreName]) }}">
                 <span class="ec-mobile-install-copy">
-                    <small>APLIKASI {{ strtoupper($appStoreName) }}</small>
+                    <small>{{ __('storefront.app_name', ['store' => strtoupper($appStoreName)]) }}</small>
                     <strong>{{ __('storefront.shop_faster_mobile') }}</strong>
                 </span>
                 <span class="ec-mobile-install-action">
                     INSTALL <i class="fi fi-rr-arrow-small-right" aria-hidden="true"></i>
                 </span>
             </a>
-            <div class="ec-utility-links" aria-label="Keunggulan layanan">
+            <div class="ec-utility-links" aria-label="{{ __('storefront.service_benefits') }}">
                 <span><i class="fi fi-rr-shield-check" aria-hidden="true"></i> Trusted by Industry</span>
                 <span><i class="fi fi-rr-marker" aria-hidden="true"></i> {{ __('storefront.nationwide_shipping') }}</span>
             </div>
@@ -35,7 +35,7 @@
                 <button id="ecMobileSearchToggle" class="ec-header-icon-button" type="button" aria-expanded="false" aria-controls="ecMobileSearch" aria-label="{{ __('storefront.open_search') }}"><i class="fi fi-rr-search" aria-hidden="true"></i></button>
             </div>
 
-            <a href="{{ route('frontend.index') }}" class="ec-header-logo" aria-label="{{ $appStoreName }}, beranda">
+            <a href="{{ route('frontend.index') }}" class="ec-header-logo" aria-label="{{ $appStoreName }}, {{ strtolower(__('storefront.home')) }}">
                 <img src="{{ !empty($appStoreLogoUrl) ? $appStoreLogoUrl : asset('logo/BOQ.CO.ID/BOQ.CO.ID-1.png') }}" alt="{{ $appStoreName }}" width="116" height="52" />
             </a>
 
@@ -118,12 +118,16 @@
             </div>
             <div class="ec-primary-links">
                 @foreach ([
-                    [__('storefront.home'), route('frontend.index'), 'frontend.index'],
-                    [__('storefront.products'), route('frontend.kategori'), 'frontend.kategori'],
-                    [__('storefront.promotion'), route('frontend.flash-sale'), 'frontend.flash-sale'],
-                    [__('storefront.contact_us'), route('frontend.pages.show', 'pusat-bantuan'), null],
-                ] as [$label, $url, $routeName])
-                    <a href="{{ $url }}" class="{{ $routeName && request()->routeIs($routeName) ? 'is-active' : '' }}" @if($routeName && request()->routeIs($routeName)) aria-current="page" @endif>{{ $label }}</a>
+                    [__('storefront.home'), route('frontend.index'), request()->routeIs('frontend.index')],
+                    [__('storefront.products'), route('frontend.kategori'), request()->routeIs('frontend.kategori')],
+                    [__('storefront.promotion'), route('frontend.flash-sale'), request()->routeIs('frontend.flash-sale')],
+                    [__('storefront.technical'), route('frontend.pages.show', 'technical'), request()->routeIs('frontend.pages.show') && request()->route('slug') === 'technical'],
+                    [__('storefront.project'), route('frontend.pages.show', 'project'), request()->routeIs('frontend.pages.show') && request()->route('slug') === 'project'],
+                    [__('storefront.how_to_shop'), route('frontend.pages.show', 'cara-belanja'), request()->routeIs('frontend.pages.show') && request()->route('slug') === 'cara-belanja'],
+                    [__('storefront.about_boq'), route('frontend.pages.show', 'tentang-boq'), request()->routeIs('frontend.pages.show') && request()->route('slug') === 'tentang-boq'],
+                    [__('storefront.contact_us'), route('frontend.pages.show', 'pusat-bantuan'), request()->routeIs('frontend.pages.show') && request()->route('slug') === 'pusat-bantuan'],
+                ] as [$label, $url, $isActive])
+                    <a href="{{ $url }}" class="{{ $isActive ? 'is-active' : '' }}" @if($isActive) aria-current="page" @endif>{{ $label }}</a>
                 @endforeach
             </div>
         </div>
@@ -136,6 +140,10 @@
             <a href="{{ route('frontend.index') }}" class="flex min-h-11 items-center rounded-lg px-3 text-sm font-bold hover:bg-slate-100">{{ __('storefront.home') }}</a>
             <a href="{{ route('frontend.kategori') }}" class="flex min-h-11 items-center rounded-lg px-3 text-sm font-bold hover:bg-slate-100">{{ __('storefront.products') }}</a>
             <a href="{{ route('frontend.flash-sale') }}" class="flex min-h-11 items-center rounded-lg px-3 text-sm font-bold hover:bg-slate-100">{{ __('storefront.promotion') }}</a>
+            <a href="{{ route('frontend.pages.show', 'technical') }}" class="flex min-h-11 items-center rounded-lg px-3 text-sm font-bold hover:bg-slate-100">{{ __('storefront.technical') }}</a>
+            <a href="{{ route('frontend.pages.show', 'project') }}" class="flex min-h-11 items-center rounded-lg px-3 text-sm font-bold hover:bg-slate-100">{{ __('storefront.project') }}</a>
+            <a href="{{ route('frontend.pages.show', 'cara-belanja') }}" class="flex min-h-11 items-center rounded-lg px-3 text-sm font-bold hover:bg-slate-100">{{ __('storefront.how_to_shop') }}</a>
+            <a href="{{ route('frontend.pages.show', 'tentang-boq') }}" class="flex min-h-11 items-center rounded-lg px-3 text-sm font-bold hover:bg-slate-100">{{ __('storefront.about_boq') }}</a>
             <a href="{{ route('frontend.pages.show', 'pusat-bantuan') }}" class="flex min-h-11 items-center rounded-lg px-3 text-sm font-bold hover:bg-slate-100">{{ __('storefront.contact_us') }}</a>
         </div>
     </div>
