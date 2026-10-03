@@ -10,7 +10,7 @@
 <nav class="ec-site-header" aria-label="Navigasi utama" data-storefront-shell>
     <div class="ec-utility-bar">
         <div class="ec-container ec-utility-inner">
-            <p class="ec-utility-copy">Solusi Kebutuhan Fastener &amp; Industrial Supply</p>
+            <p class="ec-utility-copy">We Connect The Gaps &amp; One Stop Shop Industrial Supply</p>
             <a href="{{ route('frontend.pages.show', 'pusat-bantuan') }}?category=aplikasi#install-aplikasi"
                 class="ec-mobile-install" data-pwa-install aria-label="Install aplikasi {{ $appStoreName }} atau lihat panduan instalasi">
                 <span class="ec-mobile-install-copy">

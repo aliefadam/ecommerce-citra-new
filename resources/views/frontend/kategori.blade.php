@@ -331,21 +331,7 @@
                         </div>
 
                         <div class="flat-filter-section">
-                            <button type="button" class="flex w-full items-center justify-between gap-3 text-left"
-                                aria-expanded="true" aria-controls="categoryPagePricePanel" onclick="toggleFilterSection(this, 'categoryPagePricePanel')">
-                                <span class="text-sm font-medium text-slate-950">Harga</span>
-                                <i class="ri-arrow-down-s-line rotate-180 text-lg text-slate-400 transition-transform"></i>
-                            </button>
-                            <div id="categoryPagePricePanel" class="grid grid-cols-[1fr_auto_1fr] items-center gap-2 pt-3">
-                                <input id="priceMin" type="number" min="0" placeholder="Min" oninput="applyFilter()" class="min-w-0 w-full rounded border border-slate-300 bg-transparent px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-blue-500">
-                                <span class="text-slate-400">-</span>
-                                <input id="priceMax" type="number" min="0" placeholder="Max" oninput="applyFilter()" class="min-w-0 w-full rounded border border-slate-300 bg-transparent px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-blue-500">
-                            </div>
-                        </div>
-
-                        <div class="flat-filter-section">
                             <h4 class="mb-3 text-sm font-medium text-slate-950">Status Produk</h4>
-                            <label class="mb-3 flex items-center gap-2 text-sm text-slate-700"><input id="filterPromo" type="checkbox" class="accent-blue-500" onchange="applyFilter()"> Hanya promo / flash sale</label>
                             <label class="flex items-center gap-2 text-sm text-slate-700"><input id="filterStock" type="checkbox" class="accent-blue-500" onchange="applyFilter()"> Hanya stok tersedia</label>
                         </div>
 
@@ -484,9 +470,6 @@
             const state = {
                 categories: Array.from(document.querySelectorAll('.filter-cat:checked')).map((input) => input.value),
                 variants,
-                priceMin: document.getElementById('priceMin')?.value || '',
-                priceMax: document.getElementById('priceMax')?.value || '',
-                promoOnly: document.getElementById('filterPromo')?.checked || false,
                 stockOnly: document.getElementById('filterStock')?.checked || false,
                 ratingMin: document.getElementById('ratingMin')?.value || '0',
                 sort: document.getElementById('sortSel')?.value || 'newest',
@@ -513,9 +496,6 @@
                     variant.name === (input.dataset.variantName || '') && variant.value === (input.dataset.variantValue || '')
                 );
             });
-            document.getElementById('priceMin').value = state.priceMin || '';
-            document.getElementById('priceMax').value = state.priceMax || '';
-            document.getElementById('filterPromo').checked = Boolean(state.promoOnly);
             document.getElementById('filterStock').checked = Boolean(state.stockOnly);
             document.getElementById('ratingMin').value = state.ratingMin || '0';
             document.getElementById('sortSel').value = state.sort || 'newest';
@@ -525,9 +505,6 @@
         function getFiltered() {
             const cats = Array.from(document.querySelectorAll('.filter-cat:checked')).map(c => c.value);
             const activeVariantGroups = Object.entries(selectedVariantFilters).filter(([, values]) => values.size > 0);
-            const priceMin = Number(document.getElementById('priceMin')?.value || 0);
-            const priceMax = Number(document.getElementById('priceMax')?.value || 0);
-            const promoOnly = document.getElementById('filterPromo')?.checked;
             const stockOnly = document.getElementById('filterStock')?.checked;
             const ratingMin = Number(document.getElementById('ratingMin')?.value || 0);
             return allProducts.filter((p) => {
@@ -539,11 +516,9 @@
                     )
                 );
                 const searchMatch = !searchQuery || p.name.toLowerCase().includes(searchQuery.toLowerCase());
-                const priceMatch = (!priceMin || Number(p.price) >= priceMin) && (!priceMax || Number(p.price) <= priceMax);
-                const promoMatch = !promoOnly || !!p.isFlashSale;
                 const stockMatch = !stockOnly || Number(p.stock || 0) > 0;
                 const ratingMatch = Number(p.rating || 0) >= ratingMin;
-                return catMatch && initialCategoryMatch && variantMatch && searchMatch && priceMatch && promoMatch && stockMatch && ratingMatch;
+                return catMatch && initialCategoryMatch && variantMatch && searchMatch && stockMatch && ratingMatch;
             });
         }
 
@@ -657,7 +632,7 @@
                 return `<label class="filter-category-option flex items-center gap-2 cursor-pointer group"><input type="checkbox"
                                     class="filter-cat w-4 h-4 rounded accent-blue-500" value="${cat.slug}" ${checked ? 'checked' : ''}
                                     onchange="applyCategoryFilter()" /><span
-                                    class="text-sm text-slate-700 group-hover:text-slate-950">${cat.name} (${cat.count})</span></label>`;
+                                    class="text-sm text-slate-700 group-hover:text-slate-950">${cat.name}</span></label>`;
             }).join('');
             container.innerHTML = items;
         }
@@ -843,11 +818,6 @@
                 const text = el.parentElement.querySelector('span')?.textContent || el.value;
                 chips.push(text);
             });
-            const priceMin = document.getElementById('priceMin')?.value;
-            const priceMax = document.getElementById('priceMax')?.value;
-            if (priceMin) chips.push(`Min Rp ${Number(priceMin).toLocaleString('id-ID')}`);
-            if (priceMax) chips.push(`Max Rp ${Number(priceMax).toLocaleString('id-ID')}`);
-            if (document.getElementById('filterPromo')?.checked) chips.push('Promo');
             if (document.getElementById('filterStock')?.checked) chips.push('Stok tersedia');
             const ratingMin = document.getElementById('ratingMin')?.value;
             if (Number(ratingMin) > 0) chips.push(`Rating ${ratingMin}+`);
@@ -888,14 +858,8 @@
             });
             document.querySelectorAll('.filter-variant-options').forEach((group) => updateVariantOptionVisibility(group.dataset.variantGroup || ''));
             document.querySelectorAll('.filter-variant-group-toggle').forEach((el) => setVariantGroupExpanded(el.dataset.variantGroup || '', false));
-            const priceMin = document.getElementById('priceMin');
-            const priceMax = document.getElementById('priceMax');
-            const filterPromo = document.getElementById('filterPromo');
             const filterStock = document.getElementById('filterStock');
             const ratingMin = document.getElementById('ratingMin');
-            if (priceMin) priceMin.value = '';
-            if (priceMax) priceMax.value = '';
-            if (filterPromo) filterPromo.checked = false;
             if (filterStock) filterStock.checked = false;
             if (ratingMin) ratingMin.value = '0';
             activeCategorySlug = '';

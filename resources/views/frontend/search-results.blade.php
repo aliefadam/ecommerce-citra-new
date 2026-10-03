@@ -78,21 +78,7 @@
                     </div>
 
                     <div class="flat-filter-section">
-                        <button type="button" class="flex w-full items-center justify-between gap-3 text-left"
-                            aria-expanded="true" aria-controls="searchPricePanel" onclick="toggleFilterSection(this, 'searchPricePanel')">
-                            <span class="text-sm font-medium text-slate-950">Harga</span>
-                            <i class="ri-arrow-down-s-line rotate-180 text-lg text-slate-400 transition-transform"></i>
-                        </button>
-                        <div id="searchPricePanel" class="grid grid-cols-[1fr_auto_1fr] items-center gap-2 pt-3">
-                            <input id="priceMin" type="number" min="0" placeholder="Min" oninput="applyFilters()" class="min-w-0 w-full rounded border border-slate-300 bg-transparent px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
-                            <span class="text-slate-400">-</span>
-                            <input id="priceMax" type="number" min="0" placeholder="Max" oninput="applyFilters()" class="min-w-0 w-full rounded border border-slate-300 bg-transparent px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
-                        </div>
-                    </div>
-
-                    <div class="flat-filter-section">
                         <h4 class="mb-3 text-sm font-medium text-slate-950">Status Produk</h4>
-                        <label class="mb-3 flex items-center gap-2 text-sm text-slate-700"><input id="filterPromo" type="checkbox" class="accent-blue-500" onchange="applyFilters()"> Hanya promo / flash sale</label>
                         <label class="flex items-center gap-2 text-sm text-slate-700"><input id="filterStock" type="checkbox" class="accent-blue-500" onchange="applyFilters()"> Hanya stok tersedia</label>
                     </div>
 
@@ -186,7 +172,7 @@
         container.innerHTML = searchMainCategories.map(cat => `
             <label class="filter-category-option flex items-center gap-2 text-sm text-slate-700">
                 <input type="checkbox" class="filter-cat accent-blue-500" value="${cat.slug}" onchange="applyFilters()">
-                <span>${cat.name} (${cat.count})</span>
+                <span>${cat.name}</span>
             </label>
         `).join('');
     }
@@ -291,23 +277,18 @@
     function getFilteredProducts() {
         collectVariantFilters();
         const selectedCats = Array.from(document.querySelectorAll('.filter-cat:checked')).map(el => el.value);
-        const priceMin = Number(document.getElementById('priceMin').value || 0);
-        const priceMax = Number(document.getElementById('priceMax').value || 0);
-        const promoOnly = document.getElementById('filterPromo').checked;
         const stockOnly = document.getElementById('filterStock').checked;
         const ratingMin = Number(document.getElementById('ratingMin').value || 0);
         const activeVariantGroups = Object.entries(selectedVariantFilters).filter(([, values]) => values.size > 0);
 
         let items = allProducts.filter(product => {
             const categoryMatch = selectedCats.length === 0 || selectedCats.includes(product.parentCategorySlug);
-            const priceMatch = (!priceMin || Number(product.price) >= priceMin) && (!priceMax || Number(product.price) <= priceMax);
-            const promoMatch = !promoOnly || !!product.isFlashSale;
             const stockMatch = !stockOnly || Number(product.stock || 0) > 0;
             const ratingMatch = Number(product.rating || 0) >= ratingMin;
             const variantMatch = activeVariantGroups.length === 0 || activeVariantGroups.every(([name, values]) =>
                 Array.isArray(product.variants) && product.variants.some(variant => normalizeFilterValue(variant.name) === name && values.has(normalizeFilterValue(variant.value)))
             );
-            return categoryMatch && priceMatch && promoMatch && stockMatch && ratingMatch && variantMatch;
+            return categoryMatch && stockMatch && ratingMatch && variantMatch;
         });
 
         const sort = document.getElementById('sortSel').value;
@@ -334,11 +315,6 @@
             const text = el.parentElement.querySelector('span')?.textContent || el.value;
             chips.push(text);
         });
-        const priceMin = document.getElementById('priceMin').value;
-        const priceMax = document.getElementById('priceMax').value;
-        if (priceMin) chips.push(`Min Rp ${Number(priceMin).toLocaleString('id-ID')}`);
-        if (priceMax) chips.push(`Max Rp ${Number(priceMax).toLocaleString('id-ID')}`);
-        if (document.getElementById('filterPromo').checked) chips.push('Promo');
         if (document.getElementById('filterStock').checked) chips.push('Stok tersedia');
         const ratingMin = document.getElementById('ratingMin').value;
         if (Number(ratingMin) > 0) chips.push(`Rating ${ratingMin}+`);
@@ -402,9 +378,6 @@
             categorySearch.value = '';
             searchCategoryOptions(categorySearch, 'categoryFilterList', 'searchCategoryEmpty');
         }
-        document.getElementById('priceMin').value = '';
-        document.getElementById('priceMax').value = '';
-        document.getElementById('filterPromo').checked = false;
         document.getElementById('filterStock').checked = false;
         document.getElementById('ratingMin').value = '0';
         document.getElementById('sortSel').value = 'relevant';

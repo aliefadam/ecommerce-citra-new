@@ -520,7 +520,6 @@
                             @endif
                         </span>
                         <strong class="mt-2 block w-full truncate text-xs font-bold text-slate-950 sm:text-[13px]">{{ $cat['name'] }}</strong>
-                        <span class="mt-1 text-[10px] font-normal text-slate-400 sm:text-[11px]">{{ number_format((int) ($cat['count'] ?? 0), 0, ',', '.') }} produk</span>
                     </a>
                 @empty
                     <div class="w-full rounded-xl border border-dashed border-slate-300 bg-white px-5 py-8 text-center text-sm text-slate-500">Kategori sedang disiapkan.</div>
@@ -626,9 +625,7 @@
                                         <label class="filter-category-option flex items-center gap-2 cursor-pointer group"><input type="checkbox"
                                                 class="filter-cat w-4 h-4 rounded accent-blue-500" value="{{ $cat['slug'] }}"
                                                 onchange="applyFilter()" /><span
-                                                class="text-sm text-slate-700 group-hover:text-slate-950">{{ $cat['name'] }}
-                                                ({{ $cat['count'] }})
-                                            </span></label>
+                                                class="text-sm text-slate-700 group-hover:text-slate-950">{{ $cat['name'] }}</span></label>
                                     @endforeach
                                 </div>
                                 <p id="homeCategoryEmpty" class="hidden py-2 text-xs text-slate-400">Kategori tidak ditemukan.</p>
