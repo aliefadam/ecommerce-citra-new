@@ -33,13 +33,14 @@
         $isPost = $page->type === 'post';
         $readMinutes = max(1, ceil(str_word_count(strip_tags((string) $page->content)) / 180));
         $relatedPosts = $relatedPosts ?? collect();
+        $information = trans('information');
         $informationPages = [
-            'technical' => ['label' => 'Technical', 'icon' => 'settings'],
-            'project' => ['label' => 'Project', 'icon' => 'briefcase'],
-            'cara-belanja' => ['label' => 'Cara Belanja', 'icon' => 'shopping-cart'],
-            'tentang-boq' => ['label' => 'Tentang BOQ', 'icon' => 'document'],
-            'kebijakan-privasi' => ['label' => 'Kebijakan Privasi', 'icon' => 'shield-check'],
-            'syarat-ketentuan' => ['label' => 'Syarat & Ketentuan', 'icon' => 'document-signed'],
+            'technical' => ['label' => $information['pages']['technical']['label'], 'icon' => 'bolt'],
+            'project' => ['label' => $information['pages']['project']['label'], 'icon' => 'building'],
+            'cara-belanja' => ['label' => $information['pages']['cara-belanja']['label'], 'icon' => 'shopping-cart'],
+            'tentang-boq' => ['label' => $information['pages']['tentang-boq']['label'], 'icon' => 'document'],
+            'kebijakan-privasi' => ['label' => $information['pages']['kebijakan-privasi']['label'], 'icon' => 'lock'],
+            'syarat-ketentuan' => ['label' => $information['pages']['syarat-ketentuan']['label'], 'icon' => 'receipt'],
         ];
     @endphp
 
@@ -141,9 +142,9 @@
     @else
         <main class="info-page">
             <nav class="info-breadcrumb ec-container" aria-label="Breadcrumb">
-                <a href="{{ route('frontend.index') }}"><i class="fi fi-rr-home" aria-hidden="true"></i><span>Beranda</span></a>
+                <a href="{{ route('frontend.index') }}"><i class="fi fi-rr-home" aria-hidden="true"></i><span>{{ $information['home'] }}</span></a>
                 <i class="fi fi-rr-angle-small-right" aria-hidden="true"></i>
-                <a href="{{ route('frontend.pages.show', 'pusat-bantuan') }}">Pusat Bantuan</a>
+                <a href="{{ route('frontend.pages.show', 'pusat-bantuan') }}">{{ $information['help_center'] }}</a>
                 <i class="fi fi-rr-angle-small-right" aria-hidden="true"></i>
                 <span aria-current="page">{{ $page->title }}</span>
             </nav>
@@ -152,7 +153,7 @@
                 <img src="{{ asset('imgs/help-center/hero-help-center.webp') }}" alt="" width="2048" height="768" fetchpriority="high" aria-hidden="true">
                 <div class="info-hero-shade" aria-hidden="true"></div>
                 <div class="info-hero-content ec-container">
-                    <p class="info-hero-label">Informasi &amp; Panduan</p>
+                    <p class="info-hero-label">{{ $information['hero_label'] }}</p>
                     <h1 id="infoPageTitle">{{ $page->title }}</h1>
                     @if ($page->excerpt)
                         <p>{{ $page->excerpt }}</p>
@@ -162,8 +163,8 @@
 
             <div class="info-layout ec-container">
                 <aside class="info-sidebar" aria-labelledby="infoNavigationTitle">
-                    <h2 id="infoNavigationTitle">Informasi Pelanggan</h2>
-                    <nav aria-label="Halaman informasi pelanggan">
+                    <h2 id="infoNavigationTitle">{{ $information['customer_information'] }}</h2>
+                    <nav aria-label="{{ $information['customer_information_navigation'] }}">
                         @foreach ($informationPages as $slug => $informationPage)
                             <a href="{{ route('frontend.pages.show', $slug) }}" @class(['is-active' => $page->slug === $slug]) @if($page->slug === $slug) aria-current="page" @endif>
                                 <i class="fi fi-rr-{{ $informationPage['icon'] }}" aria-hidden="true"></i>
@@ -176,9 +177,9 @@
                     <div class="info-sidebar-help">
                         <i class="fi fi-rr-headset" aria-hidden="true"></i>
                         <div>
-                            <h3>Masih butuh bantuan?</h3>
-                            <p>Temukan jawaban lain di pusat bantuan kami.</p>
-                            <a href="{{ route('frontend.pages.show', 'pusat-bantuan') }}">Buka Pusat Bantuan <i class="fi fi-rr-arrow-small-right" aria-hidden="true"></i></a>
+                            <h3>{{ $information['still_need_help'] }}</h3>
+                            <p>{{ $information['help_copy'] }}</p>
+                            <a href="{{ route('frontend.pages.show', 'pusat-bantuan') }}">{{ $information['open_help_center'] }} <i class="fi fi-rr-arrow-small-right" aria-hidden="true"></i></a>
                         </div>
                     </div>
                 </aside>
@@ -192,9 +193,30 @@
                         @if ($page->content)
                             {!! $page->content !!}
                         @else
-                            <p>Konten belum tersedia.</p>
+                            <p>{{ $information['content_unavailable'] }}</p>
                         @endif
                     </div>
+
+                    @if ($page->slug === 'cara-belanja')
+                        <section class="shopping-guide" aria-labelledby="shoppingGuideTitle">
+                            <div class="shopping-guide-heading">
+                                <h3 id="shoppingGuideTitle">{{ $information['shopping_gallery_title'] }}</h3>
+                                <p>{{ $information['shopping_gallery_intro'] }}</p>
+                            </div>
+                            <div class="shopping-guide-grid">
+                                @foreach ($information['shopping_images'] as $index => $image)
+                                    <figure>
+                                        <img src="{{ asset('imgs/how-to-shop/step-'.($index + 1).'.jpg') }}"
+                                            alt="{{ $image['title'] }} - {{ $image['caption'] }}" width="1280" height="800" loading="lazy">
+                                        <figcaption>
+                                            <strong>{{ $image['title'] }}</strong>
+                                            <span>{{ $image['caption'] }}</span>
+                                        </figcaption>
+                                    </figure>
+                                @endforeach
+                            </div>
+                        </section>
+                    @endif
                 </article>
             </div>
 
@@ -202,11 +224,11 @@
                 <div>
                     <i class="fi fi-rr-comment-alt" aria-hidden="true"></i>
                     <div>
-                        <h2 id="infoSupportTitle">Ada pertanyaan lain?</h2>
-                        <p>Tim kami siap membantu kebutuhan pemesanan, produk, pembayaran, dan pengiriman Anda.</p>
+                        <h2 id="infoSupportTitle">{{ $information['more_questions'] }}</h2>
+                        <p>{{ $information['support_copy'] }}</p>
                     </div>
                 </div>
-                <a href="{{ route('frontend.pages.show', 'pusat-bantuan') }}">Kunjungi Pusat Bantuan <i class="fi fi-rr-arrow-small-right" aria-hidden="true"></i></a>
+                <a href="{{ route('frontend.pages.show', 'pusat-bantuan') }}">{{ $information['visit_help_center'] }} <i class="fi fi-rr-arrow-small-right" aria-hidden="true"></i></a>
             </section>
         </main>
     @endif
@@ -288,6 +310,16 @@
             border-radius: 1.25rem;
             border: 1px solid #e2e8f0;
         }
+
+        .shopping-guide { margin-top: 2rem; border-top: 1px solid #e2e8f0; padding-top: 1.75rem; }
+        .shopping-guide-heading h3 { color: #0b1f43; font-size: 1.15rem; font-weight: 800; }
+        .shopping-guide-heading p { margin-top: .3rem; color: #64748b; font-size: .82rem; line-height: 1.6; }
+        .shopping-guide-grid { display: grid; gap: 1rem; margin-top: 1rem; }
+        .shopping-guide-grid figure { overflow: hidden; border: 1px solid #dce3ec; border-radius: .65rem; background: #fff; }
+        .shopping-guide-grid img { display: block; width: 100%; aspect-ratio: 16 / 10; border-bottom: 1px solid #e2e8f0; object-fit: cover; object-position: top; }
+        .shopping-guide-grid figcaption { display: grid; gap: .2rem; padding: .9rem 1rem 1rem; }
+        .shopping-guide-grid strong { color: #102449; font-size: .82rem; }
+        .shopping-guide-grid span { color: #64748b; font-size: .75rem; line-height: 1.55; }
 
         .info-page { background: #f8fafc; color: #0b1f43; }
         .info-breadcrumb { display: flex; min-height: 48px; align-items: center; gap: .55rem; overflow: hidden; color: #64748b; font-size: .75rem; white-space: nowrap; }

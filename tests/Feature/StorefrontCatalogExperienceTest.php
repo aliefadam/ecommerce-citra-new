@@ -19,7 +19,8 @@ class StorefrontCatalogExperienceTest extends TestCase
             ->assertSee('Sedang garap proyek apa?')
             ->assertSee('Oil &amp; Gas', false)
             ->assertSee('Chemical &amp; Petrochemical', false)
-            ->assertSee('Hubungi Tim Kami')
+            ->assertSee('Konsultasi via WhatsApp')
+            ->assertSee('https://wa.me/6281389365955?text=', false)
             ->assertSee('Katalog belum tersedia')
             ->assertSee('Hubungi Kami')
             ->assertSee(route('frontend.pages.show', 'pusat-bantuan'), false);

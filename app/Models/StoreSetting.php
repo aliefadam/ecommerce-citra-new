@@ -32,7 +32,7 @@ class StoreSetting extends Model
             'social_facebook' => '',
             'social_twitter' => '',
             'social_youtube' => '',
-            'social_whatsapp' => '',
+            'social_whatsapp' => 'https://wa.me/6281389365955',
             'social_shopee' => '',
             'social_tokopedia' => '',
             'social_lazada' => '',

@@ -13,7 +13,7 @@
         'pengiriman' => 'truck-side',
         'retur' => 'box-open-full',
         'akun' => 'user',
-        'aplikasi' => 'download',
+        'aplikasi' => 'mobile-notch',
         'produk' => 'box',
         'penawaran' => 'document',
         'tentang' => 'info',
@@ -155,9 +155,9 @@
                         <a href="{{ route('frontend.pages.show', 'cara-belanja') }}" class="help-topic-card">
                             <i class="fi fi-rr-shopping-cart" aria-hidden="true"></i><h3>{{ $help['shopping_guide'] }}</h3><p>{{ $help['shopping_guide_copy'] }}</p><span>{{ $help['view_guide'] }} <i class="fi fi-rr-arrow-small-right" aria-hidden="true"></i></span>
                         </a>
-                        <button type="button" class="help-topic-card" data-topic-category="pembayaran">
+                        <a href="{{ route('frontend.pages.show', ['slug' => 'pusat-bantuan', 'category' => 'pembayaran']).'#faqHeading' }}" class="help-topic-card">
                             <i class="fi fi-rr-credit-card" aria-hidden="true"></i><h3>{{ $categories['pembayaran']['label'] }}</h3><p>{{ $help['payment_copy'] }}</p><span>{{ $help['view_guide'] }} <i class="fi fi-rr-arrow-small-right" aria-hidden="true"></i></span>
-                        </button>
+                        </a>
                         <a href="{{ route('frontend.order-tracking.index') }}" class="help-topic-card">
                             <i class="fi fi-rr-truck-side" aria-hidden="true"></i><h3>{{ $categories['pengiriman']['label'] }}</h3><p>{{ $help['shipping_copy'] }}</p><span>{{ $help['track_order'] }} <i class="fi fi-rr-arrow-small-right" aria-hidden="true"></i></span>
                         </a>

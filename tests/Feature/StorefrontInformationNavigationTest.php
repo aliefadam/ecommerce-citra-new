@@ -33,6 +33,24 @@ class StorefrontInformationNavigationTest extends TestCase
 
         $this->get(route('frontend.pages.show', 'cara-belanja'))
             ->assertOk()
-            ->assertSee('Temukan produk');
+            ->assertSee('Temukan produk')
+            ->assertSee('Panduan visual berbelanja')
+            ->assertSee('imgs/how-to-shop/step-1.jpg', false)
+            ->assertSee('imgs/how-to-shop/step-2.jpg', false)
+            ->assertSee('imgs/how-to-shop/step-3.jpg', false);
+    }
+
+    public function test_information_pages_use_english_copy_when_selected(): void
+    {
+        $this->withSession(['locale' => 'en'])
+            ->get(route('frontend.pages.show', 'cara-belanja'))
+            ->assertOk()
+            ->assertSee('<html lang="en">', false)
+            ->assertSee('How to Shop')
+            ->assertSee('Visual shopping guide')
+            ->assertSee('Review your cart')
+            ->assertSee('Privacy Policy')
+            ->assertDontSee('Cara Belanja')
+            ->assertDontSee('Informasi Pelanggan');
     }
 }

@@ -125,7 +125,7 @@
                     [__('storefront.project'), route('frontend.pages.show', 'project'), request()->routeIs('frontend.pages.show') && request()->route('slug') === 'project'],
                     [__('storefront.how_to_shop'), route('frontend.pages.show', 'cara-belanja'), request()->routeIs('frontend.pages.show') && request()->route('slug') === 'cara-belanja'],
                     [__('storefront.about_boq'), route('frontend.pages.show', 'tentang-boq'), request()->routeIs('frontend.pages.show') && request()->route('slug') === 'tentang-boq'],
-                    [__('storefront.contact_us'), route('frontend.pages.show', 'pusat-bantuan'), request()->routeIs('frontend.pages.show') && request()->route('slug') === 'pusat-bantuan'],
+                    [__('storefront.help_center'), route('frontend.pages.show', 'pusat-bantuan'), request()->routeIs('frontend.pages.show') && request()->route('slug') === 'pusat-bantuan'],
                 ] as [$label, $url, $isActive])
                     <a href="{{ $url }}" class="{{ $isActive ? 'is-active' : '' }}" @if($isActive) aria-current="page" @endif>{{ $label }}</a>
                 @endforeach
@@ -144,7 +144,7 @@
             <a href="{{ route('frontend.pages.show', 'project') }}" class="flex min-h-11 items-center rounded-lg px-3 text-sm font-bold hover:bg-slate-100">{{ __('storefront.project') }}</a>
             <a href="{{ route('frontend.pages.show', 'cara-belanja') }}" class="flex min-h-11 items-center rounded-lg px-3 text-sm font-bold hover:bg-slate-100">{{ __('storefront.how_to_shop') }}</a>
             <a href="{{ route('frontend.pages.show', 'tentang-boq') }}" class="flex min-h-11 items-center rounded-lg px-3 text-sm font-bold hover:bg-slate-100">{{ __('storefront.about_boq') }}</a>
-            <a href="{{ route('frontend.pages.show', 'pusat-bantuan') }}" class="flex min-h-11 items-center rounded-lg px-3 text-sm font-bold hover:bg-slate-100">{{ __('storefront.contact_us') }}</a>
+            <a href="{{ route('frontend.pages.show', 'pusat-bantuan') }}" class="flex min-h-11 items-center rounded-lg px-3 text-sm font-bold hover:bg-slate-100">{{ __('storefront.help_center') }}</a>
         </div>
     </div>
 

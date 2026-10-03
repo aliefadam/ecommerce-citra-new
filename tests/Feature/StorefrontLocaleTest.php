@@ -97,6 +97,8 @@ class StorefrontLocaleTest extends TestCase
             ->assertSee('How do I place an order?')
             ->assertSee('Products &amp; Stock', false)
             ->assertSee('Need help with a project?')
+            ->assertSee('Help Center')
+            ->assertDontSee('>Contact Us</a>', false)
             ->assertDontSee('Kategori Bantuan')
             ->assertDontSee('Cara Pemesanan')
             ->assertDontSee('Products &amp; Stok', false)

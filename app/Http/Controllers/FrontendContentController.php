@@ -30,6 +30,21 @@ class FrontendContentController extends Controller
             return view('frontend.help-center', compact('page'));
         }
 
+        if (app()->isLocale('en')) {
+            $localizedPage = trans('information.pages.'.$slug);
+
+            if (is_array($localizedPage)) {
+                $page->forceFill(array_intersect_key($localizedPage, array_flip([
+                    'title',
+                    'excerpt',
+                    'meta_title',
+                    'meta_description',
+                    'content',
+                ])));
+                $page->meta_title = $localizedPage['meta_title'] ?? $localizedPage['title'] ?? null;
+            }
+        }
+
         return view('frontend.content-page', compact('page'));
     }
 
