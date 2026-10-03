@@ -161,60 +161,6 @@
             border-radius: 9999px;
         }
 
-        #categoryTrack {
-            display: flex;
-            flex-wrap: nowrap;
-            gap: 0.625rem;
-            overflow-x: auto;
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-
-        #categoryTrack::-webkit-scrollbar {
-            display: none;
-        }
-
-        .featured-category-card {
-            display: flex;
-            flex: 0 0 132px;
-            width: 132px;
-            min-width: 132px;
-            max-width: 132px;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .featured-category-image {
-            display: grid;
-            flex: 0 0 64px;
-            width: 64px;
-            height: 64px;
-            max-width: 64px;
-            max-height: 64px;
-            place-items: center;
-            overflow: hidden;
-            border-radius: 9999px;
-        }
-
-        .featured-category-image img {
-            display: block;
-            width: 100%;
-            height: 100%;
-            max-width: 64px;
-            max-height: 64px;
-            object-fit: contain;
-            padding: 0.375rem;
-        }
-
-        @media (min-width: 640px) {
-            .featured-category-card {
-                flex-basis: 140px;
-                width: 140px;
-                min-width: 140px;
-                max-width: 140px;
-            }
-        }
-
         .badge-new {
             background: linear-gradient(135deg, var(--ec-primary-600), var(--ec-primary-800));
         }
@@ -500,30 +446,82 @@
             </div>
         </div>
     </div>
-    <!-- KATEGORI PILIHAN -->
-    <section class="border-y border-slate-100 bg-slate-50/80 py-6 sm:py-7" aria-labelledby="featuredCategoriesTitle">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6">
-            <div class="mb-4 sm:mb-5">
-                <h2 id="featuredCategoriesTitle" class="text-xl sm:text-2xl font-bold text-slate-950 leading-tight">Kategori Pilihan</h2>
-                <p class="mt-1 text-xs sm:text-sm font-normal text-slate-500">Temukan kebutuhan fastener dan tools sesuai kategori</p>
-            </div>
+    @php
+        $projectTypes = [
+            ['name' => 'Oil & Gas', 'icon' => 'ri-oil-line'],
+            ['name' => 'Mining', 'icon' => 'ri-hammer-line'],
+            ['name' => 'Power Plant', 'icon' => 'ri-flashlight-line'],
+            ['name' => 'Water Infrastructure', 'icon' => 'ri-drop-line'],
+            ['name' => 'Gas Network', 'icon' => 'ri-fire-line'],
+            ['name' => 'Chemical & Petrochemical', 'icon' => 'ri-flask-line'],
+            ['name' => 'Food, Beverage & Pharmaceutical', 'icon' => 'ri-capsule-line'],
+            ['name' => 'HVAC Circulation', 'icon' => 'ri-temp-cold-line'],
+            ['name' => 'Hydrant', 'icon' => 'ri-fire-fill'],
+        ];
+        $whatsappUrl = trim((string) ($appStoreSettings['social_whatsapp'] ?? ''));
+        $hasWhatsApp = $whatsappUrl !== '';
+        $whatsappSeparator = str_contains($whatsappUrl, '?') ? '&' : '?';
+        $consultationUrl = function (string $project) use ($hasWhatsApp, $whatsappUrl, $whatsappSeparator): string {
+            if (! $hasWhatsApp) {
+                return route('frontend.pages.show', 'pusat-bantuan');
+            }
 
-            <div id="categoryTrack" class="flex snap-x snap-mandatory flex-nowrap gap-2.5 overflow-x-auto pb-1 scrollbar-hide">
-                @forelse (collect($homeMainCategories ?? []) as $cat)
-                    <a href="{{ route('frontend.kategori', ['parent' => $cat['slug']]) }}"
-                        class="featured-category-card group shrink-0 snap-start rounded-xl border border-slate-200 bg-white px-3 py-3 text-center shadow-[0_1px_2px_rgb(15_23_42/.02)] transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md">
-                        <span class="featured-category-image bg-slate-50 transition-colors duration-200 group-hover:bg-blue-50" aria-hidden="true">
-                            @if (!empty($cat['image']))
-                                <img src="{{ $cat['image'] }}" alt="" class="transition-transform duration-300 group-hover:scale-105" loading="lazy" />
-                            @else
-                                <i class="{{ $cat['icon'] }} text-3xl text-blue-600 transition-transform duration-300 group-hover:scale-110"></i>
-                            @endif
+            $message = "Halo, saya sedang mengerjakan proyek {$project} dan membutuhkan bantuan memilih produk serta spesifikasi yang sesuai.";
+
+            return $whatsappUrl.$whatsappSeparator.http_build_query(['text' => $message], '', '&', PHP_QUERY_RFC3986);
+        };
+    @endphp
+
+    <!-- PROJECT CONSULTATION -->
+    <section class="relative overflow-hidden border-y border-slate-800 bg-slate-950 py-8 text-white sm:py-10" aria-labelledby="projectConsultationTitle">
+        <div class="pointer-events-none absolute -right-16 -top-24 h-72 w-72 rounded-full bg-emerald-500/10 blur-3xl" aria-hidden="true"></div>
+        <div class="pointer-events-none absolute -bottom-32 left-1/4 h-72 w-72 rounded-full bg-blue-500/10 blur-3xl" aria-hidden="true"></div>
+
+        <div class="relative mx-auto max-w-7xl px-4 sm:px-6">
+            <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-stretch">
+                <div>
+                    <div class="mb-5 max-w-2xl">
+                        <span class="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-400">
+                            <span class="h-px w-7 bg-emerald-400" aria-hidden="true"></span>
+                            Project Assist
                         </span>
-                        <strong class="mt-2 block w-full truncate text-xs font-bold text-slate-950 sm:text-[13px]">{{ $cat['name'] }}</strong>
+                        <h2 id="projectConsultationTitle" class="mt-2 text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl">Sedang garap proyek apa?</h2>
+                        <p class="mt-2 text-sm leading-6 text-slate-300">Pilih bidang proyek Anda. Tim kami siap membantu menentukan fastener, tools, dan spesifikasi yang paling sesuai.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                        @foreach ($projectTypes as $project)
+                            <a href="{{ $consultationUrl($project['name']) }}"
+                                @if ($hasWhatsApp) target="_blank" rel="noopener noreferrer" @endif
+                                class="group flex min-h-14 items-center gap-3 rounded-lg border border-slate-700/80 bg-slate-900/70 px-3.5 py-2.5 transition duration-200 hover:-translate-y-0.5 hover:border-emerald-400/70 hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+                                aria-label="Konsultasi proyek {{ $project['name'] }}">
+                                <span class="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-slate-800 text-lg text-emerald-400 transition-colors group-hover:bg-emerald-400 group-hover:text-slate-950" aria-hidden="true">
+                                    <i class="{{ $project['icon'] }}"></i>
+                                </span>
+                                <strong class="min-w-0 flex-1 text-xs font-semibold leading-5 text-slate-100 sm:text-[13px]">{{ $project['name'] }}</strong>
+                                <i class="ri-arrow-right-up-line text-sm text-slate-500 transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-emerald-400" aria-hidden="true"></i>
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+
+                <aside class="flex flex-col justify-between overflow-hidden rounded-xl border border-emerald-400/20 bg-emerald-400 p-5 text-slate-950 shadow-[0_20px_60px_rgb(16_185_129/.14)] sm:p-6" aria-label="Bantuan konsultasi proyek">
+                    <div>
+                        <span class="grid h-12 w-12 place-items-center rounded-full bg-slate-950 text-2xl text-white" aria-hidden="true">
+                            <i class="ri-customer-service-2-line"></i>
+                        </span>
+                        <p class="mt-5 text-xs font-bold uppercase tracking-[0.16em] text-emerald-950/70">Support · Assist · Guide · Advice</p>
+                        <h3 class="mt-2 text-xl font-extrabold leading-snug">Belum tahu produk yang dibutuhkan?</h3>
+                        <p class="mt-2 text-sm leading-6 text-emerald-950/80">Ceritakan kebutuhan, lingkungan kerja, dan target proyek Anda. Kami bantu mulai dari spesifikasinya.</p>
+                    </div>
+
+                    <a href="{{ $consultationUrl('industri') }}"
+                        @if ($hasWhatsApp) target="_blank" rel="noopener noreferrer" @endif
+                        class="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 focus-visible:ring-offset-emerald-400">
+                        <i class="{{ $hasWhatsApp ? 'ri-whatsapp-line' : 'ri-question-answer-line' }} text-lg" aria-hidden="true"></i>
+                        {{ $hasWhatsApp ? 'Konsultasi via WhatsApp' : 'Hubungi Tim Kami' }}
                     </a>
-                @empty
-                    <div class="w-full rounded-xl border border-dashed border-slate-300 bg-white px-5 py-8 text-center text-sm text-slate-500">Kategori sedang disiapkan.</div>
-                @endforelse
+                </aside>
             </div>
         </div>
     </section>
