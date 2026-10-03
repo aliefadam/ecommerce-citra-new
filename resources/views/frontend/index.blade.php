@@ -473,12 +473,9 @@
     @endphp
 
     <!-- PROJECT CONSULTATION -->
-    <section class="relative overflow-hidden border-y border-slate-200 bg-white py-8 text-slate-950 sm:py-10" aria-labelledby="projectConsultationTitle">
-        <div class="pointer-events-none absolute -right-16 -top-24 h-72 w-72 rounded-full bg-emerald-100/70 blur-3xl" aria-hidden="true"></div>
-        <div class="pointer-events-none absolute -bottom-32 left-1/4 h-72 w-72 rounded-full bg-blue-100/60 blur-3xl" aria-hidden="true"></div>
-
-        <div class="relative mx-auto max-w-7xl px-4 sm:px-6">
-            <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-stretch">
+    <section class="bg-white py-7 text-slate-950 sm:py-9" aria-labelledby="projectConsultationTitle">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6">
+            <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-stretch">
                 <div>
                     <div class="mb-5 max-w-2xl">
                         <span class="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-700">
@@ -505,19 +502,19 @@
                     </div>
                 </div>
 
-                <aside class="flex flex-col justify-between overflow-hidden rounded-xl border border-emerald-200 bg-emerald-50 p-5 text-slate-950 shadow-[0_16px_40px_rgb(15_23_42/.07)] sm:p-6" aria-label="Bantuan konsultasi proyek">
+                <aside class="flex flex-col justify-between overflow-hidden rounded-xl border border-slate-200 bg-white p-5 text-slate-950 shadow-[0_1px_2px_rgb(15_23_42/.04)] sm:p-6" aria-label="Bantuan konsultasi proyek">
                     <div>
-                        <span class="grid h-12 w-12 place-items-center rounded-full bg-emerald-600 text-2xl text-white" aria-hidden="true">
+                        <span class="grid h-11 w-11 place-items-center rounded-lg bg-emerald-50 text-xl text-emerald-700" aria-hidden="true">
                             <i class="fi fi-rr-headset"></i>
                         </span>
-                        <p class="mt-5 text-xs font-bold uppercase tracking-[0.16em] text-emerald-800">Support · Assist · Guide · Advice</p>
+                        <p class="mt-4 text-xs font-bold uppercase tracking-[0.16em] text-emerald-800">Support · Assist · Guide · Advice</p>
                         <h3 class="mt-2 text-xl font-extrabold leading-snug">Belum tahu produk yang dibutuhkan?</h3>
                         <p class="mt-2 text-sm leading-6 text-slate-600">Ceritakan kebutuhan, lingkungan kerja, dan target proyek Anda. Kami bantu mulai dari spesifikasinya.</p>
                     </div>
 
                     <a href="{{ $consultationUrl('industri') }}"
                         @if ($hasWhatsApp) target="_blank" rel="noopener noreferrer" @endif
-                        class="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 focus-visible:ring-offset-emerald-50">
+                        class="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 focus-visible:ring-offset-white">
                         <i class="{{ $hasWhatsApp ? 'fi fi-brands-whatsapp' : 'fi fi-rr-comment-alt' }} text-lg" aria-hidden="true"></i>
                         {{ $hasWhatsApp ? 'Konsultasi via WhatsApp' : 'Hubungi Tim Kami' }}
                     </a>
