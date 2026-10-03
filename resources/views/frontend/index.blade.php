@@ -473,7 +473,7 @@
     @endphp
 
     <!-- PROJECT CONSULTATION -->
-    <section class="bg-white py-7 text-slate-950 sm:py-9" aria-labelledby="projectConsultationTitle">
+    <section class="py-7 text-slate-950 sm:py-9" aria-labelledby="projectConsultationTitle">
         <div class="mx-auto max-w-7xl px-4 sm:px-6">
             <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-stretch">
                 <div>
