@@ -1,9 +1,9 @@
 @php
     $socialLinks = collect([
-        ['key' => 'social_instagram', 'label' => 'Instagram', 'icon' => 'instagram'],
-        ['key' => 'social_facebook', 'label' => 'Facebook', 'icon' => 'facebook'],
-        ['key' => 'social_youtube', 'label' => 'YouTube', 'icon' => 'youtube'],
-        ['key' => 'social_whatsapp', 'label' => 'WhatsApp', 'icon' => 'whatsapp'],
+        ['key' => 'social_instagram', 'label' => 'Instagram', 'icon' => 'ri-instagram-line'],
+        ['key' => 'social_facebook', 'label' => 'Facebook', 'icon' => 'ri-facebook-line'],
+        ['key' => 'social_youtube', 'label' => 'YouTube', 'icon' => 'ri-youtube-line'],
+        ['key' => 'social_whatsapp', 'label' => 'WhatsApp', 'icon' => 'ri-whatsapp-line'],
     ])->filter(fn ($social) => !empty($appStoreSettings[$social['key']]));
 @endphp
 
@@ -46,14 +46,19 @@
                 <h2 class="ec-display text-base text-white">{{ __('storefront.technical_support') }}</h2>
                 <p class="mt-4 text-sm leading-6 text-slate-400">{{ __('storefront.support_hours') }}</p>
                 @if(!empty($appStoreSettings['social_whatsapp']))
-                    <a href="{{ $appStoreSettings['social_whatsapp'] }}" target="_blank" rel="noopener noreferrer" class="ec-btn ec-btn-primary mt-5">Konsultasi WhatsApp</a>
+                    <a href="{{ $appStoreSettings['social_whatsapp'] }}" target="_blank" rel="noopener noreferrer" class="ec-btn ec-btn-primary mt-5">
+                        <i class="ri-whatsapp-line text-base" aria-hidden="true"></i>
+                        {{ __('storefront.whatsapp_consultation') }}
+                    </a>
                 @else
                     <a href="{{ route('frontend.pages.show', 'pusat-bantuan') }}" class="ec-btn ec-btn-outline mt-5 border-slate-600 bg-transparent text-white">{{ __('storefront.open_help_center') }}</a>
                 @endif
                 @if($socialLinks->isNotEmpty())
                     <div class="mt-5 flex flex-wrap gap-2" aria-label="{{ __('storefront.social_media') }}">
                         @foreach($socialLinks as $social)
-                            <a href="{{ $appStoreSettings[$social['key']] }}" target="_blank" rel="noopener noreferrer" class="grid size-11 place-items-center rounded-lg border border-slate-700 text-[10px] font-extrabold hover:border-slate-500 hover:text-white" aria-label="{{ $social['label'] }}">{{ strtoupper(substr($social['label'], 0, 2)) }}</a>
+                            <a href="{{ $appStoreSettings[$social['key']] }}" target="_blank" rel="noopener noreferrer" class="grid size-11 place-items-center rounded-lg border border-slate-700 text-xl hover:border-slate-500 hover:text-white" aria-label="{{ $social['label'] }}">
+                                <i class="{{ $social['icon'] }}" aria-hidden="true"></i>
+                            </a>
                         @endforeach
                     </div>
                 @endif

@@ -36,6 +36,10 @@ class StorefrontLocaleTest extends TestCase
             ->assertSee('My Account')
             ->assertSee('Nationwide Shipping Across Indonesia')
             ->assertSee('All Categories')
+            ->assertSee('Chat with us on WhatsApp')
+            ->assertSee('class="ri-whatsapp-line', false)
+            ->assertDontSee('Konsultasi WhatsApp')
+            ->assertDontSee('>WH</a>', false)
             ->assertSee('aria-current="true"', false)
             ->assertSee('>EN</a>', false);
     }

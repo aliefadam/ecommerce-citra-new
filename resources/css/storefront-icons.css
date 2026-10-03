@@ -112,6 +112,7 @@ span[class*=' fi-brands-']::before {
 .ri-capsule-line::before { content: '\eb37'; }
 .ri-chat-1-line::before { content: '\eb4d'; }
 .ri-drop-line::before { content: '\ec6a'; }
+.ri-facebook-line::before { content: '\ecbd'; }
 .ri-filter-3-line::before { content: '\ed25'; }
 .ri-fire-fill::before { content: '\ed32'; }
 .ri-fire-line::before { content: '\ed33'; }
@@ -122,6 +123,7 @@ span[class*=' fi-brands-']::before {
 .ri-gas-station-line::before { content: '\edad'; }
 .ri-hammer-line::before { content: '\edef'; }
 .ri-headphone-line::before { content: '\ee05'; }
+.ri-instagram-line::before { content: '\ee66'; }
 .ri-oil-line::before { content: '\efae'; }
 .ri-price-tag-3-fill::before { content: '\f022'; }
 .ri-search-line::before { content: '\f0d1'; }
@@ -133,3 +135,4 @@ span[class*=' fi-brands-']::before {
 .ri-user-smile-line::before { content: '\f274'; }
 .ri-whatsapp-line::before { content: '\f2bc'; }
 .ri-windy-line::before { content: '\f2ca'; }
+.ri-youtube-line::before { content: '\f2d5'; }
