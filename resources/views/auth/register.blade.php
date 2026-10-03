@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ app()->getLocale() }}">
 
     <head>
         <meta charset="UTF-8" />
@@ -13,11 +13,12 @@
                 if (saved === 'dark' || (!saved && prefersDark)) html.classList.add('dark');
             })();
         </script>
-        <title>{{ $appStoreName ?? config('app.name') }} - Register</title>
+        <title>{{ $appStoreName ?? config('app.name') }} - {{ __('storefront.register') }}</title>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
 
     <body class="h-screen overflow-hidden bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100">
+        <x-locale-switcher class="fixed right-4 top-4 z-20" />
         <div class="min-h-screen grid lg:grid-cols-2">
             <section class="hidden lg:flex flex-col justify-between text-white relative overflow-hidden"
                 style="background: url('{{ asset('imgs/auth/fastener-workshop-auth.png') }}') center center / cover no-repeat;">
@@ -39,9 +40,8 @@
                 </div>
 
                 <div class="relative z-10 p-10">
-                    <h1 class="text-3xl font-bold leading-tight">Kebutuhan fastener <br>untuk proyek Anda</h1>
-                    <p class="mt-2 text-sm text-white/70">Baut, mur, ring, anchor, dan perkakas teknik siap dikirim
-                        ke seluruh Indonesia.</p>
+                    <h1 class="text-3xl font-bold leading-tight">{{ __('storefront.project_fasteners') }}</h1>
+                    <p class="mt-2 text-sm text-white/70">{{ __('storefront.nationwide_fasteners') }}</p>
                     <div class="flex items-center gap-2 mt-6">
                         <div class="w-7 h-2 rounded-full bg-white"></div>
                         <div class="w-2 h-2 rounded-full bg-white/40"></div>
@@ -54,8 +54,8 @@
                 <div class="w-full max-w-md">
                     <div class="flex items-center justify-between mb-6">
                         <div>
-                            <h2 class="text-2xl font-bold text-slate-800 dark:text-white">{{ $checkoutTransaction ? 'Simpan Pesananmu' : 'Register' }}</h2>
-                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ $checkoutTransaction ? 'Buat akun dan lanjutkan dari pesanan terakhir.' : 'Masukkan data akun Anda.' }}</p>
+                            <h2 class="text-2xl font-bold text-slate-800 dark:text-white">{{ $checkoutTransaction ? __('storefront.save_your_order') : __('storefront.register') }}</h2>
+                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ $checkoutTransaction ? __('storefront.create_account_continue') : __('storefront.account_details_instruction') }}</p>
                         </div>
                     </div>
 
@@ -68,10 +68,10 @@
 
                     @if ($checkoutTransaction)
                         <div class="mb-4 overflow-hidden rounded-2xl border border-blue-200 bg-blue-50 p-4 dark:border-blue-900/60 dark:bg-blue-950/30">
-                            <p class="text-[10px] font-extrabold uppercase tracking-widest text-blue-600 dark:text-blue-400">Pesanan siap dihubungkan</p>
+                            <p class="text-[10px] font-extrabold uppercase tracking-widest text-blue-600 dark:text-blue-400">{{ __('storefront.order_ready_to_link') }}</p>
                             <div class="mt-2 flex items-center justify-between gap-3">
                                 <span class="font-mono text-sm font-bold text-slate-800 dark:text-slate-100">{{ $checkoutTransaction->order_id }}</span>
-                                <span class="rounded-full bg-white px-2.5 py-1 text-[10px] font-bold text-emerald-700 shadow-sm dark:bg-slate-800 dark:text-emerald-400">Terverifikasi</span>
+                                <span class="rounded-full bg-white px-2.5 py-1 text-[10px] font-bold text-emerald-700 shadow-sm dark:bg-slate-800 dark:text-emerald-400">{{ __('storefront.verified') }}</span>
                             </div>
                         </div>
                     @endif
@@ -85,9 +85,9 @@
                             @endif
                             <div>
                                 <label
-                                    class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Nama</label>
+                                    class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{{ __('storefront.full_name') }}</label>
                                 <input type="text" name="name" value="{{ old('name', $checkoutTransaction?->manual_customer_name) }}"
-                                    placeholder="Nama lengkap"
+                                    placeholder="{{ __('storefront.full_name') }}"
                                     class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200 placeholder-slate-400" />
                             </div>
                             <div>
@@ -100,28 +100,26 @@
                             </div>
                             <div>
                                 <label
-                                    class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Password</label>
+                                    class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{{ __('storefront.password') }}</label>
                                 <input type="password" name="password" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;"
                                     class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200 placeholder-slate-400" />
                             </div>
                             <div>
                                 <label
-                                    class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Konfirmasi
-                                    Password</label>
+                                    class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{{ __('storefront.confirm_password') }}</label>
                                 <input type="password" name="password_confirmation" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;"
                                     class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200 placeholder-slate-400" />
                             </div>
 
                             <button type="submit"
                                 class="w-full inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-lg shadow-blue-200 dark:shadow-blue-900/40">
-                                {{ $checkoutTransaction ? 'Buat Akun & Simpan Pesanan' : 'Register' }}
+                                {{ $checkoutTransaction ? __('storefront.create_account_save_order') : __('storefront.register') }}
                             </button>
                         </form>
 
                         <p class="text-sm text-slate-600 dark:text-slate-300 mt-4 text-center">
-                            Sudah punya akun?
-                            <a href="{{ route('login') }}" class="text-blue-600 hover:text-blue-700 font-semibold">Sign
-                                In</a>
+                            {{ __('storefront.already_registered') }}
+                            <a href="{{ route('login') }}" class="text-blue-600 hover:text-blue-700 font-semibold">{{ __('storefront.sign_in') }}</a>
                         </p>
                     </div>
                 </div>

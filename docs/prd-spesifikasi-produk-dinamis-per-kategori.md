@@ -309,6 +309,77 @@ Perilaku penting:
   konfigurasi, bukan seluruh spesifikasi.
 - Filter tidak boleh mencampurkan unit atau nilai dari definisi atribut yang berbeda.
 
+#### Usulan penyederhanaan filter storefront (menunggu konfirmasi client)
+
+Masalah UX yang perlu dihindari adalah menampilkan seluruh atribut dari semua jenis produk sebagai
+daftar filter dengan tingkat kepentingan yang sama. Customer seharusnya tidak perlu memahami
+struktur katalog internal sebelum dapat mempersempit hasil pencarian.
+
+Alur yang direkomendasikan:
+
+1. Customer memilih **Kategori**.
+2. Customer memilih **Jenis Produk** bila kategori masih memiliki turunan yang relevan.
+3. Sistem menampilkan maksimal 4-6 **Spesifikasi Utama** sesuai template/kategori terpilih.
+4. Atribut teknis sekunder tersedia di accordion **Spesifikasi Lainnya**.
+5. Harga dan ketersediaan tetap tersedia, tetapi ditempatkan setelah filter teknis utama untuk
+   katalog industrial.
+
+`Size` tidak menjadi filter global yang wajib tampil karena maknanya berbeda antarjenis produk.
+Gunakan label spesifik dari template, misalnya Diameter, Panjang, Nominal Size, Thread Size, atau
+Size, sesuai konteks kategori. Contoh prioritas awal:
+
+| Jenis produk | Spesifikasi utama yang disarankan |
+| --- | --- |
+| Pipe | Nominal Size/Diameter, Schedule, Material, Length |
+| Valve | Valve Type, Nominal Size, Class/Pressure Rating, Material |
+| Bolt | Diameter, Panjang, Thread Size/Tipe Drat, Grade |
+| Flange | Size, Class/Rating, Standard, Material |
+| Nut | Thread Size, Pitch, Grade, Material |
+
+Aturan tampilan:
+
+- Jangan tampilkan filter yang tidak mempunyai nilai pada scope kategori/perusahaan aktif.
+- Susunan dan label filter mengikuti konfigurasi template, bukan daftar global yang di-hard-code.
+- Filter aktif ditampilkan sebagai chip yang mudah dibatalkan.
+- Jumlah hasil per opsi ditampilkan jika query dan performa memungkinkan.
+- Hindari area sidebar dengan scroll mandiri apabila halaman dapat menggunakan scroll utama.
+- **Spesifikasi Lainnya** bukan tempat penampungan seluruh field; hanya atribut relevan dan
+  `is_filterable` yang boleh muncul.
+- Penentuan 4-6 spesifikasi utama per template harus dikonfirmasi dengan client/tim katalog.
+
+#### Template chat untuk konfirmasi client
+
+Gunakan pesan berikut sebagai acuan komunikasi informal. Sesuaikan sapaan bila diperlukan:
+
+> Pak, untuk bagian filter ini aku ada sedikit saran biar customer lebih gampang cari produknya dan
+> tampilannya nggak terlalu panjang.
+>
+> Gimana kalau alurnya dibuat **Kategori -> Jenis Produk -> Spesifikasi Utama**?
+>
+> Nanti spesifikasi yang muncul menyesuaikan kategori yang dipilih. Misalnya kalau pilih pipa, yang
+> muncul diameter/nominal size, panjang, material, dan schedule. Kalau pilih valve, bisa muncul
+> nominal size, valve type, class/rating, dan material.
+>
+> Untuk spesifikasi lain seperti standard, grade, thread size, dan lainnya, bisa kita masukkan ke
+> bagian **Spesifikasi Lainnya** yang dapat dibuka kalau dibutuhkan.
+>
+> Menurutku "size" juga nggak harus selalu ditampilkan sebagai filter utama, karena setiap kategori
+> bisa punya jenis ukuran yang berbeda.
+>
+> Jadi customer awalnya cukup melihat beberapa filter yang paling penting, sedangkan yang lebih
+> detail tetap tersedia tanpa bikin tampilannya terlalu ramai.
+>
+> Kira-kira model seperti ini cocok nggak, Pak? Kalau cocok, nanti kita tentukan filter utama untuk
+> masing-masing kategori.
+
+Konfirmasi client yang perlu dicatat sebelum rancangan dianggap final:
+
+- Daftar kategori dan jenis produk yang dipakai customer.
+- Maksimal 4-6 spesifikasi utama untuk masing-masing kategori/template.
+- Urutan prioritas dan istilah atribut yang paling dipahami customer.
+- Posisi serta prioritas filter harga dan ketersediaan.
+- Persetujuan penggunaan accordion **Spesifikasi Lainnya**.
+
 ### 7. Import dan Export Excel
 
 Format import atribut tetap saat ini tidak cukup untuk seluruh jenis produk. Rilis dinamis memakai

@@ -27,6 +27,7 @@ use App\Http\Controllers\FlashSaleController;
 use App\Http\Controllers\FrontendContentController;
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MainCategoryController;
 use App\Http\Controllers\ManualPaymentController;
 use App\Http\Controllers\MemberTierController;
@@ -63,6 +64,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/app.webmanifest', [SeoController::class, 'manifest'])->name('pwa.manifest');
 Route::get('/robots.txt', [SeoController::class, 'robots'])->name('seo.robots');
 Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('seo.sitemap');
+Route::get('/language/{locale}', LocaleController::class)
+    ->whereIn('locale', ['id', 'en'])
+    ->name('locale.switch');
 
 Route::get('/docs/api-catalog', [ApiDocController::class, 'publicIndex'])->name('api-docs.public');
 Route::get('/internal/ready', [OperationalHealthController::class, 'readiness'])->name('ops.readiness')->middleware('throttle:30,1');

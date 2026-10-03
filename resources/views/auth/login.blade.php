@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ app()->getLocale() }}">
 
     <head>
         <meta charset="UTF-8" />
@@ -13,11 +13,12 @@
                 if (saved === 'dark' || (!saved && prefersDark)) html.classList.add('dark');
             })();
         </script>
-        <title>{{ $appStoreName ?? config('app.name') }} - Login</title>
+        <title>{{ $appStoreName ?? config('app.name') }} - {{ __('storefront.sign_in') }}</title>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
 
     <body class="h-screen overflow-hidden bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100">
+        <x-locale-switcher class="fixed right-4 top-4 z-20" />
         <div class="min-h-screen grid lg:grid-cols-2">
             <section class="hidden lg:flex flex-col justify-between text-white relative overflow-hidden"
                 style="background: url('{{ asset('imgs/auth/fastener-workshop-auth.png') }}') center center / cover no-repeat;">
@@ -43,9 +44,8 @@
 
                 <!-- Bottom text + dots -->
                 <div class="relative z-10 p-10">
-                    <h1 class="text-3xl font-bold leading-tight">Kebutuhan fastener <br>untuk proyek Anda</h1>
-                    <p class="mt-2 text-sm text-white/70">Baut, mur, ring, anchor, dan perkakas teknik siap dikirim
-                        ke seluruh Indonesia.</p>
+                    <h1 class="text-3xl font-bold leading-tight">{{ __('storefront.project_fasteners') }}</h1>
+                    <p class="mt-2 text-sm text-white/70">{{ __('storefront.nationwide_fasteners') }}</p>
                     <!-- Slider dots -->
                     <div class="flex items-center gap-2 mt-6">
                         <div class="w-7 h-2 rounded-full bg-white"></div>
@@ -59,9 +59,8 @@
                 <div class="w-full max-w-md">
                     <div class="mb-6">
                         <div>
-                            <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Sign In</h2>
-                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Masukkan akun Anda untuk
-                                melanjutkan.</p>
+                            <h2 class="text-2xl font-bold text-slate-800 dark:text-white">{{ __('storefront.sign_in') }}</h2>
+                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ __('storefront.sign_in_instruction') }}</p>
                         </div>
                     </div>
 
@@ -92,30 +91,29 @@
                             </div>
                             <div>
                                 <label
-                                    class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Password</label>
+                                    class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{{ __('storefront.password') }}</label>
                                 <input type="password" name="password" placeholder="••••••••"
                                     class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200 placeholder-slate-400" />
                             </div>
                             <label class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
                                 <input type="checkbox" name="remember"
                                     class="rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500" />
-                                Remember me
+                                {{ __('storefront.remember_me') }}
                             </label>
                             <div class="text-right -mt-2">
                                 <a href="{{ route('password.request') }}"
-                                    class="text-sm text-blue-600 hover:text-blue-700 font-semibold">Lupa password?</a>
+                                    class="text-sm text-blue-600 hover:text-blue-700 font-semibold">{{ __('storefront.forgot_password') }}</a>
                             </div>
 
                             <button type="submit"
                                 class="w-full inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-lg shadow-blue-200 dark:shadow-blue-900/40">
-                                Sign In
+                                {{ __('storefront.sign_in') }}
                             </button>
                         </form>
 
                         <div class="flex items-center gap-3 my-4">
                             <div class="flex-1 h-px bg-slate-200 dark:bg-slate-600"></div>
-                            <span class="text-xs font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap">atau
-                                masuk dengan</span>
+                            <span class="text-xs font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap">{{ __('storefront.or_sign_in_with') }}</span>
                             <div class="flex-1 h-px bg-slate-200 dark:bg-slate-600"></div>
                         </div>
 
@@ -135,13 +133,13 @@
                                     d="M12.245 6.026c1.486 0 2.825.51 3.874 1.511l2.907-2.907C17.27 2.999 14.976 2 12.245 2A10.13 10.13 0 003.174 7.586l3.391 2.625c.8-2.404 3.04-4.185 5.68-4.185z"
                                     fill="#EA4335" />
                             </svg>
-                            Login dengan Google
+                            {{ __('storefront.sign_in_with_google') }}
                         </a>
 
                         <p class="text-sm text-slate-600 dark:text-slate-300 mt-4 text-center">
-                            Belum punya akun?
+                            {{ __('storefront.no_account') }}
                             <a href="{{ route('register') }}"
-                                class="text-blue-600 hover:text-blue-700 font-semibold">Register</a>
+                                class="text-blue-600 hover:text-blue-700 font-semibold">{{ __('storefront.register') }}</a>
                         </p>
                     </div>
                 </div>

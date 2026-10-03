@@ -1,6 +1,6 @@
 @extends('layouts.user')
 
-@section('title', 'Hasil Pencarian - ' . ($appStoreName ?? config('app.name')))
+@section('title', __('storefront.search_results') . ' - ' . ($appStoreName ?? config('app.name')))
 
 @section('style')
     <style>
@@ -29,16 +29,16 @@
     <div class="bg-white border-b border-slate-100">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3">
             <nav class="flex items-center gap-2 text-sm text-slate-500">
-                <a href="{{ route('frontend.index') }}" class="hover:text-blue-600">Beranda</a>
+                <a href="{{ route('frontend.index') }}" class="hover:text-blue-600">{{ __('storefront.home') }}</a>
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-                <span class="text-slate-800 font-medium">Hasil Pencarian</span>
+                <span class="text-slate-800 font-medium">{{ __('storefront.search_results') }}</span>
             </nav>
         </div>
     </div>
 
     <section class="ec-page-hero py-8">
         <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
-            <h1 class="text-2xl md:text-3xl font-bold mb-2">Hasil Pencarian</h1>
+            <h1 class="text-2xl md:text-3xl font-bold mb-2">{{ __('storefront.search_results') }}</h1>
             <p id="searchMeta" class="ec-page-hero-copy text-sm"></p>
         </div>
     </section>
@@ -51,10 +51,10 @@
                 <div id="filterPanel" class="flat-filter-panel sticky top-20 flex max-h-[calc(100vh-6rem)] flex-col">
                     <div id="filterDrawerHandle" class="filter-drawer-handle lg:hidden"></div>
                     <div class="flat-filter-title flex flex-shrink-0 items-center justify-between">
-                        <h3 class="text-sm font-bold uppercase tracking-wide text-slate-950">Filter</h3>
+                        <h3 class="text-sm font-bold uppercase tracking-wide text-slate-950">{{ __('storefront.filter') }}</h3>
                         <div class="flex items-center gap-3">
-                            <button onclick="resetFilters()" class="text-xs text-blue-600 font-medium">Reset</button>
-                            <button onclick="closeMobileFilter()" class="lg:hidden text-xs text-slate-500 font-medium">Tutup</button>
+                            <button onclick="resetFilters()" class="text-xs text-blue-600 font-medium">{{ __('storefront.reset') }}</button>
+                            <button onclick="closeMobileFilter()" class="lg:hidden text-xs text-slate-500 font-medium">{{ __('storefront.close') }}</button>
                         </div>
                     </div>
 
@@ -62,33 +62,33 @@
                         <div class="flat-filter-section">
                         <button type="button" class="flex w-full items-center justify-between gap-3 text-left"
                             aria-expanded="true" aria-controls="searchCategoryPanel" onclick="toggleFilterSection(this, 'searchCategoryPanel')">
-                            <span class="text-sm font-medium text-slate-950">Kategori</span>
+                            <span class="text-sm font-medium text-slate-950">{{ __('storefront.categories') }}</span>
                             <i class="ri-arrow-down-s-line rotate-180 text-lg text-slate-400 transition-transform"></i>
                         </button>
                         <div id="searchCategoryPanel" class="pt-3">
                             <div class="relative mb-3">
                                 <i class="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400"></i>
-                                <input id="searchCategorySearch" type="search" placeholder="Cari kategori..."
+                                <input id="searchCategorySearch" type="search" placeholder="{{ __('storefront.search_categories_placeholder') }}"
                                     class="w-full rounded border border-slate-300 bg-transparent py-2 pl-8 pr-3 text-sm outline-none transition focus:border-blue-500"
                                     oninput="searchCategoryOptions(this, 'categoryFilterList', 'searchCategoryEmpty')">
                             </div>
                             <div id="categoryFilterList" class="space-y-3"></div>
-                            <p id="searchCategoryEmpty" class="hidden py-2 text-xs text-slate-400">Kategori tidak ditemukan.</p>
+                            <p id="searchCategoryEmpty" class="hidden py-2 text-xs text-slate-400">{{ __('storefront.category_not_found') }}</p>
                         </div>
                     </div>
 
                     <div class="flat-filter-section">
-                        <h4 class="mb-3 text-sm font-medium text-slate-950">Status Produk</h4>
-                        <label class="flex items-center gap-2 text-sm text-slate-700"><input id="filterStock" type="checkbox" class="accent-blue-500" onchange="applyFilters()"> Hanya stok tersedia</label>
+                        <h4 class="mb-3 text-sm font-medium text-slate-950">{{ __('storefront.product_status') }}</h4>
+                        <label class="flex items-center gap-2 text-sm text-slate-700"><input id="filterStock" type="checkbox" class="accent-blue-500" onchange="applyFilters()"> {{ __('storefront.in_stock_only') }}</label>
                     </div>
 
                     <div class="flat-filter-section">
-                        <h4 class="mb-3 text-sm font-medium text-slate-950">Rating</h4>
+                        <h4 class="mb-3 text-sm font-medium text-slate-950">{{ __('storefront.rating') }}</h4>
                         <select id="ratingMin" onchange="applyFilters()" class="w-full rounded border border-slate-300 bg-transparent px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
-                            <option value="0">Semua rating</option>
-                            <option value="4">4 ke atas</option>
-                            <option value="4.5">4.5 ke atas</option>
-                            <option value="5">5 saja</option>
+                            <option value="0">{{ __('storefront.all_ratings') }}</option>
+                            <option value="4">{{ __('storefront.rating_and_up', ['rating' => 4]) }}</option>
+                            <option value="4.5">{{ __('storefront.rating_and_up', ['rating' => 4.5]) }}</option>
+                            <option value="5">{{ __('storefront.rating_only', ['rating' => 5]) }}</option>
                         </select>
                     </div>
 
@@ -99,18 +99,18 @@
 
             <main class="flex-1">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                    <p class="text-sm text-slate-500" id="resultCount">Menampilkan 0 produk</p>
+                    <p class="text-sm text-slate-500" id="resultCount">{{ __('storefront.showing_products', ['count' => 0]) }}</p>
                     <div class="flex flex-wrap items-center gap-2 sm:gap-3">
                         <div class="flex items-center gap-2 sm:hidden">
                             <button type="button" onclick="openMobileFilter()" class="w-11 h-11 rounded-xl border border-slate-200 bg-white text-slate-600 flex items-center justify-center"><i class="ri-filter-3-line"></i></button>
                         </div>
                         <select id="sortSel" onchange="applyFilters()" class="border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-blue-400 bg-white">
-                            <option value="relevant">Paling Relevan</option>
-                            <option value="newest">Terbaru</option>
-                            <option value="cheap">Harga Termurah</option>
-                            <option value="expensive">Harga Termahal</option>
-                            <option value="rating">Rating Tertinggi</option>
-                            <option value="sold">Terlaris</option>
+                            <option value="relevant">{{ __('storefront.sort_relevance') }}</option>
+                            <option value="newest">{{ __('storefront.sort_newest') }}</option>
+                            <option value="cheap">{{ __('storefront.sort_price_low') }}</option>
+                            <option value="expensive">{{ __('storefront.sort_price_high') }}</option>
+                            <option value="rating">{{ __('storefront.sort_rating') }}</option>
+                            <option value="sold">{{ __('storefront.sort_best_selling') }}</option>
                         </select>
                     </div>
                 </div>
@@ -118,9 +118,9 @@
                 <div id="searchResultGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-4"></div>
                 <div id="emptyState" class="hidden text-center py-16 bg-white rounded-2xl border border-slate-100">
                     <div class="text-5xl mb-3">🔎</div>
-                    <p class="text-lg font-semibold text-slate-700">Produk tidak ditemukan</p>
-                    <p class="text-slate-500 text-sm mt-1 mb-5">Coba ubah filter atau gunakan kata kunci yang lebih umum.</p>
-                    <button onclick="resetFilters()" class="bg-blue-500 text-white px-6 py-2.5 rounded-xl font-medium hover:bg-blue-600 transition-colors">Reset Filter</button>
+                    <p class="text-lg font-semibold text-slate-700">{{ __('storefront.product_not_found') }}</p>
+                    <p class="text-slate-500 text-sm mt-1 mb-5">{{ __('storefront.adjust_search') }}</p>
+                    <button onclick="resetFilters()" class="bg-blue-500 text-white px-6 py-2.5 rounded-xl font-medium hover:bg-blue-600 transition-colors">{{ __('storefront.reset_filters') }}</button>
                 </div>
             </main>
         </div>
@@ -128,10 +128,26 @@
 @endsection
 
 @section('script')
+@php
+    $searchText = [
+        'showAll' => __('storefront.show_all'),
+        'collapse' => __('storefront.collapse'),
+        'inStock' => __('storefront.in_stock'),
+        'showingProducts' => __('storefront.showing_products', ['count' => ':count']),
+        'showingResultsFor' => __('storefront.showing_results_for', ['count' => ':count', 'query' => ':query']),
+        'industrialProduct' => __('storefront.industrial_product'),
+        'industrialPartner' => __('storefront.industrial_partner'),
+        'stock' => __('storefront.stock', ['count' => ':count']),
+        'outOfStock' => __('storefront.out_of_stock'),
+        'unit' => __('storefront.unit'),
+        'sold' => __('storefront.sold', ['count' => ':count']),
+    ];
+@endphp
 <script>
     const query = @json($query);
     const allProducts = @json($results ?? []);
     const searchMainCategories = @json($searchMainCategories ?? []);
+    const searchText = @json($searchText);
     const filterOptionPreviewLimit = 4;
     let selectedVariantFilters = {};
 
@@ -213,7 +229,7 @@
                         data-variant-group="${encodeURIComponent(groupKey)}"
                         data-expanded="false"
                         onclick="toggleVariantOptions(this)">
-                        Lihat semua
+                        ${searchText.showAll}
                     </button>
                 </div>
             </div>`;
@@ -260,7 +276,7 @@
 
         if (toggle) {
             toggle.classList.toggle('hidden', options.length <= filterOptionPreviewLimit);
-            toggle.textContent = isExpanded ? 'Ringkas' : `Lihat semua (${options.length})`;
+            toggle.textContent = isExpanded ? searchText.collapse : `${searchText.showAll} (${options.length})`;
         }
     }
 
@@ -315,7 +331,7 @@
             const text = el.parentElement.querySelector('span')?.textContent || el.value;
             chips.push(text);
         });
-        if (document.getElementById('filterStock').checked) chips.push('Stok tersedia');
+        if (document.getElementById('filterStock').checked) chips.push(searchText.inStock);
         const ratingMin = document.getElementById('ratingMin').value;
         if (Number(ratingMin) > 0) chips.push(`Rating ${ratingMin}+`);
         Object.entries(selectedVariantFilters).forEach(([name, values]) => values.forEach(v => chips.push(`${name}: ${v}`)));
@@ -327,8 +343,10 @@
     function renderProducts(products) {
         const grid = document.getElementById('searchResultGrid');
         const empty = document.getElementById('emptyState');
-        document.getElementById('resultCount').textContent = `Menampilkan ${products.length} produk`;
-        document.getElementById('searchMeta').textContent = query ? `Menampilkan ${products.length} hasil untuk "${query}"` : `Menampilkan ${products.length} produk`;
+        document.getElementById('resultCount').textContent = searchText.showingProducts.replace(':count', products.length);
+        document.getElementById('searchMeta').textContent = query
+            ? searchText.showingResultsFor.replace(':count', products.length).replace(':query', query)
+            : searchText.showingProducts.replace(':count', products.length);
 
         if (!products.length) {
             grid.innerHTML = '';
@@ -340,7 +358,7 @@
         grid.innerHTML = products.map((p) => {
             const productUrl = `{{ url('/detail-produk') }}/${encodeURIComponent(p.slug)}`;
             const variants = Array.isArray(p.variants) ? p.variants.map(v => v.value).filter(Boolean) : [];
-            const variantLabel = p.variant || variants.slice(0, 2).join(' · ') || p.category || 'Produk industri';
+            const variantLabel = p.variant || variants.slice(0, 2).join(' · ') || p.category || searchText.industrialProduct;
             const discount = Number(p.originalPrice) > Number(p.price) ? Math.round((1 - Number(p.price) / Number(p.originalPrice)) * 100) : 0;
             return `
             <article class="store-product-card group">
@@ -354,11 +372,11 @@
                     <a href="${productUrl}" class="store-product-name line-clamp-2 hover:text-blue-700">${escapeHtml(p.name)}</a>
                     <p class="store-product-variant truncate">${escapeHtml(variantLabel)}</p>
                     <p class="store-product-price">Rp ${Number(p.price || 0).toLocaleString('id-ID')}</p>
-                    <p class="mt-1 text-[11px] font-medium text-slate-500">${Number(p.stock || 0) > 0 ? `Stok ${Number(p.stock).toLocaleString('id-ID')} ${escapeHtml(p.unit || 'pcs')}` : 'Stok habis'} &middot; Satuan ${escapeHtml(p.unit || 'pcs')}</p>
-                    <p class="store-product-seller"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 10.5V20h16v-9.5M3 4h18l-1.5 6a2.5 2.5 0 0 1-4.5 1.1 2.5 2.5 0 0 1-4.5 0A2.5 2.5 0 0 1 6 10L4.5 4M9 20v-5h6v5"/></svg><span>${escapeHtml(p.storeName || 'Mitra industri')}</span></p>
+                    <p class="mt-1 text-[11px] font-medium text-slate-500">${Number(p.stock || 0) > 0 ? `${searchText.stock.replace(':count', Number(p.stock).toLocaleString())} ${escapeHtml(p.unit || 'pcs')}` : searchText.outOfStock} &middot; ${searchText.unit} ${escapeHtml(p.unit || 'pcs')}</p>
+                    <p class="store-product-seller"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 10.5V20h16v-9.5M3 4h18l-1.5 6a2.5 2.5 0 0 1-4.5 1.1 2.5 2.5 0 0 1-4.5 0A2.5 2.5 0 0 1 6 10L4.5 4M9 20v-5h6v5"/></svg><span>${escapeHtml(p.storeName || searchText.industrialPartner)}</span></p>
                     <div class="store-product-meta">
                         <span class="store-product-rating"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.7 2.83 5.73 6.32.92-4.58 4.46 1.08 6.3L12 17.14l-5.65 2.97 1.08-6.3-4.58-4.46 6.32-.92L12 2.7Z"/></svg>${Number(p.rating || 0).toFixed(1)} <span class="font-normal text-slate-400">(${Number(p.reviews || 0).toLocaleString('id-ID')})</span></span>
-                        <span>Terjual ${Number(p.sold || 0).toLocaleString('id-ID')}</span>
+                        <span>${searchText.sold.replace(':count', Number(p.sold || 0).toLocaleString())}</span>
                     </div>
                 </div>
             </article>`;

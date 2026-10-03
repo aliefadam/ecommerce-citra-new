@@ -4,7 +4,9 @@ use App\Http\Middleware\AdminOnly;
 use App\Http\Middleware\AdminPermission;
 use App\Http\Middleware\CompanyScope;
 use App\Http\Middleware\EnsureCheckoutAccess;
+use App\Http\Middleware\LocalizeStorefrontUi;
 use App\Http\Middleware\RequestContext;
+use App\Http\Middleware\SetLocale;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -22,6 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(RequestContext::class);
+        $middleware->web(append: [SetLocale::class, LocalizeStorefrontUi::class]);
         $middleware->alias([
             'admin' => AdminOnly::class,
             'admin.permission' => AdminPermission::class,

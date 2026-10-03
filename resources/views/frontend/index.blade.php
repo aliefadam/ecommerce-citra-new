@@ -632,21 +632,6 @@
                             </div>
                         </div>
 
-                        <div class="flat-filter-section">
-                            <button type="button" class="flex w-full items-center justify-between gap-3 text-left"
-                                aria-expanded="true" aria-controls="homePricePanel" onclick="toggleFilterSection(this, 'homePricePanel')">
-                                <span class="text-sm font-medium text-slate-950">Harga</span>
-                                <i class="ri-arrow-down-s-line rotate-180 text-lg text-slate-400 transition-transform"></i>
-                            </button>
-                            <div id="homePricePanel" class="grid grid-cols-[1fr_auto_1fr] items-center gap-2 pt-3">
-                                <input id="homePriceMin" type="number" min="0" placeholder="Min" oninput="applyFilter()"
-                                    class="min-w-0 w-full rounded border border-slate-300 bg-transparent px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-blue-500" />
-                                <span class="text-slate-400">-</span>
-                                <input id="homePriceMax" type="number" min="0" placeholder="Max" oninput="applyFilter()"
-                                    class="min-w-0 w-full rounded border border-slate-300 bg-transparent px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-blue-500" />
-                            </div>
-                        </div>
-
                         <div id="homeFilterVariantList"></div>
                     </div>
                 </div>
@@ -1245,18 +1230,15 @@
 
         function applyFilter() {
             const cats = Array.from(document.querySelectorAll('.filter-cat:checked')).map(c => c.value);
-            const priceMin = Number(document.getElementById('homePriceMin')?.value || 0);
-            const priceMax = Number(document.getElementById('homePriceMax')?.value || 0);
             const activeVariantGroups = Object.entries(selectedVariantFilters).filter(([, values]) => values.size > 0);
             filteredProducts = products.filter(p => {
                 const catMatch = cats.length === 0 || cats.includes(p.parentCategorySlug);
-                const priceMatch = (!priceMin || Number(p.price) >= priceMin) && (!priceMax || Number(p.price) <= priceMax);
                 const variantMatch = activeVariantGroups.length === 0 || activeVariantGroups.every(([name, values]) =>
                     Array.isArray(p.variants) && p.variants.some((variant) =>
                         normalizeFilterValue(variant.name) === name && values.has(normalizeFilterValue(variant.value))
                     )
                 );
-                return catMatch && priceMatch && variantMatch;
+                return catMatch && variantMatch;
             });
             renderProducts(filteredProducts);
         }
@@ -1268,10 +1250,6 @@
                 categorySearch.value = '';
                 searchCategoryOptions(categorySearch, 'homeCategoryOptions', 'homeCategoryEmpty');
             }
-            const priceMin = document.getElementById('homePriceMin');
-            const priceMax = document.getElementById('homePriceMax');
-            if (priceMin) priceMin.value = '';
-            if (priceMax) priceMax.value = '';
             selectedVariantFilters = {};
             document.querySelectorAll('.filter-variant').forEach((el) => {
                 el.checked = false;

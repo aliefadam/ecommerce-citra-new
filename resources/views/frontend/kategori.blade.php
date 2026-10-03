@@ -1,7 +1,7 @@
 @extends('layouts.user')
 
-@section('title', ($selectedLabel ?? 'Kategori Produk') . ' - ' . ($appStoreName ?? config('app.name')))
-@section('meta_description', 'Temukan pilihan '.strtolower($selectedLabel ?? 'produk teknik').' dari '.($appStoreName ?? config('app.name')).' untuk kebutuhan proyek dan industri.')
+@section('title', ($selectedLabel ?? __('storefront.product_categories')) . ' - ' . ($appStoreName ?? config('app.name')))
+@section('meta_description', __('storefront.catalog_intro'))
 @section('canonical', route('frontend.kategori'))
 
 @section('style')
@@ -195,7 +195,7 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="20 6 9 17 4 12" />
             </svg>
-            <span id="toast-msg">Berhasil!</span>
+            <span id="toast-msg">{{ __('storefront.success') }}</span>
         </div>
     </div>
 
@@ -206,11 +206,11 @@
     <div class="bg-white border-b border-slate-100">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3">
             <nav class="flex items-center gap-2 text-sm text-slate-500">
-                <a href="{{ route('frontend.index') }}" class="hover:text-blue-600 transition-colors">Beranda</a>
+                <a href="{{ route('frontend.index') }}" class="hover:text-blue-600 transition-colors">{{ __('storefront.home') }}</a>
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                 </svg>
-                <span id="breadcrumb-cat" class="text-slate-800 font-medium">{{ $selectedLabel ?? 'Semua Kategori' }}</span>
+                <span id="breadcrumb-cat" class="text-slate-800 font-medium">{{ $selectedLabel ?? __('storefront.all_categories') }}</span>
             </nav>
         </div>
     </div>
@@ -218,12 +218,12 @@
     <!-- HERO KATEGORI -->
     <div class="ec-page-hero py-8">
         <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
-            <h1 class="text-2xl md:text-3xl font-bold mb-2" id="pageTitle">{{ $selectedLabel ?? 'Semua Kategori' }}</h1>
-            <p class="ec-page-hero-copy text-sm">Temukan produk terbaik dari berbagai kategori pilihan</p>
+            <h1 class="text-2xl md:text-3xl font-bold mb-2" id="pageTitle">{{ $selectedLabel ?? __('storefront.all_categories') }}</h1>
+            <p class="ec-page-hero-copy text-sm">{{ __('storefront.catalog_intro') }}</p>
             <!-- Search Mobile -->
             <form action="{{ route('frontend.search') }}" method="GET"
                 class="mt-4 md:hidden flex items-center bg-white/15 border border-white/30 rounded-xl overflow-hidden backdrop-blur-sm">
-                <input type="text" id="mobileSearchInput" name="q" placeholder="Cari produk..."
+                <input type="text" id="mobileSearchInput" name="q" placeholder="{{ __('storefront.search_products') }}..."
                     class="flex-1 px-4 py-2.5 text-sm outline-none bg-white/95 text-slate-800" />
                 <button type="submit" class="w-14 h-full text-white flex items-center justify-center transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -240,9 +240,9 @@
         <div class="flex items-center justify-between mb-4">
             <div class="flex items-center gap-2">
                 <div class="ec-section-marker"></div>
-                <h2 class="text-base font-bold text-slate-800">Semua Kategori</h2>
+                <h2 class="text-base font-bold text-slate-800">{{ __('storefront.all_categories') }}</h2>
             </div>
-            <span class="text-xs text-slate-400">{{ collect($categoryTree ?? [])->count() }} kategori tersedia</span>
+            <span class="text-xs text-slate-400">{{ __('storefront.available_categories', ['count' => collect($categoryTree ?? [])->count()]) }}</span>
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-6">
             @foreach (($categoryTree ?? collect()) as $mainCategory)
@@ -281,7 +281,7 @@
                         <div class="flex items-center gap-1 mt-1">
                             <i class="ri-stack-line text-[11px] text-slate-400 group-hover:text-blue-400 transition-colors"></i>
                             <span class="text-xs text-slate-400 group-hover:text-blue-400 transition-colors">
-                                {{ $subCount }} sub kategori
+                                {{ trans_choice('storefront.subcategories', $subCount, ['count' => $subCount]) }}
                             </span>
                         </div>
                     </div>
@@ -302,12 +302,12 @@
                 <div id="filterPanel" class="flat-filter-panel sticky top-20 flex max-h-[calc(100vh-6rem)] flex-col">
                     <div id="filterDrawerHandle" class="filter-drawer-handle lg:hidden"></div>
                     <div class="flat-filter-title flex flex-shrink-0 items-center justify-between">
-                        <h3 class="text-sm font-bold uppercase tracking-wide text-slate-950">Filter</h3>
+                        <h3 class="text-sm font-bold uppercase tracking-wide text-slate-950">{{ __('storefront.filter') }}</h3>
                         <div class="flex items-center gap-3">
                             <button onclick="resetFilter()"
-                                class="text-xs text-blue-600 hover:text-blue-700 font-medium">Reset</button>
+                                class="text-xs text-blue-600 hover:text-blue-700 font-medium">{{ __('storefront.reset') }}</button>
                             <button onclick="closeMobileFilter()"
-                                class="lg:hidden text-xs text-slate-500 hover:text-slate-700 font-medium">Tutup</button>
+                                class="lg:hidden text-xs text-slate-500 hover:text-slate-700 font-medium">{{ __('storefront.close') }}</button>
                         </div>
                     </div>
 
@@ -315,33 +315,33 @@
                         <div class="flat-filter-section">
                             <button type="button" class="flex w-full items-center justify-between gap-3 text-left"
                                 aria-expanded="true" aria-controls="categoryPageCategoryPanel" onclick="toggleFilterSection(this, 'categoryPageCategoryPanel')">
-                                <span class="text-sm font-medium text-slate-950">Kategori</span>
+                                <span class="text-sm font-medium text-slate-950">{{ __('storefront.categories') }}</span>
                                 <i class="ri-arrow-down-s-line rotate-180 text-lg text-slate-400 transition-transform"></i>
                             </button>
                             <div id="categoryPageCategoryPanel" class="pt-3">
                                 <div class="relative mb-3">
                                     <i class="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400"></i>
-                                    <input id="categoryPageCategorySearch" type="search" placeholder="Cari kategori..."
+                                    <input id="categoryPageCategorySearch" type="search" placeholder="{{ __('storefront.search_categories_placeholder') }}"
                                         class="w-full rounded border border-slate-300 bg-transparent py-2 pl-8 pr-3 text-sm outline-none transition focus:border-blue-500"
                                         oninput="searchCategoryOptions(this, 'filterCategoryList', 'categoryPageCategoryEmpty')">
                                 </div>
                                 <div class="space-y-3" id="filterCategoryList"></div>
-                                <p id="categoryPageCategoryEmpty" class="hidden py-2 text-xs text-slate-400">Kategori tidak ditemukan.</p>
+                                <p id="categoryPageCategoryEmpty" class="hidden py-2 text-xs text-slate-400">{{ __('storefront.category_not_found') }}</p>
                             </div>
                         </div>
 
                         <div class="flat-filter-section">
-                            <h4 class="mb-3 text-sm font-medium text-slate-950">Status Produk</h4>
-                            <label class="flex items-center gap-2 text-sm text-slate-700"><input id="filterStock" type="checkbox" class="accent-blue-500" onchange="applyFilter()"> Hanya stok tersedia</label>
+                            <h4 class="mb-3 text-sm font-medium text-slate-950">{{ __('storefront.product_status') }}</h4>
+                            <label class="flex items-center gap-2 text-sm text-slate-700"><input id="filterStock" type="checkbox" class="accent-blue-500" onchange="applyFilter()"> {{ __('storefront.in_stock_only') }}</label>
                         </div>
 
                         <div class="flat-filter-section">
-                            <h4 class="mb-3 text-sm font-medium text-slate-950">Rating</h4>
+                            <h4 class="mb-3 text-sm font-medium text-slate-950">{{ __('storefront.rating') }}</h4>
                             <select id="ratingMin" onchange="applyFilter()" class="w-full rounded border border-slate-300 bg-transparent px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
-                                <option value="0">Semua rating</option>
-                                <option value="4">4 ke atas</option>
-                                <option value="4.5">4.5 ke atas</option>
-                                <option value="5">5 saja</option>
+                                <option value="0">{{ __('storefront.all_ratings') }}</option>
+                                <option value="4">{{ __('storefront.rating_and_up', ['rating' => 4]) }}</option>
+                                <option value="4.5">{{ __('storefront.rating_and_up', ['rating' => 4.5]) }}</option>
+                                <option value="5">{{ __('storefront.rating_only', ['rating' => 5]) }}</option>
                             </select>
                         </div>
 
@@ -354,7 +354,7 @@
                 <!-- Toolbar -->
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                     <div>
-                        <p class="text-sm text-slate-500" id="resultCount">Menampilkan 16 produk</p>
+                        <p class="text-sm text-slate-500" id="resultCount">{{ __('storefront.showing_products', ['count' => 16]) }}</p>
                     </div>
                     <div class="flex flex-wrap items-center gap-2 sm:gap-3">
                         <div class="flex items-center gap-2 sm:hidden">
@@ -369,11 +369,11 @@
                         </div>
                         <select id="sortSel" onchange="sortProds()"
                             class="hidden sm:block border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-blue-400 bg-white">
-                            <option value="newest">Terbaru</option>
-                            <option value="cheap">Harga Termurah</option>
-                            <option value="expensive">Harga Termahal</option>
-                            <option value="rating">Rating Tertinggi</option>
-                            <option value="sold">Terlaris</option>
+                            <option value="newest">{{ __('storefront.sort_newest') }}</option>
+                            <option value="cheap">{{ __('storefront.sort_price_low') }}</option>
+                            <option value="expensive">{{ __('storefront.sort_price_high') }}</option>
+                            <option value="rating">{{ __('storefront.sort_rating') }}</option>
+                            <option value="sold">{{ __('storefront.sort_best_selling') }}</option>
                         </select>
                         <button id="gridViewBtn" onclick="toggleView('grid')"
                             class="hidden sm:block p-2 rounded-lg bg-blue-500 text-white">
@@ -399,8 +399,8 @@
                 <!-- Empty State -->
                 <div id="emptyState" class="hidden text-center py-20">
                     <div class="text-6xl mb-4"></div>
-                    <h3 class="text-xl font-bold text-slate-700 mb-2">Produk tidak ditemukan</h3>
-                    <p class="text-slate-500 mb-6">Coba ubah kata kunci atau filter pencarian</p>
+                    <h3 class="text-xl font-bold text-slate-700 mb-2">{{ __('storefront.product_not_found') }}</h3>
+                    <p class="text-slate-500 mb-6">{{ __('storefront.adjust_search') }}</p>
                     <button onclick="resetAll()"
                         class="bg-blue-500 text-white px-6 py-2.5 rounded-xl font-medium hover:bg-blue-600 transition-colors">Reset
                         Filter</button>
@@ -432,6 +432,36 @@
                 ];
             })
             ->all();
+        $catalogText = [
+            'showingRange' => __('storefront.showing_product_range', ['visible' => ':visible', 'total' => ':total']),
+            'displayedRange' => __('storefront.displayed_product_range', ['visible' => ':visible', 'total' => ':total']),
+            'newBadge' => __('storefront.new_badge'),
+            'bestSellingBadge' => __('storefront.best_selling_badge'),
+            'details' => __('storefront.details'),
+            'industrialProduct' => __('storefront.industrial_product'),
+            'industrialPartner' => __('storefront.industrial_partner'),
+            'viewProduct' => __('storefront.view_product', ['product' => ':product']),
+            'addToWishlist' => __('storefront.add_to_wishlist', ['product' => ':product']),
+            'stock' => __('storefront.stock', ['count' => ':count']),
+            'outOfStock' => __('storefront.out_of_stock'),
+            'unit' => __('storefront.unit'),
+            'sold' => __('storefront.sold', ['count' => ':count']),
+            'searchVariant' => __('storefront.search_variant_placeholder', ['variant' => ':variant']),
+            'showAll' => __('storefront.show_all'),
+            'collapse' => __('storefront.collapse'),
+            'variantNotFound' => __('storefront.variant_not_found'),
+            'inStock' => __('storefront.in_stock'),
+            'addedToCart' => __('storefront.added_to_cart', ['product' => ':product']),
+            'wishlistFailed' => __('storefront.wishlist_failed'),
+            'addedToWishlist' => __('storefront.added_to_wishlist', ['product' => ':product']),
+            'removedFromWishlist' => __('storefront.removed_from_wishlist', ['product' => ':product']),
+            'sortNewest' => __('storefront.sort_newest'),
+            'sortPriceLow' => __('storefront.sort_price_low'),
+            'sortPriceHigh' => __('storefront.sort_price_high'),
+            'sortRating' => __('storefront.sort_rating'),
+            'sortBestSelling' => __('storefront.sort_best_selling'),
+            'sortChanged' => __('storefront.sort_changed'),
+        ];
     @endphp
     <script>
         const allProducts = @json($productsJson);
@@ -445,6 +475,7 @@
         const wishlistToggleUrl = @json(route('frontend.wishlist.toggle'));
         const wishlistStatusUrl = @json(route('frontend.wishlist.status'));
         const csrfToken = @json(csrf_token());
+        const catalogText = @json($catalogText);
         const wishedProductIds = new Set();
         const catalogStateKey = `storefront-catalog-state:${window.location.pathname}${window.location.search}`;
 
@@ -533,8 +564,8 @@
             if (resetVisible) visibleProductCount = productPageSize;
             const visibleProducts = currentRenderedProducts.slice(0, visibleProductCount);
 
-            document.getElementById('resultCount').textContent =
-                `Menampilkan ${visibleProducts.length} dari ${currentRenderedProducts.length} produk`;
+            document.getElementById('resultCount').textContent = catalogText.showingRange
+                .replace(':visible', visibleProducts.length).replace(':total', currentRenderedProducts.length);
 
             if (prods.length === 0) {
                 grid.innerHTML = '';
@@ -545,7 +576,8 @@
             empty.classList.add('hidden');
             loadMoreWrapper.classList.toggle('hidden', currentRenderedProducts.length <= productPageSize);
             loadMoreBtn.classList.toggle('hidden', visibleProducts.length >= currentRenderedProducts.length);
-            loadMoreInfo.textContent = `Sudah tampil ${visibleProducts.length} dari ${currentRenderedProducts.length} produk`;
+            loadMoreInfo.textContent = catalogText.displayedRange
+                .replace(':visible', visibleProducts.length).replace(':total', currentRenderedProducts.length);
 
             const gridCols = viewMode === 'grid' ? 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4' :
                 'grid grid-cols-1 gap-4';
@@ -557,9 +589,9 @@
                 const badge = p.isFlashSale ?
                     `<span class="badge-promo text-white text-[10px] font-bold px-2 py-0.5 rounded-full">-${disc}%</span>` :
                     p.badge === 'new' ?
-                    `<span class="badge-new text-white text-[10px] font-bold px-2 py-0.5 rounded-full">BARU</span>` :
+                    `<span class="badge-new text-white text-[10px] font-bold px-2 py-0.5 rounded-full">${catalogText.newBadge}</span>` :
                     p.badge === 'best' ?
-                    `<span class="bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">TERLARIS</span>` :
+                    `<span class="bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">${catalogText.bestSellingBadge}</span>` :
                     '';
 
                 if (viewMode === 'list') {
@@ -576,7 +608,7 @@
                   <span class="text-xs font-medium text-slate-700">${p.rating}</span>
                   <span class="text-xs text-slate-400">(${p.reviews}) &bull; ${p.sold.toLocaleString()} terjual</span>
                 </div>
-                <p class="store-product-seller mt-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 10.5V20h16v-9.5M3 4h18l-1.5 6a2.5 2.5 0 0 1-4.5 1.1 2.5 2.5 0 0 1-4.5 0A2.5 2.5 0 0 1 6 10L4.5 4M9 20v-5h6v5"/></svg><span>${escapeHtml(p.storeName || 'Mitra industri')}</span></p>
+                <p class="store-product-seller mt-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 10.5V20h16v-9.5M3 4h18l-1.5 6a2.5 2.5 0 0 1-4.5 1.1 2.5 2.5 0 0 1-4.5 0A2.5 2.5 0 0 1 6 10L4.5 4M9 20v-5h6v5"/></svg><span>${escapeHtml(p.storeName || catalogText.industrialPartner)}</span></p>
               </div>
               <div class="flex items-center justify-between">
                 <div>
@@ -585,7 +617,7 @@
                 </div>
                 <div class="flex items-center gap-2">
                   <a href="{{ url('/detail-produk') }}/${p.slug}" class="inline-flex items-center justify-center rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-semibold text-blue-600 transition-colors hover:border-blue-500 hover:bg-blue-500 hover:text-white">
-                    Detail
+                    ${catalogText.details}
                   </a>
                   <button onclick="toggleWishlist(${p.id})" data-wishlist-btn data-product-id="${p.id}" class="w-11 h-11 rounded-full border border-slate-200 text-pink-500 flex items-center justify-center hover:bg-pink-50">
                     <svg class="w-4 h-4" fill="${p.isWishlisted ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
@@ -597,14 +629,14 @@
                 }
                 const productUrl = `{{ url('/detail-produk') }}/${encodeURIComponent(p.slug)}`;
                 const variantValues = Array.isArray(p.variants) ? p.variants.map(v => v.value).filter(Boolean) : [];
-                const variantLabel = variantValues.slice(0, 2).join(' · ') || p.cat || 'Produk industri';
+                const variantLabel = variantValues.slice(0, 2).join(' · ') || p.cat || catalogText.industrialProduct;
                 return `<article class="store-product-card group" data-id="${p.id}">
           <div class="store-product-media">
-            <a href="${productUrl}" class="block h-full" aria-label="Lihat ${escapeHtml(p.name)}">
+            <a href="${productUrl}" class="block h-full" aria-label="${escapeHtml(catalogText.viewProduct.replace(':product', p.name))}">
               <img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" loading="lazy" />
             </a>
             <div class="absolute left-2.5 top-2.5 flex gap-1">${badge}</div>
-            <button onclick="toggleWishlist(${p.id})" data-wishlist-btn data-product-id="${p.id}" class="store-wishlist-button" aria-label="Tambahkan ${escapeHtml(p.name)} ke wishlist">
+            <button onclick="toggleWishlist(${p.id})" data-wishlist-btn data-product-id="${p.id}" class="store-wishlist-button" aria-label="${escapeHtml(catalogText.addToWishlist.replace(':product', p.name))}">
               <svg class="h-4 w-4" fill="${p.isWishlisted ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
             </button>
           </div>
@@ -612,11 +644,11 @@
             <a href="${productUrl}" class="store-product-name line-clamp-2 hover:text-blue-700">${escapeHtml(p.name)}</a>
             <p class="store-product-variant truncate">${escapeHtml(variantLabel)}</p>
             <p class="store-product-price">${priceLabel}</p>
-            <p class="mt-1 text-[11px] font-medium text-slate-500">${Number(p.stock || 0) > 0 ? `Stok ${Number(p.stock).toLocaleString('id-ID')} ${escapeHtml(p.unit || 'pcs')}` : 'Stok habis'} &middot; Satuan ${escapeHtml(p.unit || 'pcs')}</p>
-            <p class="store-product-seller"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 10.5V20h16v-9.5M3 4h18l-1.5 6a2.5 2.5 0 0 1-4.5 1.1 2.5 2.5 0 0 1-4.5 0A2.5 2.5 0 0 1 6 10L4.5 4M9 20v-5h6v5"/></svg><span>${escapeHtml(p.storeName || 'Mitra industri')}</span></p>
+            <p class="mt-1 text-[11px] font-medium text-slate-500">${Number(p.stock || 0) > 0 ? `${catalogText.stock.replace(':count', Number(p.stock).toLocaleString())} ${escapeHtml(p.unit || 'pcs')}` : catalogText.outOfStock} &middot; ${catalogText.unit} ${escapeHtml(p.unit || 'pcs')}</p>
+            <p class="store-product-seller"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 10.5V20h16v-9.5M3 4h18l-1.5 6a2.5 2.5 0 0 1-4.5 1.1 2.5 2.5 0 0 1-4.5 0A2.5 2.5 0 0 1 6 10L4.5 4M9 20v-5h6v5"/></svg><span>${escapeHtml(p.storeName || catalogText.industrialPartner)}</span></p>
             <div class="store-product-meta">
               <span class="store-product-rating"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.7 2.83 5.73 6.32.92-4.58 4.46 1.08 6.3L12 17.14l-5.65 2.97 1.08-6.3-4.58-4.46 6.32-.92L12 2.7Z"/></svg>${Number(p.rating || 0).toFixed(1)} <span class="font-normal text-slate-400">(${Number(p.reviews || 0).toLocaleString('id-ID')})</span></span>
-              <span>Terjual ${Number(p.sold || 0).toLocaleString('id-ID')}</span>
+              <span>${catalogText.sold.replace(':count', Number(p.sold || 0).toLocaleString())}</span>
             </div>
           </div>
         </article>`;
@@ -690,7 +722,7 @@
                     <div class="filter-variant-panel hidden pt-3" data-variant-group="${encodeURIComponent(groupKey)}">
                         <div class="relative mb-3">
                             <i class="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-                            <input type="search" placeholder="Cari ${escapeHtml(name)}..."
+                            <input type="search" placeholder="${escapeHtml(catalogText.searchVariant.replace(':variant', name))}"
                                 class="filter-variant-search w-full border border-slate-200 rounded-lg pl-8 pr-3 py-2 text-sm focus:outline-none focus:border-blue-400"
                                 data-variant-group="${encodeURIComponent(groupKey)}"
                                 oninput="searchVariantOptions(this)" />
@@ -701,9 +733,9 @@
                             data-variant-group="${encodeURIComponent(groupKey)}"
                             data-expanded="false"
                             onclick="toggleVariantOptions(this)">
-                            Lihat semua
+                            ${catalogText.showAll}
                         </button>
-                        <p class="filter-variant-empty hidden text-xs text-slate-400" data-variant-group="${encodeURIComponent(groupKey)}">Tidak ada varian yang cocok.</p>
+                        <p class="filter-variant-empty hidden text-xs text-slate-400" data-variant-group="${encodeURIComponent(groupKey)}">${catalogText.variantNotFound}</p>
                     </div>
                 </div>`;
             }).join('');
@@ -784,7 +816,7 @@
 
             if (toggle) {
                 toggle.classList.toggle('hidden', query || matchingOptions.length <= filterOptionPreviewLimit);
-                toggle.textContent = isExpanded ? 'Ringkas' : `Lihat semua (${matchingOptions.length})`;
+                toggle.textContent = isExpanded ? catalogText.collapse : `${catalogText.showAll} (${matchingOptions.length})`;
             }
 
             const empty = document.querySelector(`.filter-variant-empty[data-variant-group="${group}"]`);
@@ -818,7 +850,7 @@
                 const text = el.parentElement.querySelector('span')?.textContent || el.value;
                 chips.push(text);
             });
-            if (document.getElementById('filterStock')?.checked) chips.push('Stok tersedia');
+            if (document.getElementById('filterStock')?.checked) chips.push(catalogText.inStock);
             const ratingMin = document.getElementById('ratingMin')?.value;
             if (Number(ratingMin) > 0) chips.push(`Rating ${ratingMin}+`);
             Object.entries(selectedVariantFilters).forEach(([name, values]) => values.forEach(v => chips.push(`${name}: ${v}`)));
@@ -891,13 +923,13 @@
             select.value = order[(current + 1) % order.length];
             sortProds();
             const labels = {
-                newest: 'Urut: Terbaru',
-                cheap: 'Urut: Termurah',
-                expensive: 'Urut: Termahal',
-                rating: 'Urut: Rating Tertinggi',
-                sold: 'Urut: Terlaris'
+                newest: catalogText.sortNewest,
+                cheap: catalogText.sortPriceLow,
+                expensive: catalogText.sortPriceHigh,
+                rating: catalogText.sortRating,
+                sold: catalogText.sortBestSelling,
             };
-            showToast(labels[select.value] || 'Urutan diubah');
+            showToast(labels[select.value] || catalogText.sortChanged);
         }
 
         function toggleView(mode) {
@@ -1115,7 +1147,7 @@
                 }),
             });
             if (!res.ok) return;
-            showToast(`"${p.name}" ditambahkan ke keranjang!`);
+            showToast(catalogText.addedToCart.replace(':product', p.name));
             window.dispatchEvent(new Event('cart:updated'));
         }
 
@@ -1139,13 +1171,13 @@
             });
             const json = await res.json().catch(() => ({}));
             if (!res.ok) {
-                showToast('Gagal memproses wishlist');
+                showToast(catalogText.wishlistFailed);
                 return;
             }
             if (json.wished) wishedProductIds.add(Number(id));
             else wishedProductIds.delete(Number(id));
             syncWishlistButtons();
-            showToast(json.wished ? `"${p.name}" ditambahkan ke wishlist!` : `"${p.name}" dihapus dari wishlist!`);
+            showToast((json.wished ? catalogText.addedToWishlist : catalogText.removedFromWishlist).replace(':product', p.name));
             window.dispatchEvent(new Event('wishlist:updated'));
         }
 
