@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\ContentPage;
-use App\Models\Product;
 
 class FrontendContentController extends Controller
 {
@@ -46,64 +45,7 @@ class FrontendContentController extends Controller
             }
         }
 
-        $diagramProducts = $this->diagramProducts($page);
-
-        return view('frontend.content-page', compact('page', 'diagramProducts'));
-    }
-
-    private function diagramProducts(ContentPage $page): array
-    {
-        if (! $page->exists || blank($page->diagram_image)) {
-            return [];
-        }
-
-        $page->load([
-            'categoryHotspots.mainCategory',
-            'categoryHotspots.categoryDetail.mainCategory',
-        ]);
-
-        return $page->categoryHotspots
-            ->filter(fn ($hotspot) => $hotspot->target_category)
-            ->unique('target_key')
-            ->mapWithKeys(function ($hotspot) {
-                $category = $hotspot->target_category;
-                $products = Product::query()
-                    ->with(['company', 'productVariants'])
-                    ->storefrontVisible()
-                    ->when(
-                        $hotspot->category_detail_id,
-                        fn ($query) => $query->where('category_detail_id', $hotspot->category_detail_id),
-                        fn ($query) => $query->where('main_category_id', $hotspot->main_category_id),
-                    )
-                    ->whereHas('productVariants')
-                    ->latest()
-                    ->limit(6)
-                    ->get()
-                    ->map(function (Product $product) {
-                        $variant = $product->productVariants->first();
-                        $image = trim((string) ($variant?->image ?: $product->firstAvailableImagePath()));
-
-                        if ($image === '') {
-                            $image = asset('imgs/product-placeholder.svg');
-                        } elseif (! str_starts_with($image, 'http://') && ! str_starts_with($image, 'https://')) {
-                            $image = asset('storage/'.ltrim($image, '/'));
-                        }
-
-                        return [
-                            'name' => (string) $product->name,
-                            'slug' => (string) $product->slug,
-                            'image' => $image,
-                            'price' => (int) $variant->price,
-                            'stock' => (int) $variant->stock,
-                            'sku' => (string) $variant->sku,
-                            'company' => (string) ($product->company?->name ?? ''),
-                        ];
-                    })
-                    ->all();
-
-                return [$hotspot->target_key => $products];
-            })
-            ->all();
+        return view('frontend.content-page', compact('page'));
     }
 
     /** @return array<string, array{title: string, excerpt: string, content: string, meta_description: string}> */

@@ -143,6 +143,51 @@
             border-radius: 2px;
         }
 
+        .visual-finder-area {
+            position: absolute;
+            border: 2px solid transparent;
+            border-radius: .55rem;
+            background: transparent;
+            cursor: pointer;
+            transition: border-color .18s ease, background-color .18s ease, box-shadow .18s ease;
+        }
+
+        .visual-finder-area:hover,
+        .visual-finder-area:focus-visible,
+        .visual-finder-area.is-active {
+            border-color: #f97316;
+            background: rgb(249 115 22 / .18);
+            box-shadow: 0 0 0 3px rgb(255 255 255 / .8), 0 10px 24px rgb(15 23 42 / .18);
+            outline: none;
+        }
+
+        .visual-finder-area span {
+            position: absolute;
+            left: 50%;
+            bottom: calc(100% + .4rem);
+            z-index: 2;
+            max-width: 10rem;
+            transform: translate(-50%, .25rem);
+            border-radius: 999px;
+            background: #0f172a;
+            padding: .35rem .65rem;
+            color: #fff;
+            font-size: .68rem;
+            font-weight: 700;
+            line-height: 1.2;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .18s ease, transform .18s ease;
+            white-space: nowrap;
+        }
+
+        .visual-finder-area:hover span,
+        .visual-finder-area:focus-visible span,
+        .visual-finder-area.is-active span {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+
         @media (max-width: 1023px) {
             #filterSidebar.mobile-filter-drawer {
                 position: fixed;
@@ -292,6 +337,78 @@
             @endforeach
         </div>
     </div>
+
+    @php
+        $initialVisualCategory = null;
+    @endphp
+    @if ($selectedParent?->diagram_image && $selectedParent->diagramAreas->isNotEmpty())
+        @php
+            $visualFinderImage = trim((string) $selectedParent->diagram_image);
+            $visualFinderImageUrl = str_starts_with($visualFinderImage, 'http://')
+                || str_starts_with($visualFinderImage, 'https://')
+                || str_starts_with($visualFinderImage, '//')
+                || str_starts_with($visualFinderImage, 'data:')
+                    ? $visualFinderImage
+                    : asset('storage/'.ltrim($visualFinderImage, '/'));
+            $visualFinderCategories = $selectedParent->diagramAreas
+                ->pluck('categoryDetail')
+                ->filter()
+                ->unique('id')
+                ->values();
+            $initialVisualCategory = $visualFinderCategories->first();
+        @endphp
+        <section id="visualProductFinder" class="mx-auto max-w-7xl px-4 pb-8 sm:px-6" data-testid="visual-product-finder">
+            <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <div class="border-b border-slate-200 bg-slate-50 px-4 py-4 sm:px-5">
+                    <p class="text-xs font-bold uppercase tracking-[.16em] text-blue-600">Visual Product Finder</p>
+                    <div class="mt-1 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-900">Pilih komponen pada drawing {{ $selectedParent->name }}</h2>
+                            <p class="mt-1 text-sm text-slate-500">Arahkan kursor lalu klik bagian yang Anda butuhkan untuk melihat produknya.</p>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex gap-2 overflow-x-auto pb-1" aria-label="Komponen pada drawing">
+                        @foreach ($visualFinderCategories as $category)
+                            <button type="button" data-visual-category="{{ $category->slug }}"
+                                onclick="activateVisualCategory('{{ $category->slug }}', '{{ addslashes($category->name) }}')"
+                                class="visual-finder-tab shrink-0 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-blue-500 hover:text-blue-600">
+                                {{ $category->name }}
+                            </button>
+                        @endforeach
+                    </div>
+                </div>
+
+                <div class="grid lg:grid-cols-[minmax(0,1fr)_340px]">
+                    <div class="relative overflow-hidden bg-slate-100">
+                        <img src="{{ $visualFinderImageUrl }}" alt="Drawing interaktif kategori {{ $selectedParent->name }}"
+                            class="block h-auto w-full" loading="eager">
+                        @foreach ($selectedParent->diagramAreas as $area)
+                            @continue(! $area->categoryDetail)
+                            <button type="button" class="visual-finder-area"
+                                data-visual-area="{{ $area->categoryDetail->slug }}"
+                                onclick="activateVisualCategory('{{ $area->categoryDetail->slug }}', '{{ addslashes($area->categoryDetail->name) }}')"
+                                style="left:{{ $area->x_percent }}%;top:{{ $area->y_percent }}%;width:{{ $area->width_percent }}%;height:{{ $area->height_percent }}%;"
+                                aria-label="Tampilkan produk {{ $area->categoryDetail->name }}">
+                                <span>{{ $area->categoryDetail->name }}</span>
+                            </button>
+                        @endforeach
+                    </div>
+
+                    <aside class="border-t border-slate-200 bg-white p-4 lg:border-l lg:border-t-0" aria-live="polite">
+                        <div class="flex items-center justify-between gap-3">
+                            <div>
+                                <p class="text-[10px] font-bold uppercase tracking-[.14em] text-slate-400">Produk terpilih</p>
+                                <h3 id="visualFinderTitle" class="mt-1 text-base font-bold text-slate-900">{{ $initialVisualCategory?->name }}</h3>
+                            </div>
+                            <a id="visualFinderAllLink" href="{{ $initialVisualCategory ? route('frontend.kategori', ['parent' => $selectedParent->slug, 'category' => $initialVisualCategory->slug]) : '#' }}"
+                                class="text-xs font-semibold text-blue-600 hover:text-blue-700">Lihat semua</a>
+                        </div>
+                        <div id="visualFinderProducts" class="mt-3 grid gap-2"></div>
+                    </aside>
+                </div>
+            </div>
+        </section>
+    @endif
 
     <!-- MAIN CONTENT: SIDEBAR + PRODUCTS -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 pb-10">
@@ -478,6 +595,9 @@
         const catalogText = @json($catalogText);
         const wishedProductIds = new Set();
         const catalogStateKey = `storefront-catalog-state:${window.location.pathname}${window.location.search}`;
+        const visualFinderParentSlug = @json($selectedParent?->slug ?? '');
+        const initialVisualCategorySlug = @json($initialVisualCategory?->slug ?? '');
+        const initialVisualCategoryName = @json($initialVisualCategory?->name ?? '');
 
         let selectedVariantFilters = {};
         let activeCategorySlug = initialCategorySlug;
@@ -488,6 +608,46 @@
         const filterOptionPreviewLimit = 4;
         let visibleProductCount = productPageSize;
         let currentRenderedProducts = [...allProducts];
+
+        function activateVisualCategory(categorySlug, categoryName) {
+            const finder = document.getElementById('visualProductFinder');
+            if (!finder) return;
+
+            finder.querySelectorAll('[data-visual-area]').forEach((area) => {
+                const active = area.dataset.visualArea === categorySlug;
+                area.classList.toggle('is-active', active);
+                area.setAttribute('aria-pressed', active ? 'true' : 'false');
+            });
+            finder.querySelectorAll('[data-visual-category]').forEach((tab) => {
+                const active = tab.dataset.visualCategory === categorySlug;
+                tab.classList.toggle('border-blue-600', active);
+                tab.classList.toggle('bg-blue-600', active);
+                tab.classList.toggle('text-white', active);
+                tab.setAttribute('aria-pressed', active ? 'true' : 'false');
+            });
+
+            document.getElementById('visualFinderTitle').textContent = categoryName;
+            document.getElementById('visualFinderAllLink').href = `${kategoriBaseUrl}?parent=${encodeURIComponent(visualFinderParentSlug)}&category=${encodeURIComponent(categorySlug)}`;
+
+            const products = allProducts.filter((product) => product.categorySlug === categorySlug).slice(0, 4);
+            const container = document.getElementById('visualFinderProducts');
+            if (!products.length) {
+                container.innerHTML = '<p class="rounded-xl bg-slate-50 p-4 text-center text-xs leading-5 text-slate-500">Belum ada produk aktif pada kategori ini.</p>';
+                return;
+            }
+
+            container.innerHTML = products.map((product) => {
+                const productUrl = `{{ url('/detail-produk') }}/${encodeURIComponent(product.slug)}`;
+                return `<a href="${productUrl}" class="grid grid-cols-[72px_minmax(0,1fr)] gap-3 rounded-xl border border-slate-200 p-2 transition hover:border-blue-300 hover:shadow-sm">
+                    <img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.name)}" class="h-[72px] w-[72px] rounded-lg bg-slate-100 object-cover">
+                    <span class="min-w-0 self-center">
+                        <strong class="line-clamp-2 text-xs font-bold leading-5 text-slate-800">${escapeHtml(product.name)}</strong>
+                        <small class="mt-1 block truncate text-[10px] text-slate-400">${escapeHtml(product.variant || product.cat || '')}</small>
+                        <b class="mt-1 block text-sm text-blue-700">Rp ${Number(product.price || 0).toLocaleString('id-ID')}</b>
+                    </span>
+                </a>`;
+            }).join('');
+        }
 
         function getLoginRedirectUrl() {
             return `${loginUrl}?redirect=${encodeURIComponent(window.location.href)}`;
@@ -1225,6 +1385,9 @@
         restoreCatalogState();
         applyVariantFilter();
         initWishlistStatus();
+        if (initialVisualCategorySlug) {
+            activateVisualCategory(initialVisualCategorySlug, initialVisualCategoryName);
+        }
 
         // Navbar mega dropdown
         function toggleCategoryMenu(event) {

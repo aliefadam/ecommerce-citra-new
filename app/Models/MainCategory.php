@@ -7,16 +7,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MainCategory extends Model
 {
-    protected $fillable = ['name', 'slug', 'image', 'default_specification_template_id'];
+    protected $fillable = ['name', 'slug', 'image', 'diagram_image', 'default_specification_template_id'];
 
     public function categoryDetails(): HasMany
     {
         return $this->hasMany(CategoryDetail::class);
     }
 
-    public function products(): HasMany
+    public function diagramAreas(): HasMany
     {
-        return $this->hasMany(Product::class);
+        return $this->hasMany(MainCategoryDiagramArea::class)->orderBy('id');
     }
 
     public function defaultSpecificationTemplate()

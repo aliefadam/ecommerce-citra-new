@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ContentPage extends Model
 {
@@ -19,7 +18,6 @@ class ContentPage extends Model
         'excerpt',
         'content',
         'hero_image',
-        'diagram_image',
         'meta_title',
         'meta_description',
         'is_active',
@@ -35,11 +33,6 @@ class ContentPage extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
-    }
-
-    public function categoryHotspots(): HasMany
-    {
-        return $this->hasMany(ContentPageCategoryHotspot::class)->orderBy('id');
     }
 
     public function scopePublished(Builder $query): Builder

@@ -96,7 +96,10 @@ class FrontendController extends Controller
     {
         $products = $this->buildFrontendProducts();
         $categoryTree = MainCategory::query()
-            ->with(['categoryDetails' => fn ($q) => $q->orderBy('name')])
+            ->with([
+                'categoryDetails' => fn ($q) => $q->orderBy('name'),
+                'diagramAreas.categoryDetail',
+            ])
             ->orderBy('name')
             ->get();
         $selectedParentSlug = (string) request()->query('parent', '');
@@ -106,7 +109,7 @@ class FrontendController extends Controller
             ? CategoryDetail::query()->where('slug', $selectedCategorySlug)->first()
             : null;
         $selectedParent = $selectedParentSlug !== ''
-            ? MainCategory::query()->where('slug', $selectedParentSlug)->first()
+            ? $categoryTree->firstWhere('slug', $selectedParentSlug)
             : null;
         $selectedLabel = $selectedCategory?->name
             ?? $selectedParent?->name
@@ -118,6 +121,7 @@ class FrontendController extends Controller
             'selectedLabel' => $selectedLabel,
             'selectedParentSlug' => $selectedParentSlug,
             'selectedCategorySlug' => $selectedCategorySlug,
+            'selectedParent' => $selectedParent,
         ]);
     }
 

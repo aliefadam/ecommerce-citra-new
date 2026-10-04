@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class MainCategoryController extends Controller
 {
@@ -29,8 +30,7 @@ class MainCategoryController extends Controller
         Request $request,
         ImageOptimizer $imageOptimizer,
         CategorySpecificationTemplateService $templateService
-    )
-    {
+    ) {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255', Rule::unique('main_categories', 'name')],
             'image_url' => ['nullable', 'string', 'max:2048'],
@@ -77,6 +77,10 @@ class MainCategoryController extends Controller
 
     public function edit(MainCategory $mainCategory)
     {
+        $mainCategory->load([
+            'categoryDetails' => fn ($query) => $query->orderBy('name'),
+            'diagramAreas.categoryDetail',
+        ]);
         $specificationTemplates = SpecificationTemplate::query()->where('is_active', true)->orderBy('name')->get();
 
         return view('backend.main-categories.edit', compact('mainCategory', 'specificationTemplates'));
@@ -88,10 +92,32 @@ class MainCategoryController extends Controller
             'name' => ['required', 'string', 'max:255', Rule::unique('main_categories', 'name')->ignore($mainCategory->id)],
             'image_url' => ['nullable', 'string', 'max:2048'],
             'image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
+            'diagram_image_url' => ['nullable', 'string', 'max:2048'],
+            'diagram_image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
+            'diagram_areas' => ['nullable', 'array', 'max:40'],
+            'diagram_areas.*.category_detail_id' => [
+                'required',
+                'integer',
+                Rule::exists('category_details', 'id')->where('main_category_id', $mainCategory->id),
+            ],
+            'diagram_areas.*.x_percent' => ['required', 'numeric', 'between:0,100'],
+            'diagram_areas.*.y_percent' => ['required', 'numeric', 'between:0,100'],
+            'diagram_areas.*.width_percent' => ['required', 'numeric', 'between:0.5,100'],
+            'diagram_areas.*.height_percent' => ['required', 'numeric', 'between:0.5,100'],
             'default_specification_template_id' => ['nullable', 'exists:specification_templates,id'],
         ], $this->imageValidationMessages($request));
 
+        foreach ($validated['diagram_areas'] ?? [] as $index => $area) {
+            if ((float) $area['x_percent'] + (float) $area['width_percent'] > 100
+                || (float) $area['y_percent'] + (float) $area['height_percent'] > 100) {
+                throw ValidationException::withMessages([
+                    "diagram_areas.$index.x_percent" => 'Area klik harus berada di dalam drawing.',
+                ]);
+            }
+        }
+
         $oldImage = (string) $mainCategory->image;
+        $oldDiagramImage = (string) $mainCategory->diagram_image;
         try {
             $image = $this->resolveImageValue($request, $imageOptimizer, (string) ($validated['image_url'] ?? ''), $oldImage);
         } catch (\Throwable $exception) {
@@ -103,20 +129,52 @@ class MainCategoryController extends Controller
         }
 
         try {
-            $mainCategory->update([
-                'name' => $validated['name'],
-                'slug' => $this->uniqueSlug($validated['name'], $mainCategory->id),
-                'image' => $image,
-                'default_specification_template_id' => $validated['default_specification_template_id'] ?? null,
-            ]);
+            $diagramImage = $this->resolveDiagramImageValue($request, $imageOptimizer, (string) ($validated['diagram_image_url'] ?? ''), $oldDiagramImage);
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            if ($request->hasFile('image_file') && $image !== $oldImage) {
+                $imageOptimizer->deletePublicFile($image);
+            }
+
+            return back()
+                ->withErrors(['diagram_image_file' => 'Drawing gagal diproses. Gunakan file JPG, PNG, atau WebP yang valid.'])
+                ->withInput();
+        }
+
+        try {
+            DB::transaction(function () use ($mainCategory, $validated, $image, $diagramImage) {
+                $mainCategory->update([
+                    'name' => $validated['name'],
+                    'slug' => $this->uniqueSlug($validated['name'], $mainCategory->id),
+                    'image' => $image,
+                    'diagram_image' => $diagramImage,
+                    'default_specification_template_id' => $validated['default_specification_template_id'] ?? null,
+                ]);
+
+                $mainCategory->diagramAreas()->delete();
+                $mainCategory->diagramAreas()->createMany(array_map(fn (array $area) => [
+                    'category_detail_id' => (int) $area['category_detail_id'],
+                    'x_percent' => round((float) $area['x_percent'], 2),
+                    'y_percent' => round((float) $area['y_percent'], 2),
+                    'width_percent' => round((float) $area['width_percent'], 2),
+                    'height_percent' => round((float) $area['height_percent'], 2),
+                ], $validated['diagram_areas'] ?? []));
+            });
         } catch (\Throwable $exception) {
             if ($request->hasFile('image_file') && $image !== $oldImage) {
                 $imageOptimizer->deletePublicFile($image);
+            }
+            if ($request->hasFile('diagram_image_file') && $diagramImage !== $oldDiagramImage) {
+                $imageOptimizer->deletePublicFile($diagramImage);
             }
             throw $exception;
         }
         if ($image !== $oldImage) {
             $imageOptimizer->deletePublicFile($oldImage);
+        }
+        if ($diagramImage !== $oldDiagramImage) {
+            $imageOptimizer->deletePublicFile($oldDiagramImage);
         }
 
         return redirect()->route('main-categories.index')->with('success', 'Kategori utama berhasil diperbarui.');
@@ -125,6 +183,7 @@ class MainCategoryController extends Controller
     public function destroy(MainCategory $mainCategory)
     {
         app(ImageOptimizer::class)->deletePublicFile((string) $mainCategory->image);
+        app(ImageOptimizer::class)->deletePublicFile((string) $mainCategory->diagram_image);
         $mainCategory->delete();
 
         return redirect()->route('main-categories.index')->with('success', 'Kategori utama berhasil dihapus.');
@@ -146,6 +205,20 @@ class MainCategoryController extends Controller
     {
         if ($request->hasFile('image_file')) {
             return $imageOptimizer->storeWebp($request->file('image_file'), 'main-categories', 600, 600, 82);
+        }
+
+        $trimmed = trim($imageUrl);
+        if ($trimmed !== '') {
+            return $trimmed;
+        }
+
+        return $fallback;
+    }
+
+    private function resolveDiagramImageValue(Request $request, ImageOptimizer $imageOptimizer, string $imageUrl, ?string $fallback = null): ?string
+    {
+        if ($request->hasFile('diagram_image_file')) {
+            return $imageOptimizer->storeWebp($request->file('diagram_image_file'), 'category-diagrams', 2000, 1400, 88);
         }
 
         $trimmed = trim($imageUrl);

@@ -42,28 +42,6 @@
             'kebijakan-privasi' => ['label' => $information['pages']['kebijakan-privasi']['label'], 'icon' => 'lock'],
             'syarat-ketentuan' => ['label' => $information['pages']['syarat-ketentuan']['label'], 'icon' => 'receipt'],
         ];
-        $diagramCategories = $page->relationLoaded('categoryHotspots')
-            ? $page->categoryHotspots->map(function ($hotspot) {
-                $category = $hotspot->target_category;
-                if (! $category) {
-                    return null;
-                }
-
-                $url = $hotspot->category_detail_id
-                    ? route('frontend.kategori', [
-                        'parent' => $category->mainCategory?->slug,
-                        'category' => $category->slug,
-                    ])
-                    : route('frontend.kategori', ['parent' => $category->slug]);
-
-                return [
-                    'key' => $hotspot->target_key,
-                    'model' => $category,
-                    'url' => $url,
-                ];
-            })->filter()->unique('key')->values()
-            : collect();
-        $initialDiagramCategoryKey = (string) ($diagramCategories->first()['key'] ?? '');
     @endphp
 
     @if ($isPost)
@@ -219,75 +197,6 @@
                         @endif
                     </div>
 
-                    @if ($page->diagram_image && $diagramCategories->isNotEmpty())
-                        <section class="category-diagram" aria-labelledby="categoryDiagramTitle"
-                            x-data="{ activeCategory: {{ \Illuminate\Support\Js::from($initialDiagramCategoryKey) }} }">
-                            <div class="category-diagram-heading">
-                                <p>Jelajahi Drawing</p>
-                                <h3 id="categoryDiagramTitle">Pilih komponen pada gambar</h3>
-                                <span>Klik titik pada drawing untuk melihat produk berdasarkan kategori.</span>
-                            </div>
-
-                            <div class="category-diagram-tabs" aria-label="Kategori dalam drawing">
-                                @foreach ($diagramCategories as $category)
-                                    <button type="button" @click="activeCategory = {{ \Illuminate\Support\Js::from($category['key']) }}"
-                                        :class="activeCategory === {{ \Illuminate\Support\Js::from($category['key']) }} ? 'is-active' : ''"
-                                        :aria-pressed="activeCategory === {{ \Illuminate\Support\Js::from($category['key']) }} ? 'true' : 'false'">
-                                        {{ $category['model']->name }}
-                                    </button>
-                                @endforeach
-                            </div>
-
-                            <div class="category-diagram-layout">
-                                <div class="category-diagram-canvas">
-                                    <img src="{{ $page->diagram_image }}" alt="Drawing interaktif {{ $page->title }}" loading="lazy">
-                                    @foreach ($page->categoryHotspots as $index => $hotspot)
-                                        @continue(! $hotspot->target_category)
-                                        <button type="button"
-                                            @click="activeCategory = {{ \Illuminate\Support\Js::from($hotspot->target_key) }}"
-                                            :class="activeCategory === {{ \Illuminate\Support\Js::from($hotspot->target_key) }} ? 'is-active' : ''"
-                                            style="left: {{ $hotspot->x_percent }}%; top: {{ $hotspot->y_percent }}%;"
-                                            aria-label="Tampilkan produk kategori {{ $hotspot->target_category->name }}">
-                                            <span>{{ $index + 1 }}</span>
-                                            <strong>{{ $hotspot->target_category->name }}</strong>
-                                        </button>
-                                    @endforeach
-                                </div>
-
-                                <div class="category-diagram-products" aria-live="polite">
-                                    @foreach ($diagramCategories as $category)
-                                        <div x-show="activeCategory === {{ \Illuminate\Support\Js::from($category['key']) }}" @if($category['key'] !== $initialDiagramCategoryKey) style="display: none;" @endif>
-                                            <div class="category-diagram-products-heading">
-                                                <div>
-                                                    <span>Kategori</span>
-                                                    <h4>{{ $category['model']->name }}</h4>
-                                                </div>
-                                                <a href="{{ $category['url'] }}">Lihat semua</a>
-                                            </div>
-
-                                            <div class="category-diagram-product-list">
-                                                @forelse (($diagramProducts[$category['key']] ?? []) as $product)
-                                                    <a href="{{ route('frontend.detail-produk', ['slug' => $product['slug']]) }}" class="category-diagram-product">
-                                                        <img src="{{ $product['image'] }}" alt="{{ $product['name'] }}" loading="lazy">
-                                                        <span>
-                                                            <strong>{{ $product['name'] }}</strong>
-                                                            @if ($product['sku'])
-                                                                <small>SKU {{ $product['sku'] }}</small>
-                                                            @endif
-                                                            <b>Rp {{ number_format($product['price'], 0, ',', '.') }}</b>
-                                                        </span>
-                                                    </a>
-                                                @empty
-                                                    <p class="category-diagram-empty">Belum ada produk aktif pada kategori ini.</p>
-                                                @endforelse
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                        </section>
-                    @endif
-
                     @if ($page->slug === 'cara-belanja')
                         <section class="shopping-guide" aria-labelledby="shoppingGuideTitle">
                             <div class="shopping-guide-heading">
@@ -425,37 +334,6 @@
         .shopping-guide-step:hover .shopping-guide-zoom, .shopping-guide-step > a:focus-visible .shopping-guide-zoom { opacity: 1; }
         .shopping-guide-step > a:focus-visible { outline: 3px solid #60a5fa; outline-offset: -3px; }
 
-        .category-diagram { margin-top: 1.5rem; border-top: 1px solid #e2e8f0; padding: 1.75rem 24px 24px; background: linear-gradient(180deg,#f8fbff 0,#fff 12rem); }
-        .category-diagram-heading > p { color: #0b5fc7; font-size: .67rem; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; }
-        .category-diagram-heading h3 { margin-top: .3rem; color: #102449; font-size: 1.2rem; font-weight: 800; }
-        .category-diagram-heading > span { display: block; margin-top: .35rem; color: #64748b; font-size: .78rem; line-height: 1.6; }
-        .category-diagram-tabs { display: flex; gap: .5rem; margin-top: 1rem; overflow-x: auto; padding-bottom: .25rem; scrollbar-width: thin; }
-        .category-diagram-tabs button { flex: 0 0 auto; border: 1px solid #d7e1ee; border-radius: 999px; background: #fff; padding: .45rem .8rem; color: #475569; font-size: .7rem; font-weight: 700; }
-        .category-diagram-tabs button:hover, .category-diagram-tabs button.is-active { border-color: #1765d1; background: #1765d1; color: #fff; }
-        .category-diagram-layout { display: grid; grid-template-columns: minmax(0,1.5fr) minmax(220px,.7fr); gap: 1rem; margin-top: .8rem; align-items: start; }
-        .category-diagram-canvas { position: relative; overflow: hidden; border: 1px solid #d8e2ef; border-radius: .85rem; background: #f8fafc; }
-        .category-diagram-canvas > img { display: block; width: 100%; height: auto; }
-        .category-diagram-canvas > button { position: absolute; display: flex; align-items: center; gap: .4rem; transform: translate(-16px,-16px); border: 0; background: transparent; color: #fff; cursor: pointer; }
-        .category-diagram-canvas > button > span { display: grid; width: 32px; height: 32px; flex: 0 0 auto; place-items: center; border: 2px solid #fff; border-radius: 999px; background: #1765d1; box-shadow: 0 4px 15px rgba(15,47,99,.3); font-size: .7rem; font-weight: 800; transition: transform .2s ease, background .2s ease; }
-        .category-diagram-canvas > button > strong { max-width: 120px; overflow: hidden; border-radius: 999px; background: rgba(8,47,99,.9); padding: .35rem .6rem; font-size: .65rem; line-height: 1.2; text-overflow: ellipsis; white-space: nowrap; opacity: 0; transform: translateX(-5px); transition: opacity .2s ease, transform .2s ease; }
-        .category-diagram-canvas > button:hover > strong, .category-diagram-canvas > button:focus-visible > strong, .category-diagram-canvas > button.is-active > strong { opacity: 1; transform: translateX(0); }
-        .category-diagram-canvas > button:hover > span, .category-diagram-canvas > button.is-active > span { background: #f97316; transform: scale(1.08); }
-        .category-diagram-canvas > button:focus-visible { outline: 3px solid #60a5fa; outline-offset: 3px; border-radius: 999px; }
-        .category-diagram-products { max-height: 520px; overflow-y: auto; border: 1px solid #d8e2ef; border-radius: .85rem; background: #fff; padding: .8rem; }
-        .category-diagram-products-heading { display: flex; align-items: end; justify-content: space-between; gap: .75rem; padding: .15rem .15rem .7rem; }
-        .category-diagram-products-heading span { color: #64748b; font-size: .62rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
-        .category-diagram-products-heading h4 { color: #102449; font-size: .9rem; font-weight: 800; }
-        .category-diagram-products-heading a { color: #0b5fc7; font-size: .65rem; font-weight: 700; white-space: nowrap; }
-        .category-diagram-product-list { display: grid; gap: .55rem; }
-        .category-diagram-product { display: grid; grid-template-columns: 68px minmax(0,1fr); gap: .65rem; align-items: center; overflow: hidden; border: 1px solid #e2e8f0; border-radius: .7rem; padding: .45rem; transition: border-color .2s ease, box-shadow .2s ease; }
-        .category-diagram-product:hover { border-color: #93b9e8; box-shadow: 0 7px 18px rgba(15,47,99,.08); }
-        .category-diagram-product > img { width: 68px; height: 68px; border-radius: .5rem; background: #f1f5f9; object-fit: cover; }
-        .category-diagram-product > span { display: grid; min-width: 0; }
-        .category-diagram-product strong { display: -webkit-box; overflow: hidden; color: #1e293b; font-size: .72rem; line-height: 1.35; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
-        .category-diagram-product small { margin-top: .2rem; overflow: hidden; color: #94a3b8; font-size: .6rem; text-overflow: ellipsis; white-space: nowrap; }
-        .category-diagram-product b { margin-top: .25rem; color: #0b5fc7; font-size: .75rem; }
-        .category-diagram-empty { border-radius: .65rem; background: #f8fafc; padding: 1rem; color: #64748b; font-size: .72rem; line-height: 1.5; text-align: center; }
-
         .info-page { background: #f8fafc; color: #0b1f43; }
         .info-breadcrumb { display: flex; min-height: 48px; align-items: center; gap: .55rem; overflow: hidden; color: #64748b; font-size: .75rem; white-space: nowrap; }
         .info-breadcrumb a { display: inline-flex; align-items: center; gap: .45rem; color: #475569; }
@@ -517,10 +395,6 @@
             .shopping-guide-step figcaption { padding: .9rem 1rem; }
             .shopping-guide-step > a { border-top: 1px solid #e2e8f0; border-left: 0; }
             .shopping-guide-zoom { opacity: 1; }
-            .category-diagram { padding: 1.5rem 18px 18px; }
-            .category-diagram-layout { grid-template-columns: 1fr; }
-            .category-diagram-canvas > button > strong { display: none; }
-            .category-diagram-products { max-height: none; }
             .info-support { display: block; margin-bottom: 20px; padding: 20px; }
             .info-support > a { width: 100%; margin-top: 1rem; }
         }
