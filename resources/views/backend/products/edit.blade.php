@@ -166,6 +166,18 @@
             @csrf
             @method('PUT')
 
+            @if ($errors->any())
+                <div class="mb-6 px-4 py-3 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-700 rounded-xl text-sm text-red-600 dark:text-red-400"
+                    role="alert" aria-live="polite">
+                    <p class="font-semibold mb-1">Data belum dapat disimpan:</p>
+                    <ul class="list-disc list-inside space-y-0.5">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
                 {{-- Kolom kiri --}}

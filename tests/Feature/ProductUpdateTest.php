@@ -201,6 +201,22 @@ class ProductUpdateTest extends TestCase
         Storage::disk('public')->assertExists('product-specifications/original.webp');
     }
 
+    public function test_edit_product_displays_a_summary_for_variant_validation_errors(): void
+    {
+        [$product, $detail, , , $productVariant] = $this->createProductFixture();
+        $this->actingAs($this->makeAdminUser());
+
+        $payload = $this->singleVariantUpdatePayload($product, $detail, $productVariant);
+        unset($payload['variants'][0]['price']);
+
+        $this->followingRedirects()
+            ->from(route('products.edit', $product))
+            ->put(route('products.update', $product), $payload)
+            ->assertOk()
+            ->assertSee('Data belum dapat disimpan:')
+            ->assertSee('Harga varian wajib diisi.');
+    }
+
     public function test_edit_product_does_not_trust_the_existing_image_path_from_the_browser(): void
     {
         Storage::fake('public');
