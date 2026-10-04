@@ -1,6 +1,6 @@
 @extends('layouts.user')
 
-@section('title', 'Checkout - ' . ($appStoreName ?? config('app.name')))
+@section('title', __('checkout.checkout_title') . ' - ' . ($appStoreName ?? config('app.name')))
 @section('body_class', 'bg-slate-50 text-slate-800 overflow-x-hidden')
 
 @section('style')
@@ -283,8 +283,8 @@
                                 <i class="ri-user-smile-line text-lg"></i>
                             </span>
                             <div>
-                                <p class="text-sm font-semibold text-slate-800">Checkout cepat tanpa akun</p>
-                                <p class="mt-0.5 text-xs leading-5 text-slate-600">Sudah punya akun? <a href="{{ route('login') }}" class="font-semibold text-blue-700 hover:underline">Login untuk memakai alamat tersimpan dan poin member.</a></p>
+                                <p class="text-sm font-semibold text-slate-800">{{ __('checkout.guest_checkout') }}</p>
+                                <p class="mt-0.5 text-xs leading-5 text-slate-600">{{ __('checkout.guest_login_intro') }} <a href="{{ route('login') }}" class="font-semibold text-blue-700 hover:underline">{{ __('checkout.guest_login_link') }}</a></p>
                             </div>
                         </div>
                     </div>
@@ -297,7 +297,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
-                        Keranjang Belanja
+                        {{ __('checkout.shopping_cart') }}
                     </h2>
                     <span class="text-sm text-slate-500" id="itemCountText">0 item</span>
                 </div>
@@ -314,18 +314,18 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
-                            {{ $isGuestCheckout ? 'Data Pengiriman' : 'Alamat Pengiriman' }}
+                            {{ $isGuestCheckout ? __('checkout.shipping_data') : __('checkout.shipping_address') }}
                         </h2>
                         @unless ($isGuestCheckout)
                             <button type="button" onclick="showAddressModal()"
                                 class="text-blue-600 text-sm font-medium hover:text-blue-700">
-                                Tambah Alamat
+                                {{ __('checkout.add_address') }}
                             </button>
                         @endunless
                     </div>
                     <div class="checkout-card-body p-6 space-y-3" id="addressList">
                         @if ($isGuestCheckout)
-                            <p class="mb-4 text-sm leading-6 text-slate-500">Isi data penerima untuk pesanan ini. Alamat tidak akan disimpan sebagai alamat akun.</p>
+                            <p class="mb-4 text-sm leading-6 text-slate-500">{{ __('checkout.guest_shipping_help') }}</p>
                             <div id="guestShippingFormHost"></div>
                         @else
                         @forelse(($addresses ?? collect()) as $address)
@@ -342,7 +342,7 @@
                                             class="bg-slate-100 text-slate-700 text-xs px-2 py-0.5 rounded-full font-medium">{{ $address->label }}</span>
                                         @if ($address->is_primary)
                                             <span
-                                                class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full font-medium">Utama</span>
+                                                class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full font-medium">{{ __('checkout.primary') }}</span>
                                         @endif
                                     </div>
                                     <p class="text-sm text-slate-600">{{ $address->phone_country_code }}
@@ -354,7 +354,7 @@
                             </label>
                         @empty
                             <div class="text-sm text-slate-500">
-                                Belum ada alamat tersimpan. Silakan tambahkan alamat di halaman profil.
+                                {{ __('checkout.no_saved_address') }}
                             </div>
                         @endforelse
                         @endif
@@ -369,14 +369,14 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                             </svg>
-                            {{ $isRedeemCheckout ? 'Pembayaran Ongkir' : 'Metode Pembayaran' }}
+                            {{ $isRedeemCheckout ? __('checkout.shipping_payment') : __('checkout.payment_method') }}
                         </h2>
                     </div>
                     <div class="checkout-card-body p-6">
                         @if ($isRedeemCheckout)
                             <div class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 mb-5">
-                                <p class="text-sm font-semibold text-amber-800">Produk tetap ditukar dengan point, tetapi ongkir dibayar customer.</p>
-                                <p class="mt-1 text-xs text-amber-700">Point baru akan dipotong setelah pembayaran ongkir berhasil dikonfirmasi.</p>
+                                <p class="text-sm font-semibold text-amber-800">{{ __('checkout.redeem_shipping_notice') }}</p>
+                                <p class="mt-1 text-xs text-amber-700">{{ __('checkout.redeem_deduct_notice') }}</p>
                             </div>
                         @endif
                         <!-- Tabs -->
@@ -384,10 +384,9 @@
                             <button onclick="setPaymentTab('qris')" id="tab-qris"
                                 class="payment-tab inline-flex px-4 py-2 rounded-xl text-sm font-semibold bg-blue-500 text-white whitespace-nowrap transition-all">QRIS</button>
                             <button onclick="setPaymentTab('bank')" id="tab-bank"
-                                class="payment-tab inline-flex px-4 py-2 rounded-xl text-sm font-semibold bg-slate-100 text-slate-600 whitespace-nowrap transition-all">Transfer
-                                Bank</button>
+                                class="payment-tab inline-flex px-4 py-2 rounded-xl text-sm font-semibold bg-slate-100 text-slate-600 whitespace-nowrap transition-all">{{ __('checkout.bank_transfer') }}</button>
                             <button onclick="setPaymentTab('manual')" id="tab-manual"
-                                class="payment-tab inline-flex px-4 py-2 rounded-xl text-sm font-semibold bg-slate-100 text-slate-600 whitespace-nowrap transition-all">Transfer Manual</button>
+                                class="payment-tab inline-flex px-4 py-2 rounded-xl text-sm font-semibold bg-slate-100 text-slate-600 whitespace-nowrap transition-all">{{ __('checkout.manual_transfer') }}</button>
                         </div>
 
                             <!-- QRIS -->
@@ -448,15 +447,15 @@
                         </div>
 
                             <div id="panel-manual" class="payment-panel hidden">
-                                <label onclick="setPayment('manual_transfer', 'Transfer Manual')"
+                                <label onclick="setPayment('manual_transfer', checkoutT('manual_transfer'))"
                                     class="payment-card flex items-center gap-3 p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-blue-300 transition-all">
                                     <input type="radio" name="payment" value="manual_transfer" class="accent-blue-500" />
                                     <span class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
                                         <i class="ri-bank-card-line text-xl"></i>
                                     </span>
                                     <span>
-                                        <span class="block text-sm font-semibold text-slate-700">Transfer Manual</span>
-                                        <span class="block text-xs text-slate-400">Upload bukti transfer setelah checkout</span>
+                                        <span class="block text-sm font-semibold text-slate-700">{{ __('checkout.manual_transfer') }}</span>
+                                        <span class="block text-xs text-slate-400">{{ __('checkout.manual_upload_after_checkout') }}</span>
                                     </span>
                                 </label>
                             </div>
@@ -470,18 +469,18 @@
                             <input id="taxInvoiceRequested" type="checkbox" class="mt-1 accent-blue-500"
                                 onchange="toggleTaxInvoiceForm()" />
                             <span class="min-w-0">
-                                <span class="block font-bold text-slate-800">Saya membutuhkan faktur pajak</span>
-                                <span class="mt-0.5 block text-xs text-slate-500">Data NPWP disimpan sebagai snapshot transaksi dan diproses admin setelah checkout.</span>
+                                <span class="block font-bold text-slate-800">{{ __('checkout.tax_invoice_request') }}</span>
+                                <span class="mt-0.5 block text-xs text-slate-500">{{ __('checkout.tax_invoice_snapshot') }}</span>
                             </span>
                         </label>
                     </div>
                     <div id="taxInvoiceForm" class="checkout-card-body hidden p-6 space-y-4">
                         @if (($taxProfiles ?? collect())->isNotEmpty())
                             <div>
-                                <label class="mb-2 block text-xs font-semibold text-slate-600">Pakai profil wajib pajak</label>
+                                <label class="mb-2 block text-xs font-semibold text-slate-600">{{ __('checkout.tax_profile') }}</label>
                                 <select id="taxInvoiceProfileId" onchange="applyTaxInvoiceProfile()"
                                     class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700 focus:border-blue-400 focus:outline-none">
-                                    <option value="">Isi manual</option>
+                                    <option value="">{{ __('checkout.manual_entry') }}</option>
                                     @foreach ($taxProfiles as $profile)
                                         <option value="{{ $profile->id }}">{{ $profile->taxpayer_name }} - {{ $profile->masked_taxpayer_number }}</option>
                                     @endforeach
@@ -490,28 +489,28 @@
                         @endif
                         <div class="grid gap-4 md:grid-cols-2">
                             <div>
-                                <label class="mb-2 block text-xs font-semibold text-slate-600">Nama NPWP</label>
-                                <input id="taxpayerName" type="text" placeholder="Nama sesuai NPWP"
+                                <label class="mb-2 block text-xs font-semibold text-slate-600">{{ __('checkout.taxpayer_name') }}</label>
+                                <input id="taxpayerName" type="text" placeholder="{{ __('checkout.taxpayer_name_placeholder') }}"
                                     class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none">
                             </div>
                             <div>
-                                <label class="mb-2 block text-xs font-semibold text-slate-600">Nomor NPWP</label>
-                                <input id="taxpayerNumber" type="text" placeholder="15/16 digit atau format NPWP"
+                                <label class="mb-2 block text-xs font-semibold text-slate-600">{{ __('checkout.taxpayer_number') }}</label>
+                                <input id="taxpayerNumber" type="text" placeholder="{{ __('checkout.taxpayer_number_placeholder') }}"
                                     class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none">
                             </div>
                             <div class="md:col-span-2">
-                                <label class="mb-2 block text-xs font-semibold text-slate-600">Alamat NPWP</label>
-                                <textarea id="taxpayerAddress" rows="3" placeholder="Alamat lengkap sesuai NPWP"
+                                <label class="mb-2 block text-xs font-semibold text-slate-600">{{ __('checkout.taxpayer_address') }}</label>
+                                <textarea id="taxpayerAddress" rows="3" placeholder="{{ __('checkout.taxpayer_address_placeholder') }}"
                                     class="w-full resize-none rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none"></textarea>
                             </div>
                             <div>
-                                <label class="mb-2 block text-xs font-semibold text-slate-600">Email Penerima</label>
+                                <label class="mb-2 block text-xs font-semibold text-slate-600">{{ __('checkout.recipient_email') }}</label>
                                 <input id="taxpayerEmail" type="email" placeholder="finance@example.com"
                                     class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none">
                             </div>
                             <div>
-                                <label class="mb-2 block text-xs font-semibold text-slate-600">Catatan</label>
-                                <input id="taxInvoiceNote" type="text" placeholder="Opsional"
+                                <label class="mb-2 block text-xs font-semibold text-slate-600">{{ __('checkout.note') }}</label>
+                                <input id="taxInvoiceNote" type="text" placeholder="{{ __('checkout.optional') }}"
                                     class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none">
                             </div>
                         </div>
@@ -519,11 +518,11 @@
                         <div class="flex flex-col gap-2 rounded-xl bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between">
                             <label class="inline-flex items-center gap-2 text-sm text-slate-600">
                                 <input id="saveTaxProfile" type="checkbox" class="accent-blue-500">
-                                Simpan sebagai profil wajib pajak
+                                {{ __('checkout.save_tax_profile') }}
                             </label>
                             <label class="inline-flex items-center gap-2 text-sm text-slate-600">
                                 <input id="setDefaultTaxProfile" type="checkbox" class="accent-blue-500">
-                                Jadikan default
+                                {{ __('checkout.make_default') }}
                             </label>
                         </div>
                         @endunless
@@ -547,24 +546,23 @@
             <div class="lg:col-span-1 lg:self-start">
                 <div class="checkout-card bg-white rounded-2xl shadow-sm border border-slate-100 sticky top-24">
                     <div class="checkout-card-header px-6 py-4 border-b border-slate-100">
-                        <h2 class="font-bold text-slate-800">Ringkasan Pesanan</h2>
+                        <h2 class="font-bold text-slate-800">{{ __('checkout.order_summary') }}</h2>
                     </div>
                     <div class="checkout-card-body p-6 space-y-3">
                         <p class="text-xs text-slate-400" id="sumItems">0 item</p>
                         <div id="summaryBreakdown" class="space-y-4"></div>
                         <div class="border-t border-slate-100 pt-3 mt-3">
                             <div class="summary-row flex justify-between">
-                                <span class="font-bold text-slate-800">{{ $isRedeemCheckout ? 'Total Bayar Ongkir' : 'Grand Total' }}</span>
+                                <span class="font-bold text-slate-800">{{ $isRedeemCheckout ? __('checkout.shipping_total') : __('checkout.grand_total') }}</span>
                                 <span class="summary-value font-extrabold text-blue-600 text-xl" id="grandTotal">Rp 888.000</span>
                             </div>
-                            <p class="text-xs text-slate-500 mt-1">{{ $isRedeemCheckout ? 'Point digunakan untuk produk, sedangkan ongkir dibayar terpisah oleh customer.' : 'PPN dihitung dari subtotal produk setelah diskon. Ongkir tidak dikenakan PPN.' }}</p>
+                            <p class="text-xs text-slate-500 mt-1">{{ $isRedeemCheckout ? __('checkout.redeem_total_help') : __('checkout.tax_total_help') }}</p>
                         </div>
 
                         <!-- Info -->
                         <div class="bg-blue-50 rounded-xl p-3 flex gap-2 items-start">
                             <span class="text-blue-500 mt-0.5">ℹ️</span>
-                            <p class="text-xs text-blue-700">Transaksi dilindungi sistem keamanan {{ $appStoreName ?? config('app.name') }}. Uang
-                                dikembalikan jika barang tidak sampai.</p>
+                            <p class="text-xs text-blue-700">{{ __('checkout.security_notice', ['store' => $appStoreName ?? config('app.name')]) }}</p>
                         </div>
 
                         <!-- Bayar -->
@@ -574,7 +572,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                             </svg>
-                            {{ $isRedeemCheckout ? 'Bayar Ongkir & Tukar Point' : 'Bayar Sekarang' }}
+                            {{ $isRedeemCheckout ? __('checkout.pay_shipping_redeem') : __('checkout.pay_now') }}
                         </button>
                         <p id="checkoutHintText" class="text-xs text-slate-500 mt-2 text-center"></p>
 
@@ -591,7 +589,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                                 </svg>
-                                Pembayaran Aman
+                                {{ __('checkout.secure_payment') }}
                             </div>
                         </div>
                     </div>
@@ -600,15 +598,15 @@
         </div>
     </div>
 
-    <div class="checkout-mobile-actions" aria-label="Aksi pembayaran">
+    <div class="checkout-mobile-actions" aria-label="{{ __('checkout.payment_actions') }}">
         <div class="min-w-0" aria-live="polite">
-            <span class="checkout-mobile-total-label">{{ $isRedeemCheckout ? 'Total ongkir' : 'Total pembayaran' }}</span>
+            <span class="checkout-mobile-total-label">{{ $isRedeemCheckout ? __('checkout.shipping_total_short') : __('checkout.payment_total') }}</span>
             <strong id="mobileCheckoutTotal" class="checkout-mobile-total-value">Rp 0</strong>
         </div>
         <button type="button" onclick="processPayment()" id="mobilePayBtn"
             class="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-700 px-4 text-sm font-bold text-white shadow-lg shadow-blue-200 disabled:pointer-events-none disabled:opacity-60">
             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-            {{ $isRedeemCheckout ? 'Bayar Ongkir' : 'Bayar Sekarang' }}
+            {{ $isRedeemCheckout ? __('checkout.pay_shipping') : __('checkout.pay_now') }}
         </button>
     </div>
 
@@ -616,7 +614,7 @@
     <div id="addressModal" class="fixed inset-0 z-[999] hidden items-center justify-center bg-black/50 p-4">
         <div class="bg-white rounded-2xl max-w-4xl w-full p-6 modal-enter max-h-[90vh] overflow-y-auto">
             <div class="flex items-center justify-between mb-5">
-                <h3 class="font-bold text-slate-800 text-lg">Tambah Alamat Baru</h3>
+                <h3 class="font-bold text-slate-800 text-lg">{{ __('checkout.add_new_address') }}</h3>
                 <button type="button" onclick="closeAddressModal()"
                     class="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
             </div>
@@ -636,18 +634,18 @@
                         <label class="text-xs font-medium text-slate-600 mb-1 block">Email *</label>
                         <input id="guestEmail" type="email" autocomplete="email" placeholder="nama@email.com"
                             class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400" />
-                        <p class="mt-1.5 text-xs text-slate-400">Konfirmasi dan status pesanan akan dikirim ke email ini.</p>
+                        <p class="mt-1.5 text-xs text-slate-400">{{ __('checkout.email_status_help') }}</p>
                     </div>
                 @endif
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="text-xs font-medium text-slate-600 mb-1 block">Nama Penerima *</label>
-                        <input id="checkoutRecipientName" type="text" placeholder="Nama lengkap"
+                        <label class="text-xs font-medium text-slate-600 mb-1 block">{{ __('checkout.recipient_name') }} *</label>
+                        <input id="checkoutRecipientName" type="text" placeholder="{{ __('checkout.full_name') }}"
                             class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400" />
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-slate-600 mb-1 block">No. Telepon *</label>
+                        <label class="text-xs font-medium text-slate-600 mb-1 block">{{ __('checkout.phone_number') }} *</label>
                         <input id="checkoutPhoneNumber" type="text" placeholder="08xx-xxxx-xxxx"
                             class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400" />
                     </div>
@@ -655,9 +653,9 @@
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="text-xs font-medium text-slate-600 mb-1 block">Provinsi *</label>
+                        <label class="text-xs font-medium text-slate-600 mb-1 block">{{ __('checkout.province') }} *</label>
                         <div class="relative">
-                            <input id="checkoutProvinceInput" type="text" placeholder="Cari provinsi"
+                            <input id="checkoutProvinceInput" type="text" placeholder="{{ __('checkout.search_province') }}"
                                 autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false"
                                 class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 pr-9 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50" />
                             <span id="checkoutProvinceChevron"
@@ -685,10 +683,10 @@
                         </div>
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-slate-600 mb-1 block">Kota/Kabupaten *</label>
+                        <label class="text-xs font-medium text-slate-600 mb-1 block">{{ __('checkout.city') }} *</label>
                         <div class="relative">
-                            <input id="checkoutCityInput" type="text" disabled placeholder="Pilih provinsi dulu"
-                                data-placeholder-enabled="Cari kota/kabupaten" autocomplete="new-password"
+                            <input id="checkoutCityInput" type="text" disabled placeholder="{{ __('checkout.select_province_first') }}"
+                                data-placeholder-enabled="{{ __('checkout.search_city') }}" autocomplete="new-password"
                                 autocorrect="off" autocapitalize="off" spellcheck="false"
                                 class="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 pr-9 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50" />
                             <span id="checkoutCityChevron"
@@ -719,10 +717,10 @@
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="text-xs font-medium text-slate-600 mb-1 block">Kecamatan *</label>
+                        <label class="text-xs font-medium text-slate-600 mb-1 block">{{ __('checkout.district') }} *</label>
                         <div class="relative">
-                            <input id="checkoutDistrictInput" type="text" disabled placeholder="Pilih kota dulu"
-                                data-placeholder-enabled="Cari kecamatan" autocomplete="new-password" autocorrect="off"
+                            <input id="checkoutDistrictInput" type="text" disabled placeholder="{{ __('checkout.select_city_first') }}"
+                                data-placeholder-enabled="{{ __('checkout.search_district') }}" autocomplete="new-password" autocorrect="off"
                                 autocapitalize="off" spellcheck="false"
                                 class="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 pr-9 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50" />
                             <span id="checkoutDistrictChevron"
@@ -750,10 +748,10 @@
                         </div>
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-slate-600 mb-1 block">Kelurahan *</label>
+                        <label class="text-xs font-medium text-slate-600 mb-1 block">{{ __('checkout.subdistrict') }} *</label>
                         <div class="relative">
                             <input id="checkoutSubdistrictInput" type="text" disabled
-                                placeholder="Pilih kecamatan dulu" data-placeholder-enabled="Cari kelurahan"
+                                placeholder="{{ __('checkout.select_district_first') }}" data-placeholder-enabled="{{ __('checkout.search_subdistrict') }}"
                                 autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false"
                                 class="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 pr-9 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50" />
                             <span id="checkoutSubdistrictChevron"
@@ -783,25 +781,24 @@
                 </div>
 
                 <div>
-                    <label class="text-xs font-medium text-slate-600 mb-1 block">Kode Pos</label>
-                    <input id="checkoutPostalCode" type="text" placeholder="Kode Pos"
+                    <label class="text-xs font-medium text-slate-600 mb-1 block">{{ __('checkout.postal_code') }}</label>
+                    <input id="checkoutPostalCode" type="text" placeholder="{{ __('checkout.postal_code') }}"
                         class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400" />
                 </div>
 
                 <div>
-                    <label class="text-xs font-medium text-slate-600 mb-1 block">Alamat Lengkap *</label>
-                    <textarea id="checkoutAddressLine" placeholder="Nama jalan, nomor, RT/RW, kelurahan..."
+                    <label class="text-xs font-medium text-slate-600 mb-1 block">{{ __('checkout.full_address') }} *</label>
+                    <textarea id="checkoutAddressLine" placeholder="{{ __('checkout.full_address_placeholder') }}"
                         class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 resize-none h-20"></textarea>
                 </div>
 
                 <div class="flex gap-3 pt-2">
                     @unless ($isGuestCheckout)
                         <button type="button" onclick="closeAddressModal()"
-                            class="flex-1 border border-slate-200 text-slate-600 font-semibold py-3 rounded-xl hover:bg-slate-50 transition-colors">Batal</button>
+                            class="flex-1 border border-slate-200 text-slate-600 font-semibold py-3 rounded-xl hover:bg-slate-50 transition-colors">{{ __('checkout.cancel') }}</button>
                     @endunless
                     <button type="button" onclick="{{ $isGuestCheckout ? 'useGuestShippingData()' : 'saveAddress()' }}"
-                        class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-xl transition-colors">Simpan
-                        {{ $isGuestCheckout ? 'Data Pengiriman' : 'Alamat' }}</button>
+                        class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-xl transition-colors">{{ $isGuestCheckout ? __('checkout.save_shipping_data') : __('checkout.save_address') }}</button>
                 </div>
             </form>
         </div>
@@ -831,21 +828,21 @@
                 </svg>
             </div>
 
-            <h2 class="text-2xl font-extrabold text-slate-900 mb-2">Pembelian Berhasil! 🎉</h2>
-            <p class="text-slate-600 mb-5">Terima kasih sudah berbelanja di {{ $appStoreName ?? config('app.name') }}. Pesananmu sedang diproses!</p>
+            <h2 class="text-2xl font-extrabold text-slate-900 mb-2">{{ __('checkout.purchase_success') }}</h2>
+            <p class="text-slate-600 mb-5">{{ __('checkout.purchase_success_help', ['store' => $appStoreName ?? config('app.name')]) }}</p>
 
             <div class="bg-slate-50 rounded-2xl p-4 mb-5 text-left">
                 <div class="space-y-2">
                     <div class="flex justify-between text-sm">
-                        <span class="text-slate-500">Nomor Pesanan</span>
+                        <span class="text-slate-500">{{ __('checkout.order_number') }}</span>
                         <span class="font-bold text-slate-800 font-mono" id="orderNum">#TK-2025-XXXXX</span>
                     </div>
                     <div class="flex justify-between text-sm">
-                        <span class="text-slate-500">Metode Bayar</span>
+                        <span class="text-slate-500">{{ __('checkout.payment_method') }}</span>
                         <span class="font-medium text-slate-700" id="payMethod">GoPay</span>
                     </div>
                     <div class="flex justify-between text-sm">
-                        <span class="text-slate-500">Total Dibayar</span>
+                        <span class="text-slate-500">{{ __('checkout.paid_total') }}</span>
                         <span class="font-bold text-blue-600" id="totalPaid">Rp 888.000</span>
                     </div>
                 </div>
@@ -853,16 +850,14 @@
 
             <div class="bg-blue-50 rounded-xl p-3 mb-6 text-sm text-blue-700 flex gap-2">
                 <span>📱</span>
-                <span>Notifikasi status pesanan akan dikirim ke email kamu.</span>
+                <span>{{ __('checkout.email_notification') }}</span>
             </div>
 
             <div class="flex flex-col sm:flex-row gap-3">
                 <a href="{{ route('frontend.profil') }}"
-                    class="flex-1 border-2 border-blue-400 text-blue-600 font-semibold py-3 rounded-xl hover:bg-blue-50 transition-colors text-sm">Lihat
-                    Pesanan</a>
+                    class="flex-1 border-2 border-blue-400 text-blue-600 font-semibold py-3 rounded-xl hover:bg-blue-50 transition-colors text-sm">{{ __('checkout.view_order') }}</a>
                 <a href="{{ route('frontend.index') }}"
-                    class="flex-1 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold py-3 rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all text-sm">Belanja
-                    Lagi</a>
+                    class="flex-1 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold py-3 rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all text-sm">{{ __('checkout.shop_again') }}</a>
             </div>
         </div>
     </div>
@@ -871,6 +866,11 @@
 @section('script')
     <script>
         let cartItems = @json($checkoutItems ?? []);
+        const checkoutText = @json(__('checkout.js'));
+        const checkoutT = (key, replacements = {}) => Object.entries(replacements).reduce(
+            (text, [name, value]) => text.replaceAll(`:${name}`, String(value)),
+            String(checkoutText[key] || key),
+        );
         const checkoutSource = @json($checkoutSource ?? 'cart_all');
         const isGuestCheckout = @json($isGuestCheckout);
         const isRedeemCheckout = checkoutSource === 'redeem_point';
@@ -908,10 +908,10 @@
                 cartId: item?.cartId || item?.cart_id || null,
                 id: item?.product_id || item?.id || index + 1,
                 companyId: Number(item?.companyId || item?.company_id || 0),
-                companyName: String(item?.companyName || item?.company_name || 'Toko'),
+                companyName: String(item?.companyName || item?.company_name || checkoutT('store')),
                 productVariantId: item?.productVariantId || item?.product_variant_id || null,
                 slug: item?.slug || '',
-                name: item?.name || 'Produk',
+                name: item?.name || checkoutT('product'),
                 variant: item?.variant || '-',
                 price,
                 origPrice: Number(item?.origPrice || item?.orig_price || price),
@@ -931,7 +931,7 @@
 
         function getGroupState(companyId) {
             if (!groupState[companyId]) {
-                groupState[companyId] = { shippingCost: null, shippingLabel: 'Reguler', shippingQuoteToken: '', couponCode: '', discountAmount: 0 };
+                groupState[companyId] = { shippingCost: null, shippingLabel: checkoutT('regular'), shippingQuoteToken: '', couponCode: '', discountAmount: 0 };
             }
             return groupState[companyId];
         }
@@ -941,7 +941,7 @@
             cartItems.forEach((item, idx) => {
                 const key = item.companyId || 0;
                 if (!map.has(key)) {
-                    map.set(key, { companyId: key, companyName: item.companyName || 'Toko', items: [] });
+                    map.set(key, { companyId: key, companyName: item.companyName || checkoutT('store'), items: [] });
                 }
                 map.get(key).items.push({ ...item, _idx: idx });
             });
@@ -960,9 +960,9 @@
             if (!cartItems.length) {
                 container.innerHTML = `
                     <div class="checkout-card bg-white rounded-2xl shadow-sm border border-slate-100 py-10 text-center">
-                        <p class="text-slate-500 text-sm mb-3">Keranjang masih kosong.</p>
+                        <p class="text-slate-500 text-sm mb-3">${checkoutT('cart_still_empty')}</p>
                         <a href="{{ route('frontend.index') }}" class="inline-flex items-center gap-2 text-blue-600 text-sm font-semibold hover:text-blue-700">
-                            Belanja sekarang
+                            ${checkoutT('shop_now')}
                         </a>
                     </div>`;
                 updateSummary();
@@ -1000,12 +1000,12 @@
               </div>
             </div>
             <div class="mt-2">
-              <label class="text-xs text-slate-500 block mb-1">Catatan Item</label>
+              <label class="text-xs text-slate-500 block mb-1">${checkoutT('item_note')}</label>
               <input
                 type="text"
                 value="${String(item.note || '').replace(/"/g, '&quot;')}"
                 oninput="updateItemNote(${item._idx}, this.value)"
-                placeholder="Tulis catatan untuk produk ini"
+                placeholder="${checkoutT('item_note_placeholder')}"
                 class="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-blue-400"
               />
             </div>
@@ -1024,23 +1024,23 @@
                     </svg>
                     ${group.companyName}
                 </h3>
-                <span class="text-xs text-slate-400">${group.items.length} produk</span>
+                <span class="text-xs text-slate-400">${checkoutT('products', { count: group.items.length })}</span>
             </div>
             <div class="p-4">${itemsHtml}</div>
             <div class="border-t border-slate-100 p-4 space-y-2">
-                <p class="text-xs font-semibold text-slate-600">Pengiriman dari ${group.companyName}</p>
+                <p class="text-xs font-semibold text-slate-600">${checkoutT('shipping_from', { store: group.companyName })}</p>
                 <div id="shippingOptions-${group.companyId}" class="space-y-2">
-                    <div class="text-sm text-slate-500">Menghitung ongkos kirim...</div>
+                    <div class="text-sm text-slate-500">${checkoutT('calculating_shipping')}</div>
                 </div>
             </div>
             ${!isRedeemCheckout ? `
             <div class="border-t border-slate-100 p-4 space-y-2 bg-slate-50">
-                <p class="text-xs font-semibold text-slate-600">Voucher untuk ${group.companyName}</p>
+                <p class="text-xs font-semibold text-slate-600">${checkoutT('voucher_for', { store: group.companyName })}</p>
                 <div class="flex gap-2">
-                    <input id="couponInput-${group.companyId}" type="text" placeholder="Kode voucher"
+                    <input id="couponInput-${group.companyId}" type="text" placeholder="${checkoutT('voucher_code')}"
                         class="min-w-0 flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400 uppercase bg-white">
                     <button type="button" onclick="applyGroupCoupon(${group.companyId})"
-                        class="px-3 py-2 rounded-lg bg-blue-500 text-white text-xs font-semibold hover:bg-blue-600">Pakai</button>
+                        class="px-3 py-2 rounded-lg bg-blue-500 text-white text-xs font-semibold hover:bg-blue-600">${checkoutT('apply')}</button>
                 </div>
                 <div id="couponInfo-${group.companyId}" class="hidden text-xs"></div>
             </div>` : ''}
@@ -1092,8 +1092,8 @@
             const hasSelectedAddress = isGuestCheckout
                 ? Number(document.getElementById('checkoutDestinationId')?.value || 0) > 0
                 : !!document.querySelector('input[name="address"]:checked');
-            document.getElementById('itemCountText').textContent = totalItems + ' item';
-            document.getElementById('sumItems').textContent = totalItems + ' item dari ' + groups.length + ' toko';
+            document.getElementById('itemCountText').textContent = checkoutT('items', { count: totalItems });
+            document.getElementById('sumItems').textContent = checkoutT('items_from_stores', { items: totalItems, stores: groups.length });
 
             let grandTotal = 0;
             let allShippingReady = groups.length > 0;
@@ -1114,26 +1114,26 @@
                 grandTotal += groupTotal;
 
                 const shippingText = !hasSelectedAddress
-                    ? 'Pilih alamat dulu'
+                    ? checkoutT('choose_address')
                     : (typeof state.shippingCost !== 'number'
-                        ? 'Menghitung...'
-                        : (state.shippingCost === 0 ? 'Gratis' : 'Rp ' + state.shippingCost.toLocaleString('id-ID')));
+                        ? checkoutT('calculating')
+                        : (state.shippingCost === 0 ? checkoutT('free') : 'Rp ' + state.shippingCost.toLocaleString('id-ID')));
 
                 return `
                     <div class="rounded-xl border border-slate-200 p-3">
                         <p class="text-xs font-semibold text-slate-700 mb-2">${group.companyName}</p>
                         <div class="space-y-1 text-xs">
                             <div class="flex justify-between text-slate-500">
-                                <span>${isRedeemCheckout ? 'Point' : 'Subtotal'}</span>
+                                <span>${isRedeemCheckout ? checkoutT('points') : checkoutT('subtotal')}</span>
                                 <span>${isRedeemCheckout ? totalRedeemPoints.toLocaleString('id-ID') + ' point' : 'Rp ' + subtotal.toLocaleString('id-ID')}</span>
                             </div>
                             <div class="flex justify-between text-slate-500">
-                                <span>Ongkos Kirim</span>
+                                <span>${checkoutT('shipping_cost')}</span>
                                 <span>${shippingText}</span>
                             </div>
                             ${state.discountAmount > 0 && !isRedeemCheckout ? `
                             <div class="flex justify-between text-emerald-600">
-                                <span>Diskon (${state.couponCode})</span>
+                                <span>${checkoutT('discount')} (${state.couponCode})</span>
                                 <span>- Rp ${state.discountAmount.toLocaleString('id-ID')}</span>
                             </div>` : ''}
                             ${taxAmount > 0 ? `
@@ -1142,14 +1142,14 @@
                                 <span>Rp ${taxAmount.toLocaleString('id-ID')}</span>
                             </div>` : ''}
                             <div class="flex justify-between font-semibold text-slate-800 pt-1 mt-1 border-t border-slate-100">
-                                <span>Subtotal Toko</span>
+                                <span>${checkoutT('store_subtotal')}</span>
                                 <span>Rp ${groupTotal.toLocaleString('id-ID')}</span>
                             </div>
                         </div>
                     </div>`;
             }).join('');
 
-            document.getElementById('summaryBreakdown').innerHTML = breakdownHtml || '<p class="text-xs text-slate-400">Keranjang kosong.</p>';
+            document.getElementById('summaryBreakdown').innerHTML = breakdownHtml || `<p class="text-xs text-slate-400">${checkoutT('cart_empty')}</p>`;
             const formattedGrandTotal = 'Rp ' + grandTotal.toLocaleString('id-ID');
             document.getElementById('grandTotal').textContent = formattedGrandTotal;
             document.getElementById('mobileCheckoutTotal').textContent = formattedGrandTotal;
@@ -1166,11 +1166,11 @@
             });
             if (hintEl) {
                 if (totalItems <= 0) {
-                    hintEl.textContent = isRedeemCheckout ? 'Pilih produk redeem terlebih dahulu untuk melanjutkan penukaran.' : 'Pilih produk terlebih dahulu untuk melanjutkan pembayaran.';
+                    hintEl.textContent = isRedeemCheckout ? checkoutT('choose_redeem_product') : checkoutT('choose_payment_product');
                 } else if (!hasSelectedAddress) {
-                    hintEl.textContent = 'Tambahkan atau pilih alamat pengiriman agar ongkos kirim bisa dihitung.';
+                    hintEl.textContent = checkoutT('choose_shipping_address');
                 } else if (!allShippingReady) {
-                    hintEl.textContent = 'Ongkos kirim belum tersedia untuk salah satu toko. Pilih alamat lain atau coba lagi.';
+                    hintEl.textContent = checkoutT('shipping_unavailable_store');
                 } else {
                     hintEl.textContent = '';
                 }
@@ -1188,7 +1188,7 @@
             const subtotal = group ? group.items.reduce((s, i) => s + i.price * i.qty, 0) : 0;
 
             info.className = 'text-xs text-slate-500';
-            info.textContent = 'Memeriksa voucher...';
+            info.textContent = checkoutT('checking_voucher');
             info.classList.remove('hidden');
 
             try {
@@ -1202,12 +1202,12 @@
                     body: JSON.stringify({ code, subtotal, company_id: companyId }),
                 });
                 const json = await res.json().catch(() => ({}));
-                if (!res.ok) throw new Error(json?.message || 'Voucher tidak valid.');
+                if (!res.ok) throw new Error(json?.message || checkoutT('invalid_voucher'));
                 state.couponCode = json.code || code;
                 state.discountAmount = Number(json.discount_amount || 0);
                 input.value = state.couponCode;
                 info.className = 'text-xs text-emerald-600';
-                info.textContent = `${json.message || 'Voucher digunakan'} (-Rp ${state.discountAmount.toLocaleString('id-ID')})`;
+                info.textContent = `${json.message || checkoutT('voucher_used')} (-Rp ${state.discountAmount.toLocaleString('id-ID')})`;
                 updateSummary();
             } catch (e) {
                 state.couponCode = '';
@@ -1217,7 +1217,7 @@
                     headers: { 'X-CSRF-TOKEN': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
                 }).catch(() => {});
                 info.className = 'text-xs text-red-500';
-                info.textContent = e.message || 'Voucher tidak valid.';
+                info.textContent = e.message || checkoutT('invalid_voucher');
                 updateSummary();
             }
         }
@@ -1247,7 +1247,7 @@
             if (!container) return;
             if (!Array.isArray(list) || !list.length) {
                 container.innerHTML =
-                    `<div class="text-sm text-slate-500">Opsi pengiriman belum tersedia untuk alamat ini.</div>`;
+                    `<div class="text-sm text-slate-500">${checkoutT('shipping_unavailable')}</div>`;
                 state.shippingCost = null;
                 state.shippingLabel = '-';
                 state.shippingQuoteToken = '';
@@ -1296,7 +1296,7 @@
                 if (!container) continue;
 
                 if (!destinationId) {
-                    container.innerHTML = `<div class="text-sm text-slate-500">${isGuestCheckout ? 'Lengkapi data pengiriman lalu klik Simpan Data Pengiriman.' : 'Anda belum mengatur alamat pengiriman. Silakan atur di bagian profil.'}</div>`;
+                    container.innerHTML = `<div class="text-sm text-slate-500">${isGuestCheckout ? checkoutT('complete_guest_shipping') : checkoutT('no_shipping_address')}</div>`;
                     state.shippingCost = null;
                     state.shippingLabel = '-';
                     state.shippingQuoteToken = '';
@@ -1305,7 +1305,7 @@
                 }
 
                 if (!group.companyId) {
-                    container.innerHTML = `<div class="text-sm text-red-500">Produk ini belum terhubung ke perusahaan mana pun.</div>`;
+                    container.innerHTML = `<div class="text-sm text-red-500">${checkoutT('product_without_company')}</div>`;
                     state.shippingCost = null;
                     state.shippingLabel = '-';
                     state.shippingQuoteToken = '';
@@ -1313,7 +1313,7 @@
                     continue;
                 }
 
-                container.innerHTML = `<div class="text-sm text-slate-500">Memuat opsi pengiriman...</div>`;
+                container.innerHTML = `<div class="text-sm text-slate-500">${checkoutT('loading_shipping')}</div>`;
                 const query = new URLSearchParams({
                     destination_id: String(destinationId),
                     company_id: String(group.companyId),
@@ -1328,7 +1328,7 @@
                         headers: { 'X-Requested-With': 'XMLHttpRequest' },
                     });
                     const json = await res.json().catch(() => ({}));
-                    if (!res.ok) throw new Error(json?.message || `Layanan ongkir merespons HTTP ${res.status}.`);
+                    if (!res.ok) throw new Error(json?.message || checkoutT('shipping_http_error', { status: res.status }));
                     renderGroupShippingOptions(group.companyId, Array.isArray(json?.data) ? json.data : []);
                 } catch (e) {
                     allGroupsLoaded = false;
@@ -1336,11 +1336,11 @@
                     const errorBox = document.createElement('div');
                     errorBox.className = 'rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-600';
                     const errorText = document.createElement('p');
-                    errorText.textContent = e?.message || 'Gagal memuat ongkir RajaOngkir.';
+                    errorText.textContent = e?.message || checkoutT('shipping_load_failed');
                     const retryButton = document.createElement('button');
                     retryButton.type = 'button';
                     retryButton.className = 'mt-2 text-xs font-bold text-red-700 underline underline-offset-2';
-                    retryButton.textContent = 'Coba lagi';
+                    retryButton.textContent = checkoutT('try_again');
                     retryButton.addEventListener('click', loadShippingOptions);
                     errorBox.append(errorText, retryButton);
                     container.append(errorBox);
@@ -1410,7 +1410,7 @@
                 dropdown._items.filter(item => (dropdown._toLabel(item) || '').toLowerCase().includes(q)) :
                 dropdown._items;
             if (!filtered.length) {
-                dropdown.innerHTML = '<div class="px-4 py-3 text-sm text-slate-400 text-center">Tidak ada data</div>';
+                dropdown.innerHTML = `<div class="px-4 py-3 text-sm text-slate-400 text-center">${checkoutT('no_data')}</div>`;
             } else {
                 const toLabel = dropdown._toLabel;
                 dropdown.innerHTML = filtered.map((item, i) =>
@@ -1709,12 +1709,12 @@
                 const response = await postForm(storeAddressUrl, payload);
                 const json = await response.json().catch(() => null);
                 if (!response.ok) {
-                    const msg = json?.message || 'Gagal menambahkan alamat.';
+                    const msg = json?.message || checkoutT('add_address_failed');
                     throw new Error(msg);
                 }
                 window.location.reload();
             } catch (error) {
-                alert(error?.message || 'Gagal menambahkan alamat.');
+                alert(error?.message || checkoutT('add_address_failed'));
             }
         }
 
@@ -1736,15 +1736,15 @@
             if (!payload.guest_name || !payload.guest_email || !payload.guest_phone ||
                 !payload.shipping_address_line || !payload.shipping_city || !payload.shipping_province ||
                 !payload.shipping_postal_code || !payload.shipping_destination_id) {
-                throw new Error('Lengkapi nama, email, nomor HP, dan seluruh alamat pengiriman terlebih dahulu.');
+                throw new Error(checkoutT('complete_guest_data'));
             }
 
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.guest_email)) {
-                throw new Error('Format email belum valid.');
+                throw new Error(checkoutT('invalid_email'));
             }
 
             if (!/^[0-9+().\s-]{8,20}$/.test(payload.guest_phone)) {
-                throw new Error('Format nomor HP belum valid.');
+                throw new Error(checkoutT('invalid_phone'));
             }
 
             return payload;
@@ -1756,7 +1756,7 @@
                 const shippingLoaded = await loadShippingOptions();
                 document.getElementById('guestShippingStatus')?.classList.toggle('hidden', !shippingLoaded);
             } catch (error) {
-                alert(error?.message || 'Data pengiriman belum lengkap.');
+                alert(error?.message || checkoutT('shipping_data_incomplete'));
             }
         }
 
@@ -1799,14 +1799,14 @@
             };
 
             if (!payload.taxpayer_name || !payload.taxpayer_number || !payload.taxpayer_address || !payload.taxpayer_email) {
-                throw new Error('Lengkapi nama NPWP, nomor NPWP, alamat NPWP, dan email penerima faktur pajak.');
+                throw new Error(checkoutT('complete_tax_data'));
             }
 
             return payload;
         }
 
         function payBtnIdleHtml() {
-            return `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>${isRedeemCheckout ? 'Bayar Ongkir & Tukar Point' : 'Bayar Sekarang'}`;
+            return `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>${isRedeemCheckout ? checkoutT('pay_shipping_redeem') : checkoutT('pay_now')}`;
         }
 
         /**
@@ -1818,12 +1818,12 @@
          */
         async function processPayment() {
             if (!cartItems.length) {
-                alert('Keranjang masih kosong. Silakan pilih produk terlebih dahulu.');
+                alert(checkoutT('empty_checkout'));
                 return;
             }
             const groups = buildGroups();
             if (!isRedeemCheckout && groups.some((g) => typeof getGroupState(g.companyId).shippingCost !== 'number')) {
-                alert('Ongkos kirim masih dihitung untuk salah satu toko. Silakan tunggu sebentar.');
+                alert(checkoutT('shipping_calculating_store'));
                 return;
             }
             let taxInvoicePayload = { requested: false };
@@ -1832,14 +1832,14 @@
                 taxInvoicePayload = buildTaxInvoicePayload();
                 guestCheckoutPayload = buildGuestCheckoutPayload();
             } catch (error) {
-                alert(error?.message || 'Data faktur pajak belum lengkap.');
+                alert(error?.message || checkoutT('tax_data_incomplete'));
                 return;
             }
 
             const payButtons = [document.getElementById('payBtn'), document.getElementById('mobilePayBtn')].filter(Boolean);
             const processingHtml = `
         <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-        ${isRedeemCheckout ? 'Memproses Pembayaran Ongkir...' : `Memproses ${groups.length > 1 ? groups.length + ' Pesanan' : 'Pembayaran'}...`}`;
+        ${isRedeemCheckout ? checkoutT('processing_shipping') : (groups.length > 1 ? checkoutT('processing_orders', { count: groups.length }) : checkoutT('processing_payment'))}`;
             payButtons.forEach((payButton) => {
                 payButton.disabled = true;
                 payButton.innerHTML = processingHtml;
@@ -1869,7 +1869,7 @@
                     })),
                     company_id: group.companyId,
                     shipping_cost: Number(state.shippingCost || 0),
-                    shipping_label: String(state.shippingLabel || 'Reguler'),
+                    shipping_label: String(state.shippingLabel || checkoutT('regular')),
                     shipping_quote_token: String(state.shippingQuoteToken || ''),
                     address_id: selectedAddressId || null,
                     payment_method: selectedPayment,
@@ -1892,10 +1892,10 @@
                         window.location.href = json.login_url;
                         return;
                     }
-                    if (!res.ok) throw new Error(json?.message || `Gagal membuat pesanan untuk ${group.companyName}.`);
+                    if (!res.ok) throw new Error(json?.message || checkoutT('create_order_failed_store', { store: group.companyName }));
                     successes.push({ companyName: group.companyName, orderId: json?.order_id || '', redirectUrl: json?.redirect_url || '' });
                 } catch (e) {
-                    failures.push({ companyName: group.companyName, message: e?.message || 'Terjadi kesalahan.' });
+                    failures.push({ companyName: group.companyName, message: e?.message || checkoutT('unexpected_error') });
                 }
             }
 
@@ -1916,7 +1916,7 @@
                 }).catch(() => {});
 
                 if (failures.length > 0) {
-                    alert(`${successes.length} pesanan berhasil dibuat. ${failures.length} gagal:\n` +
+                    alert(checkoutT('partial_order_result', { success: successes.length, failed: failures.length }) + '\n' +
                         failures.map((f) => `- ${f.companyName}: ${f.message}`).join('\n'));
                 }
 
@@ -1929,7 +1929,7 @@
                 payButton.disabled = false;
                 payButton.innerHTML = payBtnIdleHtml();
             });
-            alert(`Gagal membuat pesanan:\n` + failures.map((f) => `- ${f.companyName}: ${f.message}`).join('\n'));
+            alert(checkoutT('create_orders_failed') + '\n' + failures.map((f) => `- ${f.companyName}: ${f.message}`).join('\n'));
         }
 
         function formatCard(input) {
@@ -1958,7 +1958,7 @@
             const form = document.getElementById('checkoutAddressForm');
             if (host && form) {
                 host.appendChild(form);
-                form.insertAdjacentHTML('beforeend', '<div id="guestShippingStatus" class="hidden rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">Data lengkap. Pilihan ongkir sudah diperbarui.</div>');
+                form.insertAdjacentHTML('beforeend', `<div id="guestShippingStatus" class="hidden rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">${checkoutT('shipping_ready')}</div>`);
             }
         }
         setPaymentTab('qris');

@@ -95,6 +95,14 @@ class GuestCheckoutDataTest extends TestCase
             ->assertSee('Checkout cepat tanpa akun', false)
             ->assertSee('Data Pengiriman', false)
             ->assertSee('id="guestEmail"', false);
+
+        $this->withSession(array_merge($this->guestSession(), ['locale' => 'en']))
+            ->get(route('frontend.checkout'))
+            ->assertOk()
+            ->assertSee('Quick checkout without an account', false)
+            ->assertSee('Shipping Details', false)
+            ->assertSee('Payment Method', false)
+            ->assertDontSee('Checkout cepat tanpa akun', false);
     }
 
     public function test_guest_payment_requires_contact_and_shipping_fields(): void

@@ -145,6 +145,17 @@ class GuestPaymentProofTest extends TestCase
             ->assertSee('Buat Akun Saya', false)
             ->assertSee('/register?checkout_order=', false)
             ->assertSee('/lacak-pesanan?order_id=', false);
+
+        $this->withSession([
+            'checkout' => ['source' => 'buy_now'],
+            'guest_owned_orders' => [$transaction->order_id],
+            'locale' => 'en',
+        ])->get(route('frontend.checkout.waiting', $transaction->order_id))
+            ->assertOk()
+            ->assertSee('Upload Transfer Receipt', false)
+            ->assertSee('Awaiting Payment', false)
+            ->assertSee('Create My Account', false)
+            ->assertDontSee('Menunggu Pembayaran', false);
     }
 
     public function test_guest_invoice_email_contains_track_order_button(): void

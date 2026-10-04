@@ -1,6 +1,6 @@
 @extends('layouts.user')
 
-@section('title', 'Keranjang - ' . ($appStoreName ?? config('app.name')))
+@section('title', __('checkout.cart_title') . ' - ' . ($appStoreName ?? config('app.name')))
 
 @section('style')
     <style>
@@ -35,7 +35,7 @@
         <div
             class="flex items-center gap-3 bg-slate-800 text-white px-5 py-3 rounded-xl shadow-xl text-sm font-semibold">
             <i class="fi fi-rr-badge-check text-sm leading-none"></i>
-            <span id="toast-msg">Berhasil</span>
+            <span id="toast-msg">{{ __('checkout.success') }}</span>
         </div>
     </div>
 
@@ -47,14 +47,14 @@
                         class="px-6 py-4 border-b border-slate-100 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <h2 class="font-bold text-slate-800 flex items-center gap-2">
                             <i class="fi fi-rr-shopping-cart text-base text-blue-500 leading-none"></i>
-                            Keranjang Belanja
+                            {{ __('checkout.shopping_cart') }}
                         </h2>
                         <span class="text-sm text-slate-500" id="itemCountText">0 item</span>
                     </div>
                     <div class="px-6 py-3 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
                         <label class="flex items-center gap-2 cursor-pointer">
                             <input type="checkbox" id="selectAllCart" class="accent-blue-500" onchange="toggleSelectAll(this.checked)" />
-                            <span class="text-sm text-slate-600">Pilih semua</span>
+                            <span class="text-sm text-slate-600">{{ __('checkout.select_all') }}</span>
                         </label>
                     </div>
                     <div id="cartItems" class="divide-y divide-slate-100 p-4 space-y-0"></div>
@@ -62,10 +62,10 @@
             </div>
             <aside class="cart-desktop-summary">
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 sticky top-20">
-                    <h3 class="font-bold text-slate-800 mb-4">Ringkasan Belanja</h3>
+                    <h3 class="font-bold text-slate-800 mb-4">{{ __('checkout.shopping_summary') }}</h3>
                     <div class="space-y-2 text-sm">
                         <div class="flex justify-between text-slate-600">
-                            <span>Total Item</span>
+                            <span>{{ __('checkout.total_items') }}</span>
                             <span id="sumItems">0 item</span>
                         </div>
                         <div class="flex justify-between text-slate-600">
@@ -74,25 +74,25 @@
                         </div>
                     </div>
                     <div class="border-t border-slate-100 mt-4 pt-4 flex items-center justify-between">
-                        <span class="font-semibold text-slate-700">Total</span>
+                        <span class="font-semibold text-slate-700">{{ __('checkout.total') }}</span>
                         <span id="grandTotal" class="font-extrabold text-blue-600">Rp 0</span>
                     </div>
                     <a href="{{ route('frontend.checkout') }}" id="checkoutBtn" data-cart-checkout
                         class="mt-5 w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold py-3 rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all shadow-lg shadow-blue-200">
-                        Checkout
+                        {{ __('checkout.checkout') }}
                     </a>
                 </div>
             </aside>
         </div>
     </div>
-    <div class="cart-mobile-actions" aria-label="Aksi checkout">
+    <div class="cart-mobile-actions" aria-label="{{ __('checkout.checkout_actions') }}">
         <div class="min-w-0" aria-live="polite">
-            <span class="block text-[.68rem] font-semibold text-slate-500">Total belanja</span>
+            <span class="block text-[.68rem] font-semibold text-slate-500">{{ __('checkout.shopping_total') }}</span>
             <strong data-cart-total class="mt-0.5 block truncate text-base font-extrabold text-[#0a3268]">Rp 0</strong>
         </div>
         <a href="{{ route('frontend.checkout') }}" id="mobileCheckoutBtn" data-cart-checkout
             class="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-700 px-4 text-sm font-bold text-white shadow-lg shadow-blue-200">
-            Checkout
+            {{ __('checkout.checkout') }}
         </a>
     </div>
 @endsection
@@ -104,6 +104,11 @@
         const cartUpdateUrlTemplate = @json(route('frontend.cart.update', ['cart' => '__ID__']));
         const cartDeleteUrlTemplate = @json(route('frontend.cart.destroy', ['cart' => '__ID__']));
         const prepareCheckoutUrl = @json(route('frontend.cart.prepare-checkout'));
+        const cartText = @json(__('checkout.js'));
+        const cartT = (key, replacements = {}) => Object.entries(replacements).reduce(
+            (text, [name, value]) => text.replaceAll(`:${name}`, String(value)),
+            String(cartText[key] || key),
+        );
         const detailProductBaseUrl = @json(url('/detail-produk'));
         const cartIndexUrl = @json(route('frontend.index'));
 
@@ -147,7 +152,7 @@
                 checkoutBtn.classList.toggle('pointer-events-none', isLoading);
                 checkoutBtn.classList.toggle('opacity-60', isLoading);
                 checkoutBtn.setAttribute('aria-disabled', isLoading ? 'true' : 'false');
-                checkoutBtn.textContent = isLoading ? 'Menyiapkan...' : 'Checkout';
+                checkoutBtn.textContent = isLoading ? cartT('preparing') : cartT('checkout');
             });
         }
 
@@ -155,8 +160,8 @@
             const selectedItems = cartItems.filter((item) => selectedCartIds.has(Number(item.cartId)));
             const totalItems = selectedItems.reduce((sum, item) => sum + Number(item.qty || 0), 0);
             const subtotal = selectedItems.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.qty || 0), 0);
-            document.getElementById('itemCountText').textContent = cartItems.length ? (totalItems + ' item dipilih') : 'Keranjang kosong';
-            document.getElementById('sumItems').textContent = totalItems + ' item';
+            document.getElementById('itemCountText').textContent = cartItems.length ? cartT('selected_items', { count: totalItems }) : cartT('cart_empty');
+            document.getElementById('sumItems').textContent = cartT('items', { count: totalItems });
             document.getElementById('subtotalAmt').textContent = formatCurrency(subtotal);
             document.getElementById('grandTotal').textContent = formatCurrency(subtotal);
             document.querySelectorAll('[data-cart-total]').forEach((total) => {
@@ -213,18 +218,18 @@
                 });
                 const data = await parseJsonSafe(res);
                 if (!res.ok) {
-                    throw new Error(data?.message || 'Gagal memperbarui jumlah item.');
+                    throw new Error(data?.message || cartT('update_failed'));
                 }
 
                 cartItems[idx].qty = nextQty;
                 renderCart();
                 if (!options.silent) {
-                    showToast(data?.message || 'Jumlah item berhasil diperbarui.');
+                    showToast(data?.message || cartT('update_success'));
                 }
                 window.dispatchEvent(new Event('cart:updated'));
             } catch (error) {
                 cartItems[idx].qty = previousQuantity;
-                showToast(getErrorMessage(error, 'Gagal memperbarui jumlah item.'));
+                showToast(getErrorMessage(error, cartT('update_failed')));
             } finally {
                 pendingCartIds.delete(Number(item.cartId));
                 renderCart();
@@ -268,16 +273,16 @@
                 });
                 const data = await parseJsonSafe(res);
                 if (!res.ok) {
-                    throw new Error(data?.message || 'Gagal menghapus item dari keranjang.');
+                    throw new Error(data?.message || cartT('delete_failed'));
                 }
 
                 selectedCartIds.delete(Number(item.cartId));
                 cartItems.splice(idx, 1);
                 renderCart();
-                showToast(data?.message || 'Item berhasil dihapus dari keranjang.');
+                showToast(data?.message || cartT('delete_success'));
                 window.dispatchEvent(new Event('cart:updated'));
             } catch (error) {
-                showToast(getErrorMessage(error, 'Gagal menghapus item dari keranjang.'));
+                showToast(getErrorMessage(error, cartT('delete_failed')));
             } finally {
                 pendingCartIds.delete(Number(item.cartId));
                 renderCart();
@@ -305,7 +310,7 @@
             if (isCheckoutLoading) return;
             const ids = Array.from(selectedCartIds.values());
             if (!ids.length) {
-                showToast('Pilih minimal 1 produk untuk checkout.');
+                showToast(cartT('choose_product'));
                 return;
             }
 
@@ -326,12 +331,12 @@
                 });
                 const data = await parseJsonSafe(res);
                 if (!res.ok) {
-                    throw new Error(data?.message || 'Gagal menyiapkan checkout.');
+                    throw new Error(data?.message || cartT('prepare_failed'));
                 }
 
                 window.location.href = data?.redirect || "{{ route('frontend.checkout') }}";
             } catch (error) {
-                showToast(getErrorMessage(error, 'Gagal menyiapkan checkout.'));
+                showToast(getErrorMessage(error, cartT('prepare_failed')));
                 setCheckoutLoadingState(false);
                 updateSummary();
             }
@@ -352,7 +357,7 @@
             checkbox.className = 'mt-5 accent-blue-500 flex-shrink-0';
             checkbox.checked = selectedCartIds.has(Number(item.cartId));
             checkbox.disabled = pendingCartIds.has(Number(item.cartId));
-            checkbox.setAttribute('aria-label', `Pilih produk ${item.name}`);
+            checkbox.setAttribute('aria-label', cartT('select_product', { name: item.name }));
             checkbox.addEventListener('change', function() {
                 toggleItemSelection(Number(item.cartId), this.checked);
             });
@@ -363,7 +368,7 @@
 
             const image = document.createElement('img');
             image.src = item.image || '';
-            image.alt = item.name || 'Produk';
+            image.alt = item.name || cartT('product');
             image.className = 'w-16 h-16 rounded-xl object-cover';
             productLink.appendChild(image);
 
@@ -373,7 +378,7 @@
             const title = document.createElement('a');
             title.href = productLink.href;
             title.className = 'font-semibold text-slate-800 text-sm line-clamp-2 mb-0.5 hover:text-blue-600 transition-colors block';
-            title.textContent = item.name || 'Produk';
+            title.textContent = item.name || cartT('product');
 
             const variant = document.createElement('p');
             variant.className = 'text-xs text-slate-500 mb-2';
@@ -404,7 +409,7 @@
             decreaseBtn.className = 'px-2.5 py-1 text-slate-500 hover:bg-slate-50 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed';
             decreaseBtn.textContent = '-';
             decreaseBtn.disabled = pendingCartIds.has(Number(item.cartId)) || Number(item.qty || 1) <= 1;
-            decreaseBtn.setAttribute('aria-label', `Kurangi jumlah ${item.name}`);
+            decreaseBtn.setAttribute('aria-label', cartT('decrease_qty', { name: item.name }));
             decreaseBtn.addEventListener('click', () => changeQty(idx, -1));
 
             const qtyInput = document.createElement('input');
@@ -417,7 +422,7 @@
             qtyInput.value = String(item.qty || 1);
             qtyInput.disabled = pendingCartIds.has(Number(item.cartId));
             qtyInput.className = 'w-20 px-2 py-1 text-sm font-semibold text-center border-x border-slate-200 focus:outline-none focus:bg-blue-50 disabled:bg-slate-50 disabled:text-slate-400';
-            qtyInput.setAttribute('aria-label', `Jumlah ${item.name}`);
+            qtyInput.setAttribute('aria-label', cartT('quantity', { name: item.name }));
             qtyInput.addEventListener('input', () => handleCartQtyInput(idx, qtyInput));
             qtyInput.addEventListener('blur', () => commitCartQtyInput(idx, qtyInput));
             qtyInput.addEventListener('keydown', (event) => {
@@ -432,7 +437,7 @@
             increaseBtn.className = 'px-2.5 py-1 text-slate-500 hover:bg-slate-50 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed';
             increaseBtn.textContent = '+';
             increaseBtn.disabled = pendingCartIds.has(Number(item.cartId)) || Number(item.qty || 0) >= Number(item.stock || 0);
-            increaseBtn.setAttribute('aria-label', `Tambah jumlah ${item.name}`);
+            increaseBtn.setAttribute('aria-label', cartT('increase_qty', { name: item.name }));
             increaseBtn.addEventListener('click', () => changeQty(idx, 1));
 
             qtyControl.append(decreaseBtn, qtyInput, increaseBtn);
@@ -443,7 +448,7 @@
             if (Number(item.stock || 0) > 0) {
                 const stockNote = document.createElement('p');
                 stockNote.className = 'mt-2 text-[11px] text-slate-400';
-                stockNote.textContent = `Stok tersedia: ${Number(item.stock || 0)}`;
+                stockNote.textContent = cartT('stock_available', { count: Number(item.stock || 0) });
                 content.appendChild(stockNote);
             }
 
@@ -451,7 +456,7 @@
             removeBtn.type = 'button';
             removeBtn.className = 'absolute top-4 right-0 sm:static text-slate-300 hover:text-red-400 transition-colors flex-shrink-0 self-start disabled:opacity-50 disabled:cursor-not-allowed';
             removeBtn.disabled = pendingCartIds.has(Number(item.cartId));
-            removeBtn.setAttribute('aria-label', `Hapus produk ${item.name} dari keranjang`);
+            removeBtn.setAttribute('aria-label', cartT('remove_product', { name: item.name }));
             removeBtn.innerHTML =
                 '<i class="fi fi-rr-cross-small text-sm leading-none"></i>';
             removeBtn.addEventListener('click', () => removeItem(idx));
@@ -471,12 +476,12 @@
 
                 const text = document.createElement('p');
                 text.className = 'text-slate-500 text-sm mb-3';
-                text.textContent = 'Keranjang masih kosong.';
+                text.textContent = cartT('cart_still_empty');
 
                 const link = document.createElement('a');
                 link.href = cartIndexUrl;
                 link.className = 'inline-flex items-center gap-2 text-blue-600 text-sm font-semibold hover:text-blue-700';
-                link.textContent = 'Belanja sekarang';
+                link.textContent = cartT('shop_now');
 
                 emptyState.append(text, link);
                 container.appendChild(emptyState);

@@ -1,6 +1,6 @@
 @extends('layouts.user')
 
-@section('title', 'Menunggu Pembayaran - ' . ($appStoreName ?? config('app.name')))
+@section('title', __('checkout.waiting_payment') . ' - ' . ($appStoreName ?? config('app.name')))
 @section('body_class', 'bg-slate-50 text-slate-800 overflow-x-hidden')
 @section('style')
     <style>
@@ -106,13 +106,13 @@
                             </div>
                         </div>
                         <div>
-                            <h1 class="text-lg font-bold text-slate-800">Menunggu Pembayaran</h1>
-                            <p class="text-sm text-slate-500">Selesaikan pembayaran sebelum waktu habis</p>
+                            <h1 class="text-lg font-bold text-slate-800">{{ __('checkout.waiting_payment') }}</h1>
+                            <p class="text-sm text-slate-500">{{ __('checkout.finish_before_expiry') }}</p>
                         </div>
                     </div>
                     <div
                         class="sm:ml-auto flex flex-col items-center bg-white rounded-2xl px-6 py-3 shadow-sm border border-slate-100">
-                        <p class="text-xs text-slate-400 font-medium uppercase tracking-widest mb-0.5">Sisa Waktu</p>
+                        <p class="text-xs text-slate-400 font-medium uppercase tracking-widest mb-0.5">{{ __('checkout.time_remaining') }}</p>
                         <span id="countdownTimer"
                             class="text-3xl font-extrabold text-indigo-600 tabular-nums timer-glow">30:00</span>
                     </div>
@@ -126,8 +126,14 @@
                 <div id="txStatusWrap"
                     class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-yellow-50 text-yellow-700 border border-yellow-200 text-xs font-semibold">
                     <span class="w-1.5 h-1.5 rounded-full bg-yellow-400 inline-block"></span>
-                    <span id="txStatus"
-                        class="font-medium ml-1">{{ strtoupper($payment['transaction_status'] ?? 'PENDING') }}</span>
+                    <span id="txStatus" class="font-medium ml-1">{{ match (strtolower((string) ($payment['transaction_status'] ?? 'pending'))) {
+                        'settlement', 'capture', 'paid' => __('checkout.js.paid'),
+                        'process' => __('checkout.js.processing'),
+                        'kirim' => __('checkout.js.shipped'),
+                        'selesai', 'completed' => __('checkout.js.completed'),
+                        'cancel', 'expire', 'deny', 'failure', 'dibatalkan' => __('checkout.js.cancelled'),
+                        default => __('checkout.js.waiting_payment'),
+                    } }}</span>
                 </div>
             </div>
         </div>
@@ -139,11 +145,11 @@
             <div class="w-full lg:w-[55%] space-y-5">
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
                     <div class="px-6 pt-5 pb-2 flex items-center justify-between">
-                        <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Informasi Pembayaran</h2>
+                        <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide">{{ __('checkout.payment_information') }}</h2>
                         @auth
                             <button id="openSimulateModalBtn" type="button"
                                 class="text-xs px-3 py-1.5 rounded-full border border-indigo-200 text-indigo-600 font-semibold hover:bg-indigo-50 transition-colors">
-                                Simulasi
+                                {{ __('checkout.simulation') }}
                             </button>
                         @endauth
                     </div>
@@ -159,14 +165,14 @@
                                 </svg>
                             </div>
                             <div>
-                                <p class="text-xs text-slate-400">Metode Pembayaran</p>
+                                <p class="text-xs text-slate-400">{{ __('checkout.payment_method') }}</p>
                                 <p class="text-sm font-semibold text-slate-800">{{ $payment['method_label'] }}</p>
                             </div>
                         </div>
 
                         @if (($payment['payment_type'] ?? '') === 'bank_transfer' && !empty($payment['va_number']))
                             <div class="p-4 rounded-2xl border border-indigo-100 bg-linear-to-r from-indigo-50 to-blue-50">
-                                <p class="text-xs text-slate-500 mb-2 font-medium">Nomor Virtual Account —
+                                <p class="text-xs text-slate-500 mb-2 font-medium">{{ __('checkout.virtual_account_number') }} —
                                     <span class="font-bold text-slate-700 uppercase">{{ $payment['va_bank'] ?? '' }}</span>
                                 </p>
                                 <div class="flex items-center gap-3 flex-wrap">
@@ -175,7 +181,7 @@
                                         {{ $payment['va_number'] }}</p>
                                     <button id="copyVaBtn" type="button"
                                         class="px-3 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700 transition-colors shadow-sm">
-                                        Salin
+                                        {{ __('checkout.copy') }}
                                     </button>
                                 </div>
                             </div>
@@ -183,48 +189,47 @@
 
                         @if (($payment['payment_type'] ?? '') === 'qris')
                             <div class="p-5 rounded-2xl border border-indigo-100 bg-indigo-50 text-center">
-                                <p class="text-xs text-slate-500 font-medium mb-3 uppercase tracking-wide">Scan QRIS untuk
-                                    Membayar</p>
+                                <p class="text-xs text-slate-500 font-medium mb-3 uppercase tracking-wide">{{ __('checkout.scan_qris') }}</p>
                                 @if (!empty($payment['qr_url']))
                                     <div class="inline-block bg-white p-3 rounded-2xl shadow-sm border border-slate-100">
                                         <img src="{{ $payment['qr_url'] }}" alt="QRIS"
                                             class="w-52 h-52 object-contain" />
                                     </div>
                                 @else
-                                    <p class="text-sm text-slate-500">QR belum tersedia, silakan tunggu sebentar.</p>
+                                    <p class="text-sm text-slate-500">{{ __('checkout.qr_not_ready') }}</p>
                                 @endif
                             </div>
                         @endif
 
                         @if (($payment['payment_type'] ?? '') === 'manual_transfer')
                             <div class="p-4 rounded-2xl border border-blue-100 bg-blue-50">
-                                <p class="text-sm font-semibold text-slate-800">Transfer Manual</p>
-                                <p class="text-xs text-slate-500 mt-1">{{ $manualPaymentSettings['instruction'] ?? 'Transfer sesuai nominal, lalu upload bukti pembayaran di bawah ini.' }}</p>
+                                <p class="text-sm font-semibold text-slate-800">{{ __('checkout.manual_transfer') }}</p>
+                                <p class="text-xs text-slate-500 mt-1">{{ $manualPaymentSettings['instruction'] ?? __('checkout.manual_instruction_default') }}</p>
                                 <div class="mt-3 rounded-xl bg-white p-3 text-sm text-slate-600">
-                                    <p>Bank: <span class="font-semibold">{{ $manualPaymentSettings['bank_name'] ?? 'BCA' }} / {{ $manualPaymentSettings['account_number'] ?? '1234567890' }}</span></p>
-                                    <p>Atas nama: <span class="font-semibold">{{ $manualPaymentSettings['account_name'] ?? config('app.name') }}</span></p>
+                                    <p>{{ __('checkout.bank') }}: <span class="font-semibold">{{ $manualPaymentSettings['bank_name'] ?? 'BCA' }} / {{ $manualPaymentSettings['account_number'] ?? '1234567890' }}</span></p>
+                                    <p>{{ __('checkout.account_name') }}: <span class="font-semibold">{{ $manualPaymentSettings['account_name'] ?? config('app.name') }}</span></p>
                                 </div>
                             </div>
 
                             @if (!empty($payment['payment_proof_path']))
                                 <div class="p-4 rounded-2xl border border-emerald-100 bg-emerald-50 text-sm text-emerald-700">
-                                    Bukti transfer sudah diupload. Status akan berubah setelah admin memverifikasi.
-                                    <a href="{{ route('payment-proof.show', ['transaction' => $payment['transaction_db_id']]) }}" target="_blank" class="font-semibold underline ml-1">Lihat bukti</a>
+                                    {{ __('checkout.proof_uploaded') }}
+                                    <a href="{{ route('payment-proof.show', ['transaction' => $payment['transaction_db_id']]) }}" target="_blank" class="font-semibold underline ml-1">{{ __('checkout.view_proof') }}</a>
                                     @if (!empty($payment['payment_admin_note']))
-                                        <p class="mt-2 text-emerald-800">Catatan admin: {{ $payment['payment_admin_note'] }}</p>
+                                        <p class="mt-2 text-emerald-800">{{ __('checkout.admin_note') }}: {{ $payment['payment_admin_note'] }}</p>
                                     @endif
                                 </div>
                             @else
                                 <form method="POST" action="{{ route('manual-payment.proof', ['transaction' => $payment['transaction_db_id'] ?? 0]) }}" enctype="multipart/form-data"
                                     class="p-4 rounded-2xl border border-slate-200 bg-white space-y-3">
                                     @csrf
-                                    <label class="text-sm font-semibold text-slate-700 block">Upload Bukti Transfer</label>
+                                    <label class="text-sm font-semibold text-slate-700 block">{{ __('checkout.upload_transfer_proof') }}</label>
                                     <input type="file" name="payment_proof" accept="image/*" required
                                         class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-400">
                                     @error('payment_proof')
                                         <p class="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">{{ $message }}</p>
                                     @enderror
-                                    <button class="w-full rounded-xl bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">Kirim Bukti Pembayaran</button>
+                                    <button class="w-full rounded-xl bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">{{ __('checkout.submit_payment_proof') }}</button>
                                 </form>
                             @endif
                         @endif
@@ -236,7 +241,7 @@
             <div class="w-full lg:flex-1 space-y-5">
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
                     <div class="px-6 pt-5 pb-2">
-                        <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Ringkasan Pesanan</h2>
+                        <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide">{{ __('checkout.order_summary') }}</h2>
                     </div>
                     <div class="px-6 pb-6 space-y-4">
                         @foreach ($payment['items'] ?? [] as $item)
@@ -251,7 +256,7 @@
                                         <p class="text-xs text-slate-400">{{ $item['variant'] }}</p>
                                     @endif
                                     @if (!empty($item['note']))
-                                        <p class="text-xs text-slate-400">Catatan: {{ $item['note'] }}</p>
+                                        <p class="text-xs text-slate-400">{{ __('checkout.item_note') }}: {{ $item['note'] }}</p>
                                     @endif
                                     <div class="flex items-center justify-between mt-1">
                                         <span class="text-xs text-slate-400">x{{ $item['qty'] }}</span>
@@ -271,12 +276,12 @@
                                 </div>
                             @endforeach
                             <div class="flex justify-between text-sm text-slate-500">
-                                <span>Ongkos Kirim</span>
+                                <span>{{ __('checkout.shipping_cost') }}</span>
                                 <span>Rp {{ number_format((int) ($payment['shipping_cost'] ?? 0), 0, ',', '.') }}</span>
                             </div>
                             @if ((int) ($payment['discount_amount'] ?? 0) > 0)
                                 <div class="flex justify-between text-sm text-emerald-600">
-                                    <span>Voucher {{ $payment['coupon_code'] ?? '' }}</span>
+                                    <span>{{ __('checkout.voucher') }} {{ $payment['coupon_code'] ?? '' }}</span>
                                     <span>- Rp {{ number_format((int) ($payment['discount_amount'] ?? 0), 0, ',', '.') }}</span>
                                 </div>
                             @endif
@@ -287,7 +292,7 @@
                                 </div>
                             @endif
                             <div class="flex justify-between items-center pt-3 border-t border-slate-100">
-                                <span class="font-bold text-slate-800">Grand Total</span>
+                                <span class="font-bold text-slate-800">{{ __('checkout.grand_total') }}</span>
                                 <span class="text-xl font-extrabold text-indigo-600">Rp
                                     {{ number_format((int) ($payment['gross_amount'] ?? 0), 0, ',', '.') }}</span>
                             </div>
@@ -303,7 +308,7 @@
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                             </svg>
-                            Kembali Belanja
+                            {{ __('checkout.back_to_shopping') }}
                         </a>
                         <a href="{{ auth()->check() ? route('frontend.profil', ['tab' => 'pesanan']) : route('frontend.order-tracking.index', ['order_id' => $payment['order_id']]) }}"
                             class="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3.5 rounded-2xl transition-colors text-sm shadow-sm">
@@ -312,7 +317,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                             </svg>
-                            Lihat Pesanan
+                            {{ __('checkout.view_order') }}
                         </a>
                     </div>
                     <button type="button" onclick="openCancelModal()"
@@ -320,7 +325,7 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                         </svg>
-                        Batalkan Transaksi
+                        {{ __('checkout.cancel_transaction') }}
                     </button>
                 </div>
 
@@ -328,12 +333,12 @@
                     <div class="relative overflow-hidden rounded-3xl border border-sky-200 bg-sky-50 p-5 shadow-sm">
                         <div class="absolute -right-8 -top-10 h-28 w-28 rounded-full bg-blue-200/50 blur-2xl"></div>
                         <div class="relative">
-                            <span class="inline-flex rounded-full bg-white px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-widest text-blue-700 shadow-sm">Simpan pesanan</span>
-                            <h3 class="mt-3 text-base font-extrabold text-slate-900">Buat akun tanpa isi data ulang</h3>
-                            <p class="mt-1 text-xs leading-5 text-slate-600">Pesanan ini dan pesanan guest lain dengan email yang sama akan langsung masuk ke riwayat akunmu.</p>
+                            <span class="inline-flex rounded-full bg-white px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-widest text-blue-700 shadow-sm">{{ __('checkout.guest_account_title') }}</span>
+                            <h3 class="mt-3 text-base font-extrabold text-slate-900">{{ __('storefront.create_account_continue') }}</h3>
+                            <p class="mt-1 text-xs leading-5 text-slate-600">{{ __('checkout.guest_account_help') }}</p>
                             <a href="{{ route('register', ['checkout_order' => $payment['order_id']]) }}"
                                 class="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-blue-700">
-                                Buat Akun Saya
+                                {{ __('checkout.create_my_account') }}
                             </a>
                         </div>
                     </div>
@@ -354,19 +359,19 @@
                     </svg>
                 </div>
                 <div>
-                    <p class="font-semibold text-slate-800">Batalkan Transaksi</p>
-                    <p class="text-xs text-slate-500">Pilih alasan pembatalan</p>
+                    <p class="font-semibold text-slate-800">{{ __('checkout.cancel_transaction') }}</p>
+                    <p class="text-xs text-slate-500">{{ __('checkout.choose_cancel_reason') }}</p>
                 </div>
             </div>
             <div class="space-y-2 mb-4">
                 @php
                     $cancelReasons = [
-                        'Berubah pikiran / tidak jadi membeli',
-                        'Salah memilih produk atau varian',
-                        'Ingin menggunakan metode pembayaran lain',
-                        'Harga terlalu mahal',
-                        'Menemukan produk lebih murah di tempat lain',
-                        'Alasan lainnya',
+                        __('checkout.cancel_reasons.changed_mind'),
+                        __('checkout.cancel_reasons.wrong_product'),
+                        __('checkout.cancel_reasons.other_payment'),
+                        __('checkout.cancel_reasons.too_expensive'),
+                        __('checkout.cancel_reasons.cheaper_elsewhere'),
+                        __('checkout.cancel_reasons.other'),
                     ];
                 @endphp
                 @foreach ($cancelReasons as $reason)
@@ -377,16 +382,15 @@
                         <span class="text-sm text-slate-700">{{ $reason }}</span>
                     </label>
                 @endforeach
-                <input type="text" id="cancelReasonOther" placeholder="Tulis alasan lainnya..."
+                <input type="text" id="cancelReasonOther" placeholder="{{ __('checkout.write_other_reason') }}"
                     class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm hidden focus:outline-none focus:border-red-400">
             </div>
-            <p id="cancelModalError" class="text-xs text-red-500 mb-2 hidden">Pilih alasan pembatalan terlebih dahulu.</p>
+            <p id="cancelModalError" class="text-xs text-red-500 mb-2 hidden">{{ __('checkout.choose_cancel_reason_error') }}</p>
             <div class="flex gap-3">
                 <button type="button" onclick="closeCancelModal()"
-                    class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">Kembali</button>
+                    class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">{{ __('checkout.back') }}</button>
                 <button type="button" id="confirmCancelBtn"
-                    class="flex-1 px-4 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition-colors">Ya,
-                    Batalkan</button>
+                    class="flex-1 px-4 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition-colors">{{ __('checkout.confirm_cancel') }}</button>
             </div>
         </div>
     </div>
@@ -417,21 +421,21 @@
                 </svg>
             </div>
 
-            <h2 class="text-2xl font-extrabold text-slate-900 mb-2">Pembelian Berhasil! 🎉</h2>
-            <p class="text-slate-600 mb-5">Terima kasih sudah berbelanja di {{ $appStoreName ?? config('app.name') }}. Pesananmu sedang diproses!</p>
+            <h2 class="text-2xl font-extrabold text-slate-900 mb-2">{{ __('checkout.purchase_success') }}</h2>
+            <p class="text-slate-600 mb-5">{{ __('checkout.purchase_success_help', ['store' => $appStoreName ?? config('app.name')]) }}</p>
 
             <div class="bg-slate-50 rounded-2xl p-4 mb-5 text-left">
                 <div class="space-y-2">
                     <div class="flex justify-between text-sm">
-                        <span class="text-slate-500">Nomor Pesanan</span>
+                        <span class="text-slate-500">{{ __('checkout.order_number') }}</span>
                         <span class="font-bold text-slate-800 font-mono" id="orderNum">{{ $payment['order_id'] }}</span>
                     </div>
                     <div class="flex justify-between text-sm">
-                        <span class="text-slate-500">Metode Bayar</span>
+                        <span class="text-slate-500">{{ __('checkout.payment_method') }}</span>
                         <span class="font-medium text-slate-700" id="payMethod">{{ $payment['method_label'] }}</span>
                     </div>
                     <div class="flex justify-between text-sm">
-                        <span class="text-slate-500">Total Dibayar</span>
+                        <span class="text-slate-500">{{ __('checkout.paid_total') }}</span>
                         <span class="font-bold text-blue-600" id="totalPaid">Rp
                             {{ number_format((int) ($payment['gross_amount'] ?? 0), 0, ',', '.') }}</span>
                     </div>
@@ -440,16 +444,14 @@
 
             <div class="bg-blue-50 rounded-xl p-3 mb-6 text-sm text-blue-700 flex gap-2">
                 <span>📱</span>
-                <span>Notifikasi status pesanan akan dikirim ke email kamu.</span>
+                <span>{{ __('checkout.email_notification') }}</span>
             </div>
 
             <div class="flex flex-col sm:flex-row gap-3">
                 <a href="{{ auth()->check() ? route('frontend.profil', ['tab' => 'pesanan']) : route('frontend.order-tracking.index', ['order_id' => $payment['order_id']]) }}"
-                    class="flex-1 border-2 border-blue-400 text-blue-600 font-semibold py-3 rounded-xl hover:bg-blue-50 transition-colors text-sm">Lihat
-                    Pesanan</a>
+                    class="flex-1 border-2 border-blue-400 text-blue-600 font-semibold py-3 rounded-xl hover:bg-blue-50 transition-colors text-sm">{{ __('checkout.view_order') }}</a>
                 <a href="{{ route('frontend.index') }}"
-                    class="flex-1 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold py-3 rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all text-sm">Belanja
-                    Lagi</a>
+                    class="flex-1 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold py-3 rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all text-sm">{{ __('checkout.shop_again') }}</a>
             </div>
         </div>
     </div>
@@ -458,6 +460,17 @@
 @section('script')
     <script>
         const statusUrl = @json(route('frontend.checkout.midtrans.status', ['orderId' => $payment['order_id']]));
+        const waitingText = @json(__('checkout.js'));
+        const waitingT = (key) => String(waitingText[key] || key);
+        const statusLabel = (status) => {
+            const normalized = String(status || '').toLowerCase();
+            if (['settlement', 'capture', 'paid'].includes(normalized)) return waitingT('paid');
+            if (normalized === 'process') return waitingT('processing');
+            if (normalized === 'kirim') return waitingT('shipped');
+            if (['selesai', 'completed'].includes(normalized)) return waitingT('completed');
+            if (['cancel', 'expire', 'deny', 'failure', 'dibatalkan'].includes(normalized)) return waitingT('cancelled');
+            return waitingT('waiting_payment');
+        };
         const simulateUrl = @json(route('frontend.checkout.midtrans.simulate'));
         const cancelUrl = @json(route('frontend.checkout.midtrans.cancel', ['orderId' => $payment['order_id']]));
         const completeCheckoutUrl = @json(route('frontend.checkout.complete'));
@@ -486,7 +499,7 @@
         function switchToMyTransactionButton() {
             const btn = document.getElementById('refreshStatusBtn');
             if (!btn) return;
-            btn.textContent = 'Transaksi Saya';
+            btn.textContent = waitingT('my_transactions');
             btn.onclick = () => {
                 window.location.href = @json(auth()->check() ? route('frontend.profil', ['tab' => 'pesanan']) : route('frontend.order-tracking.index', ['order_id' => $payment['order_id']]));
             };
@@ -507,13 +520,13 @@
 
             const el = document.getElementById('txStatus');
             if (['cancel', 'expire', 'deny', 'failure', 'dibatalkan'].includes(status)) {
-                if (el) el.textContent = 'DIBATALKAN';
+                if (el) el.textContent = waitingT('cancelled');
                 paintStatus('cancel');
                 currentTxStatus = 'cancel';
                 return;
             }
 
-            if (el) el.textContent = status.toUpperCase();
+            if (el) el.textContent = statusLabel(status);
             paintStatus(status);
             currentTxStatus = status;
 
@@ -557,11 +570,11 @@
                     'X-Requested-With': 'XMLHttpRequest',
                 },
                 body: JSON.stringify({
-                    cancel_reason: 'Transaksi kadaluarsa (tidak dibayar tepat waktu)'
+                    cancel_reason: waitingT('expired_reason')
                 }),
             });
             const el = document.getElementById('txStatus');
-            if (el) el.textContent = 'DIBATALKAN';
+            if (el) el.textContent = waitingT('cancelled');
             paintStatus('cancel');
         }
 
@@ -619,14 +632,14 @@
             copyBtn.addEventListener('click', async () => {
                 try {
                     await navigator.clipboard.writeText(vaText);
-                    copyBtn.textContent = 'Tersalin';
+                    copyBtn.textContent = waitingT('copied');
                     setTimeout(() => {
-                        copyBtn.textContent = 'Salin';
+                        copyBtn.textContent = waitingT('copy');
                     }, 1400);
                 } catch (e) {
-                    copyBtn.textContent = 'Gagal';
+                    copyBtn.textContent = waitingT('failed');
                     setTimeout(() => {
-                        copyBtn.textContent = 'Salin';
+                        copyBtn.textContent = waitingT('copy');
                     }, 1400);
                 }
             });
@@ -690,7 +703,7 @@
         document.querySelectorAll('input[name="cancelReason"]').forEach(function(radio) {
             radio.addEventListener('change', function() {
                 const other = document.getElementById('cancelReasonOther');
-                if (this.value === 'Alasan lainnya') {
+                if (this.value === waitingT('other_reason')) {
                     other.classList.remove('hidden');
                     other.focus();
                 } else {
@@ -709,13 +722,13 @@
             errEl.classList.add('hidden');
 
             let reason = selected.value;
-            if (reason === 'Alasan lainnya') {
+            if (reason === waitingT('other_reason')) {
                 const other = document.getElementById('cancelReasonOther').value.trim();
-                reason = other || 'Alasan lainnya';
+                reason = other || waitingT('other_reason');
             }
 
             this.disabled = true;
-            this.textContent = 'Membatalkan...';
+            this.textContent = waitingT('cancelling');
             try {
                 const res = await fetch(cancelUrl, {
                     method: 'POST',
@@ -733,14 +746,14 @@
                     closeCancelModal();
                     paintStatus('cancel');
                     const el = document.getElementById('txStatus');
-                    if (el) el.textContent = 'DIBATALKAN';
+                    if (el) el.textContent = waitingT('cancelled');
                     // Hide cancel button after successful cancel
                     const cancelBtn = document.querySelector('button[onclick="openCancelModal()"]');
                     if (cancelBtn) cancelBtn.style.display = 'none';
                 }
             } catch (e) {}
             this.disabled = false;
-            this.textContent = 'Ya, Batalkan';
+            this.textContent = waitingT('confirm_cancel');
         });
     </script>
 @endsection
