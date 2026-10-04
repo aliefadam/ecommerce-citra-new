@@ -373,7 +373,7 @@
                     <p class="store-product-variant truncate">${escapeHtml(variantLabel)}</p>
                     <p class="store-product-price">Rp ${Number(p.price || 0).toLocaleString('id-ID')}</p>
                     <p class="mt-1 text-[11px] font-medium text-slate-500">${Number(p.stock || 0) > 0 ? `${searchText.stock.replace(':count', Number(p.stock).toLocaleString())} ${escapeHtml(p.unit || 'pcs')}` : searchText.outOfStock} &middot; ${searchText.unit} ${escapeHtml(p.unit || 'pcs')}</p>
-                    <p class="store-product-seller"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 10.5V20h16v-9.5M3 4h18l-1.5 6a2.5 2.5 0 0 1-4.5 1.1 2.5 2.5 0 0 1-4.5 0A2.5 2.5 0 0 1 6 10L4.5 4M9 20v-5h6v5"/></svg><span>${escapeHtml(p.storeName || searchText.industrialPartner)}</span></p>
+                    <p class="store-product-seller"><i class="fi fi-rr-building shrink-0 text-[.85rem] leading-none text-blue-800" aria-hidden="true"></i><span>${escapeHtml(p.storeName || searchText.industrialPartner)}</span></p>
                     <div class="store-product-meta">
                         <span class="store-product-rating"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.7 2.83 5.73 6.32.92-4.58 4.46 1.08 6.3L12 17.14l-5.65 2.97 1.08-6.3-4.58-4.46 6.32-.92L12 2.7Z"/></svg>${Number(p.rating || 0).toFixed(1)} <span class="font-normal text-slate-400">(${Number(p.reviews || 0).toLocaleString('id-ID')})</span></span>
                         <span>${searchText.sold.replace(':count', Number(p.sold || 0).toLocaleString())}</span>

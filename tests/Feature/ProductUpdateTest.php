@@ -150,6 +150,57 @@ class ProductUpdateTest extends TestCase
         $this->assertSame('image/webp', getimagesizefromstring(Storage::disk('public')->get($storedImage))['mime']);
     }
 
+    public function test_edit_product_uploads_and_displays_a_specification_image(): void
+    {
+        Storage::fake('public');
+        [$product, $detail, , , $productVariant] = $this->createProductFixture();
+        $this->actingAs($this->makeAdminUser());
+
+        $payload = $this->singleVariantUpdatePayload($product, $detail, $productVariant);
+        $payload['specification_image'] = UploadedFile::fake()
+            ->image('technical-drawing.png', 1600, 1200)
+            ->size(1500);
+
+        $this->put(route('products.update', $product), $payload)
+            ->assertRedirect(route('products.index'))
+            ->assertSessionHasNoErrors();
+
+        $storedImage = $product->fresh()->specification_image;
+
+        $this->assertStringStartsWith('product-specifications/', $storedImage);
+        $this->assertStringEndsWith('.webp', $storedImage);
+        Storage::disk('public')->assertExists($storedImage);
+
+        $this->get(route('frontend.detail-produk', ['slug' => $product->fresh()->slug]))
+            ->assertOk()
+            ->assertSee(asset('storage/'.$storedImage), false)
+            ->assertSee('Gambar spesifikasi '.$product->name);
+    }
+
+    public function test_edit_product_rejects_an_oversized_specification_image_and_preserves_the_existing_file(): void
+    {
+        Storage::fake('public');
+        [$product, $detail, , , $productVariant] = $this->createProductFixture();
+        $product->update(['specification_image' => 'product-specifications/original.webp']);
+        Storage::disk('public')->put('product-specifications/original.webp', 'original-image');
+        $this->actingAs($this->makeAdminUser());
+
+        $payload = $this->singleVariantUpdatePayload($product, $detail, $productVariant);
+        $payload['specification_image'] = UploadedFile::fake()
+            ->image('too-large.png', 1600, 1200)
+            ->size(13000);
+
+        $this->from(route('products.edit', $product))
+            ->put(route('products.update', $product), $payload)
+            ->assertRedirect(route('products.edit', $product))
+            ->assertSessionHasErrors([
+                'specification_image' => 'Ukuran gambar spesifikasi maksimal 12 MB.',
+            ]);
+
+        $this->assertSame('product-specifications/original.webp', $product->fresh()->specification_image);
+        Storage::disk('public')->assertExists('product-specifications/original.webp');
+    }
+
     public function test_edit_product_does_not_trust_the_existing_image_path_from_the_browser(): void
     {
         Storage::fake('public');

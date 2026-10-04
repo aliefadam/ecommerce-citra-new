@@ -47,7 +47,7 @@ test.describe('help center redesign', () => {
         await page.goto('/pages/cara-belanja', { waitUntil: 'domcontentloaded' });
 
         const guideImages = page.locator('.shopping-guide img');
-        await expect(guideImages).toHaveCount(3);
+        await expect(guideImages).toHaveCount(6);
         for (const image of await guideImages.all()) {
             await image.scrollIntoViewIfNeeded();
             await expect(image).toBeVisible();
@@ -62,7 +62,7 @@ test.describe('help center redesign', () => {
         await page.locator('.ec-header-actions a[lang="en"]').click();
         await expect(page.getByRole('heading', { name: 'How to Shop', level: 1 })).toBeVisible();
         await expect(page.getByText('Visual shopping guide')).toBeVisible();
-        await expect(page.getByText('3. Review your cart', { exact: true })).toBeVisible();
+        await expect(page.locator('.shopping-guide').getByText('6. Track your order', { exact: true })).toBeVisible();
         await expect(page.getByText('Informasi Pelanggan')).toHaveCount(0);
     });
 

@@ -5,7 +5,7 @@ Tanggal: 21 September 2026
 Area: Katalog produk, varian, admin produk, storefront, import Excel, dan Open Catalog API  
 Pendekatan delivery: migrasi backward-compatible dengan quality gate pada setiap fase
 
-## Status Implementasi (diperbarui 27 September 2026)
+## Status Implementasi (diperbarui 4 Oktober 2026)
 
 Core v1 sudah diimplementasikan dan diverifikasi:
 
@@ -18,6 +18,12 @@ Core v1 sudah diimplementasikan dan diverifikasi:
   daftar atribut Bolt.
 - Template dan import Excel dinamis per template; format Bolt lama tetap didukung.
 - Migrasi database bersifat backward-compatible dan tidak mengubah nilai atribut produk lama.
+- Filter katalog hanya memakai field template efektif yang aktif dan `is_filterable`, serta mengikuti
+  `label_override` dan `sort_order`. Identitas filter memakai kode atribut agar definisi berbeda tidak
+  tercampur hanya karena mempunyai label yang sama.
+- Search Open Catalog API mencakup nama produk, SKU, serta nilai atribut teks/angka dengan scope
+  perusahaan tetap diterapkan. Detail API mengembalikan atribut generik tanpa angka stok maupun
+  konfigurasi template admin.
 - Automated regression terbaru: seluruh suite backend lulus, 217 test dengan 1.310 assertion; browser E2E lulus 23 skenario, termasuk kontrak Company Catalog API, katalog Sprint 3 desktop/mobile, product-to-cart desktop/mobile, dan account lifecycle/profil.
 - Build frontend production dan kompilasi Blade lulus.
 
@@ -577,19 +583,19 @@ import, export, dan API resource.
 
 ### Customer
 
-- [ ] Detail produk membentuk grup pilihan dari template, tanpa daftar kode atribut hard-coded.
+- [x] Detail produk membentuk grup pilihan dari template, tanpa daftar kode atribut hard-coded.
 - [ ] Kombinasi yang tidak tersedia tampil disabled dan tidak dapat masuk cart.
 - [ ] Kombinasi valid memperbarui varian ID, harga, stok, gambar, SKU, dan tabel spesifikasi.
 - [ ] Perilaku desktop dan mobile konsisten.
-- [ ] Unit dan urutan atribut tampil sesuai konfigurasi.
+- [x] Unit dan urutan atribut tampil sesuai konfigurasi.
 
 ### Import, API, dan regresi
 
 - [x] Template Excel dapat diunduh per Category Detail/template.
 - [ ] Import menolak file dengan versi/template yang tidak cocok dan memberikan error per baris.
 - [ ] Format Bolt legacy tetap didukung selama masa transisi yang ditetapkan.
-- [ ] Open Catalog API tetap backward-compatible dan mengembalikan atribut generik.
-- [ ] API tidak mengekspos angka stok atau konfigurasi admin internal.
+- [x] Open Catalog API tetap backward-compatible dan mengembalikan atribut generik.
+- [x] API tidak mengekspos angka stok atau konfigurasi admin internal.
 - [ ] Cart, checkout, wishlist, flash sale, redeem point, laporan stok, dan transaksi tetap lulus test.
 - [ ] Tidak ada N+1 query baru pada halaman katalog dan detail produk.
 
@@ -599,6 +605,11 @@ sebagian persyaratan. Baseline kategori 13 query, detail 47 query dengan 11 bent
 ini belum membuktikan bebas N+1. E2E terbaru memiliki satu kegagalan rate-limit API.
 Review mapping aktual tertunda karena MySQL lokal tidak menerima koneksi.
 Bukti dan batasan: [laporan audit kualitas](frontend-baseline/quality-audit/README.md).
+
+Verifikasi 4 Oktober 2026 menambahkan regression test metadata filter/detail template dan contract
+test Open Catalog API untuk pencarian nilai atribut, isolasi perusahaan, atribut generik, serta
+larangan ekspos angka stok/konfigurasi admin. Baseline query tetap lulus, tetapi butir bebas N+1
+belum ditutup karena test tersebut masih berupa pengukuran, bukan batas query yang dipaksakan.
 
 ## Edge Cases
 

@@ -188,6 +188,62 @@ class DynamicProductSpecificationTest extends TestCase
             ->assertSee('ASTM A106');
     }
 
+    public function test_storefront_uses_template_filter_visibility_label_and_order(): void
+    {
+        [, $detail] = $this->categoryFixture('pipe');
+        $template = SpecificationTemplate::query()->where('code', 'pipe')->firstOrFail();
+        $nominalSize = AttributeDefinition::query()->where('code', 'nominal_size')->firstOrFail();
+        $schedule = AttributeDefinition::query()->where('code', 'schedule_class')->firstOrFail();
+
+        $template->fields()->where('attribute_definition_id', $nominalSize->id)->update([
+            'label_override' => 'Ukuran Nominal',
+            'sort_order' => 5,
+            'is_filterable' => true,
+        ]);
+        $template->fields()->where('attribute_definition_id', $schedule->id)->update([
+            'label_override' => 'Schedule Internal',
+            'sort_order' => 1,
+            'is_filterable' => false,
+        ]);
+
+        $this->actingAs($this->admin())->post(route('products.store'), [
+            'name' => 'Pipe Filter Metadata',
+            'category_detail_id' => $detail->id,
+            'status' => 'active',
+            'variants' => [[
+                'price' => 850000,
+                'stock' => 20,
+                'weight_grams' => 15000,
+                'attributes' => $this->attributePayload([
+                    'nominal_size' => '4',
+                    'schedule_class' => 'Sch 40',
+                    'material' => 'Carbon Steel',
+                    'thickness_mm' => '6.02',
+                    'pipe_length_m' => '6',
+                    'standard' => 'ASTM A106',
+                ]),
+            ]],
+        ])->assertRedirect(route('products.index'));
+
+        $catalogResponse = $this->get(route('frontend.kategori'))->assertOk();
+        $catalogProduct = collect($catalogResponse->viewData('productsJson'))
+            ->firstWhere('name', 'Pipe Filter Metadata');
+
+        $this->assertNotNull($catalogProduct);
+        $this->assertContains('Ukuran Nominal', collect($catalogProduct['variants'])->pluck('name'));
+        $this->assertNotContains('Schedule Internal', collect($catalogProduct['variants'])->pluck('name'));
+        $this->assertNotContains('schedule_class', collect($catalogProduct['variants'])->pluck('key'));
+
+        $detailResponse = $this->get(route('frontend.detail-produk', [
+            'slug' => Product::query()->where('name', 'Pipe Filter Metadata')->value('slug'),
+        ]))->assertOk();
+        $groups = collect($detailResponse->viewData('productData')['variantGroups']);
+
+        $this->assertSame('schedule_class', $groups->first()['key']);
+        $this->assertSame('Schedule Internal', $groups->first()['label']);
+        $this->assertSame('Ukuran Nominal (inch)', $groups->firstWhere('key', 'nominal_size')['label']);
+    }
+
     public function test_product_with_a_long_name_is_created_with_sku_within_column_limit(): void
     {
         [, $detail] = $this->categoryFixture('pipe');

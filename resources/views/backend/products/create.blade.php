@@ -160,6 +160,18 @@
                                     </p>
                                 @enderror
                             </div>
+
+                            <div>
+                                <label for="specification_image"
+                                    class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Gambar Spesifikasi</label>
+                                <input id="specification_image" type="file" name="specification_image"
+                                    accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                                    class="block w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:text-xs file:font-bold file:text-blue-700 hover:file:bg-blue-100 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300" />
+                                <p class="mt-1.5 text-xs text-slate-400">Diagram atau gambar teknis yang tampil di samping tabel spesifikasi. Format JPG, PNG, atau WebP; maksimal 12 MB.</p>
+                                @error('specification_image')
+                                    <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>
+                                @enderror
+                            </div>
                         </div>
                     </div>
 

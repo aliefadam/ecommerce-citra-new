@@ -133,6 +133,7 @@ class ProductController extends Controller
             'category_id' => ['nullable', 'exists:categories,id'],
             'status' => ['required', Rule::in(['active', 'inactive'])],
             'description' => ['nullable', 'string'],
+            'specification_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:12288', 'dimensions:max_width=8000,max_height=8000'],
             'is_redeem_product' => ['nullable', 'boolean'],
             'redeem_points' => ['nullable', 'integer', 'min:1'],
             'variants' => ['required', 'array', 'min:1'],
@@ -157,6 +158,11 @@ class ProductController extends Controller
             'variants.*.price.numeric' => 'Harga varian harus berupa angka.',
             'variants.*.stock.integer' => 'Stok varian harus berupa bilangan bulat.',
             'variants.*.weight_grams.integer' => 'Berat varian harus berupa bilangan bulat.',
+            'specification_image.uploaded' => 'Gambar spesifikasi gagal diunggah. Silakan pilih ulang gambar dan coba lagi.',
+            'specification_image.image' => 'File gambar spesifikasi harus berupa gambar yang valid.',
+            'specification_image.mimes' => 'Format gambar spesifikasi harus JPG, PNG, atau WebP.',
+            'specification_image.max' => 'Ukuran gambar spesifikasi maksimal 12 MB.',
+            'specification_image.dimensions' => 'Resolusi gambar spesifikasi maksimal 8000 x 8000 piksel.',
             'variants.*.image.uploaded' => 'Gambar varian gagal diunggah. Silakan pilih ulang gambar dan coba lagi.',
             'variants.*.image.image' => 'File gambar varian harus berupa gambar yang valid.',
             'variants.*.image.mimes' => 'Format gambar varian harus JPG, PNG, atau WebP.',
@@ -195,12 +201,19 @@ class ProductController extends Controller
         app(ProductSpecificationService::class)->validateVariants($specificationTemplate, $validated['variants']);
 
         $files = $request->file('variants', []);
+        $specificationImageFile = $request->file('specification_image');
         $attributeDefinitions = AttributeDefinition::query()->get()->keyBy('id');
         $storedImages = [];
 
         try {
-            DB::transaction(function () use ($validated, $files, $detail, $category, $mainCategory, $imageOptimizer, $attributeDefinitions, $specificationTemplate, $isRedeemProduct, &$storedImages) {
+            DB::transaction(function () use ($validated, $files, $specificationImageFile, $detail, $category, $mainCategory, $imageOptimizer, $attributeDefinitions, $specificationTemplate, $isRedeemProduct, &$storedImages) {
                 $slug = $this->makeUniqueProductSlug($validated['name']);
+                $specificationImage = $specificationImageFile
+                    ? $this->storeSpecificationImage($specificationImageFile, $imageOptimizer)
+                    : null;
+                if ($specificationImage) {
+                    $storedImages[] = $specificationImage;
+                }
 
                 $product = Product::create([
                     'company_id' => $this->activeCompanyId(),
@@ -211,6 +224,7 @@ class ProductController extends Controller
                     'category_id' => $category?->id,
                     'status' => $validated['status'],
                     'description' => $validated['description'] ?? null,
+                    'specification_image' => $specificationImage,
                     'is_redeem_product' => $isRedeemProduct,
                     'redeem_points' => $validated['redeem_points'] ?? null,
                 ]);
@@ -562,6 +576,7 @@ class ProductController extends Controller
             'category_id' => ['nullable', 'exists:categories,id'],
             'status' => ['required', Rule::in(['active', 'inactive'])],
             'description' => ['nullable', 'string'],
+            'specification_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:12288', 'dimensions:max_width=8000,max_height=8000'],
             'is_redeem_product' => ['nullable', 'boolean'],
             'redeem_points' => ['nullable', 'integer', 'min:1'],
             'variants' => ['required', 'array', 'min:1'],
@@ -587,6 +602,11 @@ class ProductController extends Controller
             'variants.*.price.numeric' => 'Harga varian harus berupa angka.',
             'variants.*.stock.integer' => 'Stok varian harus berupa bilangan bulat.',
             'variants.*.weight_grams.integer' => 'Berat varian harus berupa bilangan bulat.',
+            'specification_image.uploaded' => 'Gambar spesifikasi gagal diunggah. Silakan pilih ulang gambar dan coba lagi.',
+            'specification_image.image' => 'File gambar spesifikasi harus berupa gambar yang valid.',
+            'specification_image.mimes' => 'Format gambar spesifikasi harus JPG, PNG, atau WebP.',
+            'specification_image.max' => 'Ukuran gambar spesifikasi maksimal 12 MB.',
+            'specification_image.dimensions' => 'Resolusi gambar spesifikasi maksimal 8000 x 8000 piksel.',
             'variants.*.image.uploaded' => 'Gambar varian gagal diunggah. Silakan pilih ulang gambar dan coba lagi.',
             'variants.*.image.image' => 'File gambar varian harus berupa gambar yang valid.',
             'variants.*.image.mimes' => 'Format gambar varian harus JPG, PNG, atau WebP.',
@@ -625,6 +645,7 @@ class ProductController extends Controller
         app(ProductSpecificationService::class)->validateVariants($specificationTemplate, $validated['variants']);
 
         $files = $request->file('variants', []);
+        $specificationImageFile = $request->file('specification_image');
         $attributeDefinitions = AttributeDefinition::query()->get()->keyBy('id');
 
         $existingVariants = $product->productVariants()->with('variant', 'attributeValues.definition')->get()->keyBy('id');
@@ -660,12 +681,18 @@ class ProductController extends Controller
         }
 
         $oldImages = $product->productVariants()->pluck('image')->filter()->values()->all();
+        $oldSpecificationImage = $product->specification_image;
         $newImages = [];
         $uploadedImages = [];
 
         try {
-            DB::transaction(function () use ($validated, $files, $product, $detail, $category, $mainCategory, $imageOptimizer, $existingVariants, $submittedVariants, $keptVariantIds, $variantIdsToDelete, $attributeDefinitions, $specificationTemplate, $isRedeemProduct, &$newImages, &$uploadedImages) {
+            DB::transaction(function () use ($validated, $files, $specificationImageFile, $product, $detail, $category, $mainCategory, $imageOptimizer, $existingVariants, $submittedVariants, $keptVariantIds, $variantIdsToDelete, $attributeDefinitions, $specificationTemplate, $isRedeemProduct, &$newImages, &$uploadedImages) {
                 $slug = $this->makeUniqueProductSlug($validated['name'], $product->id);
+                $specificationImage = $product->specification_image;
+                if ($specificationImageFile) {
+                    $specificationImage = $this->storeSpecificationImage($specificationImageFile, $imageOptimizer);
+                    $uploadedImages[] = $specificationImage;
+                }
 
                 $product->update([
                     'name' => $validated['name'],
@@ -675,6 +702,7 @@ class ProductController extends Controller
                     'category_id' => $category?->id,
                     'status' => $validated['status'],
                     'description' => $validated['description'] ?? null,
+                    'specification_image' => $specificationImage,
                     'is_redeem_product' => $isRedeemProduct,
                     'redeem_points' => $validated['redeem_points'] ?? null,
                 ]);
@@ -726,6 +754,9 @@ class ProductController extends Controller
         collect($oldImages)
             ->diff($newImages)
             ->each(fn ($path) => $imageOptimizer->deletePublicFile((string) $path));
+        if ($oldSpecificationImage && $oldSpecificationImage !== $product->fresh()->specification_image) {
+            $imageOptimizer->deletePublicFile((string) $oldSpecificationImage);
+        }
 
         return redirect()->route('products.index')->with('success', 'Product berhasil diperbarui.');
     }
@@ -735,6 +766,7 @@ class ProductController extends Controller
         $this->guardCompanyOwnership($product->company_id);
 
         $imageOptimizer = app(ImageOptimizer::class);
+        $imageOptimizer->deletePublicFile($product->specification_image);
         $product->productVariants()
             ->pluck('image')
             ->filter()
@@ -867,6 +899,19 @@ class ProductController extends Controller
 
             throw ValidationException::withMessages([
                 'variants.'.$index.'.image' => 'Gambar varian gagal diproses. Gunakan file JPG, PNG, atau WebP yang valid.',
+            ]);
+        }
+    }
+
+    private function storeSpecificationImage(UploadedFile $file, ImageOptimizer $imageOptimizer): string
+    {
+        try {
+            return $imageOptimizer->storeWebp($file, 'product-specifications', 1800, 1800, 88);
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            throw ValidationException::withMessages([
+                'specification_image' => 'Gambar spesifikasi gagal diproses. Gunakan file JPG, PNG, atau WebP yang valid.',
             ]);
         }
     }

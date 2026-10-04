@@ -543,7 +543,7 @@
                 const initialCategoryMatch = activeCategorySlug === '' || p.categorySlug === activeCategorySlug;
                 const variantMatch = activeVariantGroups.length === 0 || activeVariantGroups.every(([name, values]) =>
                     Array.isArray(p.variants) && p.variants.some((variant) =>
-                        normalizeFilterValue(variant.name) === name && values.has(normalizeFilterValue(variant.value))
+                        normalizeFilterValue(variant.key || variant.name) === name && values.has(normalizeFilterValue(variant.value))
                     )
                 );
                 const searchMatch = !searchQuery || p.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -608,7 +608,7 @@
                   <span class="text-xs font-medium text-slate-700">${p.rating}</span>
                   <span class="text-xs text-slate-400">(${p.reviews}) &bull; ${p.sold.toLocaleString()} terjual</span>
                 </div>
-                <p class="store-product-seller mt-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 10.5V20h16v-9.5M3 4h18l-1.5 6a2.5 2.5 0 0 1-4.5 1.1 2.5 2.5 0 0 1-4.5 0A2.5 2.5 0 0 1 6 10L4.5 4M9 20v-5h6v5"/></svg><span>${escapeHtml(p.storeName || catalogText.industrialPartner)}</span></p>
+                <p class="store-product-seller mt-1"><i class="fi fi-rr-building shrink-0 text-[.85rem] leading-none text-blue-800" aria-hidden="true"></i><span>${escapeHtml(p.storeName || catalogText.industrialPartner)}</span></p>
               </div>
               <div class="flex items-center justify-between">
                 <div>
@@ -645,7 +645,7 @@
             <p class="store-product-variant truncate">${escapeHtml(variantLabel)}</p>
             <p class="store-product-price">${priceLabel}</p>
             <p class="mt-1 text-[11px] font-medium text-slate-500">${Number(p.stock || 0) > 0 ? `${catalogText.stock.replace(':count', Number(p.stock).toLocaleString())} ${escapeHtml(p.unit || 'pcs')}` : catalogText.outOfStock} &middot; ${catalogText.unit} ${escapeHtml(p.unit || 'pcs')}</p>
-            <p class="store-product-seller"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 10.5V20h16v-9.5M3 4h18l-1.5 6a2.5 2.5 0 0 1-4.5 1.1 2.5 2.5 0 0 1-4.5 0A2.5 2.5 0 0 1 6 10L4.5 4M9 20v-5h6v5"/></svg><span>${escapeHtml(p.storeName || catalogText.industrialPartner)}</span></p>
+            <p class="store-product-seller"><i class="fi fi-rr-building shrink-0 text-[.85rem] leading-none text-blue-800" aria-hidden="true"></i><span>${escapeHtml(p.storeName || catalogText.industrialPartner)}</span></p>
             <div class="store-product-meta">
               <span class="store-product-rating"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.7 2.83 5.73 6.32.92-4.58 4.46 1.08 6.3L12 17.14l-5.65 2.97 1.08-6.3-4.58-4.46 6.32-.92L12 2.7Z"/></svg>${Number(p.rating || 0).toFixed(1)} <span class="font-normal text-slate-400">(${Number(p.reviews || 0).toLocaleString('id-ID')})</span></span>
               <span>${catalogText.sold.replace(':count', Number(p.sold || 0).toLocaleString())}</span>
@@ -690,16 +690,18 @@
             const groups = new Map();
             allProducts.forEach((product) => {
                 (Array.isArray(product.variants) ? product.variants : []).forEach((variant) => {
+                    const key = normalizeFilterValue(variant.key || variant.name);
                     const name = String(variant.name || '').trim();
                     const value = String(variant.value || '').trim();
-                    if (!name || !value) return;
-                    if (!groups.has(name)) groups.set(name, new Map());
-                    groups.get(name).set(normalizeFilterValue(value), value);
+                    if (!key || !name || !value) return;
+                    if (!groups.has(key)) groups.set(key, { label: name, values: new Map() });
+                    groups.get(key).values.set(normalizeFilterValue(value), value);
                 });
             });
 
-            container.innerHTML = Array.from(groups.entries()).map(([name, values]) => {
-                const groupKey = normalizeFilterValue(name);
+            container.innerHTML = Array.from(groups.entries()).map(([groupKey, group]) => {
+                const name = group.label;
+                const values = group.values;
                 const valueItems = Array.from(values.entries()).map(([key, label]) => `
                     <label class="filter-variant-option flex items-center gap-2 cursor-pointer group" data-search-value="${escapeHtml(normalizeFilterValue(label))}">
                         <input type="checkbox" class="filter-variant w-4 h-4 rounded accent-blue-500"

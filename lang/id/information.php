@@ -13,12 +13,16 @@ return [
     'support_copy' => 'Tim kami siap membantu kebutuhan pemesanan, produk, pembayaran, dan pengiriman Anda.',
     'visit_help_center' => 'Kunjungi Pusat Bantuan',
     'content_unavailable' => 'Konten belum tersedia.',
+    'open_image' => 'buka gambar ukuran penuh',
     'shopping_gallery_title' => 'Panduan visual berbelanja',
-    'shopping_gallery_intro' => 'Ikuti tampilan berikut untuk menemukan produk, memeriksa detail, lalu meninjau keranjang.',
+    'shopping_gallery_intro' => 'Ikuti enam langkah berikut dari memilih produk sampai pesanan berhasil dibuat dan dapat dilacak.',
     'shopping_images' => [
         ['title' => '1. Temukan produk', 'caption' => 'Gunakan kategori dan filter untuk mempersempit produk yang sesuai.'],
         ['title' => '2. Periksa detail produk', 'caption' => 'Pastikan spesifikasi, stok, harga, dan jumlah sebelum menambahkan produk.'],
         ['title' => '3. Tinjau keranjang', 'caption' => 'Periksa kembali produk dan jumlah sebelum melanjutkan ke checkout.'],
+        ['title' => '4. Lengkapi checkout', 'caption' => 'Pastikan alamat, layanan pengiriman, dan metode pembayaran sudah sesuai.'],
+        ['title' => '5. Pesanan berhasil dibuat', 'caption' => 'Simpan nomor pesanan dan buka detail pembayaran untuk mengikuti instruksi selanjutnya.'],
+        ['title' => '6. Lacak pesanan', 'caption' => 'Masukkan email dan nomor pesanan untuk melihat status pembayaran serta pengiriman.'],
     ],
     'pages' => [
         'technical' => ['label' => 'Technical'],

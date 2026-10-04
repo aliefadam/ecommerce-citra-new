@@ -91,17 +91,20 @@ function setupStorefrontShell() {
     const config = configNode ? JSON.parse(configNode.textContent) : {};
     const get = (id) => document.getElementById(id);
     const mobileNavDrawer = get('ecMobileNavDrawer');
-    const syncMobileNavPosition = () => {
-        if (!mobileNavDrawer || mobileNavDrawer.hidden) return;
+    const mobileSearch = get('ecMobileSearch');
+    const syncMobilePanelPositions = () => {
+        if ((!mobileNavDrawer || mobileNavDrawer.hidden) && (!mobileSearch || mobileSearch.hidden)) return;
         const headerBottom = root.querySelector('.ec-header-main')?.getBoundingClientRect().bottom ?? 60;
-        mobileNavDrawer.style.setProperty('--ec-mobile-drawer-top', `${Math.max(0, Math.round(headerBottom))}px`);
+        const panelTop = `${Math.max(0, Math.round(headerBottom))}px`;
+        if (mobileNavDrawer && !mobileNavDrawer.hidden) mobileNavDrawer.style.setProperty('--ec-mobile-drawer-top', panelTop);
+        if (mobileSearch && !mobileSearch.hidden) mobileSearch.style.setProperty('--ec-mobile-search-top', panelTop);
     };
     const toggle = (trigger, panel, force) => {
         if (!trigger || !panel) return false;
         const opening = force ?? panel.hidden;
         panel.hidden = !opening;
         trigger.setAttribute('aria-expanded', String(opening));
-        if (opening && panel === mobileNavDrawer) syncMobileNavPosition();
+        if (opening && (panel === mobileNavDrawer || panel === mobileSearch)) syncMobilePanelPositions();
         return opening;
     };
     const closables = [
@@ -128,8 +131,8 @@ function setupStorefrontShell() {
         closables.forEach(([trigger, panel]) => toggle(trigger, panel, false));
         event.target.closest('button, a, input')?.focus();
     });
-    window.addEventListener('scroll', syncMobileNavPosition, { passive: true });
-    window.addEventListener('resize', syncMobileNavPosition, { passive: true });
+    window.addEventListener('scroll', syncMobilePanelPositions, { passive: true });
+    window.addEventListener('resize', syncMobilePanelPositions, { passive: true });
 
     const searchCategory = root.querySelector('[data-search-category]');
     const searchCategoryTrigger = get('ecNavCategoryTrigger');

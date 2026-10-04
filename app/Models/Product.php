@@ -9,7 +9,7 @@ class Product extends Model
 {
     use DefaultsToPrimaryCompany;
 
-    protected $fillable = ['company_id', 'name', 'slug', 'category_id', 'main_category_id', 'category_detail_id', 'description', 'is_redeem_product', 'redeem_points', 'status'];
+    protected $fillable = ['company_id', 'name', 'slug', 'category_id', 'main_category_id', 'category_detail_id', 'description', 'specification_image', 'is_redeem_product', 'redeem_points', 'status'];
 
     protected $casts = [
         'is_redeem_product' => 'boolean',

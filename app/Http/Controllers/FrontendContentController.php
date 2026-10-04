@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ContentPage;
+use App\Models\Product;
 
 class FrontendContentController extends Controller
 {
@@ -45,7 +46,64 @@ class FrontendContentController extends Controller
             }
         }
 
-        return view('frontend.content-page', compact('page'));
+        $diagramProducts = $this->diagramProducts($page);
+
+        return view('frontend.content-page', compact('page', 'diagramProducts'));
+    }
+
+    private function diagramProducts(ContentPage $page): array
+    {
+        if (! $page->exists || blank($page->diagram_image)) {
+            return [];
+        }
+
+        $page->load([
+            'categoryHotspots.mainCategory',
+            'categoryHotspots.categoryDetail.mainCategory',
+        ]);
+
+        return $page->categoryHotspots
+            ->filter(fn ($hotspot) => $hotspot->target_category)
+            ->unique('target_key')
+            ->mapWithKeys(function ($hotspot) {
+                $category = $hotspot->target_category;
+                $products = Product::query()
+                    ->with(['company', 'productVariants'])
+                    ->storefrontVisible()
+                    ->when(
+                        $hotspot->category_detail_id,
+                        fn ($query) => $query->where('category_detail_id', $hotspot->category_detail_id),
+                        fn ($query) => $query->where('main_category_id', $hotspot->main_category_id),
+                    )
+                    ->whereHas('productVariants')
+                    ->latest()
+                    ->limit(6)
+                    ->get()
+                    ->map(function (Product $product) {
+                        $variant = $product->productVariants->first();
+                        $image = trim((string) ($variant?->image ?: $product->firstAvailableImagePath()));
+
+                        if ($image === '') {
+                            $image = asset('imgs/product-placeholder.svg');
+                        } elseif (! str_starts_with($image, 'http://') && ! str_starts_with($image, 'https://')) {
+                            $image = asset('storage/'.ltrim($image, '/'));
+                        }
+
+                        return [
+                            'name' => (string) $product->name,
+                            'slug' => (string) $product->slug,
+                            'image' => $image,
+                            'price' => (int) $variant->price,
+                            'stock' => (int) $variant->stock,
+                            'sku' => (string) $variant->sku,
+                            'company' => (string) ($product->company?->name ?? ''),
+                        ];
+                    })
+                    ->all();
+
+                return [$hotspot->target_key => $products];
+            })
+            ->all();
     }
 
     /** @return array<string, array{title: string, excerpt: string, content: string, meta_description: string}> */
@@ -64,7 +122,7 @@ class FrontendContentController extends Controller
                 'title' => 'Cara Belanja',
                 'excerpt' => 'Langkah pemesanan produk teknik dari pencarian hingga barang diterima.',
                 'meta_description' => 'Panduan cara belanja di '.$appName.'.',
-                'content' => '<h2>1. Temukan produk</h2><p>Gunakan pencarian atau kategori, kemudian cocokkan SKU, ukuran, material, varian, dan satuan jual.</p><h2>2. Periksa keranjang</h2><p>Pastikan jumlah, perusahaan penjual, alamat, dan pilihan pengiriman sudah benar.</p><h2>3. Selesaikan pembayaran</h2><p>Pilih metode yang tersedia dan ikuti instruksi pembayaran. Simpan nomor pesanan untuk pelacakan dan bantuan.</p>',
+                'content' => '<h2>1. Temukan produk</h2><p>Gunakan pencarian atau kategori, kemudian cocokkan SKU, ukuran, material, varian, dan satuan jual.</p><h2>2. Periksa detail produk</h2><p>Pastikan spesifikasi, stok, harga, dan jumlah sudah sesuai sebelum memasukkan produk ke keranjang.</p><h2>3. Tinjau keranjang</h2><p>Periksa kembali produk dan jumlah sebelum melanjutkan ke checkout.</p><h2>4. Lengkapi checkout</h2><p>Pastikan alamat, layanan pengiriman, dan metode pembayaran sudah benar, lalu buat pesanan.</p><h2>5. Pesanan berhasil dibuat</h2><p>Ikuti instruksi pembayaran yang ditampilkan dan simpan nomor pesanan.</p><h2>6. Lacak pesanan</h2><p>Gunakan email pemesan dan nomor pesanan pada halaman Lacak Pesanan untuk melihat status pembayaran dan pengiriman.</p>',
             ],
             'technical' => [
                 'title' => 'Technical',

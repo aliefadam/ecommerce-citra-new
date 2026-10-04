@@ -16,8 +16,8 @@ class StoreSetting extends Model
         return [
             'store_name' => (string) config('app.name'),
             'store_logo_path' => '',
-            'seo_home_title' => 'BOQ - Bill Of Quantity',
-            'seo_home_description' => 'Belanja baut, mur, sekrup, washer, anchor, fastener, perkakas, dan kebutuhan industri di BOQ. Produk lengkap dan pengiriman ke seluruh Indonesia.',
+            'seo_home_title' => 'BOQ | Baut, Fastener, Piping dan Perkakas Teknik',
+            'seo_home_description' => 'Pengadaan baut, mur, fastener, anchor, perkakas teknik, pipa, fitting, flange, gasket, dan valve. Stok lengkap serta layanan suplai dan instalasi proyek.',
             'seo_default_image_url' => '',
             'google_site_verification' => '',
             'manual_payment_bank_name' => 'BCA',

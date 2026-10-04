@@ -691,15 +691,25 @@
                     </div>
                     <span class="hidden text-xs text-slate-400 sm:block">SKU {{ $productData['sku'] ?: '-' }}</span>
                 </div>
-                <dl class="product-spec-table max-w-3xl">
-                    <div class="product-spec-row"><dt>{{ __('storefront.product_detail.product_name') }}</dt><dd>{{ $productData['name'] }}</dd></div>
-                    <div class="product-spec-row"><dt>{{ __('storefront.product_detail.category') }}</dt><dd>{{ $productData['categoryName'] }}</dd></div>
-                    @foreach ($otherGroups as $group)
-                        <div class="product-spec-row"><dt>{{ $group['label'] }}</dt><dd data-variant-spec="{{ $group['key'] }}">{{ $defaultOther[$group['key']] ?? '-' }}</dd></div>
-                    @endforeach
-                    <div class="product-spec-row"><dt>SKU</dt><dd id="productSpecSku">{{ $productData['sku'] ?: '-' }}</dd></div>
-                    <div class="product-spec-row"><dt>{{ __('storefront.product_detail.stock') }}</dt><dd id="productSpecStock">{{ number_format((int) $productData['stock']) }} pcs</dd></div>
-                </dl>
+                <div class="{{ !empty($productData['specificationImage']) ? 'grid items-stretch gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(18rem,2fr)]' : '' }}">
+                    <dl class="product-spec-table min-w-0">
+                        <div class="product-spec-row"><dt>{{ __('storefront.product_detail.product_name') }}</dt><dd>{{ $productData['name'] }}</dd></div>
+                        <div class="product-spec-row"><dt>{{ __('storefront.product_detail.category') }}</dt><dd>{{ $productData['categoryName'] }}</dd></div>
+                        @foreach ($otherGroups as $group)
+                            <div class="product-spec-row"><dt>{{ $group['label'] }}</dt><dd data-variant-spec="{{ $group['key'] }}">{{ $defaultOther[$group['key']] ?? '-' }}</dd></div>
+                        @endforeach
+                        <div class="product-spec-row"><dt>SKU</dt><dd id="productSpecSku">{{ $productData['sku'] ?: '-' }}</dd></div>
+                        <div class="product-spec-row"><dt>{{ __('storefront.product_detail.stock') }}</dt><dd id="productSpecStock">{{ number_format((int) $productData['stock']) }} pcs</dd></div>
+                    </dl>
+                    @if (!empty($productData['specificationImage']))
+                        <figure class="flex min-h-64 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white p-4">
+                            <img src="{{ $productData['specificationImage'] }}"
+                                alt="Gambar spesifikasi {{ $productData['name'] }}"
+                                class="max-h-[28rem] w-full object-contain"
+                                loading="lazy" />
+                        </figure>
+                    @endif
+                </div>
             </section>
 
             <section id="content-desc" class="scroll-mt-40 border-b border-slate-200 py-9">
@@ -792,7 +802,7 @@
                                 <a href="{{ $sp['url'] }}" class="store-product-name line-clamp-2 hover:text-blue-700">{{ $sp['name'] }}</a>
                                 <p class="store-product-variant truncate">{{ $sp['variant'] ?: __('storefront.industrial_product') }}</p>
                                 <p class="store-product-price">Rp {{ number_format($sp['price'], 0, ',', '.') }}</p>
-                                <p class="store-product-seller"><span>{{ $sp['storeName'] ?: __('storefront.industrial_partner') }}</span></p>
+                                <p class="store-product-seller"><i class="fi fi-rr-building shrink-0 text-[.85rem] leading-none text-blue-800" aria-hidden="true"></i><span>{{ $sp['storeName'] ?: __('storefront.industrial_partner') }}</span></p>
                             </div>
                         </article>
                     @endforeach
@@ -820,7 +830,7 @@
                                 <a href="{{ $rv['url'] }}" class="store-product-name line-clamp-2 hover:text-blue-700">{{ $rv['name'] }}</a>
                                 <p class="store-product-variant truncate">{{ $rv['variant'] ?: __('storefront.industrial_product') }}</p>
                                 <p class="store-product-price">Rp {{ number_format($rv['price'], 0, ',', '.') }}</p>
-                                <p class="store-product-seller"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 10.5V20h16v-9.5M3 4h18l-1.5 6a2.5 2.5 0 0 1-4.5 1.1 2.5 2.5 0 0 1-4.5 0A2.5 2.5 0 0 1 6 10L4.5 4M9 20v-5h6v5"/></svg><span>{{ $rv['storeName'] ?: __('storefront.industrial_partner') }}</span></p>
+                                <p class="store-product-seller"><i class="fi fi-rr-building shrink-0 text-[.85rem] leading-none text-blue-800" aria-hidden="true"></i><span>{{ $rv['storeName'] ?: __('storefront.industrial_partner') }}</span></p>
                                 <div class="store-product-meta">
                                     <span class="store-product-rating"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.7 2.83 5.73 6.32.92-4.58 4.46 1.08 6.3L12 17.14l-5.65 2.97 1.08-6.3-4.58-4.46 6.32-.92L12 2.7Z"/></svg>{{ number_format((float) $rv['rating'], 1) }} <span class="font-normal text-slate-400">({{ number_format((int) $rv['reviews']) }})</span></span>
                                     <span>{{ __('storefront.product_detail.sold_count', ['count' => number_format((int) $rv['sold'])]) }}</span>
@@ -860,7 +870,7 @@
                             <a href="{{ url('/detail-produk/' . $rp['slug']) }}" class="store-product-name line-clamp-2 hover:text-blue-700">{{ $rp['name'] }}</a>
                             <p class="store-product-variant truncate">{{ $rp['variant'] ?: __('storefront.industrial_product') }}</p>
                             <p class="store-product-price">Rp {{ number_format($rp['price'], 0, ',', '.') }}</p>
-                            <p class="store-product-seller"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 10.5V20h16v-9.5M3 4h18l-1.5 6a2.5 2.5 0 0 1-4.5 1.1 2.5 2.5 0 0 1-4.5 0A2.5 2.5 0 0 1 6 10L4.5 4M9 20v-5h6v5"/></svg><span>{{ $rp['storeName'] ?: __('storefront.industrial_partner') }}</span></p>
+                            <p class="store-product-seller"><i class="fi fi-rr-building shrink-0 text-[.85rem] leading-none text-blue-800" aria-hidden="true"></i><span>{{ $rp['storeName'] ?: __('storefront.industrial_partner') }}</span></p>
                             <div class="store-product-meta">
                                 <span class="store-product-rating"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.7 2.83 5.73 6.32.92-4.58 4.46 1.08 6.3L12 17.14l-5.65 2.97 1.08-6.3-4.58-4.46 6.32-.92L12 2.7Z"/></svg>{{ number_format((float) $rp['rating'], 1) }} <span class="font-normal text-slate-400">({{ number_format((int) $rp['reviews']) }})</span></span>
                                 <span>{{ __('storefront.product_detail.sold_count', ['count' => number_format((int) $rp['sold'])]) }}</span>

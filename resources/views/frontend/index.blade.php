@@ -1,7 +1,7 @@
 @extends('layouts.user')
 
-@section('title', $appStoreSettings['seo_home_title'] ?: 'BOQ - Bill Of Quantity')
-@section('meta_description', $appStoreSettings['seo_home_description'] ?: 'Belanja baut, mur, sekrup, washer, anchor, fastener, perkakas, dan kebutuhan industri di BOQ. Produk lengkap dan pengiriman ke seluruh Indonesia.')
+@section('title', $appStoreSettings['seo_home_title'] ?: 'BOQ | Baut, Fastener, Piping dan Perkakas Teknik')
+@section('meta_description', $appStoreSettings['seo_home_description'] ?: 'Pengadaan baut, mur, fastener, anchor, perkakas teknik, pipa, fitting, flange, gasket, dan valve. Stok lengkap serta layanan suplai dan instalasi proyek.')
 
 @push('structured_data')
     @php
@@ -555,27 +555,27 @@
                         @php $soldPercent = 100 - (int) $fs['remainingPercent']; @endphp
                         <article class="store-product-card flash-sale-card w-[190px] min-w-[190px] sm:w-auto sm:min-w-0">
                             <div class="store-product-media">
-                                <a href="{{ url('/detail-produk/' . $fs['slug']) }}" class="block h-full" aria-label="Lihat {{ $fs['name'] }}">
+                                <a href="{{ url('/detail-produk/' . $fs['slug']) }}" class="block h-full" aria-label="{{ __('storefront.view_product', ['product' => $fs['name']]) }}">
                                     <img src="{{ $fs['image'] }}" alt="{{ $fs['name'] }}" loading="lazy" />
                                 </a>
                                 <span class="absolute left-2.5 top-2.5 rounded-md bg-rose-500 px-2 py-1 text-[10px] font-bold text-white shadow-sm">-{{ $fs['discountPercent'] }}%</span>
-                                <button type="button" onclick="addToWishlist({{ $fs['productId'] }})" data-wishlist-btn data-product-id="{{ $fs['productId'] }}" class="store-wishlist-button" aria-label="Tambahkan {{ $fs['name'] }} ke wishlist">
+                                <button type="button" onclick="addToWishlist({{ $fs['productId'] }})" data-wishlist-btn data-product-id="{{ $fs['productId'] }}" class="store-wishlist-button" aria-label="{{ __('storefront.add_to_wishlist', ['product' => $fs['name']]) }}">
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
                                 </button>
                             </div>
                             <div class="store-product-body">
                                 <a href="{{ url('/detail-produk/' . $fs['slug']) }}" class="store-product-name line-clamp-2 hover:text-blue-700">{{ $fs['name'] }}</a>
-                                <p class="store-product-variant truncate">{{ $fs['variantName'] ?: 'Pilihan produk industri' }}</p>
+                                <p class="store-product-variant truncate">{{ $fs['variantName'] ?: __('storefront.industrial_product') }}</p>
                                 <div class="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
                                     <strong class="store-product-price">Rp {{ number_format($fs['price'], 0, ',', '.') }}</strong>
                                     <span class="text-[10px] text-slate-400 line-through">Rp {{ number_format($fs['originalPrice'], 0, ',', '.') }}</span>
                                 </div>
                                 @if (!empty($fs['storeName']))
-                                    <p class="store-product-seller"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 10.5V20h16v-9.5M3 4h18l-1.5 6a2.5 2.5 0 0 1-4.5 1.1 2.5 2.5 0 0 1-4.5 0A2.5 2.5 0 0 1 6 10L4.5 4M9 20v-5h6v5"/></svg><span>{{ $fs['storeName'] }}</span></p>
+                                    <p class="store-product-seller"><i class="fi fi-rr-building shrink-0 text-[.85rem] leading-none text-blue-800" aria-hidden="true"></i><span>{{ $fs['storeName'] }}</span></p>
                                 @endif
                                 <div class="mt-auto pt-3">
                                     <div class="flash-sale-progress"><span style="width: {{ $soldPercent }}%"></span></div>
-                                    <div class="mt-1.5 flex justify-between gap-2 text-[10px] font-medium text-slate-700"><span>{{ $soldPercent }}% terjual</span><span>Sisa {{ $fs['remaining'] }}</span></div>
+                                    <div class="mt-1.5 flex justify-between gap-2 text-[10px] font-medium text-slate-700"><span>{{ __('storefront.sold', ['count' => $soldPercent.'%']) }}</span><span>{{ __('storefront.remaining', ['count' => $fs['remaining']]) }}</span></div>
                                 </div>
                             </div>
                         </article>
@@ -729,30 +729,30 @@
                 @php $rpVariant = collect($rp['variants'] ?? [])->pluck('value')->filter()->take(2)->implode(' · '); @endphp
                 <article class="store-product-card">
                     <div class="store-product-media">
-                        <a href="{{ url('/detail-produk/' . $rp['slug']) }}" class="block h-full" aria-label="Lihat {{ $rp['name'] }}">
+                        <a href="{{ url('/detail-produk/' . $rp['slug']) }}" class="block h-full" aria-label="{{ __('storefront.view_product', ['product' => $rp['name']]) }}">
                             <img src="{{ $rp['image'] }}" alt="{{ $rp['name'] }}" loading="lazy" />
                         </a>
                         @if (($rp['originalPrice'] ?? 0) > ($rp['price'] ?? 0))
                             @php $disc = round((1 - $rp['price'] / $rp['originalPrice']) * 100); @endphp
                             <span class="absolute left-2.5 top-2.5 rounded-md bg-rose-500 px-2 py-1 text-[10px] font-bold text-white shadow-sm">-{{ $disc }}%</span>
                         @elseif (($rp['badge'] ?? '') === 'new')
-                            <span class="absolute left-2.5 top-2.5 rounded-md bg-blue-700 px-2 py-1 text-[10px] font-bold text-white shadow-sm">BARU</span>
+                            <span class="absolute left-2.5 top-2.5 rounded-md bg-blue-700 px-2 py-1 text-[10px] font-bold text-white shadow-sm">{{ __('storefront.new_badge') }}</span>
                         @elseif (($rp['badge'] ?? '') === 'best')
-                            <span class="absolute left-2.5 top-2.5 rounded-md bg-amber-500 px-2 py-1 text-[10px] font-bold text-white shadow-sm">TERLARIS</span>
+                            <span class="absolute left-2.5 top-2.5 rounded-md bg-amber-500 px-2 py-1 text-[10px] font-bold text-white shadow-sm">{{ __('storefront.best_selling_badge') }}</span>
                         @endif
-                        <button type="button" onclick="addToWishlist({{ $rp['id'] }})" data-wishlist-btn data-product-id="{{ $rp['id'] }}" class="store-wishlist-button" aria-label="Tambahkan {{ $rp['name'] }} ke wishlist">
+                        <button type="button" onclick="addToWishlist({{ $rp['id'] }})" data-wishlist-btn data-product-id="{{ $rp['id'] }}" class="store-wishlist-button" aria-label="{{ __('storefront.add_to_wishlist', ['product' => $rp['name']]) }}">
                             <svg class="h-4 w-4" fill="{{ !empty($rp['isWishlisted']) ? 'currentColor' : 'none' }}" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
                         </button>
                     </div>
                     <div class="store-product-body">
                         <a href="{{ url('/detail-produk/' . $rp['slug']) }}" class="store-product-name line-clamp-2 hover:text-blue-700">{{ $rp['name'] }}</a>
-                        <p class="store-product-variant truncate">{{ $rpVariant ?: ($rp['category'] ?? 'Produk industri') }}</p>
+                        <p class="store-product-variant truncate">{{ $rpVariant ?: ($rp['category'] ?? __('storefront.industrial_product')) }}</p>
                         <p class="store-product-price">Rp {{ number_format((int) ($rp['price'] ?? 0), 0, ',', '.') }}</p>
-                        <p class="mt-1 text-[11px] font-medium text-slate-500">{{ (int) ($rp['stock'] ?? 0) > 0 ? 'Stok '.number_format((int) $rp['stock']).' pcs' : 'Stok habis' }} &middot; Satuan pcs</p>
-                        <p class="store-product-seller"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 10.5V20h16v-9.5M3 4h18l-1.5 6a2.5 2.5 0 0 1-4.5 1.1 2.5 2.5 0 0 1-4.5 0A2.5 2.5 0 0 1 6 10L4.5 4M9 20v-5h6v5"/></svg><span>{{ $rp['storeName'] ?: 'Mitra industri' }}</span></p>
+                        <p class="mt-1 text-[11px] font-medium text-slate-500">{{ (int) ($rp['stock'] ?? 0) > 0 ? __('storefront.stock', ['count' => number_format((int) $rp['stock'])]).' pcs' : __('storefront.out_of_stock') }} &middot; {{ __('storefront.unit') }} pcs</p>
+                        <p class="store-product-seller"><i class="fi fi-rr-building shrink-0 text-[.85rem] leading-none text-blue-800" aria-hidden="true"></i><span>{{ $rp['storeName'] ?: __('storefront.industrial_partner') }}</span></p>
                         <div class="store-product-meta">
                             <span class="store-product-rating"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.7 2.83 5.73 6.32.92-4.58 4.46 1.08 6.3L12 17.14l-5.65 2.97 1.08-6.3-4.58-4.46 6.32-.92L12 2.7Z"/></svg>{{ number_format((float) ($rp['rating'] ?? 0), 1) }} <span class="font-normal text-slate-400">({{ number_format((int) ($rp['reviews'] ?? 0)) }})</span></span>
-                            <span>Terjual {{ number_format((int) ($rp['sold'] ?? 0)) }}</span>
+                            <span>{{ __('storefront.sold', ['count' => number_format((int) ($rp['sold'] ?? 0))]) }}</span>
                         </div>
                     </div>
                 </article>
@@ -889,6 +889,16 @@
                 'price-high': @json(__('storefront.sort_price_high')),
                 popular: @json(__('storefront.sort_best_selling')),
             },
+            newBadge: @json(__('storefront.new_badge')),
+            bestSellingBadge: @json(__('storefront.best_selling_badge')),
+            industrialProduct: @json(__('storefront.industrial_product')),
+            industrialPartner: @json(__('storefront.industrial_partner')),
+            stock: @json(__('storefront.stock', ['count' => '__COUNT__'])),
+            outOfStock: @json(__('storefront.out_of_stock')),
+            unit: @json(__('storefront.unit')),
+            sold: @json(__('storefront.sold', ['count' => '__COUNT__'])),
+            viewProduct: @json(__('storefront.view_product', ['product' => '__PRODUCT__'])),
+            addToWishlist: @json(__('storefront.add_to_wishlist', ['product' => '__PRODUCT__'])),
         };
         const wishedProductIds = new Set();
         const carouselTotal = document.querySelectorAll('#carouselTrack > div').length || 1;
@@ -942,24 +952,26 @@
                 const badgeHtml = p.isFlashSale ?
                     `<span class="absolute left-2.5 top-2.5 rounded-md bg-rose-500 px-2 py-1 text-[10px] font-bold text-white shadow-sm">-${discount}%</span>` :
                     p.badge === 'new' ?
-                    `<span class="absolute left-2.5 top-2.5 rounded-md bg-blue-700 px-2 py-1 text-[10px] font-bold text-white shadow-sm">BARU</span>` :
+                    `<span class="absolute left-2.5 top-2.5 rounded-md bg-blue-700 px-2 py-1 text-[10px] font-bold text-white shadow-sm">${storefrontText.newBadge}</span>` :
                     p.badge === 'best' ?
-                    `<span class="absolute left-2.5 top-2.5 rounded-md bg-amber-500 px-2 py-1 text-[10px] font-bold text-white shadow-sm">TERLARIS</span>` :
+                    `<span class="absolute left-2.5 top-2.5 rounded-md bg-amber-500 px-2 py-1 text-[10px] font-bold text-white shadow-sm">${storefrontText.bestSellingBadge}</span>` :
                     '';
                 const variants = Array.isArray(p.variants) ? p.variants.map(v => v.value).filter(Boolean) : [];
-                const variantLabel = variants.slice(0, 2).join(' · ') || p.category || 'Produk industri';
+                const variantLabel = variants.slice(0, 2).join(' · ') || p.category || storefrontText.industrialProduct;
                 const productUrl = `{{ url('/detail-produk') }}/${encodeURIComponent(p.slug)}`;
                 const productName = escapeHtml(p.name);
-                const sellerName = escapeHtml(p.storeName || 'Mitra industri');
+                const sellerName = escapeHtml(p.storeName || storefrontText.industrialPartner);
+                const viewProductLabel = escapeHtml(formatStorefrontText(storefrontText.viewProduct, { product: p.name }));
+                const wishlistLabel = escapeHtml(formatStorefrontText(storefrontText.addToWishlist, { product: p.name }));
 
                 return `
           <article class="store-product-card" data-id="${p.id}">
             <div class="store-product-media">
-              <a href="${productUrl}" class="block h-full" aria-label="Lihat ${productName}">
+              <a href="${productUrl}" class="block h-full" aria-label="${viewProductLabel}">
                 <img src="${escapeHtml(p.image)}" alt="${productName}" loading="lazy" />
               </a>
               ${badgeHtml}
-              <button type="button" onclick="addToWishlist(${p.id})" data-wishlist-btn data-product-id="${p.id}" class="store-wishlist-button" aria-label="Tambahkan ${productName} ke wishlist">
+              <button type="button" onclick="addToWishlist(${p.id})" data-wishlist-btn data-product-id="${p.id}" class="store-wishlist-button" aria-label="${wishlistLabel}">
                 <svg class="h-4 w-4" fill="${p.isWishlisted ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
               </button>
             </div>
@@ -967,11 +979,11 @@
               <a href="${productUrl}" class="store-product-name line-clamp-2 hover:text-blue-700">${productName}</a>
               <p class="store-product-variant truncate">${escapeHtml(variantLabel)}</p>
               <p class="store-product-price">${priceLabel}</p>
-              <p class="mt-1 text-[11px] font-medium text-slate-500">${Number(p.stock || 0) > 0 ? `Stok ${Number(p.stock).toLocaleString('id-ID')} ${escapeHtml(p.unit || 'pcs')}` : 'Stok habis'} &middot; Satuan ${escapeHtml(p.unit || 'pcs')}</p>
-              <p class="store-product-seller"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 10.5V20h16v-9.5M3 4h18l-1.5 6a2.5 2.5 0 0 1-4.5 1.1 2.5 2.5 0 0 1-4.5 0A2.5 2.5 0 0 1 6 10L4.5 4M9 20v-5h6v5"/></svg><span>${sellerName}</span></p>
+              <p class="mt-1 text-[11px] font-medium text-slate-500">${Number(p.stock || 0) > 0 ? `${formatStorefrontText(storefrontText.stock, { count: Number(p.stock).toLocaleString() })} ${escapeHtml(p.unit || 'pcs')}` : storefrontText.outOfStock} &middot; ${storefrontText.unit} ${escapeHtml(p.unit || 'pcs')}</p>
+              <p class="store-product-seller"><i class="fi fi-rr-building shrink-0 text-[.85rem] leading-none text-blue-800" aria-hidden="true"></i><span>${sellerName}</span></p>
               <div class="store-product-meta">
                 <span class="store-product-rating"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.7 2.83 5.73 6.32.92-4.58 4.46 1.08 6.3L12 17.14l-5.65 2.97 1.08-6.3-4.58-4.46 6.32-.92L12 2.7Z"/></svg>${Number(p.rating || 0).toFixed(1)} <span class="font-normal text-slate-400">(${Number(p.reviews || 0).toLocaleString('id-ID')})</span></span>
-                <span>Terjual ${Number(p.sold || 0).toLocaleString('id-ID')}</span>
+                <span>${formatStorefrontText(storefrontText.sold, { count: Number(p.sold || 0).toLocaleString() })}</span>
               </div>
             </div>
           </article>`;

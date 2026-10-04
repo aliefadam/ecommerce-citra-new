@@ -14,6 +14,11 @@ class MainCategory extends Model
         return $this->hasMany(CategoryDetail::class);
     }
 
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
+    }
+
     public function defaultSpecificationTemplate()
     {
         return $this->belongsTo(SpecificationTemplate::class, 'default_specification_template_id');

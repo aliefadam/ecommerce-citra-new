@@ -134,7 +134,9 @@ class StorefrontDesignSystemTest extends TestCase
         $this->assertStringContainsString('--ec-z-modal', $css);
         $this->assertStringContainsString('prefers-reduced-motion', $css);
         $this->assertStringContainsString('env(safe-area-inset-bottom)', $css);
+        $this->assertStringContainsString('#ecMobileSearch { position: fixed;', $css);
         $this->assertStringContainsString('focusableSelector', $js);
         $this->assertStringContainsString("event.key === 'Escape'", $js);
+        $this->assertStringContainsString("mobileSearch.style.setProperty('--ec-mobile-search-top'", $js);
     }
 }

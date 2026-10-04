@@ -57,4 +57,29 @@ test('generate shopping-guide screenshots from the real storefront flow', async 
     await page.goto('/cart', { waitUntil: 'domcontentloaded' });
     await expect(page.locator('#cartItems')).toContainText('Baut Hex M8 x 25mm Galvanis');
     await capture('step-3.jpg');
+
+    await page.goto('/detail-produk/baut-hex-m8-x-25mm-galvanis', { waitUntil: 'domcontentloaded' });
+    await Promise.all([
+        page.waitForURL('**/checkout', { waitUntil: 'domcontentloaded' }),
+        page.locator('#buyNowBtn').click({ noWaitAfter: true }),
+    ]);
+    await expect(page.getByText('Alamat Pengiriman', { exact: true })).toBeVisible();
+    await expect(page.locator('[id^="shippingOptions-"] .shipping-card').first()).toBeVisible();
+    await capture('step-4.jpg');
+
+    await page.locator('#tab-manual').click();
+    await page.locator('#panel-manual label').click();
+    await Promise.all([
+        page.waitForURL('**/checkout/orders?ids=*', { waitUntil: 'domcontentloaded' }),
+        page.locator('#payBtn').click({ noWaitAfter: true }),
+    ]);
+    await expect(page.getByRole('link', { name: 'Lihat Pembayaran' })).toBeVisible();
+    const orderId = new URL(page.url()).searchParams.get('ids').split(',')[0];
+    await capture('step-5.jpg');
+
+    await page.goto(`/lacak-pesanan?order_id=${encodeURIComponent(orderId)}`, { waitUntil: 'domcontentloaded' });
+    await page.locator('#trackingEmail').fill('aliefadam21@gmail.com');
+    await page.getByRole('button', { name: 'Lacak', exact: true }).click();
+    await expect(page.getByText('Order terverifikasi')).toBeVisible();
+    await capture('step-6.jpg');
 });

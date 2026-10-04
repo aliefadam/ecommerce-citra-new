@@ -98,7 +98,14 @@ class ProductController extends ApiController
             $term = strtolower(trim((string) $request->query('search')));
             $query->where(function ($q) use ($term) {
                 $q->whereRaw('LOWER(name) like ?', ['%'.$term.'%'])
-                    ->orWhereHas('productVariants', fn ($vq) => $vq->whereRaw('LOWER(sku) like ?', ['%'.$term.'%']));
+                    ->orWhereHas('productVariants', function ($variantQuery) use ($term) {
+                        $variantQuery->whereRaw('LOWER(sku) like ?', ['%'.$term.'%'])
+                            ->orWhereHas('attributeValues', function ($attributeQuery) use ($term) {
+                                $attributeQuery
+                                    ->whereRaw('LOWER(value_text) like ?', ['%'.$term.'%'])
+                                    ->orWhereRaw('CAST(value_number AS CHAR) like ?', ['%'.$term.'%']);
+                            });
+                    });
             });
         }
 

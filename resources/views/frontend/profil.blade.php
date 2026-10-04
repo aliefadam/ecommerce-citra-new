@@ -50,6 +50,64 @@
             background: #f8fafc;
         }
 
+        .profile-menu {
+            scrollbar-width: none;
+        }
+
+        .profile-menu::-webkit-scrollbar {
+            display: none;
+        }
+
+        @media (max-width: 1023px) {
+            .profile-menu-shell {
+                overflow: visible;
+                border: 0;
+                border-radius: 0;
+                background: transparent;
+                box-shadow: none;
+            }
+
+            .profile-menu {
+                display: flex;
+                gap: 0.5rem;
+                overflow-x: auto;
+                padding: 0.125rem 0.125rem 0.5rem;
+                scroll-snap-type: x proximity;
+            }
+
+            .profile-menu .sidebar-item {
+                width: auto;
+                flex: 0 0 auto;
+                scroll-snap-align: start;
+                border: 1px solid #e2e8f0;
+                border-radius: 9999px;
+                background: #fff;
+                padding: 0.625rem 0.875rem;
+                white-space: nowrap;
+                box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+            }
+
+            .profile-menu .sidebar-item.active {
+                border-color: #bfdbfe;
+                background: #eff6ff;
+                color: #1d4ed8;
+            }
+
+            .profile-menu-logout {
+                flex: 0 0 auto;
+                margin: 0;
+                border: 0;
+            }
+
+            .profile-menu-logout button {
+                border: 1px solid #fecaca;
+                border-radius: 9999px;
+                background: #fff;
+                padding: 0.625rem 0.875rem;
+                white-space: nowrap;
+            }
+        }
+
         .tab-content {
             display: none;
         }
@@ -249,7 +307,7 @@
     </div>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-5">
-        <div class="flex flex-col lg:flex-row gap-8">
+        <div class="flex flex-col gap-5 lg:flex-row lg:gap-8">
 
             <!-- SIDEBAR -->
             <aside class="lg:w-72 flex-shrink-0">
@@ -330,8 +388,8 @@
                 </div>
 
                 <!-- Navigation Menu -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                    <div class="py-1">
+                <div class="profile-menu-shell bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="profile-menu py-1">
                         <button onclick="showTab('biodata')" id="nav-biodata"
                             class="sidebar-item active w-full flex items-center gap-3 px-5 py-3.5 text-sm font-medium">
                             <i class="fi fi-rr-user text-sm leading-none"></i>
@@ -369,7 +427,7 @@
                             <i class="fi fi-rr-bell text-sm leading-none"></i>
                             Notifikasi
                         </button>
-                        <div class="border-t border-slate-100 mt-1">
+                        <div class="profile-menu-logout border-t border-slate-100 mt-1">
                             <button onclick="confirmLogout()"
                                 class="w-full flex items-center gap-3 px-5 py-3.5 text-sm font-medium text-red-500 hover:bg-red-50 transition-colors">
                                 <i class="fi fi-rr-exit text-sm leading-none"></i>
@@ -398,8 +456,8 @@
                             enctype="multipart/form-data" class="p-6">
                             @csrf
                             <!-- Avatar Section -->
-                            <div class="flex items-center gap-5 mb-8 pb-6 border-b border-slate-100">
-                                <div class="relative">
+                            <div class="mb-8 flex flex-col items-center gap-5 border-b border-slate-100 pb-6 sm:flex-row sm:items-start">
+                                <div class="relative shrink-0">
                                     @if ($hasAvatarImage)
                                         <img id="profileAvatarPreview" src="{{ $avatarUrl }}" alt="{{ $displayName }}"
                                             class="w-20 h-20 rounded-2xl object-cover" />
@@ -411,7 +469,8 @@
                                             class="hidden w-20 h-20 rounded-2xl object-cover" />
                                     @endif
                                     <button type="button" onclick="chooseProfilePhoto()"
-                                        class="absolute -bottom-2 -right-2 w-7 h-7 bg-blue-500 rounded-full flex items-center justify-center text-white shadow-md hover:bg-blue-600 transition-colors">
+                                        aria-label="Pilih foto profil"
+                                        class="absolute -bottom-2 -right-2 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white shadow-md hover:bg-blue-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -425,16 +484,16 @@
                                         class="hidden" />
                                     <input id="profileAvatarRemove" name="avatar_remove" type="hidden" value="0" />
                                 </div>
-                                <div>
+                                <div class="w-full min-w-0 flex-1 text-center sm:text-left">
                                     <p class="font-semibold text-slate-800 mb-1">Foto Profil</p>
                                     <p class="text-sm text-slate-500 mb-2">Format: JPG, PNG. Ukuran maks 2MB</p>
                                     <div id="profileAvatarDropzone" class="mb-2"></div>
-                                    <div class="flex gap-2">
+                                    <div class="grid grid-cols-2 gap-3 sm:flex">
                                         <button type="button" onclick="chooseProfilePhoto()"
-                                            class="bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium px-4 py-1.5 rounded-lg border border-blue-200 transition-colors">Ganti
+                                            class="min-h-11 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-semibold px-4 py-2.5 rounded-lg border border-blue-200 transition-colors">Ganti
                                             Foto</button>
                                         <button type="button" onclick="removeProfilePhoto()"
-                                            class="text-red-400 hover:text-red-500 text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors">Hapus</button>
+                                            class="min-h-11 border border-red-100 bg-white text-red-500 hover:text-red-600 text-sm font-semibold px-4 py-2.5 rounded-lg hover:bg-red-50 transition-colors">Hapus</button>
                                     </div>
                                 </div>
                             </div>
@@ -872,14 +931,14 @@
 
                 <!-- ============ WISHLIST ============ -->
                 <div id="tab-wishlist" class="tab-content">
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="bg-transparent lg:bg-white lg:rounded-2xl lg:shadow-sm lg:border lg:border-slate-100 lg:overflow-hidden">
                         <div
-                            class="px-6 py-5 border-b border-slate-100 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            class="py-4 border-b border-slate-200 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between lg:px-6 lg:py-5 lg:border-slate-100">
                             <h2 id="wishlistTitle" class="font-bold text-slate-800 text-lg">Wishlist Saya (0)</h2>
                             <button class="text-sm text-blue-600 font-medium hover:text-blue-700">Bagikan Wishlist</button>
                         </div>
-                        <div class="p-6">
-                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4" id="wishlistGrid"></div>
+                        <div class="py-4 lg:p-6">
+                            <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-4" id="wishlistGrid"></div>
                         </div>
                     </div>
                 </div>
@@ -2236,6 +2295,15 @@
             if (stat) stat.textContent = String(count);
         }
 
+        function escapeWishlistText(value) {
+            return String(value ?? '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
+
         function renderWishlist() {
             const grid = document.getElementById('wishlistGrid');
             if (!grid) return;
@@ -2247,19 +2315,20 @@
             }
 
             grid.innerHTML = wishlistItems.map((w) => `
-      <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden group hover:border-blue-300 transition-colors">
-        <div class="relative overflow-hidden">
-          <a href="{{ url('/detail-produk') }}/${w.slug}">
-            <img src="${w.image}" class="w-full h-36 object-cover group-hover:scale-105 transition-transform duration-300" />
+      <article class="store-product-card group" data-testid="wishlist-product-card">
+        <div class="store-product-media">
+          <a href="{{ url('/detail-produk') }}/${encodeURIComponent(w.slug)}" class="block h-full" aria-label="Lihat ${escapeWishlistText(w.name)}">
+            <img src="${escapeWishlistText(w.image)}" alt="${escapeWishlistText(w.name)}" loading="lazy" />
           </a>
-          <button onclick="removeWishlist(${w.product_id})" class="absolute top-2 right-2 w-7 h-7 bg-white/90 rounded-full flex items-center justify-center text-red-400 hover:text-red-500 text-xs opacity-0 group-hover:opacity-100 transition-all">&#10005;</button>
+          <button type="button" onclick="removeWishlist(${Number(w.product_id)})" class="store-wishlist-button text-rose-500" aria-label="Hapus ${escapeWishlistText(w.name)} dari wishlist">
+            <svg class="h-4 w-4" fill="currentColor" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+          </button>
         </div>
-        <div class="p-3">
-          <a href="{{ url('/detail-produk') }}/${w.slug}" class="text-xs font-semibold text-slate-800 line-clamp-2 mb-1 block hover:text-blue-600">${w.name}</a>
-          <p class="font-bold text-slate-900 text-sm mb-2">Rp ${Number(w.price || 0).toLocaleString('id-ID')}</p>
-          <button onclick="removeWishlist(${w.product_id})" class="w-full text-xs bg-blue-50 hover:bg-blue-500 text-blue-600 hover:text-white font-semibold py-1.5 rounded-lg border border-blue-200 hover:border-blue-500 transition-all">Hapus</button>
+        <div class="store-product-body">
+          <a href="{{ url('/detail-produk') }}/${encodeURIComponent(w.slug)}" class="store-product-name line-clamp-2 hover:text-blue-700">${escapeWishlistText(w.name)}</a>
+          <p class="store-product-price">Rp ${Number(w.price || 0).toLocaleString('id-ID')}</p>
         </div>
-      </div>`).join('');
+      </article>`).join('');
         }
 
         async function removeWishlist(productId) {

@@ -363,6 +363,7 @@
     .ec-cart-action { margin-left: 0; padding-left: .45rem; }
     .ec-cart-action::before { display: none; }
     .ec-primary-nav { display: none !important; }
+    #ecMobileSearch { position: fixed; z-index: var(--ec-z-dropdown); top: var(--ec-mobile-search-top, 60px); right: 0; left: 0; box-shadow: 0 5px 18px rgb(10 49 104 / .1); }
     #ecMobileNavDrawer { position: fixed; z-index: var(--ec-z-dropdown); top: var(--ec-mobile-drawer-top, 60px); right: 0; bottom: env(safe-area-inset-bottom); left: 0; overflow-y: auto; overscroll-behavior: contain; }
     .ec-has-bottom-nav #ecMobileNavDrawer { bottom: calc(4.75rem + env(safe-area-inset-bottom)); }
     .ec-category-mega { width: calc(100vw - 2rem); max-height: min(31rem, calc(100vh - 10rem)); grid-template-columns: minmax(8.5rem, 38%) minmax(0, 62%); }

@@ -135,6 +135,7 @@ return [
     'best_selling_badge' => 'BEST SELLER',
     'details' => 'Details',
     'sold' => ':count sold',
+    'remaining' => ':count remaining',
     'search_variant_placeholder' => 'Search :variant...',
     'variant_not_found' => 'No matching options found.',
     'sort_changed' => 'Sort order updated',

@@ -156,8 +156,8 @@ class FrontendController extends Controller
         $productsQuery = Product::query()
             ->with([
                 'company',
-                'mainCategory',
-                'categoryDetail',
+                'mainCategory.defaultSpecificationTemplate.fields.definition',
+                'categoryDetail.specificationTemplate.fields.definition',
                 'productVariants.variant',
                 'productVariants.attributeValues.definition',
                 'flashSaleItems.flashSale',
@@ -234,8 +234,8 @@ class FrontendController extends Controller
                 'parentCategorySlug' => (string) ($product->mainCategory?->slug ?? ''),
                 'variant' => $variant->attributeSummary(),
                 'variants' => $product->productVariants
-                    ->flatMap(fn ($pv) => $this->buildVariantFilterPairs($pv))
-                    ->unique(fn ($item) => strtolower($item['name'].'|'.$item['value']))
+                    ->flatMap(fn ($pv) => $this->buildVariantFilterPairs($product, $pv))
+                    ->unique(fn ($item) => strtolower($item['key'].'|'.$item['value']))
                     ->values()
                     ->all(),
                 'price' => $price,
@@ -288,8 +288,8 @@ class FrontendController extends Controller
 
         $product = Product::with([
             'company',
-            'mainCategory',
-            'categoryDetail',
+            'mainCategory.defaultSpecificationTemplate.fields.definition',
+            'categoryDetail.specificationTemplate.fields.definition',
             'productVariants.variant',
             'productVariants.attributeValues.definition',
             'flashSaleItems.flashSale',
@@ -301,7 +301,7 @@ class FrontendController extends Controller
         $variant = $product->productVariants->first();
         abort_if(! $variant, 404);
 
-        $variantGroups = $this->buildAttributeVariantGroups($product->productVariants);
+        $variantGroups = $this->buildAttributeVariantGroups($product, $product->productVariants);
 
         $galleryImages = $product->productVariants
             ->pluck('image')
@@ -598,6 +598,9 @@ class FrontendController extends Controller
                 'reviews' => $reviews,
                 'stock' => (int) $variant->stock,
                 'description' => $product->description,
+                'specificationImage' => filled($product->specification_image)
+                    ? $this->normalizeImageUrl((string) $product->specification_image)
+                    : null,
                 'isFlashSale' => $isFlashSale,
                 'flashSalePrice' => $flashSalePrice,
                 'flashSaleEndAt' => $isFlashSale ? optional($activeFlashSaleItem->flashSale?->end_at)?->toIso8601String() : null,
@@ -900,8 +903,8 @@ class FrontendController extends Controller
 
         $products = Product::with([
             'company',
-            'mainCategory',
-            'categoryDetail',
+            'mainCategory.defaultSpecificationTemplate.fields.definition',
+            'categoryDetail.specificationTemplate.fields.definition',
             'productVariants.variant',
             'productVariants.attributeValues.definition',
             'flashSaleItems.flashSale',
@@ -949,8 +952,8 @@ class FrontendController extends Controller
 
             $image = $this->resolveProductVariantImageUrl($product, $variant, '400x400');
             $variantFilters = $product->productVariants
-                ->flatMap(fn ($pv) => $this->buildVariantFilterPairs($pv))
-                ->unique(fn ($item) => strtolower($item['name'].'|'.$item['value']))
+                ->flatMap(fn ($pv) => $this->buildVariantFilterPairs($product, $pv))
+                ->unique(fn ($item) => strtolower($item['key'].'|'.$item['value']))
                 ->values()
                 ->all();
 
@@ -1243,47 +1246,86 @@ class FrontendController extends Controller
             ->all();
     }
 
-    private function buildVariantFilterPairs(ProductVariant $variant): array
+    private function buildVariantFilterPairs(Product $product, ProductVariant $variant): array
     {
+        $values = $variant->attributeValues->keyBy('attribute_definition_id');
+        $template = $product->effectiveSpecificationTemplate();
+
+        if ($template) {
+            return $template->fields
+                ->where('is_active', true)
+                ->where('is_filterable', true)
+                ->sortBy(fn ($field) => [(int) $field->sort_order, (int) $field->id])
+                ->map(function ($field) use ($values) {
+                    $definition = $field->definition;
+                    $attribute = $definition ? $values->get($definition->id) : null;
+
+                    return $this->serializeFilterAttribute($attribute, $definition, $field->label());
+                })
+                ->filter()
+                ->values()
+                ->all();
+        }
+
         return $variant->attributeValues
-            ->sortBy(fn ($attribute) => (int) ($attribute->definition?->sort_order ?? 999))
+            ->filter(fn ($attribute) => (bool) ($attribute->definition?->is_filterable ?? false))
+            ->sortBy(fn ($attribute) => [(int) ($attribute->definition?->sort_order ?? 999), (int) $attribute->id])
             ->map(function ($attribute) {
                 $definition = $attribute->definition;
-                if (! $definition) {
-                    return null;
-                }
 
-                $value = $attribute->value_text;
-                if (($value === null || $value === '') && $attribute->value_number !== null) {
-                    $value = rtrim(rtrim((string) $attribute->value_number, '0'), '.');
-                }
-                if (trim((string) $value) === '') {
-                    return null;
-                }
-
-                $unit = trim((string) $definition->unit);
-
-                return [
-                    'name' => (string) $definition->name,
-                    'value' => $unit !== '' ? $value.' '.$unit : $value,
-                ];
+                return $this->serializeFilterAttribute($attribute, $definition, (string) ($definition?->name ?? ''));
             })
             ->filter()
             ->values()
             ->all();
     }
 
-    private function buildAttributeVariantGroups($variants): array
+    private function serializeFilterAttribute($attribute, $definition, string $label): ?array
     {
-        $definitions = collect($variants)
-            ->flatMap(fn ($variant) => $variant->attributeValues)
-            ->map(fn ($attribute) => $attribute->definition)
-            ->filter()
-            ->unique('id')
-            ->sortBy(fn ($definition) => [(int) $definition->sort_order, (int) $definition->id]);
+        if (! $attribute || ! $definition) {
+            return null;
+        }
+
+        $value = $attribute->value_text;
+        if (($value === null || $value === '') && $attribute->value_number !== null) {
+            $value = rtrim(rtrim((string) $attribute->value_number, '0'), '.');
+        }
+        if (trim((string) $value) === '') {
+            return null;
+        }
+
+        $unit = trim((string) $definition->unit);
+
+        return [
+            'key' => (string) $definition->code,
+            'name' => $label,
+            'value' => $unit !== '' ? $value.' '.$unit : $value,
+        ];
+    }
+
+    private function buildAttributeVariantGroups(Product $product, $variants): array
+    {
+        $template = $product->effectiveSpecificationTemplate();
+        $fields = $template?->fields
+            ->where('is_active', true)
+            ->sortBy(fn ($field) => [(int) $field->sort_order, (int) $field->id]);
+
+        $definitions = $fields
+            ? $fields->map(fn ($field) => [
+                'definition' => $field->definition,
+                'label' => $field->label(),
+            ])->filter(fn ($item) => $item['definition'] !== null)
+            : collect($variants)
+                ->flatMap(fn ($variant) => $variant->attributeValues)
+                ->map(fn ($attribute) => $attribute->definition)
+                ->filter()
+                ->unique('id')
+                ->sortBy(fn ($definition) => [(int) $definition->sort_order, (int) $definition->id])
+                ->map(fn ($definition) => ['definition' => $definition, 'label' => (string) $definition->name]);
 
         return $definitions
-            ->map(function ($definition) use ($variants) {
+            ->map(function ($item) use ($variants) {
+                $definition = $item['definition'];
                 $code = (string) $definition->code;
                 $values = collect($variants)
                     ->map(function ($variant) use ($code) {
@@ -1302,7 +1344,7 @@ class FrontendController extends Controller
 
                 return [
                     'key' => $code,
-                    'label' => (string) $definition->name.($definition->unit ? ' ('.$definition->unit.')' : ''),
+                    'label' => $item['label'].($definition->unit ? ' ('.$definition->unit.')' : ''),
                     'unit' => $definition->unit,
                     'values' => $values,
                 ];

@@ -15,12 +15,16 @@ return [
     'support_copy' => 'Our team can help with orders, products, payments, and shipping.',
     'visit_help_center' => 'Visit the Help Center',
     'content_unavailable' => 'Content is not available yet.',
+    'open_image' => 'open the full-size image',
     'shopping_gallery_title' => 'Visual shopping guide',
-    'shopping_gallery_intro' => 'Follow these screens to find a product, review its details, and check your cart.',
+    'shopping_gallery_intro' => 'Follow these six steps from choosing a product until your order is created and ready to track.',
     'shopping_images' => [
         ['title' => '1. Find a product', 'caption' => 'Use categories and filters to narrow down the products you need.'],
         ['title' => '2. Review product details', 'caption' => 'Confirm the specifications, stock, price, and quantity before adding the product.'],
         ['title' => '3. Review your cart', 'caption' => 'Check the selected products and quantities before continuing to checkout.'],
+        ['title' => '4. Complete checkout', 'caption' => 'Confirm the address, shipping service, and payment method before placing the order.'],
+        ['title' => '5. Order created successfully', 'caption' => 'Save the order number and open the payment details to follow the next instructions.'],
+        ['title' => '6. Track your order', 'caption' => 'Enter your email and order number to view payment and shipping updates.'],
     ],
     'pages' => [
         'technical' => [
@@ -42,7 +46,7 @@ return [
             'title' => 'How to Shop',
             'excerpt' => 'A step-by-step guide to ordering technical products, from search to delivery.',
             'meta_description' => 'A guide to shopping at '.$store.'.',
-            'content' => '<h2>1. Find a product</h2><p>Use search or browse categories, then match the SKU, size, material, variant, and selling unit.</p><h2>2. Review your cart</h2><p>Confirm the quantity, selling company, address, and shipping option.</p><h2>3. Complete payment</h2><p>Select an available payment method and follow its instructions. Keep your order number for tracking and support.</p>',
+            'content' => '<h2>1. Find a product</h2><p>Use search or browse categories, then match the SKU, size, material, variant, and selling unit.</p><h2>2. Review product details</h2><p>Confirm the specifications, stock, price, and quantity before adding the product to your cart.</p><h2>3. Review your cart</h2><p>Check the selected products and quantities before continuing to checkout.</p><h2>4. Complete checkout</h2><p>Confirm the address, shipping service, and payment method, then place the order.</p><h2>5. Order created successfully</h2><p>Follow the payment instructions shown and keep your order number.</p><h2>6. Track your order</h2><p>Use the purchaser email and order number on the Track Order page to view payment and shipping updates.</p>',
         ],
         'tentang-boq' => [
             'label' => 'About BOQ',
