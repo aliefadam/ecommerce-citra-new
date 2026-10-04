@@ -7,10 +7,10 @@ use Illuminate\Support\Facades\Cache;
 
 class StorefrontNavigationService
 {
-    private const CACHE_KEY = 'storefront.navigation.categories.v1';
+    private const CACHE_KEY = 'storefront.navigation.categories.v2';
 
     /**
-     * @return array<int, array{key: string, name: string, url: string, columns: array<int, array{title: string, items: array<int, array{name: string, url: string}>}>}>
+     * @return array<int, array{key: string, name: string, imageUrl: string, url: string, columns: array<int, array{title: string, items: array<int, array{name: string, url: string}>}>}>
      */
     public function megaCategories(): array
     {
@@ -20,6 +20,7 @@ class StorefrontNavigationService
                 ->orderBy('name')
                 ->get()
                 ->map(function (MainCategory $parent): array {
+                    $image = trim((string) $parent->image);
                     $children = $parent->categoryDetails->values();
                     $chunkSize = max(1, (int) ceil(max(1, $children->count()) / 4));
                     $columns = $children
@@ -45,6 +46,11 @@ class StorefrontNavigationService
                     return [
                         'key' => (string) $parent->slug,
                         'name' => (string) $parent->name,
+                        'imageUrl' => $image === ''
+                            ? ''
+                            : (preg_match('/^(?:https?:)?\/\//', $image) || str_starts_with($image, 'data:')
+                                ? $image
+                                : asset('storage/'.ltrim($image, '/'))),
                         'url' => route('frontend.kategori', ['parent' => $parent->slug]),
                         'columns' => $columns,
                     ];

@@ -301,7 +301,6 @@
                             str_starts_with($mainCategoryImage, 'data:'))
                             ? $mainCategoryImage
                             : ($mainCategoryImage !== '' ? asset('storage/' . ltrim($mainCategoryImage, '/')) : '');
-                    $subCount = $mainCategory->categoryDetails->count();
                 @endphp
                 <button onclick="selectCategory('{{ $mainCategory->slug }}', '{{ $mainCategory->name }}')"
                     class="cat-card group relative flex items-center gap-3 bg-white rounded-2xl px-4 py-3.5 border border-slate-100 shadow-sm hover:shadow-md hover:border-blue-200 hover:bg-gradient-to-r hover:from-blue-50/60 hover:to-indigo-50/40 transition-all duration-300 text-left overflow-hidden">
@@ -323,12 +322,6 @@
                     <!-- Text -->
                     <div class="flex-1 min-w-0 relative z-10">
                         <p class="text-sm font-bold text-slate-800 group-hover:text-blue-700 transition-colors truncate leading-tight">{{ $mainCategory->name }}</p>
-                        <div class="flex items-center gap-1 mt-1">
-                            <i class="ri-stack-line text-[11px] text-slate-400 group-hover:text-blue-400 transition-colors"></i>
-                            <span class="text-xs text-slate-400 group-hover:text-blue-400 transition-colors">
-                                {{ trans_choice('storefront.subcategories', $subCount, ['count' => $subCount]) }}
-                            </span>
-                        </div>
                     </div>
 
                     <!-- Arrow -->

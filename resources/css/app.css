@@ -262,6 +262,7 @@
     .ec-mega-family-item:hover { background: #f0f6fd; color: #0e4f9d; }
     .ec-mega-family-item[aria-selected="true"] { border-left-color: #1765d1; background: #eaf3ff; color: #082d61; }
     .ec-mega-family-icon { display: grid; width: 2rem; height: 2rem; place-items: center; color: #174d91; }
+    .ec-mega-family-icon img { width: 2rem; height: 2rem; border: 1px solid #e2e8f0; border-radius: 6px; background: #fff; object-fit: contain; }
     .ec-mega-family-icon svg, .ec-mega-empty-icon svg { width: 1.65rem; height: 1.65rem; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.6; }
     .ec-mega-family-copy { min-width: 0; }
     .ec-mega-family-copy strong, .ec-mega-family-copy small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

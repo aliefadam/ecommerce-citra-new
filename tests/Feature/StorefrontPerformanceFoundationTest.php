@@ -71,12 +71,17 @@ class StorefrontPerformanceFoundationTest extends TestCase
         Cache::clear();
         $service = app(StorefrontNavigationService::class);
 
-        $parent = MainCategory::query()->create(['name' => 'Perkakas', 'slug' => 'perkakas']);
+        $parent = MainCategory::query()->create([
+            'name' => 'Perkakas',
+            'slug' => 'perkakas',
+            'image' => 'categories/perkakas.png',
+        ]);
         CategoryDetail::query()->create([
             'main_category_id' => $parent->id,
             'name' => 'Kunci',
             'slug' => 'kunci',
         ]);
+        $this->assertSame(asset('storage/categories/perkakas.png'), $service->megaCategories()[0]['imageUrl']);
         $this->assertSame('Kunci', $service->megaCategories()[0]['columns'][0]['items'][0]['name']);
 
         CategoryDetail::query()->create([

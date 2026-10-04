@@ -215,9 +215,12 @@ function setupStorefrontShell() {
             ['bolt', /bolt|baut/],
         ];
         const type = matchers.find(([, pattern]) => pattern.test(identity))?.[0] || 'default';
+        const imageUrl = String(category?.imageUrl || '').trim();
 
         return {
-            icon: icons[type],
+            icon: imageUrl
+                ? `<img src="${escapeHtml(imageUrl)}" alt="" loading="lazy">`
+                : icons[type],
             description: descriptions[type] || 'Industrial Components',
         };
     };
@@ -243,7 +246,7 @@ function setupStorefrontShell() {
         categoryContent.innerHTML = `
             <header class="ec-mega-catalog-head">
                 <div>
-                    <p class="ec-mega-eyebrow">Product Family / ${String(items.length).padStart(2, '0')} Subcategories</p>
+                    <p class="ec-mega-eyebrow">Product Family</p>
                     <h2>${escapeHtml(category.name)}</h2>
                     <p>${escapeHtml(meta.description)}</p>
                 </div>
@@ -252,12 +255,7 @@ function setupStorefrontShell() {
             ${items.length ? `<div class="ec-mega-subcategory-grid">${items.map((item) => `
                 <a class="ec-mega-subcategory" href="${escapeHtml(item.url)}">
                     <span>${escapeHtml(item.name)}</span><span aria-hidden="true">&rarr;</span>
-                </a>`).join('')}</div>` : `
-                <div class="ec-mega-empty">
-                    <span class="ec-mega-empty-icon">${meta.icon}</span>
-                    <div><p>Belum ada subkategori untuk <strong>${escapeHtml(category.name)}</strong>.</p>
-                    <a href="${escapeHtml(category.url)}">Lihat semua produk ${escapeHtml(category.name)} <span aria-hidden="true">&rarr;</span></a></div>
-                </div>`}`;
+                </a>`).join('')}</div>` : ''}`;
     };
     const activateCategory = (event, shouldFocus = false) => {
         const tab = event.target.closest('[data-category-key]');
