@@ -7,11 +7,24 @@ use App\Models\ContentPage;
 use App\Models\MainCategory;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class ContentPageCategoryDiagramTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_category_diagram_migration_can_resume_after_a_partial_mysql_run(): void
+    {
+        $migration = require database_path('migrations/2026_10_04_000000_add_category_diagram_to_content_pages.php');
+
+        $migration->up();
+
+        $this->assertTrue(Schema::hasColumn('content_pages', 'diagram_image'));
+        $this->assertTrue(Schema::hasTable('content_page_category_hotspots'));
+        $this->assertTrue(Schema::hasIndex('content_page_category_hotspots', 'cp_hotspots_page_main_idx'));
+        $this->assertTrue(Schema::hasIndex('content_page_category_hotspots', 'cp_hotspots_page_detail_idx'));
+    }
 
     public function test_admin_form_shows_the_visual_category_hotspot_editor(): void
     {
