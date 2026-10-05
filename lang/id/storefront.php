@@ -93,6 +93,8 @@ return [
     'available_categories' => ':count kategori tersedia',
     'subcategories' => ':count subkategori',
     'filter' => 'Filter',
+    'items' => 'Item',
+    'other_specifications' => 'Spesifikasi Lainnya',
     'reset' => 'Reset',
     'close' => 'Tutup',
     'search_categories_placeholder' => 'Cari kategori...',

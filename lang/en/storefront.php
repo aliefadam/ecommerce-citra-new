@@ -93,6 +93,8 @@ return [
     'available_categories' => ':count categories available',
     'subcategories' => '{1} :count subcategory|[2,*] :count subcategories',
     'filter' => 'Filter',
+    'items' => 'Items',
+    'other_specifications' => 'Other Specifications',
     'reset' => 'Reset',
     'close' => 'Close',
     'search_categories_placeholder' => 'Search categories...',

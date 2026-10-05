@@ -960,6 +960,15 @@ class FrontendController extends Controller
                 ->unique(fn ($item) => strtolower($item['key'].'|'.$item['value']))
                 ->values()
                 ->all();
+            $variantCombinations = $product->productVariants
+                ->map(fn ($pv) => [
+                    'id' => (int) $pv->id,
+                    'stock' => (int) $pv->stock,
+                    'attributes' => $this->buildVariantFilterPairs($product, $pv),
+                ])
+                ->values()
+                ->all();
+            $totalStock = (int) $product->productVariants->sum('stock');
 
             $variantPrices = $product->productVariants
                 ->pluck('price')
@@ -1015,14 +1024,16 @@ class FrontendController extends Controller
                 'originalPriceMax' => $originalPriceMax,
                 'category' => $this->mapHomeCategory($product->mainCategory?->name),
                 'categorySlug' => (string) ($product->categoryDetail?->slug ?? ''),
+                'categoryName' => (string) ($product->categoryDetail?->name ?? ''),
                 'parentCategorySlug' => (string) ($product->mainCategory?->slug ?? ''),
                 'rating' => round($rating, 1),
                 'reviews' => $reviews,
                 'image' => $image,
                 'variants' => $variantFilters,
+                'variantCombinations' => $variantCombinations,
                 'badge' => $badge,
                 'sold' => $sold,
-                'stock' => (int) ($variant->stock ?? 0),
+                'stock' => $totalStock,
                 'unit' => 'pcs',
                 'isNew' => $badge === 'new',
                 'isFlashSale' => $isFlashSale,
@@ -1041,14 +1052,16 @@ class FrontendController extends Controller
                 'origPriceMax' => $originalPriceMax,
                 'cat' => $this->mapCategoryPageCategory($product->mainCategory?->name),
                 'categorySlug' => (string) ($product->categoryDetail?->slug ?? ''),
+                'categoryName' => (string) ($product->categoryDetail?->name ?? ''),
                 'parentCategorySlug' => (string) ($product->mainCategory?->slug ?? ''),
                 'rating' => round($rating, 1),
                 'reviews' => $reviews,
                 'image' => $image,
                 'variants' => $variantFilters,
+                'variantCombinations' => $variantCombinations,
                 'badge' => $badge,
                 'sold' => $sold,
-                'stock' => (int) ($variant->stock ?? 0),
+                'stock' => $totalStock,
                 'unit' => 'pcs',
                 'isNew' => $badge === 'new',
                 'isFlashSale' => $isFlashSale,

@@ -440,6 +440,23 @@
                             </div>
                         </div>
 
+                        <div id="filterItemSection" class="flat-filter-section hidden">
+                            <h4 class="mb-3 text-sm font-medium text-slate-950">{{ __('storefront.items') }}</h4>
+                            <div id="filterItemList" class="space-y-2"></div>
+                        </div>
+
+                        <div id="filterPrimaryVariantList"></div>
+
+                        <div id="filterAdvancedVariantSection" class="flat-filter-section hidden">
+                            <button type="button" class="flex w-full items-center justify-between gap-3 text-left"
+                                aria-expanded="false" aria-controls="filterVariantList"
+                                onclick="toggleFilterSection(this, 'filterVariantList')">
+                                <span class="text-sm font-semibold text-slate-700">{{ __('storefront.other_specifications') }}</span>
+                                <i class="ri-arrow-down-s-line text-lg text-slate-400 transition-transform"></i>
+                            </button>
+                            <div id="filterVariantList" class="hidden pt-3"></div>
+                        </div>
+
                         <div class="flat-filter-section">
                             <h4 class="mb-3 text-sm font-medium text-slate-950">{{ __('storefront.product_status') }}</h4>
                             <label class="flex items-center gap-2 text-sm text-slate-700"><input id="filterStock" type="checkbox" class="accent-blue-500" onchange="applyFilter()"> {{ __('storefront.in_stock_only') }}</label>
@@ -454,8 +471,6 @@
                                 <option value="5">{{ __('storefront.rating_only', ['rating' => 5]) }}</option>
                             </select>
                         </div>
-
-                        <div id="filterVariantList"></div>
                     </div>
                 </div>
             </aside>
@@ -557,6 +572,7 @@
             'unit' => __('storefront.unit'),
             'sold' => __('storefront.sold', ['count' => ':count']),
             'searchVariant' => __('storefront.search_variant_placeholder', ['variant' => ':variant']),
+            'item' => __('storefront.items'),
             'showAll' => __('storefront.show_all'),
             'collapse' => __('storefront.collapse'),
             'variantNotFound' => __('storefront.variant_not_found'),
@@ -653,6 +669,7 @@
             }));
             const state = {
                 categories: Array.from(document.querySelectorAll('.filter-cat:checked')).map((input) => input.value),
+                item: document.querySelector('.filter-item:checked')?.value || '',
                 variants,
                 stockOnly: document.getElementById('filterStock')?.checked || false,
                 ratingMin: document.getElementById('ratingMin')?.value || '0',
@@ -675,6 +692,12 @@
             document.querySelectorAll('.filter-cat').forEach((input) => {
                 input.checked = Array.isArray(state.categories) && state.categories.includes(input.value);
             });
+            renderFilterItems();
+            document.querySelectorAll('.filter-item').forEach((input) => {
+                input.checked = input.value === String(state.item || initialCategorySlug);
+            });
+            activeCategorySlug = document.querySelector('.filter-item:checked')?.value || '';
+            renderFilterVariants();
             document.querySelectorAll('.filter-variant').forEach((input) => {
                 input.checked = Array.isArray(state.variants) && state.variants.some((variant) =>
                     variant.name === (input.dataset.variantName || '') && variant.value === (input.dataset.variantValue || '')
@@ -688,21 +711,31 @@
 
         function getFiltered() {
             const cats = Array.from(document.querySelectorAll('.filter-cat:checked')).map(c => c.value);
+            const item = document.querySelector('.filter-item:checked')?.value || activeCategorySlug;
             const activeVariantGroups = Object.entries(selectedVariantFilters).filter(([, values]) => values.size > 0);
             const stockOnly = document.getElementById('filterStock')?.checked;
             const ratingMin = Number(document.getElementById('ratingMin')?.value || 0);
             return allProducts.filter((p) => {
                 const catMatch = cats.length === 0 || cats.includes(p.parentCategorySlug);
-                const initialCategoryMatch = activeCategorySlug === '' || p.categorySlug === activeCategorySlug;
-                const variantMatch = activeVariantGroups.length === 0 || activeVariantGroups.every(([name, values]) =>
-                    Array.isArray(p.variants) && p.variants.some((variant) =>
-                        normalizeFilterValue(variant.key || variant.name) === name && values.has(normalizeFilterValue(variant.value))
-                    )
-                );
+                const itemMatch = item === '' || p.categorySlug === item;
+                const combinations = Array.isArray(p.variantCombinations) ? p.variantCombinations : [];
+                const variantMatch = combinations.length > 0
+                    ? combinations.some((combination) => {
+                        if (stockOnly && Number(combination.stock || 0) < 1) return false;
+                        const attributes = Array.isArray(combination.attributes) ? combination.attributes : [];
+                        return activeVariantGroups.every(([name, values]) => attributes.some((attribute) =>
+                            normalizeFilterValue(attribute.key || attribute.name) === name
+                                && values.has(normalizeFilterValue(attribute.value))
+                        ));
+                    })
+                    : activeVariantGroups.every(([name, values]) => Array.isArray(p.variants) && p.variants.some((variant) =>
+                        normalizeFilterValue(variant.key || variant.name) === name
+                            && values.has(normalizeFilterValue(variant.value))
+                    ));
                 const searchMatch = !searchQuery || p.name.toLowerCase().includes(searchQuery.toLowerCase());
-                const stockMatch = !stockOnly || Number(p.stock || 0) > 0;
+                const stockMatch = combinations.length > 0 || !stockOnly || Number(p.stock || 0) > 0;
                 const ratingMatch = Number(p.rating || 0) >= ratingMin;
-                return catMatch && initialCategoryMatch && variantMatch && searchMatch && stockMatch && ratingMatch;
+                return catMatch && itemMatch && variantMatch && searchMatch && stockMatch && ratingMatch;
             });
         }
 
@@ -822,6 +855,46 @@
             container.innerHTML = items;
         }
 
+        function renderFilterItems() {
+            const section = document.getElementById('filterItemSection');
+            const container = document.getElementById('filterItemList');
+            if (!section || !container) return;
+
+            const categories = Array.from(document.querySelectorAll('.filter-cat:checked')).map((input) => input.value);
+            if (categories.length === 0) {
+                section.classList.add('hidden');
+                container.innerHTML = '';
+                activeCategorySlug = '';
+                return;
+            }
+
+            const previousItem = document.querySelector('.filter-item:checked')?.value || activeCategorySlug || initialCategorySlug;
+            const items = new Map();
+            allProducts
+                .filter((product) => categories.includes(product.parentCategorySlug))
+                .forEach((product) => {
+                    if (!product.categorySlug) return;
+                    const current = items.get(product.categorySlug) || {
+                        name: product.categoryName || product.categorySlug,
+                        count: 0,
+                    };
+                    current.count++;
+                    items.set(product.categorySlug, current);
+                });
+
+            container.innerHTML = Array.from(items.entries())
+                .sort((a, b) => a[1].name.localeCompare(b[1].name, 'id'))
+                .map(([slug, item]) => `<label class="flex cursor-pointer items-center gap-2 text-sm text-slate-700">
+                    <input type="radio" name="filter-item" class="filter-item accent-blue-500" value="${escapeHtml(slug)}"
+                        ${slug === previousItem ? 'checked' : ''} onchange="applyItemFilter()">
+                    <span class="min-w-0 flex-1 truncate">${escapeHtml(item.name)}</span>
+                    <span class="text-xs text-slate-400">${item.count}</span>
+                </label>`).join('');
+
+            section.classList.toggle('hidden', items.size === 0);
+            activeCategorySlug = document.querySelector('.filter-item:checked')?.value || '';
+        }
+
         function normalizeFilterValue(value) {
             return String(value || '').trim().toLowerCase();
         }
@@ -837,11 +910,22 @@
         }
 
         function renderFilterVariants() {
-            const container = document.getElementById('filterVariantList');
-            if (!container) return;
+            const primaryContainer = document.getElementById('filterPrimaryVariantList');
+            const advancedContainer = document.getElementById('filterVariantList');
+            const advancedSection = document.getElementById('filterAdvancedVariantSection');
+            if (!primaryContainer || !advancedContainer || !advancedSection) return;
+
+            const item = document.querySelector('.filter-item:checked')?.value || activeCategorySlug;
+            if (!item) {
+                primaryContainer.innerHTML = '';
+                advancedContainer.innerHTML = '';
+                advancedSection.classList.add('hidden');
+                selectedVariantFilters = {};
+                return;
+            }
 
             const groups = new Map();
-            allProducts.forEach((product) => {
+            allProducts.filter((product) => product.categorySlug === item).forEach((product) => {
                 (Array.isArray(product.variants) ? product.variants : []).forEach((variant) => {
                     const key = normalizeFilterValue(variant.key || variant.name);
                     const name = String(variant.name || '').trim();
@@ -852,7 +936,7 @@
                 });
             });
 
-            container.innerHTML = Array.from(groups.entries()).map(([groupKey, group]) => {
+            const renderGroup = ([groupKey, group], expanded = false) => {
                 const name = group.label;
                 const values = group.values;
                 const valueItems = Array.from(values.entries()).map(([key, label]) => `
@@ -869,12 +953,12 @@
                     <button type="button"
                         class="filter-variant-group-toggle flex w-full items-center justify-between gap-3 text-left"
                         data-variant-group="${encodeURIComponent(groupKey)}"
-                        aria-expanded="false"
+                        aria-expanded="${expanded ? 'true' : 'false'}"
                         onclick="toggleVariantGroup(this)">
                         <span class="text-sm font-semibold text-slate-700">${escapeHtml(name)}</span>
-                        <i class="ri-arrow-down-s-line text-lg text-slate-400 transition-transform"></i>
+                        <i class="ri-arrow-down-s-line ${expanded ? 'rotate-180' : ''} text-lg text-slate-400 transition-transform"></i>
                     </button>
-                    <div class="filter-variant-panel hidden pt-3" data-variant-group="${encodeURIComponent(groupKey)}">
+                    <div class="filter-variant-panel ${expanded ? '' : 'hidden'} pt-3" data-variant-group="${encodeURIComponent(groupKey)}">
                         <div class="relative mb-3">
                             <i class="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
                             <input type="search" placeholder="${escapeHtml(catalogText.searchVariant.replace(':variant', name))}"
@@ -893,7 +977,20 @@
                         <p class="filter-variant-empty hidden text-xs text-slate-400" data-variant-group="${encodeURIComponent(groupKey)}">${catalogText.variantNotFound}</p>
                     </div>
                 </div>`;
-            }).join('');
+            };
+
+            const entries = Array.from(groups.entries());
+            const isMaterial = ([key, group]) => /material|bahan/.test(`${key} ${normalizeFilterValue(group.label)}`);
+            const isSize = ([key, group]) => /size|diameter|ukuran/.test(`${key} ${normalizeFilterValue(group.label)}`);
+            const primaryEntries = entries
+                .filter((entry) => isSize(entry) || isMaterial(entry))
+                .sort((a, b) => Number(isMaterial(a)) - Number(isMaterial(b)));
+            const primaryKeys = new Set(primaryEntries.map(([key]) => key));
+            const advancedEntries = entries.filter(([key]) => !primaryKeys.has(key));
+
+            primaryContainer.innerHTML = primaryEntries.map((entry) => renderGroup(entry, true)).join('');
+            advancedContainer.innerHTML = advancedEntries.map((entry) => renderGroup(entry)).join('');
+            advancedSection.classList.toggle('hidden', advancedEntries.length === 0);
 
             document.querySelectorAll('.filter-variant-options').forEach((group) => updateVariantOptionVisibility(group.dataset.variantGroup || ''));
         }
@@ -1005,6 +1102,8 @@
                 const text = el.parentElement.querySelector('span')?.textContent || el.value;
                 chips.push(text);
             });
+            const selectedItem = document.querySelector('.filter-item:checked');
+            if (selectedItem) chips.push(`${catalogText.item}: ${selectedItem.parentElement.querySelector('span')?.textContent || selectedItem.value}`);
             if (document.getElementById('filterStock')?.checked) chips.push(catalogText.inStock);
             const ratingMin = document.getElementById('ratingMin')?.value;
             if (Number(ratingMin) > 0) chips.push(`Rating ${ratingMin}+`);
@@ -1021,6 +1120,16 @@
 
         function applyCategoryFilter() {
             activeCategorySlug = '';
+            selectedVariantFilters = {};
+            renderFilterItems();
+            renderFilterVariants();
+            applyFilter();
+        }
+
+        function applyItemFilter() {
+            activeCategorySlug = document.querySelector('.filter-item:checked')?.value || '';
+            selectedVariantFilters = {};
+            renderFilterVariants();
             applyFilter();
         }
 
@@ -1050,6 +1159,8 @@
             if (filterStock) filterStock.checked = false;
             if (ratingMin) ratingMin.value = '0';
             activeCategorySlug = '';
+            renderFilterItems();
+            renderFilterVariants();
             applyFilter();
         }
 
@@ -1374,6 +1485,7 @@
         }
 
         renderFilterCategories();
+        renderFilterItems();
         renderFilterVariants();
         restoreCatalogState();
         applyVariantFilter();

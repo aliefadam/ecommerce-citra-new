@@ -225,11 +225,19 @@ class DynamicProductSpecificationTest extends TestCase
             ]],
         ])->assertRedirect(route('products.index'));
 
-        $catalogResponse = $this->get(route('frontend.kategori'))->assertOk();
+        $catalogResponse = $this->get(route('frontend.kategori'))
+            ->assertOk()
+            ->assertSee('filterItemSection', false)
+            ->assertSee(__('storefront.other_specifications'));
         $catalogProduct = collect($catalogResponse->viewData('productsJson'))
             ->firstWhere('name', 'Pipe Filter Metadata');
 
         $this->assertNotNull($catalogProduct);
+        $this->assertSame($detail->slug, $catalogProduct['categorySlug']);
+        $this->assertSame($detail->name, $catalogProduct['categoryName']);
+        $this->assertCount(1, $catalogProduct['variantCombinations']);
+        $this->assertSame(20, $catalogProduct['variantCombinations'][0]['stock']);
+        $this->assertContains('nominal_size', collect($catalogProduct['variantCombinations'][0]['attributes'])->pluck('key'));
         $this->assertContains('Ukuran Nominal', collect($catalogProduct['variants'])->pluck('name'));
         $this->assertNotContains('Schedule Internal', collect($catalogProduct['variants'])->pluck('name'));
         $this->assertNotContains('schedule_class', collect($catalogProduct['variants'])->pluck('key'));
