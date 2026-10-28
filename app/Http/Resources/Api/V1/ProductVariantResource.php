@@ -22,7 +22,7 @@ class ProductVariantResource extends JsonResource
             'sku' => $this->sku,
             'price' => $this->price !== null ? (int) $this->price : null,
             'in_stock' => (int) ($this->stock ?? 0) > 0,
-            'image' => CatalogImageUrl::make($this->image),
+            'image' => CatalogImageUrl::make($this->image ?: $this->product?->firstAvailableImagePath()),
             'weight_grams' => $this->weight_grams !== null ? (int) $this->weight_grams : null,
             'dimensions' => [
                 'length_cm' => $this->length_cm !== null ? (float) $this->length_cm : null,

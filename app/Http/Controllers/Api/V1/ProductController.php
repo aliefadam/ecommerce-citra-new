@@ -21,7 +21,7 @@ class ProductController extends ApiController
             $query = Product::query()
                 ->where('company_id', $company->id)
                 ->where('status', 'active')
-                ->with(['mainCategory', 'categoryDetail', 'productVariants']);
+                ->with(['mainCategory', 'categoryDetail', 'productVariants.attributeValues.definition']);
 
             $this->applyFilters($query, $request);
             $this->applySort($query, $request);
@@ -51,6 +51,7 @@ class ProductController extends ApiController
                 ->with([
                     'mainCategory',
                     'categoryDetail',
+                    'productVariants.product',
                     'productVariants.variant',
                     'productVariants.attributeValues.definition',
                 ])

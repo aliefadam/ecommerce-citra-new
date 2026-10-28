@@ -21,11 +21,40 @@ class ProductDetailResource extends JsonResource
         $prices = $variants->pluck('price')->filter(fn ($p) => $p !== null)->map(fn ($p) => (int) $p);
 
         $images = $variants
-            ->pluck('image')
-            ->map(fn ($img) => CatalogImageUrl::make($img))
+            ->map(fn ($variant) => CatalogImageUrl::make($variant->image ?: $this->firstAvailableImagePath()))
             ->filter()
             ->unique()
             ->values();
+
+        $specifications = app(\App\Services\ProductSpecificationService::class)
+            ->resolveForProduct($this)
+            ?->fields
+            ->map(function ($field) use ($variants) {
+                $definition = $field->definition;
+                $values = $variants
+                    ->flatMap(fn ($variant) => $variant->attributeValues
+                        ->filter(fn ($attribute) => $attribute->attribute_definition_id === $definition->id)
+                        ->map(function ($attribute) {
+                            $value = $attribute->value_text;
+                            if (($value === null || $value === '') && $attribute->value_number !== null) {
+                                $value = rtrim(rtrim((string) $attribute->value_number, '0'), '.');
+                            }
+
+                            return $value;
+                        }))
+                    ->filter(fn ($value) => $value !== null && $value !== '')
+                    ->unique()
+                    ->values();
+
+                return [
+                    'code' => (string) $definition->code,
+                    'name' => $field->label(),
+                    'unit' => $definition->unit,
+                    'values' => $values,
+                ];
+            })
+            ->filter(fn ($specification) => $specification['values']->isNotEmpty())
+            ->values() ?? collect();
 
         return [
             'id' => (int) $this->id,
@@ -42,6 +71,8 @@ class ProductDetailResource extends JsonResource
             'price_max' => $prices->isNotEmpty() ? $prices->max() : null,
             'in_stock' => $variants->contains(fn ($v) => (int) ($v->stock ?? 0) > 0),
             'image' => CatalogImageUrl::make($this->firstAvailableImagePath()),
+            'specification_image' => CatalogImageUrl::make($this->specification_image),
+            'specifications' => $specifications,
             'images' => $images,
             'variants' => ProductVariantResource::collection($variants),
             'created_at' => optional($this->created_at)->toIso8601String(),
