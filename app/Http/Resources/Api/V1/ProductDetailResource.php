@@ -3,6 +3,7 @@
 namespace App\Http\Resources\Api\V1;
 
 use App\Models\Product;
+use App\Services\ProductSpecificationService;
 use App\Support\CatalogImageUrl;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -26,8 +27,8 @@ class ProductDetailResource extends JsonResource
             ->unique()
             ->values();
 
-        $specifications = app(\App\Services\ProductSpecificationService::class)
-            ->resolveForProduct($this)
+        $specifications = app(ProductSpecificationService::class)
+            ->resolveForProduct($this->resource)
             ?->fields
             ->map(function ($field) use ($variants) {
                 $definition = $field->definition;
