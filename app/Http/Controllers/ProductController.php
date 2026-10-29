@@ -171,9 +171,9 @@ class ProductController extends Controller
         ]);
         $isRedeemProduct = $request->boolean('is_redeem_product');
         if ($request->boolean('is_redeem_product') && empty($validated['redeem_points'])) {
-            return back()
-                ->withErrors(['redeem_points' => 'Harga point wajib diisi jika produk redeem diaktifkan.'])
-                ->withInput();
+            throw ValidationException::withMessages([
+                'redeem_points' => 'Harga point wajib diisi jika produk redeem diaktifkan.',
+            ]);
         }
         if (! $request->boolean('is_redeem_product')) {
             $validated['redeem_points'] = null;
@@ -188,9 +188,9 @@ class ProductController extends Controller
             ? MainCategory::query()->find($validated['main_category_id'])
             : null;
         if (! $detail && ! $category && ! $mainCategory) {
-            return back()
-                ->withErrors(['category_id' => 'Kategori wajib dipilih dari daftar yang tersedia.'])
-                ->withInput();
+            throw ValidationException::withMessages([
+                'category_id' => 'Kategori wajib dipilih dari daftar yang tersedia.',
+            ]);
         }
 
         $specificationTemplate = app(ProductSpecificationService::class)->resolve(
@@ -249,6 +249,15 @@ class ProductController extends Controller
         } catch (\Throwable $exception) {
             collect($storedImages)->each(fn ($path) => $imageOptimizer->deletePublicFile((string) $path));
             throw $exception;
+        }
+
+        if ($request->expectsJson()) {
+            session()->flash('success', 'Product berhasil ditambahkan.');
+
+            return response()->json([
+                'message' => 'Product berhasil ditambahkan.',
+                'redirect' => route('products.index'),
+            ], 201);
         }
 
         return redirect()->route('products.index')->with('success', 'Product berhasil ditambahkan.');

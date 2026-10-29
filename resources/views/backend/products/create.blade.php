@@ -85,6 +85,17 @@
         })">
             @csrf
 
+            <div x-show="Object.keys(validationErrors).length" x-cloak x-ref="validationSummary" tabindex="-1"
+                class="mb-6 px-4 py-3 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-700 rounded-xl text-sm text-red-600 dark:text-red-400"
+                role="alert" aria-live="assertive">
+                <p class="font-semibold mb-1">Data belum dapat disimpan:</p>
+                <ul class="list-disc list-inside space-y-0.5">
+                    <template x-for="message in validationMessages" :key="message">
+                        <li x-text="message"></li>
+                    </template>
+                </ul>
+            </div>
+
             @if ($errors->any())
                 <div class="mb-6 px-4 py-3 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-700 rounded-xl text-sm text-red-600 dark:text-red-400">
                     <p class="font-semibold mb-1">Data belum dapat disimpan:</p>
@@ -110,6 +121,9 @@
                                     Produk</label>
                                 <input type="text" name="name" value="{{ old('name') }}"
                                     x-model="productName"
+                                    @input="clearError('name')" :aria-invalid="hasError('name')"
+                                    data-error-field="name"
+                                    :class="hasError('name') ? '!border-red-400 !bg-red-50 dark:!border-red-600 dark:!bg-red-900/10' : ''"
                                     placeholder="Masukkan nama produk..."
                                     class="w-full px-4 py-2.5 text-sm rounded-xl focus:outline-none focus:ring-2 dark:text-slate-200 placeholder-slate-400 {{ $errors->has('name') ? 'border-2 border-red-400 bg-red-50 dark:bg-red-900/10 dark:border-red-600 focus:ring-red-400' : 'border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 focus:ring-blue-500' }}" />
                                 @error('name')
@@ -124,6 +138,9 @@
                                         {{ $message }}
                                     </p>
                                 @enderror
+                                <template x-for="message in fieldErrors('name')" :key="message">
+                                    <p class="text-xs text-red-500 mt-1.5" x-text="message"></p>
+                                </template>
                             </div>
 
                             <div>
@@ -143,6 +160,9 @@
                                             class="px-2 py-1 text-xs rounded hover:bg-slate-100 dark:hover:bg-slate-700">Number</button>
                                     </div>
                                     <div id="description-editor" contenteditable="true"
+                                        data-error-field="description" tabindex="0"
+                                        @input="clearError('description')"
+                                        :class="hasError('description') ? 'ring-2 ring-inset ring-red-400 dark:ring-red-600' : ''"
                                         class="min-h-[140px] px-4 py-3 text-sm focus:outline-none dark:text-slate-200">
                                         {!! old('description') !!}</div>
                                 </div>
@@ -159,18 +179,26 @@
                                         {{ $message }}
                                     </p>
                                 @enderror
+                                <template x-for="message in fieldErrors('description')" :key="message">
+                                    <p class="text-xs text-red-500 mt-1.5" x-text="message"></p>
+                                </template>
                             </div>
 
                             <div>
                                 <label for="specification_image"
                                     class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Gambar Spesifikasi</label>
                                 <input id="specification_image" type="file" name="specification_image"
+                                    data-error-field="specification_image" @change="clearError('specification_image')"
+                                    :class="hasError('specification_image') ? '!border-red-400 !bg-red-50 dark:!border-red-600 dark:!bg-red-900/10' : ''"
                                     accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
                                     class="block w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:text-xs file:font-bold file:text-blue-700 hover:file:bg-blue-100 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300" />
                                 <p class="mt-1.5 text-xs text-slate-400">Diagram atau gambar teknis yang tampil di samping tabel spesifikasi. Format JPG, PNG, atau WebP; maksimal 12 MB.</p>
                                 @error('specification_image')
                                     <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>
                                 @enderror
+                                <template x-for="message in fieldErrors('specification_image')" :key="message">
+                                    <p class="mt-1.5 text-xs text-red-500" x-text="message"></p>
+                                </template>
                             </div>
                         </div>
                     </div>
@@ -199,11 +227,22 @@
                                 {{ $message }}
                             </div>
                         @enderror
+                        <template x-for="message in fieldErrors('variants')" :key="message">
+                            <div class="mb-3 px-3 py-2 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-700 rounded-lg text-xs text-red-500"
+                                x-text="message"></div>
+                        </template>
 
                         <div class="space-y-3">
                             <template x-for="(row, index) in rows" :key="row.id">
                                 <div
+                                    :data-error-field="`variants.${index}`"
+                                    :class="hasError(`variants.${index}`) ? '!border-red-400 dark:!border-red-600' : ''"
                                     class="border border-slate-200 dark:border-slate-600 rounded-xl p-4 space-y-3 bg-slate-50/50 dark:bg-slate-700/20">
+
+                                    <template x-for="message in fieldErrors(`variants.${index}`)" :key="message">
+                                        <p class="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-500 dark:bg-red-900/10"
+                                            x-text="message"></p>
+                                    </template>
 
                                     <div class="flex items-center justify-between gap-3">
                                         <div>
@@ -236,6 +275,8 @@
                                                     class="w-14 h-14 object-cover rounded-lg border border-slate-200 dark:border-slate-600" />
                                             </div>
                                             <label
+                                                :data-error-field="`variants.${index}.image`"
+                                                :class="hasError(`variants.${index}.image`) ? '!border-red-400 !bg-red-50 dark:!border-red-600 dark:!bg-red-900/10' : ''"
                                                 class="flex-1 flex items-center gap-2 px-3 py-2.5 rounded-xl border border-dashed border-slate-300 dark:border-slate-500 cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 transition-colors bg-white dark:bg-slate-700/50">
                                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
                                                     stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -247,10 +288,13 @@
                                                 <span class="text-xs text-slate-400 truncate"
                                                     x-text="row.imagePreview ? 'Ganti gambar...' : 'Pilih gambar...'"></span>
                                                 <input type="file" :name="`variants[${index}][image]`"
-                                                    accept="image/*" @change="handleImageChange(row, $event)"
+                                                    accept="image/*" @change="clearError(`variants.${index}.image`); handleImageChange(row, $event)"
                                                     class="hidden" />
                                             </label>
                                         </div>
+                                        <template x-for="message in fieldErrors(`variants.${index}.image`)" :key="message">
+                                            <p class="mt-1.5 text-xs text-red-500" x-text="message"></p>
+                                        </template>
                                     </div>
 
                                     {{-- SKU + Harga + Stok --}}
@@ -267,12 +311,18 @@
                                                 (Rp) <span class="text-red-400">*</span></label>
                                             <input type="text" inputmode="numeric" placeholder="0"
                                                 x-model="row.priceDisplay"
+                                                :data-error-field="`variants.${index}.price`"
+                                                :aria-invalid="hasError(`variants.${index}.price`)"
+                                                :class="hasError(`variants.${index}.price`) ? '!border-red-400 !bg-red-50 dark:!border-red-600 dark:!bg-red-900/10' : ''"
+                                                @input="clearError(`variants.${index}.price`); syncNumericField(row, 'price', 'priceDisplay')"
                                                 @focus="row.priceDisplay = sanitizeNumericInput(row.priceDisplay || row.price)"
-                                                @input="syncNumericField(row, 'price', 'priceDisplay')"
                                                 @blur="formatNumericField(row, 'price', 'priceDisplay')"
                                                 class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
                                             <input type="hidden" :name="`variants[${index}][price]`"
                                                 :value="row.price" />
+                                            <template x-for="message in fieldErrors(`variants.${index}.price`)" :key="message">
+                                                <p class="mt-1.5 text-xs text-red-500" x-text="message"></p>
+                                            </template>
                                         </div>
                                         <div>
                                             <label
@@ -280,12 +330,18 @@
                                                 <span class="text-red-400">*</span></label>
                                             <input type="text" inputmode="numeric" placeholder="0"
                                                 x-model="row.stockDisplay"
+                                                :data-error-field="`variants.${index}.stock`"
+                                                :aria-invalid="hasError(`variants.${index}.stock`)"
+                                                :class="hasError(`variants.${index}.stock`) ? '!border-red-400 !bg-red-50 dark:!border-red-600 dark:!bg-red-900/10' : ''"
+                                                @input="clearError(`variants.${index}.stock`); syncNumericField(row, 'stock', 'stockDisplay')"
                                                 @focus="row.stockDisplay = sanitizeNumericInput(row.stockDisplay || row.stock)"
-                                                @input="syncNumericField(row, 'stock', 'stockDisplay')"
                                                 @blur="formatNumericField(row, 'stock', 'stockDisplay')"
                                                 class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
                                             <input type="hidden" :name="`variants[${index}][stock]`"
                                                 :value="row.stock" />
+                                            <template x-for="message in fieldErrors(`variants.${index}.stock`)" :key="message">
+                                                <p class="mt-1.5 text-xs text-red-500" x-text="message"></p>
+                                            </template>
                                         </div>
                                     </div>
 
@@ -302,25 +358,49 @@
                                                 <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Berat (gram) <span class="text-red-400">*</span></label>
                                                 <input type="number" min="1" step="1" placeholder="100"
                                                     :name="`variants[${index}][weight_grams]`" x-model="row.weightGrams"
+                                                    :data-error-field="`variants.${index}.weight_grams`"
+                                                    :class="hasError(`variants.${index}.weight_grams`) ? '!border-red-400 !bg-red-50 dark:!border-red-600 dark:!bg-red-900/10' : ''"
+                                                    @input="clearError(`variants.${index}.weight_grams`)"
                                                     class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                                <template x-for="message in fieldErrors(`variants.${index}.weight_grams`)" :key="message">
+                                                    <p class="mt-1.5 text-xs text-red-500" x-text="message"></p>
+                                                </template>
                                             </div>
                                             <div>
                                                 <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Panjang (cm)</label>
                                                 <input type="number" min="0" step="0.01" placeholder="0"
                                                     :name="`variants[${index}][length_cm]`" x-model="row.lengthCm"
+                                                    :data-error-field="`variants.${index}.length_cm`"
+                                                    @input="clearError(`variants.${index}.length_cm`)"
+                                                    :class="hasError(`variants.${index}.length_cm`) ? '!border-red-400 !bg-red-50 dark:!border-red-600 dark:!bg-red-900/10' : ''"
                                                     class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                                <template x-for="message in fieldErrors(`variants.${index}.length_cm`)" :key="message">
+                                                    <p class="mt-1.5 text-xs text-red-500" x-text="message"></p>
+                                                </template>
                                             </div>
                                             <div>
                                                 <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Lebar (cm)</label>
                                                 <input type="number" min="0" step="0.01" placeholder="0"
                                                     :name="`variants[${index}][width_cm]`" x-model="row.widthCm"
+                                                    :data-error-field="`variants.${index}.width_cm`"
+                                                    @input="clearError(`variants.${index}.width_cm`)"
+                                                    :class="hasError(`variants.${index}.width_cm`) ? '!border-red-400 !bg-red-50 dark:!border-red-600 dark:!bg-red-900/10' : ''"
                                                     class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                                <template x-for="message in fieldErrors(`variants.${index}.width_cm`)" :key="message">
+                                                    <p class="mt-1.5 text-xs text-red-500" x-text="message"></p>
+                                                </template>
                                             </div>
                                             <div>
                                                 <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Tinggi (cm)</label>
                                                 <input type="number" min="0" step="0.01" placeholder="0"
                                                     :name="`variants[${index}][height_cm]`" x-model="row.heightCm"
+                                                    :data-error-field="`variants.${index}.height_cm`"
+                                                    @input="clearError(`variants.${index}.height_cm`)"
+                                                    :class="hasError(`variants.${index}.height_cm`) ? '!border-red-400 !bg-red-50 dark:!border-red-600 dark:!bg-red-900/10' : ''"
                                                     class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                                <template x-for="message in fieldErrors(`variants.${index}.height_cm`)" :key="message">
+                                                    <p class="mt-1.5 text-xs text-red-500" x-text="message"></p>
+                                                </template>
                                             </div>
                                         </div>
                                     </div>
@@ -367,12 +447,14 @@
                                                         value="{{ $defId }}" />
                                                     <div class="relative">
                                                         <input type="text"
+                                                            :data-error-field="`variants.${index}.attributes.{{ $defId }}`"
                                                             :name="`variants[${index}][attributes][{{ $defId }}][{{ $fieldName }}]`"
                                                             :value="curVal"
-                                                            @input="curVal = $event.target.value; query = $event.target.value"
+                                                            @input="curVal = $event.target.value; query = $event.target.value; clearError(`variants.${index}.attributes.{{ $defId }}`, true)"
+                                                            :class="hasError(`variants.${index}.attributes.{{ $defId }}`, true) ? '!border-red-400 !bg-red-50 dark:!border-red-600 dark:!bg-red-900/10' : ''"
                                                             @focus="onOpen()"
                                                             @keydown.escape="open = false; query = ''"
-                                                            @keydown.enter.prevent="if (filtered.length) { pick(filtered[0]); }"
+                                                            @keydown.enter.prevent="if (filtered.length) { pick(filtered[0]); clearError(`variants.${index}.attributes.{{ $defId }}`, true); }"
                                                             @keydown.arrow-down.prevent="onOpen()"
                                                             placeholder="{{ $placeholder }}"
                                                             autocomplete="off"
@@ -385,6 +467,9 @@
                                                             </svg>
                                                         </button>
                                                     </div>
+                                                    <template x-for="message in fieldErrors(`variants.${index}.attributes.{{ $defId }}`, true)" :key="message">
+                                                        <p class="mt-1.5 text-xs text-red-500" x-text="message"></p>
+                                                    </template>
                                                     <div x-show="open && opts.length > 0"
                                                         x-transition:enter="transition ease-out duration-100"
                                                         x-transition:enter-start="opacity-0 -translate-y-1"
@@ -393,7 +478,7 @@
                                                         <p x-show="filtered.length === 0" class="px-3 py-2 text-xs text-slate-400">Tidak ada pilihan cocok</p>
                                                         <template x-for="opt in filtered" :key="opt">
                                                             <button type="button"
-                                                                @mousedown.prevent="pick(opt)"
+                                                                @mousedown.prevent="pick(opt); clearError(`variants.${index}.attributes.{{ $defId }}`, true)"
                                                                 :class="curVal === String(opt) ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-semibold' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60'"
                                                                 class="w-full text-left px-3 py-2 text-sm"
                                                                 x-text="opt">
@@ -420,7 +505,10 @@
                         <h2 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4">Kategori</h2>
                         <div class="relative" @click.outside="categoryOpen = false">
                             <input type="text" x-model="categorySearch"
-                                @input="categoryOpen = true; categoryId = null; categoryType = null" @focus="categoryOpen = true"
+                                data-error-field="category_id"
+                                :aria-invalid="hasError('category_id') || hasError('main_category_id') || hasError('category_detail_id')"
+                                :class="hasError('category_id') || hasError('main_category_id') || hasError('category_detail_id') ? '!border-red-400 !bg-red-50 dark:!border-red-600 dark:!bg-red-900/10' : ''"
+                                @input="categoryOpen = true; categoryId = null; categoryType = null; clearError('category_id'); clearError('main_category_id'); clearError('category_detail_id')" @focus="categoryOpen = true"
                                 placeholder="Cari atau tambah kategori..."
                                 class="w-full px-4 py-2.5 text-sm rounded-xl border focus:outline-none focus:ring-2 dark:text-slate-200 placeholder-slate-400 {{ $errors->has('category_id') ? 'border-2 border-red-400 bg-red-50 dark:bg-red-900/10 dark:border-red-600 focus:ring-red-400' : 'border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 focus:ring-blue-500' }}" />
                             <input type="hidden" name="category_id" :value="categoryType === 'category' ? categoryId : ''">
@@ -458,6 +546,12 @@
                                 {{ $message }}
                             </p>
                         @enderror
+                        <template x-for="message in fieldErrors('category_id')" :key="message">
+                            <p class="text-xs text-red-500 mt-1.5" x-text="message"></p>
+                        </template>
+                        <template x-for="message in [...fieldErrors('main_category_id'), ...fieldErrors('category_detail_id')]" :key="message">
+                            <p class="text-xs text-red-500 mt-1.5" x-text="message"></p>
+                        </template>
                     </div>
 
                     {{-- Status --}}
@@ -465,6 +559,7 @@
                         <h2 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4">Redeem Point</h2>
                         <label class="flex items-start gap-3 cursor-pointer">
                             <input type="checkbox" name="is_redeem_product" value="1" x-model="isRedeemProduct"
+                                @change="if (!isRedeemProduct) clearError('redeem_points')"
                                 class="mt-1 w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
                             <div>
                                 <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Aktifkan sebagai produk redeem</p>
@@ -475,22 +570,33 @@
                         <div x-show="isRedeemProduct" x-transition class="mt-4">
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Harga Point</label>
                             <input type="number" min="1" name="redeem_points" x-model="redeemPoints"
+                                data-error-field="redeem_points"
+                                :class="hasError('redeem_points') ? '!border-red-400 !bg-red-50 dark:!border-red-600 dark:!bg-red-900/10' : ''"
+                                @input="clearError('redeem_points')"
                                 placeholder="Contoh: 10"
                                 class="w-full px-4 py-2.5 text-sm rounded-xl border focus:outline-none focus:ring-2 dark:text-slate-200 placeholder-slate-400 {{ $errors->has('redeem_points') ? 'border-2 border-red-400 bg-red-50 dark:bg-red-900/10 dark:border-red-600 focus:ring-red-400' : 'border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 focus:ring-blue-500' }}" />
                             <p class="text-xs text-slate-400 mt-1.5">Isi jumlah point yang dibutuhkan untuk redeem 1 produk.</p>
                             @error('redeem_points')
                                 <p class="text-xs text-red-500 mt-1.5">{{ $message }}</p>
                             @enderror
+                            <template x-for="message in fieldErrors('redeem_points')" :key="message">
+                                <p class="text-xs text-red-500 mt-1.5" x-text="message"></p>
+                            </template>
                         </div>
                     </div>
 
                     <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
                         <h2 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4">Status</h2>
                         <select name="status"
+                            data-error-field="status" @change="clearError('status')"
+                            :class="hasError('status') ? '!border-red-400 !bg-red-50 dark:!border-red-600 dark:!bg-red-900/10' : ''"
                             class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200">
                             <option value="active" @selected(old('status', 'active') === 'active')>Active</option>
                             <option value="inactive" @selected(old('status') === 'inactive')>Inactive</option>
                         </select>
+                        <template x-for="message in fieldErrors('status')" :key="message">
+                            <p class="text-xs text-red-500 mt-1.5" x-text="message"></p>
+                        </template>
                     </div>
 
                     {{-- Actions --}}
@@ -581,6 +687,7 @@
                 categoryOpen: false,
                 confirmOpen: false,
                 isSubmitting: false,
+                validationErrors: {},
                 isRedeemProduct: !!oldIsRedeemProduct,
                 redeemPoints: oldRedeemPoints || '',
 
@@ -640,6 +747,9 @@
                     this.categoryId = cat.id;
                     this.categoryType = cat.type;
                     this.categorySearch = cat.name;
+                    this.clearError('category_id');
+                    this.clearError('main_category_id');
+                    this.clearError('category_detail_id');
                     this.categoryOpen = false;
                     const allowedIds = new Set(this.activeAttributeDefinitions.map((definition) => String(definition.id)));
                     this.rows.forEach((row) => Object.entries(row.attributes || {}).forEach(([id, attribute]) => {
@@ -649,11 +759,83 @@
                         }
                     }));
                 },
-                submitConfirmed() {
+                get validationMessages() {
+                    return Object.values(this.validationErrors).flat();
+                },
+                hasError(field, includeNested = false) {
+                    return this.fieldErrors(field, includeNested).length > 0;
+                },
+                fieldErrors(field, includeNested = false) {
+                    if (!includeNested) return this.validationErrors[field] || [];
+
+                    return Object.entries(this.validationErrors)
+                        .filter(([key]) => key === field || key.startsWith(`${field}.`))
+                        .flatMap(([, messages]) => messages);
+                },
+                clearError(field, includeNested = false) {
+                    const errors = { ...this.validationErrors };
+                    Object.keys(errors).forEach((key) => {
+                        if (key === field || (includeNested && key.startsWith(`${field}.`))) {
+                            delete errors[key];
+                        }
+                    });
+                    this.validationErrors = errors;
+                },
+                focusFirstError() {
+                    const field = Object.keys(this.validationErrors)[0];
+                    const escapedField = window.CSS?.escape ? CSS.escape(field || '') : field;
+                    const target = field
+                        ? this.$root.querySelector(`[data-error-field="${escapedField}"]`)
+                        : null;
+
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        if (typeof target.focus === 'function') target.focus({ preventScroll: true });
+                        return;
+                    }
+
+                    this.$refs.validationSummary?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    this.$refs.validationSummary?.focus({ preventScroll: true });
+                },
+                async submitConfirmed() {
                     if (this.isSubmitting) return;
                     this.isSubmitting = true;
-                    this.confirmOpen = false;
-                    this.$nextTick(() => this.$root.submit());
+                    this.validationErrors = {};
+
+                    try {
+                        const response = await fetch(this.$root.action, {
+                            method: 'POST',
+                            body: new FormData(this.$root),
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                            },
+                        });
+                        const payload = await response.json().catch(() => ({}));
+
+                        if (response.status === 422) {
+                            this.validationErrors = payload.errors || {
+                                form: [payload.message || 'Data produk belum valid.'],
+                            };
+                            this.confirmOpen = false;
+                            this.$nextTick(() => this.focusFirstError());
+                            return;
+                        }
+
+                        if (!response.ok || !payload.redirect) {
+                            throw new Error(payload.message || 'Produk gagal disimpan.');
+                        }
+
+                        window.location.assign(payload.redirect);
+                    } catch (error) {
+                        this.confirmOpen = false;
+                        this.validationErrors = {
+                            form: [error.message || 'Terjadi gangguan koneksi. Silakan coba kembali.'],
+                        };
+                        this.$nextTick(() => this.focusFirstError());
+                    } finally {
+                        this.isSubmitting = false;
+                    }
                 },
 
                 rows: oldRows.map((r, i) => ({

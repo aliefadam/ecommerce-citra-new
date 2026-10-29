@@ -149,6 +149,51 @@ class DynamicProductSpecificationTest extends TestCase
         $this->assertDatabaseMissing('products', ['name' => 'Steel Pipe Test']);
     }
 
+    public function test_ajax_product_validation_returns_json_without_redirecting(): void
+    {
+        $response = $this->actingAs($this->admin())->postJson(route('products.store'), [
+            'name' => 'Produk Tanpa Kategori',
+            'status' => 'active',
+            'variants' => [[
+                'price' => 10000,
+                'stock' => 5,
+                'weight_grams' => 100,
+            ]],
+        ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors('category_id');
+        $this->assertDatabaseMissing('products', ['name' => 'Produk Tanpa Kategori']);
+    }
+
+    public function test_ajax_product_creation_returns_the_index_redirect(): void
+    {
+        [, $detail] = $this->categoryFixture('pipe');
+
+        $response = $this->actingAs($this->admin())->postJson(route('products.store'), [
+            'name' => 'Produk Ajax Valid',
+            'category_detail_id' => $detail->id,
+            'status' => 'active',
+            'variants' => [[
+                'price' => 850000,
+                'stock' => 20,
+                'weight_grams' => 15000,
+                'attributes' => $this->attributePayload([
+                    'nominal_size' => '4',
+                    'schedule_class' => 'Sch 40',
+                    'material' => 'Carbon Steel',
+                    'thickness_mm' => '6.02',
+                    'pipe_length_m' => '6',
+                    'standard' => 'ASTM A106',
+                ]),
+            ]],
+        ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('redirect', route('products.index'));
+        $this->assertDatabaseHas('products', ['name' => 'Produk Ajax Valid']);
+    }
+
     public function test_pipe_product_is_created_with_dynamic_attributes_and_visible_on_storefront(): void
     {
         [, $detail] = $this->categoryFixture('pipe');
