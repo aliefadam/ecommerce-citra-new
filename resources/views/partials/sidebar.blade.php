@@ -4,7 +4,7 @@
         <div class="flex min-w-0 flex-1 items-center">
             @if (!empty($appStoreLogoUrl))
                 <img src="{{ $appStoreLogoUrl }}" alt="{{ $appStoreName }}"
-                    class="block h-12 w-auto max-w-[170px] object-contain object-left">
+                    class="block h-12 w-auto max-w-[170px] object-contain object-left dark:brightness-0 dark:invert">
             @else
                 <svg class="h-11 w-11 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                     stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-label="{{ $appStoreName }}">
