@@ -30,6 +30,8 @@ module.exports = async () => {
             SESSION_DRIVER: 'database',
             CACHE_STORE: 'array',
             MAIL_MAILER: 'array',
+            MOBILE_SPA_ENABLED: 'true',
+            MOBILE_SPA_PILOT: 'true',
         },
         encoding: 'utf8',
     });

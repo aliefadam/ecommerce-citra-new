@@ -32,6 +32,7 @@ use App\Http\Controllers\MainCategoryController;
 use App\Http\Controllers\ManualPaymentController;
 use App\Http\Controllers\MemberTierController;
 use App\Http\Controllers\MidtransController;
+use App\Http\Controllers\MobileAppController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\NewsletterSubscriberController;
 use App\Http\Controllers\OperationalHealthController;
@@ -62,6 +63,12 @@ use App\Http\Controllers\WishlistController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/app.webmanifest', [SeoController::class, 'manifest'])->name('pwa.manifest');
+Route::middleware('mobile.spa')->group(function () {
+    Route::get('/app/manifest.webmanifest', [MobileAppController::class, 'manifest'])->name('mobile-app.manifest');
+    Route::get('/app/{path?}', [MobileAppController::class, 'show'])
+        ->where('path', '.*')
+        ->name('mobile-app.show');
+});
 Route::get('/robots.txt', [SeoController::class, 'robots'])->name('seo.robots');
 Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('seo.sitemap');
 Route::get('/language/{locale}', LocaleController::class)

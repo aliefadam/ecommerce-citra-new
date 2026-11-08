@@ -16,6 +16,8 @@ const e2eEnv = {
     SESSION_DRIVER: 'database',
     CACHE_STORE: 'database',
     MAIL_MAILER: 'array',
+    MOBILE_SPA_ENABLED: 'true',
+    MOBILE_SPA_PILOT: 'true',
     E2E_DATABASE_PREPARED: '1',
 };
 

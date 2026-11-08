@@ -1,9 +1,16 @@
 # PRD: Modernisasi Frontend Customer
 
-Status: Implementasi berjalan; Sprint 0-3 selesai, Sprint 4-7 belum ditutup
+Status: Aktif untuk desktop dan fondasi bersama; scope mobile dicabut pada 8 November 2026
 Tanggal audit awal: 13 September 2026  
 Area: Storefront / B2C customer experience  
 Pendekatan delivery: sprint kecil dengan quality gate pada setiap tahap
+
+> **Pemberitahuan pencabutan scope mobile (8 November 2026):** Seluruh requirement, sprint,
+> acceptance criteria, dan Definition of Done khusus pengalaman mobile dalam dokumen ini tidak lagi
+> menjadi target implementasi. Scope tersebut digantikan oleh
+> [`prd-mobile-storefront-spa-pwa.md`](prd-mobile-storefront-spa-pwa.md). Dokumen ini tetap berlaku
+> untuk desktop Blade, fondasi/design token bersama, dan bukti historis pekerjaan yang telah selesai.
+> Jika ada konflik mengenai mobile, PRD Mobile Storefront SPA/PWA menjadi sumber otoritatif.
 
 ## Ringkasan
 
@@ -132,7 +139,8 @@ Fitur tersebut tidak dihapus. Presentasi, performa, dan hierarkinya yang diperba
 
 ## Non-Tujuan
 
-- Tidak mengganti framework Laravel Blade dengan React/Vue pada program ini.
+- Tidak mengganti storefront **desktop** Laravel Blade dengan React/Vue. Pengecualian mobile SPA
+  diatur oleh `prd-mobile-storefront-spa-pwa.md`.
 - Tidak mengubah logika harga, stok, pajak, kupon, point, atau payment tanpa PRD domain terkait.
 - Tidak mengubah kontrak Open Catalog API kecuali endpoint autocomplete baru yang backward-compatible.
 - Tidak menghapus guest checkout.
@@ -658,6 +666,10 @@ Mitigasi: accessibility menjadi acceptance criteria setiap sprint, bukan sprint 
 
 Setiap sprint harus selesai dan lolos gate sebelum sprint berikutnya dimulai.
 
+> Mulai 8 November 2026, item mobile pada Sprint 4-7 dipindahkan ke PRD Mobile Storefront SPA/PWA
+> dan tidak diperlukan untuk menutup PRD desktop ini. Checklist yang telah selesai tetap dipertahankan
+> hanya sebagai bukti historis implementasi Blade sebelumnya.
+
 ### Sprint 0 - Baseline dan Inventory
 
 Scope:
@@ -850,6 +862,9 @@ Acceptance criteria:
 
 ## Acceptance Criteria Global
 
+> Acceptance criteria khusus mobile pada bagian ini dicabut dan digantikan oleh acceptance criteria
+> global dalam `prd-mobile-storefront-spa-pwa.md`. Kriteria desktop dan fondasi bersama tetap berlaku.
+
 - [ ] Tailwind Browser CDN tidak digunakan oleh frontend customer.
 - [ ] Styling dan icon aksi kritis tersedia tanpa koneksi ke CDN pihak ketiga.
 - [ ] Layout customer menggunakan production Vite assets.
@@ -875,7 +890,7 @@ Program modernisasi dianggap selesai ketika:
 
 1. Sprint 0-7 dan seluruh quality gate telah ditutup.
 2. Seluruh acceptance criteria global telah memiliki bukti.
-3. Core flow berikut lulus pada desktop dan mobile:
+3. Core flow berikut lulus pada desktop. Verifikasi mobile mengikuti PRD Mobile Storefront SPA/PWA:
    - Search -> detail -> cart -> checkout -> pembayaran.
    - Guest buy-now -> checkout -> pembayaran/bukti transfer.
    - Multi-company cart -> checkout -> transaksi terpisah.
@@ -887,7 +902,8 @@ Program modernisasi dianggap selesai ketika:
 ## Keputusan yang Sudah Ditetapkan
 
 - PRD modernisasi frontend berdiri sendiri dan tidak dicampur ke PRD faktur pajak.
-- Laravel Blade dan Tailwind tetap digunakan.
+- Laravel Blade dan Tailwind tetap digunakan untuk desktop. Mobile SPA menggunakan keputusan stack
+  pada `prd-mobile-storefront-spa-pwa.md`.
 - Asset customer dipindahkan ke Vite production build.
 - Arah visual adalah industrial-modern.
 - Plus Jakarta Sans boleh dipertahankan sebagai body font jika self-hosted.

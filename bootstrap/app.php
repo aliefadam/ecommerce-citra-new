@@ -4,9 +4,12 @@ use App\Http\Middleware\AdminOnly;
 use App\Http\Middleware\AdminPermission;
 use App\Http\Middleware\CompanyScope;
 use App\Http\Middleware\EnsureCheckoutAccess;
+use App\Http\Middleware\EnsureMobileSpaEnabled;
 use App\Http\Middleware\LocalizeStorefrontUi;
 use App\Http\Middleware\RequestContext;
 use App\Http\Middleware\SetLocale;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -23,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->statefulApi();
         $middleware->append(RequestContext::class);
         $middleware->web(append: [SetLocale::class, LocalizeStorefrontUi::class]);
         $middleware->alias([
@@ -30,6 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin.permission' => AdminPermission::class,
             'company.scope' => CompanyScope::class,
             'checkout.access' => EnsureCheckoutAccess::class,
+            'mobile.spa' => EnsureMobileSpaEnabled::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
@@ -41,6 +46,8 @@ return Application::configure(basePath: dirname(__DIR__))
             }
 
             $status = match (true) {
+                $e instanceof AuthenticationException => 401,
+                $e instanceof AuthorizationException => 403,
                 $e instanceof HttpExceptionInterface => $e->getStatusCode(),
                 $e instanceof ModelNotFoundException => 404,
                 $e instanceof ValidationException => 422,
@@ -48,6 +55,8 @@ return Application::configure(basePath: dirname(__DIR__))
             };
 
             $message = match ($status) {
+                401 => 'Sesi tidak tersedia atau sudah berakhir.',
+                403 => 'Anda tidak memiliki akses ke resource ini.',
                 404 => 'Resource tidak ditemukan.',
                 429 => 'Terlalu banyak permintaan. Coba lagi nanti.',
                 500 => 'Terjadi kesalahan pada server.',

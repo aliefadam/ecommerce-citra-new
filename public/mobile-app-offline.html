@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+        <meta name="robots" content="noindex" />
+        <meta name="theme-color" content="#0a3268" />
+        <title>Mobile Storefront Offline</title>
+        <style>
+            * { box-sizing: border-box; }
+            body { min-height: 100vh; margin: 0; display: grid; place-items: center; padding: 1rem; color: #18222d; background: #f5f3ee; font-family: system-ui, sans-serif; }
+            main { width: min(100%, 398px); border: 1px solid #d5dce2; border-radius: 16px; padding: 24px; background: white; text-align: center; }
+            h1 { margin: 0 0 8px; font-size: 24px; }
+            p { margin: 0 0 18px; color: #5f6f80; line-height: 1.6; }
+            button { min-height: 48px; border: 0; border-radius: 10px; padding: 0 18px; color: white; background: #0a3268; font: inherit; font-weight: 700; }
+        </style>
+    </head>
+    <body>
+        <main>
+            <h1>Anda sedang offline</h1>
+            <p>Sambungkan kembali internet untuk memuat data terbaru. Checkout tidak tersedia secara offline.</p>
+            <button type="button" onclick="location.reload()">Coba Lagi</button>
+        </main>
+    </body>
+</html>

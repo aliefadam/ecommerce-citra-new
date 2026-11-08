@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Mobile\V1\MobileSessionController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\MidtransController;
@@ -8,6 +9,20 @@ use Illuminate\Support\Facades\Route;
 Route::post('midtrans/notification', [MidtransController::class, 'notification'])
     ->middleware('throttle:120,1')
     ->name('midtrans.notification');
+
+Route::prefix('mobile/v1')
+    ->name('api.mobile.v1.')
+    ->middleware('mobile.spa')
+    ->group(function () {
+        Route::get('bootstrap', [MobileSessionController::class, 'bootstrap'])->name('bootstrap');
+        Route::post('auth/login', [MobileSessionController::class, 'login'])
+            ->middleware('throttle:login')
+            ->name('auth.login');
+        Route::middleware('auth:sanctum')->group(function () {
+            Route::get('session', [MobileSessionController::class, 'show'])->name('session.show');
+            Route::post('auth/logout', [MobileSessionController::class, 'logout'])->name('auth.logout');
+        });
+    });
 
 /*
 |--------------------------------------------------------------------------
