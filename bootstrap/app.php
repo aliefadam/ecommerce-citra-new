@@ -63,7 +63,21 @@ return Application::configure(basePath: dirname(__DIR__))
                 default => $e->getMessage() ?: 'Permintaan tidak dapat diproses.',
             };
 
-            $payload = ['message' => $message];
+            $code = match ($status) {
+                401 => 'unauthenticated',
+                403 => 'forbidden',
+                404 => 'not_found',
+                422 => 'validation_failed',
+                429 => 'rate_limited',
+                500 => 'server_error',
+                default => 'request_failed',
+            };
+
+            $payload = [
+                'code' => $code,
+                'message' => $message,
+                'request_id' => $request->attributes->get('request_id'),
+            ];
             if ($e instanceof ValidationException) {
                 $payload['errors'] = $e->errors();
             }

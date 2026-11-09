@@ -1,49 +1,81 @@
 <script setup>
+import { onMounted, ref } from 'vue';
+import MobileCatalogState from '../components/MobileCatalogState.vue';
+import MobileProductCard from '../components/MobileProductCard.vue';
+import MobileSearchBox from '../components/MobileSearchBox.vue';
+import { request } from '../services/api';
 import { useSessionStore } from '../stores/session';
 
 const session = useSessionStore();
+const home = ref(null);
+const loading = ref(true);
+const error = ref('');
+
+const load = async () => {
+    loading.value = true;
+    error.value = '';
+    try {
+        const response = await request('/api/mobile/v1/home');
+        home.value = response.data;
+    } catch (exception) {
+        error.value = exception.message || 'Beranda belum dapat dimuat.';
+    } finally {
+        loading.value = false;
+    }
+};
+
+onMounted(load);
 </script>
 
 <template>
     <section class="mobile-screen" aria-labelledby="mobile-route-heading">
         <div class="mobile-hero">
-            <span class="mobile-eyebrow">Foundation Fase 1</span>
+            <span class="mobile-eyebrow">Katalog kebutuhan proyek</span>
             <h1 id="mobile-route-heading" tabindex="-1">
-                {{ session.user ? `Halo, ${session.user.name}` : 'Belanja kebutuhan proyek lebih praktis' }}
+                {{ session.user ? `Halo, ${session.user.name}` : 'Temukan material yang tepat' }}
             </h1>
-            <p>Shell SPA sudah aktif. Katalog dan transaksi akan ditambahkan bertahap setelah quality gate.</p>
+            <p>Cari berdasarkan nama, SKU, ukuran, atau spesifikasi teknis.</p>
         </div>
 
-        <button class="mobile-search-preview" type="button" disabled aria-describedby="search-foundation-note">
-            <span aria-hidden="true">⌕</span>
-            <span>Cari nama, SKU, ukuran, atau material</span>
-        </button>
-        <p id="search-foundation-note" class="mobile-help-text">Pencarian tersedia pada Fase 2.</p>
+        <MobileSearchBox />
 
-        <div class="mobile-section-heading">
-            <div>
-                <span class="mobile-eyebrow">Fondasi siap</span>
-                <h2>Mobile app shell</h2>
+        <div v-if="loading" class="mobile-home-skeleton" aria-label="Memuat beranda" aria-busy="true">
+            <span></span><span></span><span></span>
+        </div>
+        <MobileCatalogState v-else-if="error" title="Beranda gagal dimuat" :message="error" :retry="load" />
+
+        <template v-else-if="home">
+            <a
+                v-if="home.banners[0]?.target_url"
+                :href="home.banners[0].target_url"
+                class="mobile-banner"
+            >
+                <img :src="home.banners[0].image" :alt="home.banners[0].title || 'Promo pilihan'" />
+            </a>
+            <div v-else-if="home.banners[0]" class="mobile-banner">
+                <img :src="home.banners[0].image" :alt="home.banners[0].title || 'Promo pilihan'" />
             </div>
-        </div>
 
-        <div class="mobile-foundation-grid">
-            <article>
-                <strong>Navigasi SPA</strong>
-                <p>Route, Back/Forward, direct load, dan scroll restoration.</p>
-            </article>
-            <article>
-                <strong>Session aman</strong>
-                <p>Same-origin cookie, CSRF, dan Sanctum tanpa token browser.</p>
-            </article>
-            <article>
-                <strong>PWA terisolasi</strong>
-                <p>Manifest dan service worker hanya untuk scope /app.</p>
-            </article>
-            <article>
-                <strong>Desktop tetap</strong>
-                <p>Storefront Blade existing tidak diganti atau diarahkan paksa.</p>
-            </article>
-        </div>
+            <div class="mobile-section-heading mobile-section-row">
+                <div><span class="mobile-eyebrow">Jelajahi</span><h2>Kategori</h2></div>
+                <RouterLink :to="{ name: 'categories' }">Lihat semua</RouterLink>
+            </div>
+            <div class="mobile-home-categories">
+                <RouterLink v-for="category in home.categories" :key="category.id" :to="{ name: 'category-products', params: { slug: category.slug } }">
+                    <img :src="category.image || '/imgs/product-placeholder.svg'" alt="" />
+                    <strong>{{ category.name }}</strong>
+                    <small>{{ category.products_count }} produk</small>
+                </RouterLink>
+            </div>
+
+            <div class="mobile-section-heading mobile-section-row">
+                <div><span class="mobile-eyebrow">Baru tersedia</span><h2>Produk terbaru</h2></div>
+                <RouterLink :to="{ name: 'search' }">Lihat semua</RouterLink>
+            </div>
+            <div v-if="home.featured_products.length" class="mobile-product-grid">
+                <MobileProductCard v-for="product in home.featured_products" :key="product.id" :product="product" />
+            </div>
+            <MobileCatalogState v-else title="Belum ada produk" message="Produk terbaru akan tampil di sini." />
+        </template>
     </section>
 </template>

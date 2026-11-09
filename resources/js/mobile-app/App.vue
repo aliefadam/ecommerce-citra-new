@@ -93,6 +93,7 @@ onBeforeUnmount(() => {
                     :key="item.name"
                     :to="{ name: item.name }"
                     class="mobile-nav-item"
+                    :class="{ 'router-link-active': route.meta.navSection === item.name }"
                     :aria-label="item.label"
                 >
                     <span class="mobile-nav-icon" aria-hidden="true">{{ item.icon }}</span>

@@ -11,9 +11,26 @@ const routes = [
     {
         path: '/categories',
         name: 'categories',
-        component: () => import('./views/FoundationView.vue'),
-        props: { title: 'Katalog', message: 'Katalog mobile akan tersedia pada Fase 2.' },
-        meta: { label: 'Katalog', nav: true },
+        component: () => import('./views/CategoriesView.vue'),
+        meta: { label: 'Katalog', nav: true, navSection: 'categories' },
+    },
+    {
+        path: '/search',
+        name: 'search',
+        component: () => import('./views/ProductsView.vue'),
+        meta: { label: 'Pencarian', nav: true, navSection: 'categories' },
+    },
+    {
+        path: '/c/:slug',
+        name: 'category-products',
+        component: () => import('./views/ProductsView.vue'),
+        meta: { label: 'Kategori', nav: true, navSection: 'categories' },
+    },
+    {
+        path: '/products/:slug',
+        name: 'product',
+        component: () => import('./views/ProductDetailView.vue'),
+        meta: { label: 'Detail Produk', nav: true, navSection: 'categories' },
     },
     {
         path: '/cart',
@@ -55,7 +72,11 @@ export const createMobileRouter = () => {
         history: createWebHistory('/app/'),
         routes,
         scrollBehavior(to, from, savedPosition) {
-            return savedPosition || { top: 0 };
+            if (!savedPosition) return { top: 0 };
+
+            return new Promise((resolve) => {
+                window.setTimeout(() => resolve(savedPosition), 300);
+            });
         },
     });
 

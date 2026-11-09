@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Mobile\V1\MobileCatalogController;
 use App\Http\Controllers\Api\Mobile\V1\MobileSessionController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\ProductController;
@@ -15,6 +16,13 @@ Route::prefix('mobile/v1')
     ->middleware('mobile.spa')
     ->group(function () {
         Route::get('bootstrap', [MobileSessionController::class, 'bootstrap'])->name('bootstrap');
+        Route::middleware(['throttle:api', 'cache.headers:public;max_age=60;etag'])->group(function () {
+            Route::get('home', [MobileCatalogController::class, 'home'])->name('home');
+            Route::get('categories', [MobileCatalogController::class, 'categories'])->name('categories.index');
+            Route::get('products', [MobileCatalogController::class, 'products'])->name('products.index');
+            Route::get('products/{slug}', [MobileCatalogController::class, 'product'])->name('products.show');
+            Route::get('search/suggestions', [MobileCatalogController::class, 'suggestions'])->name('search.suggestions');
+        });
         Route::post('auth/login', [MobileSessionController::class, 'login'])
             ->middleware('throttle:login')
             ->name('auth.login');

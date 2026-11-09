@@ -9,7 +9,7 @@ test('mobile SPA shell supports direct routes, guards, and desktop isolation', a
     await expect(page.getByTestId('mobile-spa-shell')).toBeVisible();
     await expect(page.getByRole('navigation', { name: 'Navigasi aplikasi mobile' })).toBeVisible();
     await expect(page.getByRole('navigation', { name: 'Navigasi aplikasi mobile' }).getByRole('link')).toHaveCount(5);
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Belanja kebutuhan proyek');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Temukan material');
 
     await page.getByRole('link', { name: 'Katalog' }).click();
     await expect(page).toHaveURL(/\/app\/categories$/);

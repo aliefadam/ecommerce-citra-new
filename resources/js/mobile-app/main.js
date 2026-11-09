@@ -11,7 +11,7 @@ const root = document.querySelector('#mobile-app');
 if (root) {
     const config = Object.freeze({
         appName: root.dataset.appName || 'Ecommerce Citra',
-        appVersion: root.dataset.appVersion || 'foundation-1',
+        appVersion: root.dataset.appVersion || 'catalog-2',
         apiBase: root.dataset.apiBase || '/api/mobile/v1',
     });
 
