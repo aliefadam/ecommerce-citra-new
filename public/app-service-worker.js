@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ecommerce-citra-mobile-commerce-v3';
+const CACHE_NAME = 'ecommerce-citra-mobile-checkout-v4';
 const OFFLINE_URL = '/mobile-app-offline.html';
 
 self.addEventListener('install', (event) => {

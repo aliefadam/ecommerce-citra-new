@@ -16,7 +16,7 @@ test('member checkout separates products from two companies into independent ord
     await page.locator('input[name=password]').fill('123123');
     await Promise.all([
         page.waitForURL((url) => !url.pathname.endsWith('/login'), { waitUntil: 'domcontentloaded' }),
-        page.getByRole('button', { name: 'Sign In' }).click({ noWaitAfter: true }),
+        page.getByRole('button', { name: /Masuk|Sign In/ }).click({ noWaitAfter: true }),
     ]);
 
     const addProductToCart = async (slug) => {

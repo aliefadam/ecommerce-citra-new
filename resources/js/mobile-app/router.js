@@ -46,6 +46,24 @@ const routes = [
         meta: { label: 'Transaksi', nav: true, requiresAuth: true },
     },
     {
+        path: '/checkout',
+        name: 'checkout',
+        component: () => import('./views/CheckoutView.vue'),
+        meta: { label: 'Checkout', requiresAuth: true, hideNavigation: true },
+    },
+    {
+        path: '/orders/:orderId/payment',
+        name: 'payment',
+        component: () => import('./views/PaymentView.vue'),
+        meta: { label: 'Pembayaran', requiresAuth: true, hideNavigation: true },
+    },
+    {
+        path: '/checkout/address/new',
+        name: 'checkout-address-new',
+        component: () => import('./views/AddressCreateView.vue'),
+        meta: { label: 'Tambah Alamat', requiresAuth: true, hideNavigation: true },
+    },
+    {
         path: '/account',
         name: 'account',
         component: () => import('./views/AccountView.vue'),

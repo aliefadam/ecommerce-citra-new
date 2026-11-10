@@ -400,6 +400,28 @@ a, button, input { -webkit-tap-highlight-color: transparent; }
 .mobile-cart-summary p, .mobile-cart-summary button { grid-column: 1 / -1; }
 .mobile-cart-summary p { margin: 0; color: var(--mobile-danger); font-size: .68rem; }
 .mobile-clear-button { min-height: 44px; border: 0; color: var(--mobile-danger); background: transparent; font-weight: 750; }
+.mobile-button-link { display: grid; min-height: 44px; place-items: center; border-radius: .65rem; text-decoration: none; }
+.mobile-button-link[aria-disabled="true"] { pointer-events: none; opacity: .5; }
+.mobile-checkout { padding-bottom: calc(6rem + env(safe-area-inset-bottom)); }
+.mobile-checkout-card { display: grid; gap: .7rem; margin: .8rem 0; border: 1px solid var(--mobile-border); border-radius: .9rem; padding: 1rem; background: white; }
+.mobile-checkout-card legend, .mobile-checkout-card h2 { margin: 0; color: var(--mobile-navy); font-size: .9rem; font-weight: 850; }
+.mobile-choice-row { display: flex; min-height: 48px; align-items: flex-start; gap: .65rem; border-top: 1px solid #eef1f4; padding-top: .65rem; }
+.mobile-choice-row input { width: 20px; height: 20px; flex: 0 0 auto; }
+.mobile-choice-row span { display: grid; gap: .2rem; font-size: .76rem; }
+.mobile-choice-row small { color: var(--mobile-muted); line-height: 1.45; }
+.mobile-checkout-line { display: flex; justify-content: space-between; gap: .8rem; font-size: .74rem; }
+.mobile-coupon-row { display: grid; grid-template-columns: 1fr auto; gap: .5rem; }
+.mobile-coupon-row input, .mobile-checkout-card select { min-height: 44px; border: 1px solid var(--mobile-border); border-radius: .6rem; padding: 0 .7rem; background: white; }
+.mobile-coupon-row button { min-width: 64px; border: 1px solid var(--mobile-navy); border-radius: .6rem; color: var(--mobile-navy); background: white; font-weight: 750; }
+.mobile-checkout-submit { position: fixed; z-index: 20; right: max(calc((100vw - var(--mobile-shell-width)) / 2 + 1rem), 1rem); bottom: calc(.8rem + env(safe-area-inset-bottom)); left: max(calc((100vw - var(--mobile-shell-width)) / 2 + 1rem), 1rem); }
+.mobile-payment-status { width: max-content; border-radius: 999px; padding: .3rem .55rem; color: var(--mobile-navy); background: #eaf0f5; font-size: .66rem; font-weight: 800; text-transform: uppercase; }
+.mobile-payment-total { color: var(--mobile-orange-strong); font-size: 1.35rem; }
+.mobile-payment-code { margin: 0; font-size: 1.1rem; font-weight: 850; letter-spacing: .04em; word-break: break-all; }
+.mobile-payment-qr { width: min(240px, 100%); margin: auto; }
+.mobile-proof-form { display: grid; gap: .6rem; border-top: 1px solid var(--mobile-border); padding-top: .8rem; }
+.mobile-address-form { display: grid; gap: .75rem; margin-top: 1rem; }
+.mobile-address-form > label { display: grid; gap: .35rem; color: var(--mobile-navy); font-size: .72rem; font-weight: 750; }
+.mobile-address-form input, .mobile-address-form select, .mobile-address-form textarea { width: 100%; min-height: 44px; border: 1px solid var(--mobile-border); border-radius: .6rem; padding: .65rem; color: var(--mobile-ink); background: white; font: inherit; }
 .mobile-wishlist-item { position: relative; min-width: 0; }
 .mobile-wishlist-item .mobile-product-card { height: 100%; display: block; padding-bottom: 38px; }
 .mobile-wishlist-item > button { position: absolute; right: .45rem; bottom: .35rem; left: .45rem; min-height: 32px; border: 0; color: var(--mobile-danger); background: transparent; font-size: .68rem; font-weight: 750; }

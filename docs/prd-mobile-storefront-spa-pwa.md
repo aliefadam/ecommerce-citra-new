@@ -1,6 +1,6 @@
 # PRD: Mobile Storefront SPA/PWA
 
-Status: Fase 3 auth, cart, dan wishlist selesai; Fase 4 belum dimulai
+Status: Fase 4 checkout dan payment selesai; Fase 5 belum dimulai
 Tanggal keputusan: 8 November 2026  
 Area: Storefront mobile / B2C customer experience  
 Referensi pengalaman: Astro Lite (`astronauts.id`) sebagai referensi pola, bukan untuk disalin identik  
@@ -11,7 +11,8 @@ Otoritas dokumen: PRD ini menggantikan seluruh ketentuan mobile yang bertentanga
 > bukti implementasi dan gate Fase 1 tersedia di
 > [`mobile-spa-phase-1/README.md`](mobile-spa-phase-1/README.md). Hasil Fase 2 tersedia di
 > [`mobile-spa-phase-2/README.md`](mobile-spa-phase-2/README.md). Hasil Fase 3 tersedia di
-> [`mobile-spa-phase-3/README.md`](mobile-spa-phase-3/README.md). Fase 4 belum dimulai.
+> [`mobile-spa-phase-3/README.md`](mobile-spa-phase-3/README.md). Hasil Fase 4 tersedia di
+> [`mobile-spa-phase-4/README.md`](mobile-spa-phase-4/README.md). Fase 5 belum dimulai.
 
 ## Ringkasan Keputusan
 
@@ -408,6 +409,9 @@ Status: **Selesai 9 November 2026**. Bukti gate dan hasil verifikasi tersedia di
 Gate: add/update/delete/reconcile cart aman dan dapat dipulihkan.
 
 ### Fase 4 — Checkout dan Payment
+
+Status: **Selesai 10 November 2026**. Bukti security gate dan verifikasi tersedia di
+[`mobile-spa-phase-4/README.md`](mobile-spa-phase-4/README.md).
 
 - Address, shipping, voucher, point, PPN, faktur, review, order creation, dan payment recovery.
 - Multi-company, stock race, price change, idempotency, popup close, provider error, serta webhook.

@@ -5,14 +5,13 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Concerns\HandlesGuestCheckout;
 use App\Mail\InvoiceOrder;
 use App\Models\Cart;
-use App\Models\Coupon;
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
 use App\Models\TransactionStatusHistory;
 use App\Models\UserNotification;
 use App\Services\CheckoutPricingService;
-use App\Services\CommerceReservationService;
 use App\Services\CheckoutTaxCalculator;
+use App\Services\CommerceReservationService;
 use App\Services\DocumentNumberGenerator;
 use App\Services\ImageOptimizer;
 use App\Services\LoyaltyPointService;
@@ -107,6 +106,7 @@ class ManualPaymentController extends Controller
                 'source' => Transaction::SOURCE_CHECKOUT,
                 'invoice_no' => $documentNumberGenerator->generate(Transaction::class, 'INV', $companyId),
                 'order_id' => $orderId,
+                'idempotency_key' => $request->header('Idempotency-Key'),
                 'payment_type' => 'manual_transfer',
                 'payment_method' => 'Transfer Manual',
                 'status' => 'menunggu_verifikasi',

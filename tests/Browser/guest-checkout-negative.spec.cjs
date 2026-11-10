@@ -100,7 +100,7 @@ test('registered email is sent to login without creating a guest order', async (
         page.locator('#payBtn').click({ noWaitAfter: true }),
     ]);
     await expect(page).toHaveURL(/\/login\?redirect=/);
-    await expect(page.locator('body')).toContainText('Login');
+    await expect(page.locator('body')).toContainText(/Login|Masuk/);
 });
 
 test('stock sold out after Buy Now is rejected at payment time', async ({ page }) => {

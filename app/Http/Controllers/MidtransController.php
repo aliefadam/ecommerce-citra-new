@@ -12,8 +12,8 @@ use App\Models\TransactionDetail;
 use App\Models\TransactionStatusHistory;
 use App\Models\UserNotification;
 use App\Services\CheckoutPricingService;
-use App\Services\CommerceReservationService;
 use App\Services\CheckoutTaxCalculator;
+use App\Services\CommerceReservationService;
 use App\Services\DocumentNumberGenerator;
 use App\Services\LoyaltyPointService;
 use App\Services\ShippingQuoteService;
@@ -225,7 +225,10 @@ class MidtransController extends Controller
             }
 
             $grossAmount = (int) $tax['grand_total'];
-            $orderId = 'ORD-'.now()->format('YmdHis').'-'.Str::upper(Str::random(10));
+            $idempotencyKey = trim((string) $request->header('Idempotency-Key', ''));
+            $orderId = $idempotencyKey !== ''
+                ? 'ORD-'.Str::upper(substr(hash('sha256', $idempotencyKey), 0, 24))
+                : 'ORD-'.now()->format('YmdHis').'-'.Str::upper(Str::random(10));
 
             $customer = $request->user();
             $payload = [
@@ -963,6 +966,7 @@ class MidtransController extends Controller
             $transaction->fill([
                 'company_id' => (int) ($payment['company_id'] ?? 0) ?: null,
                 'user_id' => $request->user()?->id,
+                'idempotency_key' => $request->header('Idempotency-Key'),
                 'manual_customer_name' => $guest['name'] ?? null,
                 'manual_customer_phone' => $guest['phone'] ?? null,
                 'manual_customer_email' => $guest['email'] ?? null,

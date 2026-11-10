@@ -26,6 +26,7 @@ class Transaction extends Model
         'manual_customer_email',
         'invoice_no',
         'order_id',
+        'idempotency_key',
         'midtrans_transaction_id',
         'payment_type',
         'payment_method',

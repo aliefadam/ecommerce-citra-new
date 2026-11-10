@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Mobile\V1\MobileCatalogController;
+use App\Http\Controllers\Api\Mobile\V1\MobileCheckoutController;
 use App\Http\Controllers\Api\Mobile\V1\MobileCommerceController;
 use App\Http\Controllers\Api\Mobile\V1\MobileSessionController;
 use App\Http\Controllers\Api\V1\CategoryController;
@@ -41,6 +42,22 @@ Route::prefix('mobile/v1')
             Route::get('wishlist', [MobileCommerceController::class, 'wishlist'])->name('wishlist.index');
             Route::put('wishlist/{slug}', [MobileCommerceController::class, 'addWishlist'])->name('wishlist.store');
             Route::delete('wishlist/{slug}', [MobileCommerceController::class, 'deleteWishlist'])->name('wishlist.destroy');
+            Route::middleware('throttle:30,1')->group(function () {
+                Route::get('checkout', [MobileCheckoutController::class, 'show'])->name('checkout.show');
+                Route::post('checkout/shipping-options', [MobileCheckoutController::class, 'shippingOptions'])->name('checkout.shipping-options');
+                Route::post('checkout/coupon', [MobileCheckoutController::class, 'applyCoupon'])->name('checkout.coupon.store');
+                Route::delete('checkout/coupon', [MobileCheckoutController::class, 'removeCoupon'])->name('checkout.coupon.destroy');
+                Route::post('checkout/orders', [MobileCheckoutController::class, 'createOrder'])->name('checkout.orders.store');
+                Route::get('orders/{orderId}/payment', [MobileCheckoutController::class, 'payment'])->name('orders.payment.show');
+                Route::get('orders/{orderId}/payment/status', [MobileCheckoutController::class, 'paymentStatus'])->name('orders.payment.status');
+                Route::post('orders/{orderId}/cancel', [MobileCheckoutController::class, 'cancel'])->name('orders.cancel');
+                Route::post('orders/{orderId}/payment-proof', [MobileCheckoutController::class, 'uploadProof'])->name('orders.payment-proof.store');
+                Route::post('addresses', [MobileCheckoutController::class, 'storeAddress'])->name('addresses.store');
+                Route::get('checkout/locations/provinces', [MobileCheckoutController::class, 'provinces'])->name('checkout.locations.provinces');
+                Route::get('checkout/locations/cities', [MobileCheckoutController::class, 'cities'])->name('checkout.locations.cities');
+                Route::get('checkout/locations/districts', [MobileCheckoutController::class, 'districts'])->name('checkout.locations.districts');
+                Route::get('checkout/locations/subdistricts', [MobileCheckoutController::class, 'subdistricts'])->name('checkout.locations.subdistricts');
+            });
         });
     });
 

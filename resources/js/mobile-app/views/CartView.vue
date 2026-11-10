@@ -55,7 +55,12 @@ onMounted(() => commerce.fetchCart(true).catch(() => {}));
             <div class="mobile-cart-summary">
                 <span>Subtotal produk tersedia</span><strong>{{ formatPrice(commerce.cart.summary.subtotal) }}</strong>
                 <p v-if="commerce.cart.summary.has_issues">Selesaikan item bermasalah sebelum checkout.</p>
-                <button type="button" class="mobile-primary-button" disabled>Checkout tersedia pada Fase 4</button>
+                <RouterLink
+                    :to="{ name: 'checkout' }"
+                    class="mobile-primary-button mobile-button-link"
+                    :aria-disabled="commerce.cart.summary.has_issues"
+                    @click="commerce.cart.summary.has_issues && $event.preventDefault()"
+                >Lanjut Checkout</RouterLink>
                 <button type="button" class="mobile-clear-button" @click="commerce.clearCart">Kosongkan keranjang</button>
             </div>
         </div>

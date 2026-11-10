@@ -7,7 +7,7 @@ async function login(page, returnPath = '/cart') {
     await page.getByRole('button', { name: 'Masuk', exact: true }).click();
 }
 
-test('member can add cart, reconcile quantity, and manage wishlist', async ({ page }) => {
+test('member can add cart, checkout safely, and manage wishlist', async ({ page }) => {
     const pageErrors = [];
     page.on('pageerror', (error) => pageErrors.push(error.message));
     await page.setViewportSize({ width: 390, height: 844 });
@@ -31,9 +31,15 @@ test('member can add cart, reconcile quantity, and manage wishlist', async ({ pa
     await expect(page.locator('.mobile-cart-item')).toContainText('Baut Mur Baja 10.9');
     await page.getByRole('button', { name: 'Tambah Baut Mur Baja 10.9' }).click();
     await expect(page.locator('.mobile-cart-item')).toContainText('2');
-    await expect(page.getByRole('button', { name: 'Checkout tersedia pada Fase 4' })).toBeDisabled();
+    await page.getByRole('link', { name: 'Lanjut Checkout' }).click();
+    await expect(page.getByRole('heading', { name: 'Checkout' })).toBeVisible();
+    await page.getByRole('button', { name: 'Pilih Pengiriman' }).click();
+    await expect(page.getByText(/JNE.*REG/)).toBeVisible();
+    await page.getByRole('button', { name: 'Buat Pesanan' }).click();
+    await expect(page.getByRole('heading', { name: 'Pembayaran' })).toBeVisible();
+    await expect(page.getByText('menunggu_verifikasi')).toBeVisible();
 
-    await page.getByRole('link', { name: 'Profil' }).click();
+    await page.goto('/app/account', { waitUntil: 'domcontentloaded' });
     await page.getByRole('link', { name: /Wishlist/ }).click();
     await expect(page.getByRole('heading', { name: 'Wishlist' })).toBeVisible();
     await expect(page.locator('.mobile-product-card')).toContainText('Baut Mur Baja 10.9');
