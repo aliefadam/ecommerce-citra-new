@@ -57,7 +57,7 @@ test('core controls meet touch input focus and reduced motion gates', async ({ p
     await expect(page.getByRole('heading', { name: 'Profil' })).toBeFocused();
     const formFontSizes = await page.locator('input:visible:not([type="radio"]):not([type="checkbox"]):not([type="file"]), select:visible, textarea:visible').evaluateAll((elements) => elements.map((element) => parseFloat(getComputedStyle(element).fontSize)));
     for (const fontSize of formFontSizes) expect(fontSize).toBeGreaterThanOrEqual(16);
-    await expect(page.getByRole('link', { name: 'Kembali ke Versi Web' })).toHaveAttribute('href', '/');
+    await expect(page.getByRole('link', { name: 'Kembali ke Versi Web' })).toHaveAttribute('href', '/?web=1');
 
     await page.emulateMedia({ reducedMotion: 'reduce' });
     const transitionDuration = await page.evaluate(() => {
