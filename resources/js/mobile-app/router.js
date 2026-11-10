@@ -41,9 +41,14 @@ const routes = [
     {
         path: '/orders',
         name: 'orders',
-        component: () => import('./views/FoundationView.vue'),
-        props: { title: 'Transaksi', message: 'Daftar transaksi mobile akan tersedia pada Fase 5.' },
+        component: () => import('./views/OrdersView.vue'),
         meta: { label: 'Transaksi', nav: true, requiresAuth: true },
+    },
+    {
+        path: '/orders/:orderId',
+        name: 'order-detail',
+        component: () => import('./views/OrderDetailView.vue'),
+        meta: { label: 'Detail Pesanan', requiresAuth: true, hideNavigation: true },
     },
     {
         path: '/checkout',
@@ -74,6 +79,12 @@ const routes = [
         name: 'wishlist',
         component: () => import('./views/WishlistView.vue'),
         meta: { label: 'Wishlist', nav: true, requiresAuth: true, navSection: 'account' },
+    },
+    {
+        path: '/notifications',
+        name: 'notifications',
+        component: () => import('./views/NotificationsView.vue'),
+        meta: { label: 'Notifikasi', requiresAuth: true, navSection: 'account' },
     },
     {
         path: '/auth/login',

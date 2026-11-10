@@ -1,10 +1,11 @@
 <script setup>
 import { inject, onMounted, reactive, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { request } from '../services/api';
 
 const config = inject('mobileConfig');
 const router = useRouter();
+const route = useRoute();
 const error = ref('');
 const saving = ref(false);
 const locations = reactive({ provinces: [], cities: [], districts: [], subdistricts: [] });
@@ -35,7 +36,7 @@ const selectSubdistrict = () => {
 };
 const submit = async () => {
     saving.value = true; error.value = '';
-    try { await request(`${config.apiBase}/addresses`, { method: 'POST', body: form }); await router.replace({ name: 'checkout' }); }
+    try { await request(`${config.apiBase}/addresses`, { method: 'POST', body: form }); await router.replace({ name: route.query.return === 'account' ? 'account' : 'checkout' }); }
     catch (exception) { error.value = Object.values(exception.errors || {})[0]?.[0] || exception.message; }
     finally { saving.value = false; }
 };
@@ -44,7 +45,7 @@ onMounted(() => fetchLocations('provinces').catch((exception) => { error.value =
 
 <template>
     <section class="mobile-screen" aria-labelledby="mobile-route-heading">
-        <RouterLink :to="{ name: 'checkout' }" class="mobile-back-link">← Checkout</RouterLink><span class="mobile-eyebrow">Tujuan pengiriman</span><h1 id="mobile-route-heading" tabindex="-1">Tambah Alamat</h1>
+        <RouterLink :to="{ name: route.query.return === 'account' ? 'account' : 'checkout' }" class="mobile-back-link">← {{ route.query.return === 'account' ? 'Profil' : 'Checkout' }}</RouterLink><span class="mobile-eyebrow">Tujuan pengiriman</span><h1 id="mobile-route-heading" tabindex="-1">Tambah Alamat</h1>
         <p v-if="error" class="mobile-alert" role="alert">{{ error }}</p>
         <form class="mobile-address-form" @submit.prevent="submit">
             <label>Label<select v-model="form.label"><option>Rumah</option><option>Kantor</option><option>Lainnya</option></select></label>

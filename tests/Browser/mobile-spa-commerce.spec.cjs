@@ -40,6 +40,20 @@ test('member can add cart, checkout safely, and manage wishlist', async ({ page 
     await expect(page.getByText('menunggu_verifikasi')).toBeVisible();
 
     await page.goto('/app/account', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByRole('heading', { name: 'Profil' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Biodata' })).toBeVisible();
+    await page.getByRole('link', { name: /Pesanan/ }).click();
+    await expect(page.getByRole('heading', { name: 'Transaksi' })).toBeVisible();
+    await expect(page.locator('.mobile-order-card')).toHaveCount(1);
+    await page.locator('.mobile-order-card').first().click();
+    await expect(page.getByRole('heading', { name: 'Detail Pesanan' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Lihat Invoice' })).toBeVisible();
+
+    await page.goto('/app/account', { waitUntil: 'domcontentloaded' });
+    await page.getByRole('link', { name: /Notifikasi/ }).click();
+    await expect(page.getByRole('heading', { name: 'Notifikasi' })).toBeVisible();
+
+    await page.goto('/app/account', { waitUntil: 'domcontentloaded' });
     await page.getByRole('link', { name: /Wishlist/ }).click();
     await expect(page.getByRole('heading', { name: 'Wishlist' })).toBeVisible();
     await expect(page.locator('.mobile-product-card')).toContainText('Baut Mur Baja 10.9');

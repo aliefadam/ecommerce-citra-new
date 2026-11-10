@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Mobile\V1\MobileAccountController;
 use App\Http\Controllers\Api\Mobile\V1\MobileCatalogController;
 use App\Http\Controllers\Api\Mobile\V1\MobileCheckoutController;
 use App\Http\Controllers\Api\Mobile\V1\MobileCommerceController;
@@ -42,6 +43,18 @@ Route::prefix('mobile/v1')
             Route::get('wishlist', [MobileCommerceController::class, 'wishlist'])->name('wishlist.index');
             Route::put('wishlist/{slug}', [MobileCommerceController::class, 'addWishlist'])->name('wishlist.store');
             Route::delete('wishlist/{slug}', [MobileCommerceController::class, 'deleteWishlist'])->name('wishlist.destroy');
+            Route::get('account', [MobileAccountController::class, 'show'])->name('account.show');
+            Route::patch('account/profile', [MobileAccountController::class, 'updateProfile'])->name('account.profile.update');
+            Route::patch('account/password', [MobileAccountController::class, 'updatePassword'])->middleware('throttle:6,1')->name('account.password.update');
+            Route::patch('addresses/{address}', [MobileAccountController::class, 'updateAddress'])->whereNumber('address')->name('addresses.update');
+            Route::delete('addresses/{address}', [MobileAccountController::class, 'deleteAddress'])->whereNumber('address')->name('addresses.destroy');
+            Route::get('orders', [MobileAccountController::class, 'orders'])->name('orders.index');
+            Route::get('orders/{orderId}', [MobileAccountController::class, 'order'])->name('orders.show');
+            Route::post('orders/{orderId}/complete', [MobileAccountController::class, 'complete'])->name('orders.complete');
+            Route::post('orders/{orderId}/tax-invoice', [MobileAccountController::class, 'requestTaxInvoice'])->name('orders.tax-invoice.store');
+            Route::get('notifications', [MobileAccountController::class, 'notifications'])->name('notifications.index');
+            Route::post('notifications/read-all', [MobileAccountController::class, 'readAllNotifications'])->name('notifications.read-all');
+            Route::post('notifications/{notification}/read', [MobileAccountController::class, 'readNotification'])->whereNumber('notification')->name('notifications.read');
             Route::middleware('throttle:30,1')->group(function () {
                 Route::get('checkout', [MobileCheckoutController::class, 'show'])->name('checkout.show');
                 Route::post('checkout/shipping-options', [MobileCheckoutController::class, 'shippingOptions'])->name('checkout.shipping-options');
