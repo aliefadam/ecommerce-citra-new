@@ -16,7 +16,7 @@ test('member checkout manual sampai admin verifikasi, proses, dan kirim', async 
     await page.locator('input[name="password"]').fill('123123');
     await Promise.all([
         page.waitForURL((url) => !url.pathname.endsWith('/login'), { waitUntil: 'domcontentloaded' }),
-        page.getByRole('button', { name: 'Sign In' }).click({ noWaitAfter: true }),
+        page.getByRole('button', { name: /^(Masuk|Sign In)$/ }).click({ noWaitAfter: true }),
     ]);
 
     await page.goto('/detail-produk/baut-hex-m8-x-25mm-galvanis', { waitUntil: 'domcontentloaded' });
@@ -55,7 +55,7 @@ test('member checkout manual sampai admin verifikasi, proses, dan kirim', async 
     await page.locator('input[name="password"]').fill('123123');
     await Promise.all([
         page.waitForURL((url) => !url.pathname.endsWith('/login'), { waitUntil: 'domcontentloaded' }),
-        page.getByRole('button', { name: 'Sign In' }).click({ noWaitAfter: true }),
+        page.getByRole('button', { name: /^(Masuk|Sign In)$/ }).click({ noWaitAfter: true }),
     ]);
 
     await page.goto('/admin/transactions', { waitUntil: 'domcontentloaded' });

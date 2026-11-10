@@ -51,10 +51,10 @@ onMounted(load);
                 :href="home.banners[0].target_url"
                 class="mobile-banner"
             >
-                <img :src="home.banners[0].image" :alt="home.banners[0].title || 'Promo pilihan'" @error="useImageFallback" />
+                <img :src="home.banners[0].image" :alt="home.banners[0].title || 'Promo pilihan'" fetchpriority="high" @error="useImageFallback" />
             </a>
             <div v-else-if="home.banners[0]" class="mobile-banner">
-                <img :src="home.banners[0].image" :alt="home.banners[0].title || 'Promo pilihan'" @error="useImageFallback" />
+                <img :src="home.banners[0].image" :alt="home.banners[0].title || 'Promo pilihan'" fetchpriority="high" @error="useImageFallback" />
             </div>
 
             <div class="mobile-section-heading mobile-section-row">

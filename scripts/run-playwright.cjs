@@ -18,6 +18,8 @@ const e2eEnv = {
     MAIL_MAILER: 'array',
     MOBILE_SPA_ENABLED: 'true',
     MOBILE_SPA_PILOT: 'true',
+    MOBILE_SPA_ANALYTICS_ENABLED: 'true',
+    MOBILE_SPA_CHECKOUT_RATE_LIMIT: '300',
     E2E_DATABASE_PREPARED: '1',
 };
 

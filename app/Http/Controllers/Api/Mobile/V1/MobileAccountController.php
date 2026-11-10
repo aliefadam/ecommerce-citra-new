@@ -124,7 +124,13 @@ class MobileAccountController extends Controller
         $orders = Transaction::query()
             ->with(['company', 'details', 'taxInvoice'])
             ->where('user_id', $request->user()->id)
-            ->when($validated['status'] ?? null, fn ($query, $status) => $query->where('status', $status))
+            ->when($validated['status'] ?? null, fn ($query, $status) => $query->whereIn('status', match ($status) {
+                'pending' => ['pending', 'menunggu_pembayaran', 'menunggu_verifikasi'],
+                'process' => ['paid', 'settlement', 'capture', 'process'],
+                'kirim' => ['kirim', 'shipping', 'shipped'],
+                'selesai' => ['selesai', 'completed'],
+                'dibatalkan' => ['dibatalkan', 'cancel', 'cancelled', 'expire', 'deny', 'failure'],
+            }))
             ->latest()
             ->paginate(10);
 
@@ -161,6 +167,9 @@ class MobileAccountController extends Controller
     public function requestTaxInvoice(Request $request, string $orderId, TaxInvoiceRequestService $service): JsonResponse
     {
         $transaction = $this->ownedOrder($request, $orderId);
+        if (in_array(strtolower((string) $transaction->status), ['dibatalkan', 'cancel', 'cancelled', 'expire', 'deny', 'failure'], true)) {
+            throw ValidationException::withMessages(['order' => 'Faktur pajak tidak dapat diminta untuk pesanan yang dibatalkan atau gagal.']);
+        }
         $validated = $request->validate([
             'profile_id' => ['nullable', 'integer'],
             'taxpayer_name' => ['nullable', 'string', 'max:255'],

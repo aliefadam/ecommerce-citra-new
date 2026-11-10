@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { RouterLink, RouterView, useRoute } from 'vue-router';
 import { useSessionStore } from './stores/session';
+import { trackMobileEvent } from './services/telemetry';
 
 defineProps({
     config: { type: Object, required: true },
@@ -12,6 +13,8 @@ const session = useSessionStore();
 const online = ref(navigator.onLine);
 const updateAvailable = ref(false);
 const serviceWorkerError = ref(false);
+const routeLoading = ref(false);
+let routeFeedbackTimer;
 
 const navigation = [
     { name: 'home', label: 'Home', icon: '⌂' },
@@ -25,6 +28,16 @@ const showNavigation = computed(() => !route.meta.hideNavigation);
 const syncOnline = () => { online.value = navigator.onLine; };
 const showUpdate = () => { updateAvailable.value = true; };
 const showServiceWorkerError = () => { serviceWorkerError.value = true; };
+const trackInstallPrompt = () => trackMobileEvent('install_prompted', { install_state: 'available' }, route.name);
+const trackInstalled = () => trackMobileEvent('install_accepted', { install_state: 'installed' }, route.name);
+const showRouteFeedback = () => {
+    window.clearTimeout(routeFeedbackTimer);
+    routeLoading.value = true;
+    window.requestAnimationFrame(() => window.dispatchEvent(new CustomEvent('mobile-spa:route-feedback')));
+};
+const hideRouteFeedback = () => {
+    routeFeedbackTimer = window.setTimeout(() => { routeLoading.value = false; }, 150);
+};
 const applyUpdate = () => window.__mobilePwaUpdate?.();
 const retryBootstrap = () => session.bootstrap();
 const focusRouteHeading = () => {
@@ -36,6 +49,10 @@ onMounted(() => {
     window.addEventListener('offline', syncOnline);
     window.addEventListener('mobile-spa:update-available', showUpdate);
     window.addEventListener('mobile-spa:service-worker-error', showServiceWorkerError);
+    window.addEventListener('beforeinstallprompt', trackInstallPrompt);
+    window.addEventListener('appinstalled', trackInstalled);
+    window.addEventListener('mobile-spa:route-started', showRouteFeedback);
+    window.addEventListener('mobile-spa:route-finished', hideRouteFeedback);
 });
 
 onBeforeUnmount(() => {
@@ -43,6 +60,11 @@ onBeforeUnmount(() => {
     window.removeEventListener('offline', syncOnline);
     window.removeEventListener('mobile-spa:update-available', showUpdate);
     window.removeEventListener('mobile-spa:service-worker-error', showServiceWorkerError);
+    window.removeEventListener('beforeinstallprompt', trackInstallPrompt);
+    window.removeEventListener('appinstalled', trackInstalled);
+    window.removeEventListener('mobile-spa:route-started', showRouteFeedback);
+    window.removeEventListener('mobile-spa:route-finished', hideRouteFeedback);
+    window.clearTimeout(routeFeedbackTimer);
 });
 </script>
 
@@ -50,6 +72,8 @@ onBeforeUnmount(() => {
     <div class="mobile-app-stage">
         <div class="mobile-shell" data-testid="mobile-spa-shell">
             <a class="mobile-skip-link" href="#mobile-main">Lewati ke konten utama</a>
+
+            <div v-if="routeLoading" class="mobile-route-progress" role="status" aria-label="Memuat halaman"></div>
 
             <div v-if="!online" class="mobile-network-status" role="status">
                 Anda sedang offline. Beberapa fungsi belum tersedia.
@@ -60,7 +84,7 @@ onBeforeUnmount(() => {
                     <span class="mobile-eyebrow">Storefront mobile</span>
                     <strong>{{ config.appName }}</strong>
                 </div>
-                <span class="mobile-pilot-badge">PILOT</span>
+                <span v-if="config.pilot" class="mobile-pilot-badge">PILOT</span>
             </header>
 
             <div v-if="updateAvailable" class="mobile-update-notice" role="status">

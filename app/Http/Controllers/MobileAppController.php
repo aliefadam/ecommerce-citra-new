@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Banner;
+use App\Support\CatalogImageUrl;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 
@@ -9,8 +11,17 @@ class MobileAppController extends Controller
 {
     public function show(): View
     {
+        $banner = Banner::query()
+            ->where('is_active', true)
+            ->where('type', 'carousel')
+            ->where(fn ($query) => $query->whereNull('company_id')->orWhereHas('company', fn ($company) => $company->where('is_active', true)))
+            ->orderBy('sort_order')
+            ->orderByDesc('id')
+            ->first();
+
         return view('mobile-app', [
             'mobileAppVersion' => (string) config('mobile-spa.version'),
+            'mobilePreloadImage' => $banner ? CatalogImageUrl::make($banner->image) : null,
         ]);
     }
 

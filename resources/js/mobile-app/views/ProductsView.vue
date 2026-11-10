@@ -5,6 +5,7 @@ import MobileCatalogState from '../components/MobileCatalogState.vue';
 import MobileProductCard from '../components/MobileProductCard.vue';
 import MobileSearchBox from '../components/MobileSearchBox.vue';
 import { request } from '../services/api';
+import { trackMobileEvent } from '../services/telemetry';
 
 const route = useRoute();
 const router = useRouter();
@@ -39,6 +40,7 @@ const load = async () => {
         const response = await request(`/api/mobile/v1/products?${params.toString()}`, { signal: controller.signal });
         products.value = response.data || [];
         meta.value = response.meta || null;
+        if (route.query.q) trackMobileEvent('search_results_viewed', { result_count: products.value.length }, route.name);
     } catch (exception) {
         if (exception.name !== 'AbortError') error.value = exception.message || 'Produk belum dapat dimuat.';
     } finally {

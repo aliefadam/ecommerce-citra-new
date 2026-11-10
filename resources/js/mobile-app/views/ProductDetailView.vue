@@ -5,6 +5,7 @@ import MobileCatalogState from '../components/MobileCatalogState.vue';
 import { request } from '../services/api';
 import { useImageFallback } from '../services/images';
 import { useCommerceStore } from '../stores/commerce';
+import { trackMobileEvent } from '../services/telemetry';
 import { useSessionStore } from '../stores/session';
 
 const route = useRoute();
@@ -52,6 +53,7 @@ const addToCart = async () => {
     actionStatus.value = '';
     try {
         await commerce.addCartItem(selectedVariant.value.id, 1);
+        trackMobileEvent('cart_item_added', { item_count: 1 }, route.name);
         actionStatus.value = 'Produk ditambahkan ke keranjang.';
     } catch (exception) {
         actionStatus.value = exception.message;
@@ -111,7 +113,7 @@ watch(() => route.params.slug, load, { immediate: true });
             <fieldset v-if="product.variants.length" class="mobile-variant-picker">
                 <legend>Pilih varian</legend>
                 <label v-for="variant in product.variants" :key="variant.id" :class="{ 'is-selected': selectedVariantId === variant.id }">
-                    <input v-model="selectedVariantId" type="radio" name="variant" :value="variant.id" :disabled="!variant.in_stock" />
+                    <input v-model="selectedVariantId" type="radio" name="variant" :value="variant.id" :disabled="!variant.in_stock" @change="trackMobileEvent('variant_selected', {}, route.name)" />
                     <span><strong>{{ variant.attribute_summary || variant.sku }}</strong><small>{{ formatPrice(variant.price) }} · {{ variant.in_stock ? 'Tersedia' : 'Habis' }}</small></span>
                 </label>
             </fieldset>

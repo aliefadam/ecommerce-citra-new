@@ -1,6 +1,9 @@
+import { trackMobileEvent } from './telemetry';
+
 const notifyUpdate = (registration) => {
     window.__mobilePwaUpdate = () => registration.waiting?.postMessage({ type: 'SKIP_WAITING' });
     window.dispatchEvent(new CustomEvent('mobile-spa:update-available'));
+    trackMobileEvent('service_worker_updated', { install_state: 'update_available' });
 };
 
 export const registerMobileServiceWorker = () => {

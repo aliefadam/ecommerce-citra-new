@@ -5,7 +5,7 @@ const adminPages = [
     ['/admin/banners/create', 1],
     ['/admin/main-categories/create', 1],
     ['/admin/products', 1],
-    ['/admin/products/create', 1],
+    ['/admin/products/create', 2],
     ['/admin/companies/create', 1],
     ['/admin/content-pages/create', 1],
     ['/admin/promo-pages/create', 1],
@@ -18,7 +18,7 @@ async function login(page, email) {
     await page.locator('input[name="password"]').fill('123123');
     await Promise.all([
         page.waitForURL((url) => !url.pathname.endsWith('/login'), { waitUntil: 'domcontentloaded' }),
-        page.getByRole('button', { name: 'Sign In' }).click({ noWaitAfter: true }),
+        page.getByRole('button', { name: /^(Masuk|Sign In)$/ }).click({ noWaitAfter: true }),
     ]);
 }
 

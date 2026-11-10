@@ -16,10 +16,10 @@ class StorefrontCatalogExperienceTest extends TestCase
     {
         $this->get(route('frontend.index'))
             ->assertOk()
-            ->assertSee('Sedang garap proyek apa?')
-            ->assertSee('Oil &amp; Gas', false)
-            ->assertSee('Chemical &amp; Petrochemical', false)
-            ->assertSee('Konsultasi via WhatsApp')
+            ->assertSee('Sedang mengerjakan proyek apa?')
+            ->assertSee('Minyak &amp; Gas', false)
+            ->assertSee('Kimia &amp; Petrokimia', false)
+            ->assertSee('Konsultasi melalui WhatsApp')
             ->assertSee('https://wa.me/6281389365955?text=', false)
             ->assertSee('Katalog belum tersedia')
             ->assertSee('Hubungi Kami')
@@ -34,8 +34,8 @@ class StorefrontCatalogExperienceTest extends TestCase
 
         $this->get(route('frontend.index'))
             ->assertOk()
-            ->assertSee('Konsultasi via WhatsApp')
-            ->assertSee('https://wa.me/628123456789?text=Halo%2C%20saya%20sedang%20mengerjakan%20proyek%20Oil%20%26%20Gas%20dan%20membutuhkan%20bantuan%20memilih%20produk%20serta%20spesifikasi%20yang%20sesuai.', false);
+            ->assertSee('Konsultasi melalui WhatsApp')
+            ->assertSee('https://wa.me/628123456789?text=Halo%2C%20saya%20sedang%20mengerjakan%20proyek%20Minyak%20%26%20Gas%20dan%20membutuhkan%20bantuan%20memilih%20produk%20serta%20spesifikasi%20yang%20sesuai.', false);
     }
 
     public function test_catalog_cards_receive_authoritative_stock_unit_and_seller_data(): void

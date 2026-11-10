@@ -3,6 +3,7 @@ import { onBeforeUnmount, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { request } from '../services/api';
 import { useImageFallback } from '../services/images';
+import { trackMobileEvent } from '../services/telemetry';
 
 const props = defineProps({
     initialValue: { type: String, default: '' },
@@ -56,6 +57,7 @@ watch(query, (value) => {
 const submit = () => {
     const term = query.value.trim();
     expanded.value = false;
+    trackMobileEvent('search_submitted', { outcome: term ? 'query' : 'browse' }, route.name);
     router.push({ name: 'search', query: term ? { q: term } : {} });
 };
 

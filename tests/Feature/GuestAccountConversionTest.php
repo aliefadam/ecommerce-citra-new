@@ -48,7 +48,7 @@ class GuestAccountConversionTest extends TestCase
         $this->withSession(['guest_owned_orders' => [$transaction->order_id]])
             ->get(route('register', ['checkout_order' => $transaction->order_id]))
             ->assertOk()
-            ->assertSee('Simpan Pesananmu')
+            ->assertSee('Simpan Pesanan Anda')
             ->assertSee($transaction->order_id)
             ->assertSee('Guest Menjadi Member')
             ->assertSee('convert@example.test')
@@ -61,8 +61,8 @@ class GuestAccountConversionTest extends TestCase
 
         $this->get(route('register', ['checkout_order' => $transaction->order_id]))
             ->assertOk()
-            ->assertSee('Register')
-            ->assertDontSee($transaction->order_id)
+            ->assertSee('Daftar')
+            ->assertDontSee('name="checkout_order"', false)
             ->assertDontSee('convert@example.test');
     }
 

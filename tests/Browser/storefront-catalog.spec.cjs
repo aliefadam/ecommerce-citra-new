@@ -21,7 +21,7 @@ test('Sprint 3 catalog cards and filter state work on desktop', async ({ page })
     await expect(homeCard).toBeVisible();
     await expect(homeCard.locator('.store-product-variant')).not.toHaveText('');
     await expect(homeCard.locator('.store-product-price')).toContainText('Rp');
-    await expect(homeCard).toContainText(/Stok (?:[\d.]+ pcs|habis)/);
+    await expect(homeCard).toContainText(/Stok (?:[\d.,]+ pcs|habis)/);
     await expect(homeCard).toContainText('Satuan pcs');
     await expect(homeCard.locator('.store-product-seller')).not.toHaveText('');
     const canonical = await page.locator('link[rel=canonical]').getAttribute('href');

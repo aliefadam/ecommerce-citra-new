@@ -7,7 +7,7 @@ async function loginAsAdmin(page) {
 
     await Promise.all([
         page.waitForURL((url) => !url.pathname.endsWith('/login'), { waitUntil: 'domcontentloaded' }),
-        page.getByRole('button', { name: 'Sign In' }).click({ noWaitAfter: true }),
+        page.getByRole('button', { name: /^(Masuk|Sign In)$/ }).click({ noWaitAfter: true }),
     ]);
 }
 

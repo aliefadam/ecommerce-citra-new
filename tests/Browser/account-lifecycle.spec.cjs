@@ -10,7 +10,7 @@ const account = {
 async function submitLogin(page, password) {
     await page.locator('input[name=email]').fill(account.email);
     await page.locator('input[name=password]').fill(password);
-    await page.getByRole('button', { name: 'Sign In', exact: true }).click();
+    await page.getByRole('button', { name: /^(Masuk|Sign In)$/ }).click();
 }
 
 test('customer can complete the account and profile lifecycle', async ({ page }) => {
@@ -27,7 +27,7 @@ test('customer can complete the account and profile lifecycle', async ({ page })
     await page.locator('input[name=password_confirmation]').fill(account.initialPassword);
     await Promise.all([
         page.waitForURL((url) => url.pathname === '/profil', { waitUntil: 'domcontentloaded' }),
-        page.getByRole('button', { name: 'Register', exact: true }).click(),
+        page.getByRole('button', { name: /^(Daftar|Register)$/ }).click(),
     ]);
 
     await expect(page.locator('#email')).toHaveValue(account.email);
@@ -98,10 +98,10 @@ test('customer can complete the account and profile lifecycle', async ({ page })
         page.locator('#logoutModal').getByRole('button', { name: 'Keluar', exact: true }).click(),
     ]);
 
-    await page.getByRole('link', { name: 'Lupa password?', exact: true }).click();
+    await page.getByRole('link', { name: /^(Lupa kata sandi\?|Lupa password\?)$/ }).click();
     await expect(page).toHaveURL(/\/forgot-password$/);
     await page.locator('input[name=email]').fill(account.email);
-    await page.getByRole('button', { name: 'Kirim Link Reset', exact: true }).click();
+    await page.getByRole('button', { name: /^(Kirim Tautan Pengaturan Ulang|Kirim Link Reset)$/ }).click();
     await expect(page.getByText('Link reset password berhasil dikirim ke email Anda.', { exact: true })).toBeVisible();
 
     expect(pageErrors).toEqual([]);

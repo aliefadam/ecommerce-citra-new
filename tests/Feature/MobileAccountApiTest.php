@@ -163,6 +163,32 @@ class MobileAccountApiTest extends TestCase
         $this->assertNotNull($notification->fresh()->read_at);
     }
 
+    public function test_order_filters_include_equivalent_domain_statuses_and_cancelled_order_rejects_tax_invoice(): void
+    {
+        $user = User::factory()->create();
+        $waiting = $this->makeTransaction($user, ['status' => 'menunggu_verifikasi']);
+        $paid = $this->makeTransaction($user, ['status' => 'paid']);
+        $failed = $this->makeTransaction($user, ['status' => 'failure']);
+        $this->actingAs($user)->getJson('/api/mobile/v1/orders?status=pending')
+            ->assertOk()
+            ->assertJsonFragment(['order_id' => $waiting->order_id])
+            ->assertJsonMissing(['order_id' => $paid->order_id]);
+        $this->getJson('/api/mobile/v1/orders?status=process')
+            ->assertOk()
+            ->assertJsonFragment(['order_id' => $paid->order_id]);
+        $this->getJson('/api/mobile/v1/orders?status=dibatalkan')
+            ->assertOk()
+            ->assertJsonFragment(['order_id' => $failed->order_id]);
+
+        $this->postJson('/api/mobile/v1/orders/'.$failed->order_id.'/tax-invoice', [
+            'taxpayer_name' => 'PT Tidak Valid',
+            'taxpayer_number' => '1234567890123456',
+            'taxpayer_address' => 'Jakarta',
+            'taxpayer_email' => 'invalid@example.test',
+        ])->assertUnprocessable()->assertJsonValidationErrors('order');
+        $this->assertDatabaseMissing('transaction_tax_invoices', ['transaction_id' => $failed->id]);
+    }
+
     private function makeTransaction(User $user, array $overrides = []): Transaction
     {
         $transaction = Transaction::query()->create(array_merge([

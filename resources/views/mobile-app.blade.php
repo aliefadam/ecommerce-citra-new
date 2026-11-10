@@ -15,6 +15,9 @@
         <link rel="manifest" href="{{ route('mobile-app.manifest') }}?v={{ urlencode($mobileAppVersion) }}" />
         <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any" />
         <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('pwa/boq-apple-touch-icon-v2.png') }}" />
+        @if ($mobilePreloadImage)
+            <link rel="preload" as="image" href="{{ $mobilePreloadImage }}" fetchpriority="high" />
+        @endif
         <title>{{ config('app.name') }} Mobile</title>
         @vite('resources/js/mobile-app/main.js')
     </head>
@@ -24,6 +27,8 @@
             data-app-name="{{ config('app.name') }}"
             data-app-version="{{ $mobileAppVersion }}"
             data-api-base="/api/mobile/v1"
+            data-pilot="{{ config('mobile-spa.pilot') ? 'true' : 'false' }}"
+            data-analytics-enabled="{{ config('mobile-spa.analytics_enabled') ? 'true' : 'false' }}"
         >
             <div class="mobile-app-boot" role="status">Menyiapkan aplikasi…</div>
         </div>

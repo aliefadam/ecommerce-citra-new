@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\Mobile\V1\MobileCatalogController;
 use App\Http\Controllers\Api\Mobile\V1\MobileCheckoutController;
 use App\Http\Controllers\Api\Mobile\V1\MobileCommerceController;
 use App\Http\Controllers\Api\Mobile\V1\MobileSessionController;
+use App\Http\Controllers\Api\Mobile\V1\MobileTelemetryController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\MidtransController;
@@ -32,6 +33,9 @@ Route::prefix('mobile/v1')
         Route::post('auth/register', [MobileSessionController::class, 'register'])
             ->middleware('throttle:login')
             ->name('auth.register');
+        Route::post('telemetry', [MobileTelemetryController::class, 'store'])
+            ->middleware('throttle:120,1')
+            ->name('telemetry.store');
         Route::middleware('auth:sanctum')->group(function () {
             Route::get('session', [MobileSessionController::class, 'show'])->name('session.show');
             Route::post('auth/logout', [MobileSessionController::class, 'logout'])->name('auth.logout');
@@ -55,7 +59,7 @@ Route::prefix('mobile/v1')
             Route::get('notifications', [MobileAccountController::class, 'notifications'])->name('notifications.index');
             Route::post('notifications/read-all', [MobileAccountController::class, 'readAllNotifications'])->name('notifications.read-all');
             Route::post('notifications/{notification}/read', [MobileAccountController::class, 'readNotification'])->whereNumber('notification')->name('notifications.read');
-            Route::middleware('throttle:30,1')->group(function () {
+            Route::middleware('throttle:'.config('mobile-spa.checkout_rate_limit').',1')->group(function () {
                 Route::get('checkout', [MobileCheckoutController::class, 'show'])->name('checkout.show');
                 Route::post('checkout/shipping-options', [MobileCheckoutController::class, 'shippingOptions'])->name('checkout.shipping-options');
                 Route::post('checkout/coupon', [MobileCheckoutController::class, 'applyCoupon'])->name('checkout.coupon.store');

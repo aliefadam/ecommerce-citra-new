@@ -1,12 +1,14 @@
 <script setup>
 import { computed, inject, onMounted, reactive, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import MobileCatalogState from '../components/MobileCatalogState.vue';
 import { prepareCsrf, request } from '../services/api';
 import { useCommerceStore } from '../stores/commerce';
+import { trackMobileEvent } from '../services/telemetry';
 
 const config = inject('mobileConfig');
 const router = useRouter();
+const route = useRoute();
 const commerce = useCommerceStore();
 const checkout = ref(null);
 const loading = ref(true);
@@ -102,10 +104,12 @@ const submit = async () => {
                 },
             });
             orders.push(response.order_id);
+            trackMobileEvent('checkout_step_completed', { step: 'order_created', outcome: 'success' }, route.name);
         }
         commerce.reset();
         await router.replace({ name: 'payment', params: { orderId: orders[0] }, query: orders.length > 1 ? { other: orders.slice(1).join(',') } : {} });
     } catch (exception) {
+        trackMobileEvent('checkout_validation_failed', { status: String(exception.status || 0), step: 'order_create', outcome: 'failed' }, route.name);
         error.value = exception.errors?.checkout_version?.[0] || exception.message;
         if (exception.status === 422) await load();
     } finally {

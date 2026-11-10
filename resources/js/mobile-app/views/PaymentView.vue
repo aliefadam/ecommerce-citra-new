@@ -2,6 +2,7 @@
 import { computed, inject, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { prepareCsrf, request } from '../services/api';
+import { trackMobileEvent } from '../services/telemetry';
 
 const config = inject('mobileConfig');
 const route = useRoute();
@@ -10,6 +11,7 @@ const error = ref('');
 const loading = ref(true);
 const proof = ref(null);
 let pollTimer = null;
+let trackedStatus = '';
 const terminal = ['settlement', 'capture', 'paid', 'process', 'kirim', 'selesai', 'completed', 'dibatalkan', 'cancel', 'expire', 'deny', 'failure'];
 const formatPrice = (value) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value || 0);
 const isTerminal = computed(() => terminal.includes(String(payment.value?.status || '').toLowerCase()));
@@ -20,6 +22,15 @@ const load = async (status = false) => {
     try {
         const response = await request(`${config.apiBase}/orders/${encodeURIComponent(route.params.orderId)}/payment${status ? '/status' : ''}`);
         payment.value = response.data;
+        const nextStatus = String(payment.value.status || '').toLowerCase();
+        if (nextStatus !== trackedStatus) {
+            if (['settlement', 'capture', 'paid', 'process', 'kirim', 'selesai', 'completed'].includes(nextStatus)) {
+                trackMobileEvent(status ? 'payment_recovered' : 'payment_completed', { status: nextStatus, outcome: 'success' }, route.name);
+            } else if (['dibatalkan', 'cancel', 'expire', 'deny', 'failure'].includes(nextStatus)) {
+                trackMobileEvent('payment_failed', { status: nextStatus, outcome: 'failed' }, route.name);
+            }
+            trackedStatus = nextStatus;
+        }
         error.value = '';
         if (!isTerminal.value && payment.value.payment_type !== 'manual_transfer') pollTimer = window.setTimeout(() => load(true), 8000);
     } catch (exception) { error.value = exception.message; } finally { loading.value = false; }

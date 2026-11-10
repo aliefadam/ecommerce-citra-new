@@ -1,3 +1,5 @@
+import { trackMobileEvent } from './telemetry';
+
 const cookieValue = (name) => document.cookie
     .split('; ')
     .find((entry) => entry.startsWith(`${name}=`))
@@ -26,6 +28,11 @@ const parseResponse = async (response) => {
         : (contentType.includes('application/json') ? await response.json() : null);
 
     if (!response.ok) {
+        trackMobileEvent('api_error', {
+            status: String(response.status),
+            error_type: response.status >= 500 ? 'server' : 'request',
+            online: navigator.onLine,
+        });
         if (response.status === 401) {
             window.dispatchEvent(new CustomEvent('mobile-spa:unauthenticated'));
         }

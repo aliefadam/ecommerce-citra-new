@@ -1,11 +1,12 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { useSessionStore } from './stores/session';
+import HomeView from './views/HomeView.vue';
 
 const routes = [
     {
         path: '/',
         name: 'home',
-        component: () => import('./views/HomeView.vue'),
+        component: HomeView,
         meta: { label: 'Home', nav: true },
     },
     {
