@@ -43,7 +43,7 @@ test('release candidate reflows across phone tablet and 200 percent text matrix'
 test('core controls meet touch input focus and reduced motion gates', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/app', { waitUntil: 'domcontentloaded' });
-    const publicControls = await page.locator('.mobile-nav-item:visible, .mobile-search-form button:visible').evaluateAll((elements) => elements.map((element) => ({
+    const publicControls = await page.locator('.mobile-nav-item:visible, .mobile-astro-chat:visible, .mobile-astro-menu:visible').evaluateAll((elements) => elements.map((element) => ({
         label: element.getAttribute('aria-label') || element.textContent.trim(),
         width: element.getBoundingClientRect().width,
         height: element.getBoundingClientRect().height,
@@ -75,8 +75,9 @@ test('analytics funnel sends only allowlisted non-personal context', async ({ pa
     });
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/app', { waitUntil: 'domcontentloaded' });
+    await page.getByRole('button', { name: 'Cari produk disini' }).click();
     await page.getByRole('combobox', { name: 'Cari produk' }).fill('Baut Mur Baja');
-    await page.getByRole('button', { name: 'Cari', exact: true }).click();
+    await page.getByRole('combobox', { name: 'Cari produk' }).press('Enter');
     await expect(page).toHaveURL(/\/app\/search\?q=Baut/);
     await expect.poll(() => telemetry.some((event) => event.event === 'search_submitted')).toBe(true);
     await expect.poll(() => telemetry.some((event) => event.event === 'search_results_viewed')).toBe(true);

@@ -2,8 +2,8 @@
 import { computed, nextTick, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import MobileCatalogState from '../components/MobileCatalogState.vue';
+import MobileProductGallery from '../components/MobileProductGallery.vue';
 import { request } from '../services/api';
-import { useImageFallback } from '../services/images';
 import { useCommerceStore } from '../stores/commerce';
 import { trackMobileEvent } from '../services/telemetry';
 import { useSessionStore } from '../stores/session';
@@ -21,6 +21,17 @@ const actionStatus = ref('');
 const headingElement = ref(null);
 
 const selectedVariant = computed(() => product.value?.variants.find((variant) => variant.id === selectedVariantId.value) || product.value?.variants[0]);
+const galleryImages = computed(() => {
+    if (!product.value) return [];
+    const images = [
+        product.value.image,
+        ...(product.value.images || []),
+        ...product.value.variants.map((variant) => variant.image),
+        product.value.specification_image,
+    ].filter((image) => typeof image === 'string' && image !== '');
+    const unique = [...new Set(images)];
+    return unique.length ? unique : ['/imgs/product-placeholder.svg'];
+});
 const formatPrice = (value) => value === null || value === undefined
     ? 'Hubungi kami'
     : new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value);
@@ -93,11 +104,10 @@ watch(() => route.params.slug, load, { immediate: true });
         <MobileCatalogState v-else-if="error" title="Detail produk gagal dimuat" :message="error" :retry="load" />
 
         <template v-else-if="product">
-            <img
-                :src="selectedVariant?.image || product.image || '/imgs/product-placeholder.svg'"
+            <MobileProductGallery
+                :images="galleryImages"
                 :alt="product.name"
-                class="mobile-detail-image"
-                @error="useImageFallback"
+                :focus-image="selectedVariant?.image || ''"
             />
             <div class="mobile-detail-heading">
                 <div>

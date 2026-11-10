@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 700" width="860" height="700">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d8e8ff"/><stop offset="1" stop-color="#9cc0ff"/></linearGradient>
+  <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
+  <rect width="860" height="700" fill="url(#g)"/>
+  <path d="M0 520 C200 440 360 620 560 540 S820 470 860 500 V700 H0z" fill="#fff" opacity=".25"/>
+  <rect width="860" height="700" fill="url(#fade)"/>
+  <circle cx="90" cy="90" r="8" fill="#fff" opacity=".55"/><circle cx="760" cy="70" r="6" fill="#fff" opacity=".55"/><circle cx="690" cy="210" r="9" fill="#fff" opacity=".55"/><circle cx="60" cy="260" r="5" fill="#fff" opacity=".55"/><circle cx="420" cy="40" r="5" fill="#fff" opacity=".55"/><circle cx="820" cy="300" r="7" fill="#fff" opacity=".55"/><circle cx="300" cy="250" r="4" fill="#fff" opacity=".55"/><path d="M150 170l10 22 22 10-22 10-10 22-10-22-22-10 22-10z" fill="#fff" opacity=".6"/><path d="M720 130l7 15 15 7-15 7-7 15-7-15-15-7 15-7z" fill="#2f63e8" opacity=".35"/>
+  <g transform="translate(46 360) rotate(-4)">
+    <rect x="0" y="0" width="200" height="44" rx="22" fill="#2f63e8"/><text x="100" y="30" font-family="Arial" font-weight="900" font-size="20" fill="#fff" text-anchor="middle">PROMO MINGGU INI</text>
+  </g>
+  <g transform="translate(40 420) rotate(-4)">
+    <rect x="0" y="0" width="430" height="190" rx="20" fill="#fff"/>
+    <text x="24" y="70" font-family="Georgia, serif" font-weight="900" font-size="48" fill="#13306f">Diskon</text>
+    <text x="24" y="130" font-family="Georgia, serif" font-weight="900" font-size="48" fill="#2f63e8">Hingga 30%</text>
+    <text x="26" y="168" font-family="Arial" font-style="italic" font-weight="700" font-size="22" fill="#13306f">semen, besi &amp; bata ringan</text>
+  </g>
+  
+   <g transform="translate(470 330)">
+    <ellipse cx="190" cy="335" rx="190" ry="22" fill="#000" opacity=".08"/>
+    <path d="M10 140 q0 -30 30 -32 h150 q30 2 30 32 v150 q0 22 -22 22 h-166 q-22 0 -22 -22z" fill="#eef2f9"/>
+    <rect x="40" y="170" width="160" height="60" rx="10" fill="#2f63e8"/><text x="120" y="210" font-family="Arial" font-weight="900" font-size="28" fill="#fff" text-anchor="middle">SEMEN</text>
+    <text x="120" y="270" font-family="Arial" font-weight="700" font-size="20" fill="#13306f" text-anchor="middle">40 KG</text>
+    <g fill="#c9cfdc" stroke="#8b94a8" stroke-width="3"><rect x="240" y="60" width="16" height="250" rx="8"/><rect x="268" y="40" width="16" height="270" rx="8"/><rect x="296" y="80" width="16" height="230" rx="8"/></g>
+    <g fill="#fff" stroke="#2f63e8" stroke-width="4"><rect x="320" y="230" width="55" height="38" rx="5"/><rect x="320" y="272" width="55" height="38" rx="5"/></g>
+   </g>
+</svg>

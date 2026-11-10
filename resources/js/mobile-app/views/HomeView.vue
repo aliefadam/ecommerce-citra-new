@@ -3,7 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import MobileCatalogState from '../components/MobileCatalogState.vue';
 import MobileIcon from '../components/MobileIcon.vue';
 import MobileProductCard from '../components/MobileProductCard.vue';
-import MobileSearchBox from '../components/MobileSearchBox.vue';
+import MobileSearchOverlay from '../components/MobileSearchOverlay.vue';
 import { request } from '../services/api';
 import { useImageFallback } from '../services/images';
 import { useSessionStore } from '../stores/session';
@@ -15,8 +15,22 @@ const error = ref('');
 const carousel = ref(null);
 const activeBanner = ref(0);
 let autoplayTimer;
+let autoplayDelay;
 
-const banners = computed(() => home.value?.banners || []);
+const searchOpen = ref(false);
+
+// Dummy hero artwork (public/imgs/mobile-hero). Replace with real campaign art when available.
+const heroSlides = [
+    { id: 'hero-1', image: '/imgs/mobile-hero/hero-1.svg', title: 'Material pilihan asli', to: { name: 'search', query: { sort: 'newest' } } },
+    { id: 'hero-2', image: '/imgs/mobile-hero/hero-2.svg', title: 'Diskon hingga 30%', to: { name: 'search', query: { sort: 'price_asc' } } },
+    { id: 'hero-3', image: '/imgs/mobile-hero/hero-3.svg', title: 'Gratis ongkir', to: { name: 'search', query: { in_stock: '1' } } },
+    { id: 'hero-4', image: '/imgs/mobile-hero/hero-4.svg', title: 'Perkakas profesional', to: { name: 'categories' } },
+];
+// Dummy delivery promise shown in the hero, Astro style.
+const heroEta = { label: 'Cepat sampai', value: '25 Menit' };
+const banners = computed(() => heroSlides);
+const promoBanners = computed(() => home.value?.banners || []);
+const addressLabel = computed(() => (session.user ? `Halo, ${session.user.name} · Atur alamat pengiriman` : 'Masuk untuk atur alamat pengiriman'));
 
 const shortcuts = [
     { label: 'Produk Terbaru', icon: 'sparkle', tone: 'sky', to: { name: 'search', query: { sort: 'newest' } } },
@@ -31,8 +45,6 @@ const load = async () => {
     try {
         const response = await request('/api/mobile/v1/home');
         home.value = response.data;
-        activeBanner.value = 0;
-        startAutoplay();
     } catch (exception) {
         error.value = exception.message || 'Beranda belum dapat dimuat.';
     } finally {
@@ -43,8 +55,7 @@ const load = async () => {
 const goToBanner = (index) => {
     const track = carousel.value;
     if (!track) return;
-    const slide = track.children[index];
-    if (slide) track.scrollTo({ left: slide.offsetLeft - track.offsetLeft, behavior: 'smooth' });
+    track.scrollTo({ left: index * track.clientWidth, behavior: 'smooth' });
 };
 
 const onCarouselScroll = () => {
@@ -53,7 +64,10 @@ const onCarouselScroll = () => {
     activeBanner.value = Math.round(track.scrollLeft / track.clientWidth);
 };
 
-const stopAutoplay = () => window.clearInterval(autoplayTimer);
+const stopAutoplay = () => {
+    window.clearTimeout(autoplayDelay);
+    window.clearInterval(autoplayTimer);
+};
 function startAutoplay() {
     stopAutoplay();
     if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
@@ -63,56 +77,82 @@ function startAutoplay() {
     }, 5000);
 }
 
-onMounted(load);
-onBeforeUnmount(stopAutoplay);
+onMounted(() => {
+    window.addEventListener('mobile-spa:route-started', stopAutoplay);
+    autoplayDelay = window.setTimeout(startAutoplay, 3000);
+    load();
+});
+onBeforeUnmount(() => {
+    stopAutoplay();
+    window.removeEventListener('mobile-spa:route-started', stopAutoplay);
+});
 </script>
 
 <template>
     <section class="mobile-screen mobile-home" aria-labelledby="mobile-route-heading">
-        <div class="mobile-home-top">
-            <div class="mobile-hero">
-                <span class="mobile-eyebrow">Katalog kebutuhan proyek</span>
-                <h1 id="mobile-route-heading" tabindex="-1">
-                    {{ session.user ? `Halo, ${session.user.name}` : 'Temukan material yang tepat' }}
-                </h1>
-                <p>Cari berdasarkan nama, SKU, ukuran, atau spesifikasi teknis.</p>
+        <div class="mobile-astro-hero">
+            <h1 id="mobile-route-heading" class="mobile-visually-hidden" tabindex="-1">
+                {{ session.user ? `Halo, ${session.user.name}` : 'Temukan material yang tepat' }}
+            </h1>
+
+            <div
+                ref="carousel"
+                class="mobile-astro-hero-track"
+                aria-roledescription="carousel"
+                aria-label="Promo pilihan"
+                @scroll.passive="onCarouselScroll"
+                @pointerdown="stopAutoplay"
+                @focusin="stopAutoplay"
+            >
+                <RouterLink
+                    v-for="(slide, index) in banners"
+                    :key="slide.id"
+                    :to="slide.to"
+                    class="mobile-astro-hero-slide"
+                    :aria-label="slide.title"
+                    :tabindex="activeBanner === index ? 0 : -1"
+                >
+                    <img :src="slide.image" alt="" :fetchpriority="index === 0 ? 'high' : 'auto'" :loading="index === 0 ? 'eager' : 'lazy'" draggable="false" @error="useImageFallback" />
+                </RouterLink>
             </div>
 
-            <MobileSearchBox />
-
-            <div v-if="loading" class="mobile-banner-skeleton" aria-hidden="true"></div>
-            <div v-else-if="banners.length" class="mobile-banner-area">
-                <div
-                    ref="carousel"
-                    class="mobile-banner-carousel"
-                    aria-roledescription="carousel"
-                    aria-label="Promo pilihan"
-                    @scroll.passive="onCarouselScroll"
-                    @pointerdown="stopAutoplay"
-                    @focusin="stopAutoplay"
-                >
-                    <template v-for="(banner, index) in banners" :key="banner.id">
-                        <a v-if="banner.target_url" :href="banner.target_url" class="mobile-banner" :aria-label="banner.title || `Promo ${index + 1}`">
-                            <img :src="banner.image" :alt="banner.title || 'Promo pilihan'" :fetchpriority="index === 0 ? 'high' : 'auto'" @error="useImageFallback" />
+            <div class="mobile-astro-hero-overlay">
+                <div class="mobile-astro-hero-top">
+                    <RouterLink :to="{ name: 'account' }" class="mobile-astro-eta">
+                        <small>{{ heroEta.label }}</small>
+                        <strong>{{ heroEta.value }}</strong>
+                        <span><em>{{ addressLabel }}</em><MobileIcon name="chevronDown" :size="16" :stroke="2.4" /></span>
+                    </RouterLink>
+                    <div class="mobile-astro-actions">
+                        <a href="/pages/pusat-bantuan?web=1" class="mobile-astro-chat">
+                            <MobileIcon name="headset" :size="18" /> Chat CS
                         </a>
-                        <div v-else class="mobile-banner">
-                            <img :src="banner.image" :alt="banner.title || 'Promo pilihan'" :fetchpriority="index === 0 ? 'high' : 'auto'" @error="useImageFallback" />
-                        </div>
-                    </template>
+                        <RouterLink :to="{ name: 'categories' }" class="mobile-astro-menu" aria-label="Menu kategori">
+                            <MobileIcon name="menu" :size="20" />
+                        </RouterLink>
+                    </div>
                 </div>
-                <div v-if="banners.length > 1" class="mobile-banner-dots">
-                    <button
-                        v-for="(banner, index) in banners"
-                        :key="banner.id"
-                        type="button"
-                        :class="{ 'is-active': activeBanner === index }"
-                        :aria-label="`Tampilkan promo ${index + 1}`"
-                        :aria-current="activeBanner === index ? 'true' : undefined"
-                        @click="stopAutoplay(); goToBanner(index)"
-                    ><span></span></button>
-                </div>
+
+                <button type="button" class="mobile-astro-search" aria-label="Cari produk disini" aria-haspopup="dialog" @click="searchOpen = true">
+                    <MobileIcon name="search" :size="22" />
+                    <span>Cari produk disini</span>
+                </button>
+            </div>
+
+            <div v-if="banners.length > 1" class="mobile-astro-hero-dots">
+                <button
+                    v-for="(banner, index) in banners"
+                    :key="banner.id"
+                    type="button"
+                    :class="{ 'is-active': activeBanner === index }"
+                    :aria-label="`Tampilkan promo ${index + 1}`"
+                    :aria-current="activeBanner === index ? 'true' : undefined"
+                    @click="stopAutoplay(); goToBanner(index)"
+                ><span></span></button>
             </div>
         </div>
+
+        <MobileSearchOverlay :open="searchOpen" @close="searchOpen = false" />
 
         <div class="mobile-home-body">
             <div v-if="loading" class="mobile-home-skeleton" aria-label="Memuat beranda" aria-busy="true">
@@ -121,6 +161,22 @@ onBeforeUnmount(stopAutoplay);
             <MobileCatalogState v-else-if="error" title="Beranda gagal dimuat" :message="error" :retry="load" />
 
             <template v-else-if="home">
+                <template v-if="promoBanners.length">
+                    <div class="mobile-section-heading mobile-section-row">
+                        <h2>Promo Pilihan</h2>
+                    </div>
+                    <div class="mobile-banner-carousel mobile-promo-rail" aria-label="Banner promo">
+                        <template v-for="(banner, index) in promoBanners" :key="banner.id">
+                            <a v-if="banner.target_url" :href="banner.target_url" class="mobile-banner" :aria-label="banner.title || `Promo ${index + 1}`">
+                                <img :src="banner.image" :alt="banner.title || 'Promo pilihan'" loading="lazy" @error="useImageFallback" />
+                            </a>
+                            <div v-else class="mobile-banner">
+                                <img :src="banner.image" :alt="banner.title || 'Promo pilihan'" loading="lazy" @error="useImageFallback" />
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
                 <div class="mobile-section-heading mobile-section-row">
                     <h2>Pilihan Cepat</h2>
                 </div>

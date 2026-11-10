@@ -86,7 +86,7 @@ onBeforeUnmount(() => {
                 Anda sedang offline. Beberapa fungsi belum tersedia.
             </div>
 
-            <header :class="['mobile-header', { 'is-home': isHome }]">
+            <header v-if="!isHome" class="mobile-header">
                 <RouterLink :to="{ name: 'home' }" class="mobile-brand" :aria-label="`${config.appName} beranda`">
                     <span class="mobile-brand-mark" aria-hidden="true">{{ config.appName.charAt(0) }}</span>
                     <span class="mobile-brand-text">

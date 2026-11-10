@@ -10,7 +10,11 @@ test('mobile catalog supports search, detail deep links, categories, and URL fil
     await expect(page.locator('.mobile-product-card').first()).toBeVisible();
     await expect.poll(() => page.locator('img:visible').evaluateAll((images) => images.filter((image) => !image.complete || image.naturalWidth === 0).length)).toBe(0);
 
+    await page.getByRole('button', { name: 'Cari produk disini' }).click();
+    await expect(page.getByRole('dialog', { name: 'Pencarian produk' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Pencarian Populer' })).toBeVisible();
     const search = page.getByRole('combobox', { name: 'Cari produk' });
+    await expect(search).toBeFocused();
     await search.fill('Baut Mur Baja');
     const suggestion = page.getByRole('option').first();
     await expect(suggestion).toContainText('Baut Mur Baja 10.9');
