@@ -4,6 +4,7 @@ import { useImageFallback } from '../services/images';
 
 const props = defineProps({
     product: { type: Object, required: true },
+    eager: { type: Boolean, default: false },
 });
 
 const formatPrice = (value) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value);
@@ -18,7 +19,7 @@ const hasPrice = computed(() => props.product.price_min !== null && props.produc
                 :src="product.image || '/imgs/product-placeholder.svg'"
                 :alt="product.name"
                 class="mobile-product-image"
-                loading="lazy"
+                :loading="eager ? 'eager' : 'lazy'"
                 @error="useImageFallback"
             />
             <span v-if="!product.in_stock" class="mobile-stock-badge is-empty">Stok habis</span>

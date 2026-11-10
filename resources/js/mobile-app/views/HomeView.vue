@@ -93,10 +93,10 @@ onBeforeUnmount(stopAutoplay);
                 >
                     <template v-for="(banner, index) in banners" :key="banner.id">
                         <a v-if="banner.target_url" :href="banner.target_url" class="mobile-banner" :aria-label="banner.title || `Promo ${index + 1}`">
-                            <img :src="banner.image" :alt="banner.title || 'Promo pilihan'" :fetchpriority="index === 0 ? 'high' : 'auto'" :loading="index === 0 ? 'eager' : 'lazy'" @error="useImageFallback" />
+                            <img :src="banner.image" :alt="banner.title || 'Promo pilihan'" :fetchpriority="index === 0 ? 'high' : 'auto'" @error="useImageFallback" />
                         </a>
                         <div v-else class="mobile-banner">
-                            <img :src="banner.image" :alt="banner.title || 'Promo pilihan'" :fetchpriority="index === 0 ? 'high' : 'auto'" :loading="index === 0 ? 'eager' : 'lazy'" @error="useImageFallback" />
+                            <img :src="banner.image" :alt="banner.title || 'Promo pilihan'" :fetchpriority="index === 0 ? 'high' : 'auto'" @error="useImageFallback" />
                         </div>
                     </template>
                 </div>
@@ -139,7 +139,7 @@ onBeforeUnmount(stopAutoplay);
                     <RouterLink v-for="category in home.categories" :key="category.id" :to="{ name: 'category-products', params: { slug: category.slug } }">
                         <strong>{{ category.name }}</strong>
                         <small>{{ category.products_count }} produk</small>
-                        <img :src="category.image || '/imgs/product-placeholder.svg'" alt="" loading="lazy" @error="useImageFallback" />
+                        <img :src="category.image || '/imgs/product-placeholder.svg'" alt="" @error="useImageFallback" />
                     </RouterLink>
                 </div>
 
@@ -148,7 +148,7 @@ onBeforeUnmount(stopAutoplay);
                     <RouterLink :to="{ name: 'search' }">Lihat semua <MobileIcon name="chevron" :size="16" /></RouterLink>
                 </div>
                 <div v-if="home.featured_products.length" class="mobile-product-rail">
-                    <MobileProductCard v-for="product in home.featured_products" :key="product.id" :product="product" />
+                    <MobileProductCard v-for="product in home.featured_products" :key="product.id" :product="product" eager />
                 </div>
                 <MobileCatalogState v-else title="Belum ada produk" message="Produk terbaru akan tampil di sini." />
             </template>

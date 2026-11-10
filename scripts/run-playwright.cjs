@@ -1,4 +1,4 @@
-const { mkdirSync, writeFileSync } = require('node:fs');
+const { existsSync, mkdirSync, writeFileSync } = require('node:fs');
 const path = require('node:path');
 const { spawn, spawnSync } = require('node:child_process');
 
@@ -21,6 +21,10 @@ const e2eEnv = {
     MOBILE_SPA_ANALYTICS_ENABLED: 'true',
     MOBILE_SPA_CHECKOUT_RATE_LIMIT: '300',
     E2E_DATABASE_PREPARED: '1',
+    // Production .env values (cookie domain, secure cookies, Sanctum domains) must not leak into the local HTTP test server.
+    SESSION_DOMAIN: 'null',
+    SESSION_SECURE_COOKIE: 'false',
+    SANCTUM_STATEFUL_DOMAINS: `127.0.0.1:${port},localhost:${port}`,
 };
 
 function stopServer(server) {
@@ -46,6 +50,10 @@ async function waitForServer(server) {
 async function main() {
     if (!Number.isInteger(port) || port < 1024 || port > 65535) {
         throw new Error('PLAYWRIGHT_PORT must be between 1024 and 65535.');
+    }
+
+    if (existsSync(path.resolve(root, 'bootstrap', 'cache', 'config.php'))) {
+        throw new Error('Config is cached (bootstrap/cache/config.php), so E2E env overrides would be ignored and migrate:fresh could hit the real database. Run `php artisan config:clear` first.');
     }
 
     mkdirSync(testingDirectory, { recursive: true });

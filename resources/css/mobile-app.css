@@ -27,7 +27,7 @@
     --mobile-radius: 14px;
     --mobile-shadow: 0 2px 10px rgb(27 34 51 / .06);
     --mobile-shadow-lg: 0 10px 30px rgb(27 34 51 / .12);
-    --mobile-shell-width: 480px;
+    --mobile-shell-width: 430px;
     --mobile-nav-height: 64px;
     color-scheme: light;
     font-family: 'Inter Variable', Inter, ui-sans-serif, system-ui, sans-serif;
