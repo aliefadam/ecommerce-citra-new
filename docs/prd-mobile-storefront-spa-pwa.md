@@ -1,6 +1,6 @@
 # PRD: Mobile Storefront SPA/PWA
 
-Status: Fase 2 discovery dan catalog selesai; Fase 3 belum dimulai
+Status: Fase 3 auth, cart, dan wishlist selesai; Fase 4 belum dimulai
 Tanggal keputusan: 8 November 2026  
 Area: Storefront mobile / B2C customer experience  
 Referensi pengalaman: Astro Lite (`astronauts.id`) sebagai referensi pola, bukan untuk disalin identik  
@@ -10,7 +10,8 @@ Otoritas dokumen: PRD ini menggantikan seluruh ketentuan mobile yang bertentanga
 > Hasil Fase 0 tersedia di [`mobile-spa-phase-0/README.md`](mobile-spa-phase-0/README.md), sedangkan
 > bukti implementasi dan gate Fase 1 tersedia di
 > [`mobile-spa-phase-1/README.md`](mobile-spa-phase-1/README.md). Hasil Fase 2 tersedia di
-> [`mobile-spa-phase-2/README.md`](mobile-spa-phase-2/README.md). Fase 3 belum dimulai.
+> [`mobile-spa-phase-2/README.md`](mobile-spa-phase-2/README.md). Hasil Fase 3 tersedia di
+> [`mobile-spa-phase-3/README.md`](mobile-spa-phase-3/README.md). Fase 4 belum dimulai.
 
 ## Ringkasan Keputusan
 
@@ -398,6 +399,9 @@ Gate: search → detail lulus pada viewport/device matrix dan tidak mengubah des
 
 ### Fase 3 — Auth, Cart, dan Wishlist
 
+Status: **Selesai 9 November 2026**. Bukti gate dan hasil verifikasi tersedia di
+[`mobile-spa-phase-3/README.md`](mobile-spa-phase-3/README.md).
+
 - Guest/member session, auth lifecycle, cart, cart reconciliation, dan wishlist.
 - Negative test untuk CSRF, ownership, tampering, dan cross-company access.
 
@@ -516,7 +520,7 @@ switch.
 - Tidak ada redirect paksa berdasarkan user-agent pada rollout awal.
 - Astro adalah referensi pola pengalaman saja, bukan sumber desain yang disalin.
 
-## Pertanyaan Terbuka Setelah Fase 2
+## Pertanyaan Terbuka Setelah Fase 3
 
 - Bottom navigation Fase 1 telah menetapkan Home, Katalog, Keranjang, Transaksi, dan Profil. Apakah
   komposisi ini tetap dipertahankan setelah tersedia data penggunaan pilot?

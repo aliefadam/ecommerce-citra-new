@@ -4,6 +4,7 @@ import MobileCatalogState from '../components/MobileCatalogState.vue';
 import MobileProductCard from '../components/MobileProductCard.vue';
 import MobileSearchBox from '../components/MobileSearchBox.vue';
 import { request } from '../services/api';
+import { useImageFallback } from '../services/images';
 import { useSessionStore } from '../stores/session';
 
 const session = useSessionStore();
@@ -50,10 +51,10 @@ onMounted(load);
                 :href="home.banners[0].target_url"
                 class="mobile-banner"
             >
-                <img :src="home.banners[0].image" :alt="home.banners[0].title || 'Promo pilihan'" />
+                <img :src="home.banners[0].image" :alt="home.banners[0].title || 'Promo pilihan'" @error="useImageFallback" />
             </a>
             <div v-else-if="home.banners[0]" class="mobile-banner">
-                <img :src="home.banners[0].image" :alt="home.banners[0].title || 'Promo pilihan'" />
+                <img :src="home.banners[0].image" :alt="home.banners[0].title || 'Promo pilihan'" @error="useImageFallback" />
             </div>
 
             <div class="mobile-section-heading mobile-section-row">
@@ -62,7 +63,7 @@ onMounted(load);
             </div>
             <div class="mobile-home-categories">
                 <RouterLink v-for="category in home.categories" :key="category.id" :to="{ name: 'category-products', params: { slug: category.slug } }">
-                    <img :src="category.image || '/imgs/product-placeholder.svg'" alt="" />
+                    <img :src="category.image || '/imgs/product-placeholder.svg'" alt="" @error="useImageFallback" />
                     <strong>{{ category.name }}</strong>
                     <small>{{ category.products_count }} produk</small>
                 </RouterLink>

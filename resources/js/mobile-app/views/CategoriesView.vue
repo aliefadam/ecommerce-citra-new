@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue';
 import MobileCatalogState from '../components/MobileCatalogState.vue';
 import MobileSearchBox from '../components/MobileSearchBox.vue';
 import { request } from '../services/api';
+import { useImageFallback } from '../services/images';
 
 const categories = ref([]);
 const loading = ref(true);
@@ -39,7 +40,7 @@ onMounted(load);
         <div v-else class="mobile-category-list">
             <article v-for="category in categories" :key="category.id" class="mobile-category-group">
                 <RouterLink :to="{ name: 'category-products', params: { slug: category.slug } }" class="mobile-category-main">
-                    <img :src="category.image || '/imgs/product-placeholder.svg'" alt="" />
+                    <img :src="category.image || '/imgs/product-placeholder.svg'" alt="" @error="useImageFallback" />
                     <span><strong>{{ category.name }}</strong><small>{{ category.products_count }} produk</small></span>
                     <span aria-hidden="true">›</span>
                 </RouterLink>

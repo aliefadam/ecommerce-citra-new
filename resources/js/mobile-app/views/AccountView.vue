@@ -1,12 +1,15 @@
 <script setup>
 import { useRouter } from 'vue-router';
 import { useSessionStore } from '../stores/session';
+import { useCommerceStore } from '../stores/commerce';
 
 const router = useRouter();
 const session = useSessionStore();
+const commerce = useCommerceStore();
 
 const logout = async () => {
     await session.logout();
+    commerce.reset();
     await router.replace({ name: 'home' });
 };
 </script>
@@ -28,6 +31,10 @@ const logout = async () => {
             <h2>Foundation account aktif</h2>
             <p>Profil lengkap, alamat, dan pengaturan akun akan tersedia pada fase berikutnya.</p>
         </div>
+
+        <RouterLink :to="{ name: 'wishlist' }" class="mobile-account-link">
+            <span><strong>Wishlist</strong><small>Produk yang Anda simpan</small></span><span aria-hidden="true">›</span>
+        </RouterLink>
 
         <button class="mobile-secondary-button" type="button" :disabled="session.loading" @click="logout">
             {{ session.loading ? 'Memproses…' : 'Keluar' }}

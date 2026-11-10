@@ -5,6 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
         <meta name="theme-color" content="#0a3268" />
         <meta name="robots" content="noindex, follow" />
+        <meta name="description" content="Katalog mobile {{ config('app.name') }} untuk mencari produk, kategori, varian, dan spesifikasi kebutuhan proyek." />
         <meta name="csrf-token" content="{{ csrf_token() }}" />
         <meta name="application-name" content="{{ config('app.name') }} Mobile" />
         <meta name="apple-mobile-web-app-capable" content="yes" />

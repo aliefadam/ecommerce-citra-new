@@ -1,4 +1,6 @@
 <script setup>
+import { useImageFallback } from '../services/images';
+
 defineProps({
     product: { type: Object, required: true },
 });
@@ -16,6 +18,7 @@ const formatPrice = (value) => value === null || value === undefined
                 :alt="product.name"
                 class="mobile-product-image"
                 loading="lazy"
+                @error="useImageFallback"
             />
             <span :class="['mobile-stock-badge', { 'is-empty': !product.in_stock }]">
                 {{ product.in_stock ? 'Tersedia' : 'Stok habis' }}

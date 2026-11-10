@@ -26,6 +26,10 @@ const parseResponse = async (response) => {
         : (contentType.includes('application/json') ? await response.json() : null);
 
     if (!response.ok) {
+        if (response.status === 401) {
+            window.dispatchEvent(new CustomEvent('mobile-spa:unauthenticated'));
+        }
+
         throw new ApiError(body?.message || 'Permintaan tidak dapat diproses.', {
             status: response.status,
             errors: body?.errors || {},

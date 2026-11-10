@@ -79,6 +79,15 @@ Remediation 20 advisory Composer dependency existing masih tertunda karena dua p
 gagal menjangkau Packagist (`curl error 28`). Isu ini dan smoke test perangkat fisik harus ditutup
 sebelum exposure pilot diperluas.
 
+## Hardening Setelah Gate
+
+Sebelum Fase 3, gate Fase 2 diperluas dengan autocomplete keyboard, API failure/retry, offline state,
+broken-image inspection, regression Open Catalog API, storefront catalog, dan Lighthouse. Dua defect
+mobile ditemukan dan ditutup: fallback gambar eksternal yang gagal serta kontras teks harga. Hasil
+akhir Lighthouse Chromium untuk `/app`: accessibility 100, best practices 100, SEO 100, tanpa console
+error. Dua assertion copy pada `StorefrontCatalogExperienceTest` tetap gagal karena teks desktop lama
+sudah tidak ada; view desktop tidak diubah karena berada di luar scope mobile.
+
 ## Keputusan
 
 Gate teknis Fase 2 dinyatakan **lulus**. Fase 3 (auth lifecycle lanjutan, cart, reconciliation, dan

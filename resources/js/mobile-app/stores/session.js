@@ -57,5 +57,30 @@ export const useSessionStore = defineStore('mobile-session', () => {
         }
     };
 
-    return { user, loading, ready, error, bootstrap, login, logout };
+    const register = async (details) => {
+        loading.value = true;
+        error.value = '';
+        try {
+            await prepareCsrf();
+            const response = await request(`${config.apiBase}/auth/register`, {
+                method: 'POST',
+                body: details,
+            });
+            user.value = response.data.user;
+
+            return response.data.return_url || '/app';
+        } catch (exception) {
+            error.value = exception.message || 'Akun belum dapat dibuat.';
+            throw exception;
+        } finally {
+            loading.value = false;
+        }
+    };
+
+    const expire = () => {
+        user.value = null;
+        ready.value = true;
+    };
+
+    return { user, loading, ready, error, bootstrap, login, logout, register, expire };
 });

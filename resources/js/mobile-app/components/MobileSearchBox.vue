@@ -2,6 +2,7 @@
 import { onBeforeUnmount, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { request } from '../services/api';
+import { useImageFallback } from '../services/images';
 
 const props = defineProps({
     initialValue: { type: String, default: '' },
@@ -127,7 +128,7 @@ onBeforeUnmount(() => {
                 :aria-selected="activeIndex === index"
                 @click="expanded = false"
             >
-                <img :src="product.image || '/imgs/product-placeholder.svg'" alt="" />
+                <img :src="product.image || '/imgs/product-placeholder.svg'" alt="" @error="useImageFallback" />
                 <span><strong>{{ product.name }}</strong><small>{{ product.sku || product.category?.name }}</small></span>
             </RouterLink>
             <div v-if="!loading && !suggestions.length" class="mobile-suggestion-state">Tidak ada saran.</div>

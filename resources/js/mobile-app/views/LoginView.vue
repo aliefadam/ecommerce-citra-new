@@ -82,5 +82,8 @@ const submit = async () => {
         </form>
 
         <a class="mobile-web-link" href="/login">Gunakan halaman login versi web</a>
+        <RouterLink :to="{ name: 'register', query: route.query.return ? { return: route.query.return } : {} }" class="mobile-web-link">
+            Belum punya akun? Daftar
+        </RouterLink>
     </section>
 </template>

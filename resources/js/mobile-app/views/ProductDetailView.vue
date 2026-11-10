@@ -1,15 +1,22 @@
 <script setup>
 import { computed, nextTick, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import MobileCatalogState from '../components/MobileCatalogState.vue';
 import { request } from '../services/api';
+import { useImageFallback } from '../services/images';
+import { useCommerceStore } from '../stores/commerce';
+import { useSessionStore } from '../stores/session';
 
 const route = useRoute();
+const router = useRouter();
+const session = useSessionStore();
+const commerce = useCommerceStore();
 const product = ref(null);
 const selectedVariantId = ref(null);
 const loading = ref(true);
 const error = ref('');
 const shareStatus = ref('');
+const actionStatus = ref('');
 const headingElement = ref(null);
 
 const selectedVariant = computed(() => product.value?.variants.find((variant) => variant.id === selectedVariantId.value) || product.value?.variants[0]);
@@ -24,12 +31,41 @@ const load = async () => {
         const response = await request(`/api/mobile/v1/products/${encodeURIComponent(route.params.slug)}`);
         product.value = response.data;
         selectedVariantId.value = response.data.variants.find((variant) => variant.in_stock)?.id || response.data.variants[0]?.id;
+        if (session.user) await commerce.fetchWishlist().catch(() => {});
         await nextTick();
         requestAnimationFrame(() => headingElement.value?.focus({ preventScroll: true }));
     } catch (exception) {
         error.value = exception.status === 404 ? 'Produk tidak ditemukan atau sudah tidak tersedia.' : exception.message;
     } finally {
         loading.value = false;
+    }
+};
+
+const requireLogin = async () => {
+    if (session.user) return true;
+    await router.push({ name: 'login', query: { return: route.fullPath } });
+    return false;
+};
+
+const addToCart = async () => {
+    if (!await requireLogin()) return;
+    actionStatus.value = '';
+    try {
+        await commerce.addCartItem(selectedVariant.value.id, 1);
+        actionStatus.value = 'Produk ditambahkan ke keranjang.';
+    } catch (exception) {
+        actionStatus.value = exception.message;
+    }
+};
+
+const toggleWishlist = async () => {
+    if (!await requireLogin()) return;
+    const wished = !commerce.isWished(product.value.slug);
+    try {
+        await commerce.setWishlist(product.value.slug, wished);
+        actionStatus.value = wished ? 'Produk disimpan ke wishlist.' : 'Produk dihapus dari wishlist.';
+    } catch (exception) {
+        actionStatus.value = exception.message;
     }
 };
 
@@ -55,7 +91,12 @@ watch(() => route.params.slug, load, { immediate: true });
         <MobileCatalogState v-else-if="error" title="Detail produk gagal dimuat" :message="error" :retry="load" />
 
         <template v-else-if="product">
-            <img :src="selectedVariant?.image || product.image || '/imgs/product-placeholder.svg'" :alt="product.name" class="mobile-detail-image" />
+            <img
+                :src="selectedVariant?.image || product.image || '/imgs/product-placeholder.svg'"
+                :alt="product.name"
+                class="mobile-detail-image"
+                @error="useImageFallback"
+            />
             <div class="mobile-detail-heading">
                 <div>
                     <span class="mobile-eyebrow">{{ product.category.name || 'Produk' }}</span>
@@ -70,7 +111,7 @@ watch(() => route.params.slug, load, { immediate: true });
             <fieldset v-if="product.variants.length" class="mobile-variant-picker">
                 <legend>Pilih varian</legend>
                 <label v-for="variant in product.variants" :key="variant.id" :class="{ 'is-selected': selectedVariantId === variant.id }">
-                    <input v-model="selectedVariantId" type="radio" name="variant" :value="variant.id" />
+                    <input v-model="selectedVariantId" type="radio" name="variant" :value="variant.id" :disabled="!variant.in_stock" />
                     <span><strong>{{ variant.attribute_summary || variant.sku }}</strong><small>{{ formatPrice(variant.price) }} · {{ variant.in_stock ? 'Tersedia' : 'Habis' }}</small></span>
                 </label>
             </fieldset>
@@ -91,7 +132,15 @@ watch(() => route.params.slug, load, { immediate: true });
             </section>
 
             <div class="mobile-detail-action">
-                <button type="button" class="mobile-primary-button" disabled>Keranjang tersedia pada Fase 3</button>
+                <p aria-live="polite">{{ actionStatus }}</p>
+                <div>
+                    <button type="button" class="mobile-secondary-button" :disabled="commerce.loading" @click="toggleWishlist">
+                        {{ commerce.isWished(product.slug) ? '♥ Tersimpan' : '♡ Wishlist' }}
+                    </button>
+                    <button type="button" class="mobile-primary-button" :disabled="!selectedVariant?.in_stock || commerce.loading" @click="addToCart">
+                        Tambah ke Keranjang
+                    </button>
+                </div>
             </div>
         </template>
     </section>

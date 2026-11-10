@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Mobile\V1\MobileCatalogController;
+use App\Http\Controllers\Api\Mobile\V1\MobileCommerceController;
 use App\Http\Controllers\Api\Mobile\V1\MobileSessionController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\ProductController;
@@ -26,9 +27,20 @@ Route::prefix('mobile/v1')
         Route::post('auth/login', [MobileSessionController::class, 'login'])
             ->middleware('throttle:login')
             ->name('auth.login');
+        Route::post('auth/register', [MobileSessionController::class, 'register'])
+            ->middleware('throttle:login')
+            ->name('auth.register');
         Route::middleware('auth:sanctum')->group(function () {
             Route::get('session', [MobileSessionController::class, 'show'])->name('session.show');
             Route::post('auth/logout', [MobileSessionController::class, 'logout'])->name('auth.logout');
+            Route::get('cart', [MobileCommerceController::class, 'cart'])->name('cart.show');
+            Route::post('cart/items', [MobileCommerceController::class, 'addCartItem'])->name('cart.items.store');
+            Route::patch('cart/items/{cart}', [MobileCommerceController::class, 'updateCartItem'])->whereNumber('cart')->name('cart.items.update');
+            Route::delete('cart/items/{cart}', [MobileCommerceController::class, 'deleteCartItem'])->whereNumber('cart')->name('cart.items.destroy');
+            Route::delete('cart', [MobileCommerceController::class, 'clearCart'])->name('cart.clear');
+            Route::get('wishlist', [MobileCommerceController::class, 'wishlist'])->name('wishlist.index');
+            Route::put('wishlist/{slug}', [MobileCommerceController::class, 'addWishlist'])->name('wishlist.store');
+            Route::delete('wishlist/{slug}', [MobileCommerceController::class, 'deleteWishlist'])->name('wishlist.destroy');
         });
     });
 

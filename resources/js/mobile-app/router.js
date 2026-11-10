@@ -35,8 +35,7 @@ const routes = [
     {
         path: '/cart',
         name: 'cart',
-        component: () => import('./views/FoundationView.vue'),
-        props: { title: 'Keranjang', message: 'Keranjang mobile akan tersedia pada Fase 3.' },
+        component: () => import('./views/CartView.vue'),
         meta: { label: 'Keranjang', nav: true, requiresAuth: true },
     },
     {
@@ -53,9 +52,21 @@ const routes = [
         meta: { label: 'Profil', nav: true, requiresAuth: true },
     },
     {
+        path: '/wishlist',
+        name: 'wishlist',
+        component: () => import('./views/WishlistView.vue'),
+        meta: { label: 'Wishlist', nav: true, requiresAuth: true, navSection: 'account' },
+    },
+    {
         path: '/auth/login',
         name: 'login',
         component: () => import('./views/LoginView.vue'),
+        meta: { hideNavigation: true },
+    },
+    {
+        path: '/auth/register',
+        name: 'register',
+        component: () => import('./views/RegisterView.vue'),
         meta: { hideNavigation: true },
     },
     {
