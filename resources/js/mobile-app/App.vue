@@ -1,6 +1,8 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { RouterLink, RouterView, useRoute } from 'vue-router';
+import MobileIcon from './components/MobileIcon.vue';
+import { useCommerceStore } from './stores/commerce';
 import { useSessionStore } from './stores/session';
 import { trackMobileEvent } from './services/telemetry';
 
@@ -10,6 +12,7 @@ defineProps({
 
 const route = useRoute();
 const session = useSessionStore();
+const commerce = useCommerceStore();
 const online = ref(navigator.onLine);
 const updateAvailable = ref(false);
 const serviceWorkerError = ref(false);
@@ -17,12 +20,16 @@ const routeLoading = ref(false);
 let routeFeedbackTimer;
 
 const navigation = [
-    { name: 'home', label: 'Home', icon: '⌂' },
-    { name: 'categories', label: 'Katalog', icon: '▦' },
-    { name: 'cart', label: 'Keranjang', icon: '▱' },
-    { name: 'orders', label: 'Transaksi', icon: '▤' },
-    { name: 'account', label: 'Profil', icon: '○' },
+    { name: 'home', label: 'Home', icon: 'home' },
+    { name: 'categories', label: 'Katalog', icon: 'grid' },
+    { name: 'cart', label: 'Keranjang', icon: 'cart' },
+    { name: 'orders', label: 'Transaksi', icon: 'receipt' },
+    { name: 'account', label: 'Profil', icon: 'user' },
 ];
+
+const cartCount = computed(() => (commerce.cartReady ? Number(commerce.cart.summary?.quantity || 0) : 0));
+const isHome = computed(() => route.name === 'home');
+const isActiveNav = (item) => route.name === item.name || route.meta.navSection === item.name;
 
 const showNavigation = computed(() => !route.meta.hideNavigation);
 const syncOnline = () => { online.value = navigator.onLine; };
@@ -79,12 +86,23 @@ onBeforeUnmount(() => {
                 Anda sedang offline. Beberapa fungsi belum tersedia.
             </div>
 
-            <header class="mobile-header">
-                <div>
-                    <span class="mobile-eyebrow">Storefront mobile</span>
-                    <strong>{{ config.appName }}</strong>
+            <header :class="['mobile-header', { 'is-home': isHome }]">
+                <RouterLink :to="{ name: 'home' }" class="mobile-brand" :aria-label="`${config.appName} beranda`">
+                    <span class="mobile-brand-mark" aria-hidden="true">{{ config.appName.charAt(0) }}</span>
+                    <span class="mobile-brand-text">
+                        <span class="mobile-eyebrow">Belanja kebutuhan proyek</span>
+                        <strong>{{ config.appName }}</strong>
+                    </span>
+                </RouterLink>
+                <div class="mobile-header-actions">
+                    <span v-if="config.pilot" class="mobile-pilot-badge">PILOT</span>
+                    <RouterLink :to="{ name: 'wishlist' }" class="mobile-header-button" aria-label="Produk tersimpan">
+                        <MobileIcon name="heart" :size="20" />
+                    </RouterLink>
+                    <RouterLink :to="{ name: 'notifications' }" class="mobile-header-button" aria-label="Pemberitahuan">
+                        <MobileIcon name="bell" :size="20" />
+                    </RouterLink>
                 </div>
-                <span v-if="config.pilot" class="mobile-pilot-badge">PILOT</span>
             </header>
 
             <div v-if="updateAvailable" class="mobile-update-notice" role="status">
@@ -117,10 +135,15 @@ onBeforeUnmount(() => {
                     :key="item.name"
                     :to="{ name: item.name }"
                     class="mobile-nav-item"
-                    :class="{ 'router-link-active': route.meta.navSection === item.name }"
+                    active-class=""
+                    exact-active-class=""
+                    :class="{ 'router-link-active': isActiveNav(item) }"
                     :aria-label="item.label"
                 >
-                    <span class="mobile-nav-icon" aria-hidden="true">{{ item.icon }}</span>
+                    <span class="mobile-nav-icon" aria-hidden="true">
+                        <MobileIcon :name="item.icon" :size="23" :stroke="isActiveNav(item) ? 2.4 : 1.9" />
+                        <span v-if="item.name === 'cart' && cartCount" class="mobile-nav-badge">{{ cartCount > 99 ? '99+' : cartCount }}</span>
+                    </span>
                     <span>{{ item.label }}</span>
                 </RouterLink>
             </nav>

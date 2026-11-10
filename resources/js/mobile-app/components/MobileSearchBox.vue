@@ -1,6 +1,7 @@
 <script setup>
 import { onBeforeUnmount, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import MobileIcon from './MobileIcon.vue';
 import { request } from '../services/api';
 import { useImageFallback } from '../services/images';
 import { trackMobileEvent } from '../services/telemetry';
@@ -93,13 +94,13 @@ onBeforeUnmount(() => {
     <div class="mobile-search" role="search">
         <form class="mobile-search-form" @submit.prevent="submit">
             <label class="mobile-visually-hidden" :for="`mobile-catalog-search-${route.name}`">Cari produk</label>
-            <span aria-hidden="true">⌕</span>
+            <span class="mobile-search-icon"><MobileIcon name="search" :size="20" /></span>
             <input
                 :id="`mobile-catalog-search-${route.name}`"
                 v-model="query"
                 type="search"
                 name="q"
-                placeholder="Cari nama, SKU, ukuran, material"
+                placeholder="Cari produk, SKU, ukuran…"
                 autocomplete="off"
                 :autofocus="autofocus"
                 role="combobox"
