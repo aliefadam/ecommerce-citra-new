@@ -10,11 +10,13 @@ const error = ref('');
 const loading = ref(true);
 const proof = ref(null);
 let pollTimer = null;
-const terminal = ['settlement', 'capture', 'paid', 'selesai', 'dibatalkan', 'cancel', 'expire', 'deny', 'failure'];
+const terminal = ['settlement', 'capture', 'paid', 'process', 'kirim', 'selesai', 'completed', 'dibatalkan', 'cancel', 'expire', 'deny', 'failure'];
 const formatPrice = (value) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value || 0);
 const isTerminal = computed(() => terminal.includes(String(payment.value?.status || '').toLowerCase()));
 
 const load = async (status = false) => {
+    window.clearTimeout(pollTimer);
+    pollTimer = null;
     try {
         const response = await request(`${config.apiBase}/orders/${encodeURIComponent(route.params.orderId)}/payment${status ? '/status' : ''}`);
         payment.value = response.data;

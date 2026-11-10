@@ -17,6 +17,7 @@ const paymentMethod = ref('manual');
 const shipping = reactive({});
 const selectedShipping = reactive({});
 const coupons = reactive({});
+const orderKeys = reactive({});
 const invoiceRequested = ref(false);
 const taxProfileId = ref(null);
 const formatPrice = (value) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value || 0);
@@ -25,6 +26,11 @@ const canSubmit = computed(() => checkout.value?.groups.length
     && addressId.value
     && checkout.value.groups.every((group) => selectedShipping[group.company_id])
     && !submitting.value);
+const orderKey = (companyId) => {
+    orderKeys[companyId] ||= crypto.randomUUID();
+
+    return orderKeys[companyId];
+};
 
 const load = async () => {
     loading.value = true;
@@ -84,7 +90,7 @@ const submit = async () => {
         for (const group of checkout.value.groups) {
             const response = await request(`${config.apiBase}/checkout/orders`, {
                 method: 'POST',
-                headers: { 'Idempotency-Key': crypto.randomUUID() },
+                headers: { 'Idempotency-Key': orderKey(group.company_id) },
                 body: {
                     company_id: group.company_id,
                     cart_ids: group.cart_ids,
@@ -101,7 +107,7 @@ const submit = async () => {
         await router.replace({ name: 'payment', params: { orderId: orders[0] }, query: orders.length > 1 ? { other: orders.slice(1).join(',') } : {} });
     } catch (exception) {
         error.value = exception.errors?.checkout_version?.[0] || exception.message;
-        await load();
+        if (exception.status === 422) await load();
     } finally {
         submitting.value = false;
     }

@@ -71,3 +71,39 @@ test('registration creates a normalized session and session expiry returns to lo
     await expect(page).toHaveURL(/\/app\/auth\/login\?return=\/cart$/);
     await expect(page.getByRole('heading', { name: 'Masuk' })).toBeVisible();
 });
+
+test('checkout retry reuses idempotency key after a lost server response', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await login(page, '/products/baut-mur-baja-109');
+    await expect(page).toHaveURL(/\/app\/products\/baut-mur-baja-109$/);
+    await page.getByRole('button', { name: 'Tambah ke Keranjang' }).click();
+    await page.getByRole('link', { name: 'Keranjang' }).click();
+    await page.getByRole('link', { name: 'Lanjut Checkout' }).click();
+    await page.getByRole('button', { name: 'Pilih Pengiriman' }).click();
+    await expect(page.getByText(/JNE.*REG/)).toBeVisible();
+
+    const idempotencyKeys = [];
+    let orderAttempts = 0;
+    await page.route('**/api/mobile/v1/checkout/orders', async (route) => {
+        orderAttempts += 1;
+        idempotencyKeys.push(route.request().headers()['idempotency-key']);
+        if (orderAttempts === 1) {
+            await route.fetch();
+            await route.fulfill({
+                status: 503,
+                contentType: 'application/json',
+                body: JSON.stringify({ message: 'Simulasi respons server hilang.' }),
+            });
+            return;
+        }
+
+        await route.continue();
+    });
+
+    await page.getByRole('button', { name: 'Buat Pesanan' }).click();
+    await expect(page.getByText('Simulasi respons server hilang.')).toBeVisible();
+    await page.getByRole('button', { name: 'Buat Pesanan' }).click();
+    await expect(page.getByRole('heading', { name: 'Pembayaran' })).toBeVisible();
+    expect(idempotencyKeys).toHaveLength(2);
+    expect(idempotencyKeys[0]).toBe(idempotencyKeys[1]);
+});

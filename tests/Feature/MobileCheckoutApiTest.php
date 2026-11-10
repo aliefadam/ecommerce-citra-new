@@ -208,6 +208,121 @@ class MobileCheckoutApiTest extends TestCase
         $this->assertSame(2, Transaction::query()->distinct()->count('company_id'));
     }
 
+    public function test_provider_failure_releases_attempt_and_same_key_can_be_retried_safely(): void
+    {
+        Mail::fake();
+        Http::fakeSequence()
+            ->push(['message' => 'provider unavailable'], 503)
+            ->push([
+                'transaction_id' => 'mobile-midtrans-retry',
+                'transaction_status' => 'pending',
+                'payment_type' => 'qris',
+                'expiry_time' => now()->addMinutes(30)->toDateTimeString(),
+                'actions' => [['name' => 'generate-qr-code', 'url' => 'https://example.test/retry-qr.png']],
+            ]);
+        config(['services.midtrans.server_key' => 'mobile-test-key', 'services.midtrans.is_production' => false]);
+        [$user, $address] = $this->checkoutFixture();
+        $this->actingAs($user);
+        $group = $this->getJson('/api/mobile/v1/checkout')->json('data.groups.0');
+        $key = (string) Str::uuid();
+        $payload = [
+            'company_id' => $group['company_id'],
+            'cart_ids' => $group['cart_ids'],
+            'address_id' => $address->id,
+            'shipping_quote_token' => $this->quote($group, $address, 0, 'Gratis Ongkir'),
+            'checkout_version' => $group['checkout_version'],
+            'payment_method' => 'qris',
+        ];
+
+        $this->withHeader('Idempotency-Key', $key)
+            ->postJson('/api/mobile/v1/checkout/orders', $payload)
+            ->assertUnprocessable();
+        $this->assertDatabaseMissing('checkout_attempts', ['idempotency_key' => $key]);
+        $this->assertDatabaseCount('transactions', 0);
+
+        $this->withHeader('Idempotency-Key', $key)
+            ->postJson('/api/mobile/v1/checkout/orders', $payload)
+            ->assertOk();
+        Http::assertSentCount(2);
+        $this->assertDatabaseCount('transactions', 1);
+        $this->assertDatabaseCount('inventory_reservations', 1);
+    }
+
+    public function test_member_can_create_address_without_exposing_it_to_other_checkout_sessions(): void
+    {
+        $user = User::factory()->create();
+        $payload = [
+            'label' => 'Kantor',
+            'recipient_name' => 'Penerima Baru',
+            'phone_country_code' => '+62',
+            'phone_number' => '81200001111',
+            'province_id' => 1,
+            'city_id' => 2,
+            'district_id' => 3,
+            'subdistrict_id' => 4,
+            'province' => 'DKI Jakarta',
+            'city' => 'Jakarta Selatan',
+            'district' => 'Setiabudi',
+            'subdistrict' => 'Karet',
+            'postal_code' => '12920',
+            'destination_id' => 99,
+            'address_line' => 'Jl. Checkout Mobile No. 2',
+            'is_primary' => true,
+        ];
+
+        $addressId = $this->actingAs($user)
+            ->postJson('/api/mobile/v1/addresses', $payload)
+            ->assertCreated()
+            ->assertJsonPath('data.recipient_name', 'Penerima Baru')
+            ->json('data.id');
+        $this->assertDatabaseHas('addresses', ['id' => $addressId, 'user_id' => $user->id]);
+
+        $this->actingAs(User::factory()->create())
+            ->getJson('/api/mobile/v1/checkout')
+            ->assertOk()
+            ->assertJsonMissing(['id' => $addressId]);
+    }
+
+    public function test_duplicate_provider_order_is_recovered_from_status_without_second_local_order(): void
+    {
+        Mail::fake();
+        Http::fake(function ($request) {
+            if ($request->method() === 'POST') {
+                return Http::response(['status_message' => 'Order ID has already been taken'], 406);
+            }
+
+            return Http::response([
+                'transaction_id' => 'mobile-midtrans-orphan-recovery',
+                'transaction_status' => 'pending',
+                'payment_type' => 'qris',
+                'expiry_time' => now()->addMinutes(20)->toDateTimeString(),
+                'actions' => [['name' => 'generate-qr-code', 'url' => 'https://example.test/recovered-qr.png']],
+            ]);
+        });
+        config(['services.midtrans.server_key' => 'mobile-test-key', 'services.midtrans.is_production' => false]);
+        [$user, $address] = $this->checkoutFixture();
+        $this->actingAs($user);
+        $group = $this->getJson('/api/mobile/v1/checkout')->json('data.groups.0');
+
+        $created = $this->withHeader('Idempotency-Key', (string) Str::uuid())
+            ->postJson('/api/mobile/v1/checkout/orders', [
+                'company_id' => $group['company_id'],
+                'cart_ids' => $group['cart_ids'],
+                'address_id' => $address->id,
+                'shipping_quote_token' => $this->quote($group, $address, 0, 'Gratis Ongkir'),
+                'checkout_version' => $group['checkout_version'],
+                'payment_method' => 'qris',
+            ])
+            ->assertOk();
+
+        Http::assertSentCount(2);
+        $this->assertDatabaseCount('transactions', 1);
+        $this->assertDatabaseCount('inventory_reservations', 1);
+        $this->getJson('/api/mobile/v1/orders/'.$created->json('order_id').'/payment')
+            ->assertOk()
+            ->assertJsonPath('data.qr_url', 'https://example.test/recovered-qr.png');
+    }
+
     private function checkoutFixture(): array
     {
         $user = User::factory()->create();

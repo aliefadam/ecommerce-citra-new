@@ -48,15 +48,31 @@ Endpoint sensitif berada di `auth:sanctum`, CSRF same-origin, limiter checkout, 
 ## Gate
 
 - Fase 3 pre-gate: 29 test/237 assertion backend, 7 browser flow, build dan audit lulus.
-- Final backend checkout/mobile regression: 54 test/394 assertion lulus.
-- Mobile checkout API: 6 test/41 assertion lulus untuk manual/Midtrans replay, ownership, stale
-  version, multi-company, dan totals.
-- Mobile browser: 6 test lulus untuk cart → checkout → signed shipping → manual order → payment,
-  wishlist/session, katalog, dan shell.
-- Existing checkout/storefront browser regression: 8 test lulus untuk guest positive/negative,
-  multi-company, product-to-cart, dan shell desktop.
+- Final backend checkout/mobile regression: 57 test/415 assertion lulus.
+- Mobile checkout API: 9 test lulus untuk manual/Midtrans replay, ownership, stale version,
+  multi-company, provider failure/recovery, address isolation, dan totals.
+- Final browser regression: 15 test lulus untuk cart → checkout → signed shipping → manual order →
+  payment, lost-response retry, wishlist/session, katalog, guest positive/negative, multi-company,
+  product-to-cart, dan shell desktop.
 - `npm run build`, Pint, `git diff --check`, dan `npm audit --audit-level=high` lulus; audit JavaScript
-  0 vulnerability. Initial mobile JS 46,30 KB gzip, CSS 5,62 KB gzip.
+  0 vulnerability. Initial mobile JS 46,31 KB gzip, CSS 5,62 KB gzip.
+
+## Hardening Setelah Gate
+
+Audit ulang sebelum Fase 5 menemukan dan menutup tiga defect recovery:
+
+- idempotency key client sebelumnya dibuat ulang setiap submit; sekarang key dipertahankan per
+  perusahaan sehingga respons jaringan yang hilang dapat di-replay tanpa duplicate order;
+- checkout tidak lagi membuang preview setelah error jaringan/server, sehingga retry memakai payload
+  dan key yang sama;
+- polling payment hanya memiliki satu timer aktif dan berhenti pada seluruh terminal state backend;
+- duplicate Midtrans order setelah crash antara provider dan local persistence dipulihkan melalui
+  status provider dengan order ID deterministik, tanpa order/reservation kedua.
+
+Full backend suite menghasilkan 257 test lulus dan 4 assertion copy/localization desktop existing
+gagal (`GuestAccountConversionTest` dan `StorefrontCatalogExperienceTest`). Kegagalan tersebut tidak
+melewati controller/API checkout mobile dan sudah ada sebelum hardening; view desktop tetap tidak
+diubah sesuai batas scope.
 
 ## Batas Scope
 

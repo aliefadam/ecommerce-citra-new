@@ -269,6 +269,21 @@ class MidtransController extends Controller
                 ])
                 ->post($baseUrl, $payload);
 
+            if (! $response->successful() && $idempotencyKey !== '' && in_array($response->status(), [400, 406, 409], true)) {
+                $statusUrl = $isProduction
+                    ? 'https://api.midtrans.com/v2/'.$orderId.'/status'
+                    : 'https://api.sandbox.midtrans.com/v2/'.$orderId.'/status';
+                $existing = $this->midtransRequest(safeToRetry: true)
+                    ->withHeaders([
+                        'Accept' => 'application/json',
+                        'Authorization' => 'Basic '.$auth,
+                    ])
+                    ->get($statusUrl);
+                if ($existing->successful()) {
+                    $response = $existing;
+                }
+            }
+
             if (! $response->successful()) {
                 throw new RuntimeException('Gagal membuat transaksi Midtrans. HTTP '.$response->status().'.');
             }
