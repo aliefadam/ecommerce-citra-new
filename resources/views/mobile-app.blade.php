@@ -25,6 +25,7 @@
         <div
             id="mobile-app"
             data-app-name="{{ config('app.name') }}"
+            data-logo-url="{{ !empty($appStoreLogoUrl) ? $appStoreLogoUrl : asset('logo/BOQ.CO.ID/BOQ.CO.ID-1.png') }}"
             data-app-version="{{ $mobileAppVersion }}"
             data-api-base="/api/mobile/v1"
             data-pilot="{{ config('mobile-spa.pilot') ? 'true' : 'false' }}"

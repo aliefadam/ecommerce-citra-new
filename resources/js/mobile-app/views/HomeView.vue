@@ -1,9 +1,9 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, inject, onBeforeUnmount, onMounted, ref } from 'vue';
 import MobileCatalogState from '../components/MobileCatalogState.vue';
 import MobileIcon from '../components/MobileIcon.vue';
 import MobileProductCard from '../components/MobileProductCard.vue';
-import MobileSearchOverlay from '../components/MobileSearchOverlay.vue';
+import MobileSearchLauncher from '../components/MobileSearchLauncher.vue';
 import { request } from '../services/api';
 import { useImageFallback } from '../services/images';
 import { useSessionStore } from '../stores/session';
@@ -17,7 +17,10 @@ const activeBanner = ref(0);
 let autoplayTimer;
 let autoplayDelay;
 
-const searchOpen = ref(false);
+const config = inject('mobileConfig');
+const heroSearch = ref(null);
+const stickySearch = ref(false);
+let searchObserver;
 
 // Dummy hero artwork (public/imgs/mobile-hero). Replace with real campaign art when available.
 const heroSlides = [
@@ -26,11 +29,9 @@ const heroSlides = [
     { id: 'hero-3', image: '/imgs/mobile-hero/hero-3.svg', title: 'Gratis ongkir', to: { name: 'search', query: { in_stock: '1' } } },
     { id: 'hero-4', image: '/imgs/mobile-hero/hero-4.svg', title: 'Perkakas profesional', to: { name: 'categories' } },
 ];
-// Dummy delivery promise shown in the hero, Astro style.
-const heroEta = { label: 'Cepat sampai', value: '25 Menit' };
 const banners = computed(() => heroSlides);
 const promoBanners = computed(() => home.value?.banners || []);
-const addressLabel = computed(() => (session.user ? `Halo, ${session.user.name} · Atur alamat pengiriman` : 'Masuk untuk atur alamat pengiriman'));
+const greeting = computed(() => (session.user ? `Halo, ${session.user.name.split(' ')[0]}` : 'Material & perlengkapan proyek'));
 
 const shortcuts = [
     { label: 'Produk Terbaru', icon: 'sparkle', tone: 'sky', to: { name: 'search', query: { sort: 'newest' } } },
@@ -80,10 +81,15 @@ function startAutoplay() {
 onMounted(() => {
     window.addEventListener('mobile-spa:route-started', stopAutoplay);
     autoplayDelay = window.setTimeout(startAutoplay, 3000);
+    if ('IntersectionObserver' in window && heroSearch.value) {
+        searchObserver = new IntersectionObserver(([entry]) => { stickySearch.value = !entry.isIntersecting; }, { threshold: 0 });
+        searchObserver.observe(heroSearch.value);
+    }
     load();
 });
 onBeforeUnmount(() => {
     stopAutoplay();
+    searchObserver?.disconnect();
     window.removeEventListener('mobile-spa:route-started', stopAutoplay);
 });
 </script>
@@ -118,25 +124,23 @@ onBeforeUnmount(() => {
 
             <div class="mobile-astro-hero-overlay">
                 <div class="mobile-astro-hero-top">
-                    <RouterLink :to="{ name: 'account' }" class="mobile-astro-eta">
-                        <small>{{ heroEta.label }}</small>
-                        <strong>{{ heroEta.value }}</strong>
-                        <span><em>{{ addressLabel }}</em><MobileIcon name="chevronDown" :size="16" :stroke="2.4" /></span>
-                    </RouterLink>
+                    <div class="mobile-astro-brand">
+                        <span class="mobile-astro-logo"><img :src="config.logoUrl" :alt="config.appName" width="116" height="52" /></span>
+                        <small>{{ greeting }}</small>
+                    </div>
                     <div class="mobile-astro-actions">
                         <a href="/pages/pusat-bantuan?web=1" class="mobile-astro-chat">
                             <MobileIcon name="headset" :size="18" /> Chat CS
                         </a>
-                        <RouterLink :to="{ name: 'categories' }" class="mobile-astro-menu" aria-label="Menu kategori">
-                            <MobileIcon name="menu" :size="20" />
+                        <RouterLink :to="{ name: 'notifications' }" class="mobile-astro-menu" aria-label="Pemberitahuan">
+                            <MobileIcon name="bell" :size="20" />
                         </RouterLink>
                     </div>
                 </div>
 
-                <button type="button" class="mobile-astro-search" aria-label="Cari produk disini" aria-haspopup="dialog" @click="searchOpen = true">
-                    <MobileIcon name="search" :size="22" />
-                    <span>Cari produk disini</span>
-                </button>
+                <div ref="heroSearch">
+                    <MobileSearchLauncher />
+                </div>
             </div>
 
             <div v-if="banners.length > 1" class="mobile-astro-hero-dots">
@@ -152,7 +156,11 @@ onBeforeUnmount(() => {
             </div>
         </div>
 
-        <MobileSearchOverlay :open="searchOpen" @close="searchOpen = false" />
+        <Transition name="mobile-sticky-search">
+            <div v-if="stickySearch" class="mobile-home-sticky-search">
+                <MobileSearchLauncher />
+            </div>
+        </Transition>
 
         <div class="mobile-home-body">
             <div v-if="loading" class="mobile-home-skeleton" aria-label="Memuat beranda" aria-busy="true">

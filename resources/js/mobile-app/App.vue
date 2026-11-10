@@ -88,14 +88,9 @@ onBeforeUnmount(() => {
 
             <header v-if="!isHome" class="mobile-header">
                 <RouterLink :to="{ name: 'home' }" class="mobile-brand" :aria-label="`${config.appName} beranda`">
-                    <span class="mobile-brand-mark" aria-hidden="true">{{ config.appName.charAt(0) }}</span>
-                    <span class="mobile-brand-text">
-                        <span class="mobile-eyebrow">Belanja kebutuhan proyek</span>
-                        <strong>{{ config.appName }}</strong>
-                    </span>
+                    <img :src="config.logoUrl" :alt="config.appName" class="mobile-brand-logo" width="116" height="52" />
                 </RouterLink>
                 <div class="mobile-header-actions">
-                    <span v-if="config.pilot" class="mobile-pilot-badge">PILOT</span>
                     <RouterLink :to="{ name: 'wishlist' }" class="mobile-header-button" aria-label="Produk tersimpan">
                         <MobileIcon name="heart" :size="20" />
                     </RouterLink>

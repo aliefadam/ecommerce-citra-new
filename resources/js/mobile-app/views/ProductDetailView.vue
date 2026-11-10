@@ -3,7 +3,10 @@ import { computed, nextTick, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import MobileCatalogState from '../components/MobileCatalogState.vue';
 import MobileProductGallery from '../components/MobileProductGallery.vue';
+import MobileVariantSelector from '../components/MobileVariantSelector.vue';
 import { request } from '../services/api';
+import { sanitizeHtml } from '../services/html';
+import { attributeText, differingCodes, usableAttributes } from '../services/variants';
 import { useCommerceStore } from '../stores/commerce';
 import { trackMobileEvent } from '../services/telemetry';
 import { useSessionStore } from '../stores/session';
@@ -21,6 +24,9 @@ const actionStatus = ref('');
 const headingElement = ref(null);
 
 const selectedVariant = computed(() => product.value?.variants.find((variant) => variant.id === selectedVariantId.value) || product.value?.variants[0]);
+const descriptionHtml = computed(() => sanitizeHtml(product.value?.description));
+const variantDiffCodes = computed(() => differingCodes(product.value?.variants || []));
+const selectedVariantSpecs = computed(() => usableAttributes(selectedVariant.value));
 const galleryImages = computed(() => {
     if (!product.value) return [];
     const images = [
@@ -120,17 +126,34 @@ watch(() => route.params.slug, load, { immediate: true });
             <p class="mobile-detail-price">{{ formatPrice(selectedVariant?.price ?? product.price_min) }}</p>
             <p class="mobile-detail-seller">Dijual oleh <strong>{{ product.seller.name }}</strong></p>
 
-            <fieldset v-if="product.variants.length" class="mobile-variant-picker">
-                <legend>Pilih varian</legend>
-                <label v-for="variant in product.variants" :key="variant.id" :class="{ 'is-selected': selectedVariantId === variant.id }">
-                    <input v-model="selectedVariantId" type="radio" name="variant" :value="variant.id" :disabled="!variant.in_stock" @change="trackMobileEvent('variant_selected', {}, route.name)" />
-                    <span><strong>{{ variant.attribute_summary || variant.sku }}</strong><small>{{ formatPrice(variant.price) }} · {{ variant.in_stock ? 'Tersedia' : 'Habis' }}</small></span>
-                </label>
-            </fieldset>
+            <section v-if="product.variants.length > 1" class="mobile-variant-picker" aria-labelledby="mobile-variant-heading">
+                <h2 id="mobile-variant-heading">Pilih varian</h2>
+                <MobileVariantSelector
+                    v-model="selectedVariantId"
+                    :variants="product.variants"
+                    :format-price="formatPrice"
+                    @select="trackMobileEvent('variant_selected', {}, route.name)"
+                />
+            </section>
+
+            <section v-if="selectedVariantSpecs.length || selectedVariant?.sku" class="mobile-detail-section">
+                <h2>{{ product.variants.length > 1 ? 'Detail varian terpilih' : 'Detail produk' }}</h2>
+                <dl class="mobile-specifications">
+                    <template v-if="selectedVariant?.sku">
+                        <dt>SKU</dt>
+                        <dd>{{ selectedVariant.sku }}</dd>
+                    </template>
+                    <template v-for="attribute in selectedVariantSpecs" :key="attribute.code">
+                        <dt>{{ attribute.name }}</dt>
+                        <dd :class="{ 'is-highlight': variantDiffCodes.includes(attribute.code) }">{{ attributeText(attribute) }}</dd>
+                    </template>
+                </dl>
+            </section>
 
             <section class="mobile-detail-section">
                 <h2>Deskripsi</h2>
-                <p>{{ product.description || 'Deskripsi produk belum tersedia.' }}</p>
+                <div v-if="descriptionHtml" class="mobile-rich-text" v-html="descriptionHtml"></div>
+                <p v-else>Deskripsi produk belum tersedia.</p>
             </section>
 
             <section v-if="product.specifications.length" class="mobile-detail-section">

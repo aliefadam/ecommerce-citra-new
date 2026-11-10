@@ -8,6 +8,7 @@ import { trackMobileEvent } from '../services/telemetry';
 
 const props = defineProps({
     open: { type: Boolean, default: false },
+    initialValue: { type: String, default: '' },
 });
 const emit = defineEmits(['close']);
 
@@ -144,7 +145,7 @@ watch(query, (value) => {
 watch(() => props.open, async (isOpen) => {
     document.documentElement.classList.toggle('mobile-search-locked', isOpen);
     if (!isOpen) return;
-    query.value = '';
+    query.value = props.initialValue;
     recent.value = readRecent();
     loadCategories();
     await nextTick();

@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import MobileCatalogState from '../components/MobileCatalogState.vue';
-import MobileSearchBox from '../components/MobileSearchBox.vue';
+import MobileSearchLauncher from '../components/MobileSearchLauncher.vue';
 import { request } from '../services/api';
 import { useImageFallback } from '../services/images';
 
@@ -29,7 +29,7 @@ onMounted(load);
     <section class="mobile-screen" aria-labelledby="mobile-route-heading">
         <span class="mobile-eyebrow">Jelajahi produk</span>
         <h1 id="mobile-route-heading" tabindex="-1">Katalog</h1>
-        <MobileSearchBox />
+        <div class="mobile-search-sticky"><MobileSearchLauncher /></div>
 
         <div v-if="loading" class="mobile-skeleton-list" aria-label="Memuat kategori" aria-busy="true">
             <span v-for="item in 5" :key="item"></span>

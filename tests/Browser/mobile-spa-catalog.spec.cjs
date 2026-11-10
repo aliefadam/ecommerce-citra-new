@@ -23,7 +23,7 @@ test('mobile catalog supports search, detail deep links, categories, and URL fil
 
     await expect(page).toHaveURL(/\/app\/products\/baut-mur-baja-109$/);
     await expect(page.getByRole('heading', { name: 'Baut Mur Baja 10.9' })).toBeFocused();
-    await expect(page.getByText('Pilih varian')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Deskripsi' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Tambah ke Keranjang' })).toBeVisible();
 
     await page.reload({ waitUntil: 'domcontentloaded' });

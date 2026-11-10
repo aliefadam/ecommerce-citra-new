@@ -13,6 +13,7 @@ const root = document.querySelector('#mobile-app');
 if (root) {
     const config = Object.freeze({
         appName: root.dataset.appName || 'Ecommerce Citra',
+        logoUrl: root.dataset.logoUrl || '/logo/BOQ.CO.ID/BOQ.CO.ID-1.png',
         appVersion: root.dataset.appVersion || 'rollout-6',
         apiBase: root.dataset.apiBase || '/api/mobile/v1',
         pilot: root.dataset.pilot === 'true',

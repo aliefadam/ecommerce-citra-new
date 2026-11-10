@@ -3,7 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import MobileCatalogState from '../components/MobileCatalogState.vue';
 import MobileProductCard from '../components/MobileProductCard.vue';
-import MobileSearchBox from '../components/MobileSearchBox.vue';
+import MobileSearchLauncher from '../components/MobileSearchLauncher.vue';
 import { request } from '../services/api';
 import { trackMobileEvent } from '../services/telemetry';
 
@@ -87,7 +87,7 @@ watch(() => route.fullPath, () => {
         <RouterLink v-if="isCategory" :to="{ name: 'categories' }" class="mobile-back-link">← Semua kategori</RouterLink>
         <span class="mobile-eyebrow">Katalog mobile</span>
         <h1 id="mobile-route-heading" tabindex="-1">{{ title }}</h1>
-        <MobileSearchBox :initial-value="String(route.query.q || '')" :autofocus="route.name === 'search' && !route.query.q" />
+        <div class="mobile-search-sticky"><MobileSearchLauncher :value="String(route.query.q || '')" /></div>
 
         <details class="mobile-filter-panel">
             <summary>Filter & urutkan <span v-if="meta">{{ meta.total }} produk</span></summary>

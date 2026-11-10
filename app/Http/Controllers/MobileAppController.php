@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Middleware\RedirectMobileToSpa;
-use App\Models\Banner;
-use App\Support\CatalogImageUrl;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -14,14 +12,6 @@ class MobileAppController extends Controller
 {
     public function show(Request $request): Response
     {
-        $banner = Banner::query()
-            ->where('is_active', true)
-            ->where('type', 'carousel')
-            ->where(fn ($query) => $query->whereNull('company_id')->orWhereHas('company', fn ($company) => $company->where('is_active', true)))
-            ->orderBy('sort_order')
-            ->orderByDesc('id')
-            ->first();
-
         // Membuka /app berarti memilih versi aplikasi: hapus preferensi "versi web".
         if ($request->cookie(RedirectMobileToSpa::PREFER_WEB_COOKIE) !== null) {
             Cookie::queue(Cookie::forget(RedirectMobileToSpa::PREFER_WEB_COOKIE));
@@ -29,7 +19,7 @@ class MobileAppController extends Controller
 
         return response()->view('mobile-app', [
             'mobileAppVersion' => (string) config('mobile-spa.version'),
-            'mobilePreloadImage' => $banner ? CatalogImageUrl::make($banner->image) : null,
+            'mobilePreloadImage' => asset('imgs/mobile-hero/hero-1.svg'),
         ]);
     }
 
