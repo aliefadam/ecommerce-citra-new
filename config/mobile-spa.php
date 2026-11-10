@@ -2,6 +2,7 @@
 
 return [
     'enabled' => (bool) env('MOBILE_SPA_ENABLED', false),
+    'auto_redirect' => (bool) env('MOBILE_SPA_AUTO_REDIRECT', false),
     'pilot' => (bool) env('MOBILE_SPA_PILOT', true),
     'analytics_enabled' => (bool) env('MOBILE_SPA_ANALYTICS_ENABLED', false),
     'analytics_retention_days' => max(1, (int) env('MOBILE_SPA_ANALYTICS_RETENTION_DAYS', 90)),

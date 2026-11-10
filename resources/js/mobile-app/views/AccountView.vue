@@ -76,7 +76,7 @@ onMounted(load);
             </section>
             <form class="mobile-account-form" @submit.prevent="savePassword"><h2>Ubah password</h2><label>Password saat ini<input v-model="password.current_password" type="password" required /></label><label>Password baru<input v-model="password.password" type="password" required minlength="8" /></label><label>Konfirmasi password<input v-model="password.password_confirmation" type="password" required minlength="8" /></label><button class="mobile-secondary-button" :disabled="saving">Ubah Password</button></form>
             <button class="mobile-secondary-button" type="button" :disabled="session.loading" @click="logout">{{ session.loading ? 'Memproses…' : 'Keluar' }}</button>
-            <a href="/" class="mobile-secondary-button mobile-button-link">Kembali ke Versi Web</a>
+            <a href="/?web=1" class="mobile-secondary-button mobile-button-link">Kembali ke Versi Web</a>
         </template>
     </section>
 </template>

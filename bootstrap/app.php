@@ -6,6 +6,7 @@ use App\Http\Middleware\CompanyScope;
 use App\Http\Middleware\EnsureCheckoutAccess;
 use App\Http\Middleware\EnsureMobileSpaEnabled;
 use App\Http\Middleware\LocalizeStorefrontUi;
+use App\Http\Middleware\RedirectMobileToSpa;
 use App\Http\Middleware\RequestContext;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -28,7 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->statefulApi();
         $middleware->append(RequestContext::class);
-        $middleware->web(append: [SetLocale::class, LocalizeStorefrontUi::class]);
+        $middleware->web(append: [SetLocale::class, LocalizeStorefrontUi::class, RedirectMobileToSpa::class]);
         $middleware->alias([
             'admin' => AdminOnly::class,
             'admin.permission' => AdminPermission::class,
