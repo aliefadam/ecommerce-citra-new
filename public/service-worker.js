@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ecommerce-citra-pwa-v3';
+const CACHE_NAME = 'ecommerce-citra-pwa-v4';
 const PWA_ASSETS = [
     '/offline.html',
     '/pwa/boq-icon-192-v2.png',

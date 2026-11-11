@@ -1,8 +1,15 @@
-const CACHE_NAME = 'ecommerce-citra-mobile-rollout-v6';
+// Naikkan versi ini setiap rilis agar cache aset lama di semua perangkat dibuang.
+const CACHE_NAME = 'ecommerce-citra-mobile-rollout-v7';
 const OFFLINE_URL = '/mobile-app-offline.html';
 
 self.addEventListener('install', (event) => {
-    event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.add(OFFLINE_URL)));
+    // Langsung aktif: HTML selalu diambil dari jaringan dan aset Vite ber-hash,
+    // jadi tidak perlu menunggu user menekan "Perbarui".
+    event.waitUntil(
+        caches.open(CACHE_NAME)
+            .then((cache) => cache.add(OFFLINE_URL))
+            .then(() => self.skipWaiting()),
+    );
 });
 
 self.addEventListener('activate', (event) => {

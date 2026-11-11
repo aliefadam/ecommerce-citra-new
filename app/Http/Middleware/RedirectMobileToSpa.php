@@ -18,7 +18,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class RedirectMobileToSpa
 {
-    public const PREFER_WEB_COOKIE = 'prefer_web';
+    public const PREFER_WEB_COOKIE = 'prefer_web_v2';
 
     private const BOT_PATTERN = '/bot|crawl|spider|slurp|lighthouse|pagespeed|headless|facebookexternalhit|whatsapp|telegrambot|preview|curl|wget|python|okhttp/i';
 

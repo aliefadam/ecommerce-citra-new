@@ -150,5 +150,14 @@ export const createMobileRouter = () => {
             : 'Mobile Storefront';
     });
 
+    // Setelah deploy, file chunk lama sudah dihapus. Jika halaman masih memakai build lama,
+    // muat ulang ke URL tujuan agar mengambil build terbaru.
+    router.onError((error, to) => {
+        const message = String(error?.message || '');
+        if (/dynamically imported module|Importing a module script failed|Failed to fetch|Loading chunk/i.test(message)) {
+            window.location.assign(to?.fullPath ? `/app${to.fullPath === '/' ? '' : to.fullPath}` : window.location.href);
+        }
+    });
+
     return router;
 };

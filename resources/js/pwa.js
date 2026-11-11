@@ -9,6 +9,30 @@ const syncInstalledState = () => {
 
 syncInstalledState();
 
+// PWA versi lama dipasang dari manifest root (start_url "/"). Saat dibuka dalam mode
+// standalone di ponsel, arahkan ke Mobile SPA kecuali user memilih versi web (?web=1).
+const PREFER_WEB_KEY = 'boq:prefer-web';
+const redirectStandaloneMobileToSpa = () => {
+    const params = new URLSearchParams(window.location.search);
+    try {
+        if (params.get('web') === '1') {
+            localStorage.setItem(PREFER_WEB_KEY, '1');
+            return;
+        }
+        if (localStorage.getItem(PREFER_WEB_KEY) === '1') return;
+    } catch {
+        if (params.get('web') === '1') return;
+    }
+
+    const isMobile = /Mobi|iPhone|iPod|Android.+Mobile/i.test(window.navigator.userAgent);
+    const spaEnabled = document.querySelector('meta[name="mobile-spa"]')?.content === 'enabled';
+    if (isStandalone() && isMobile && spaEnabled && window.location.pathname === '/') {
+        window.location.replace('/app');
+    }
+};
+
+redirectStandaloneMobileToSpa();
+
 window.addEventListener('beforeinstallprompt', (event) => {
     event.preventDefault();
     deferredInstallPrompt = event;
@@ -37,7 +61,7 @@ window.matchMedia('(display-mode: standalone)').addEventListener?.('change', syn
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js?v=2', {
+        navigator.serviceWorker.register('/service-worker.js?v=3', {
             scope: '/',
             updateViaCache: 'none',
         })

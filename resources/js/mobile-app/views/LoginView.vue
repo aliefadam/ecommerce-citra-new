@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useSessionStore } from '../stores/session';
+import MobileGoogleButton from '../components/MobileGoogleButton.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -80,6 +81,8 @@ const submit = async () => {
                 {{ session.loading ? 'Memproses…' : 'Masuk' }}
             </button>
         </form>
+
+        <MobileGoogleButton :return-url="returnUrl" />
 
         <a class="mobile-web-link" href="/login?web=1">Gunakan halaman login versi web</a>
         <RouterLink :to="{ name: 'register', query: route.query.return ? { return: route.query.return } : {} }" class="mobile-web-link">

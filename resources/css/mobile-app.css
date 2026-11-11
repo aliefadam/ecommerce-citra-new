@@ -923,3 +923,7 @@ a, button, input { -webkit-tap-highlight-color: transparent; }
 .mobile-account-count { margin-left: .4rem; border-radius: 999px; padding: .05rem .45rem; color: white; background: var(--mobile-danger); font-size: .62rem; font-weight: 850; }
 
 .mobile-wishlist-toggle { display: inline-flex; align-items: center; justify-content: center; gap: .45rem; }
+
+.mobile-auth-divider { display: flex; align-items: center; gap: .75rem; margin: 1.1rem 0 .85rem; color: #64748b; font-size: .78rem; font-weight: 700; }
+.mobile-auth-divider::before, .mobile-auth-divider::after { content: ""; flex: 1; height: 1px; background: #e2e8f0; }
+.mobile-google-button { display: flex; width: 100%; justify-content: center; align-items: center; gap: .55rem; border-color: #cbd5e1; color: #334155; font-weight: 750; }

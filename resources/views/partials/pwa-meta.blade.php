@@ -4,6 +4,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="{{ config('app.name') }}" />
 <meta name="mobile-web-app-capable" content="yes" />
+@if (config('mobile-spa.enabled') && config('mobile-spa.auto_redirect'))
+<meta name="mobile-spa" content="enabled" />
+@endif
 <link rel="manifest" href="{{ route('pwa.manifest') }}?v=5" />
 <link rel="icon" href="{{ asset('favicon.ico') }}?v=4" sizes="any" />
 <link rel="icon" type="image/png" sizes="48x48" href="{{ asset('pwa/favicon-48x48.png') }}?v=4" />

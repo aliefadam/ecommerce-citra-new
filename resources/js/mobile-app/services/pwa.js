@@ -1,13 +1,33 @@
 import { trackMobileEvent } from './telemetry';
 
-const notifyUpdate = (registration) => {
-    window.__mobilePwaUpdate = () => registration.waiting?.postMessage({ type: 'SKIP_WAITING' });
-    window.dispatchEvent(new CustomEvent('mobile-spa:update-available'));
-    trackMobileEvent('service_worker_updated', { install_state: 'update_available' });
+const RELOAD_FLAG = 'mobile-spa:sw-reloaded';
+
+// Service worker baru langsung aktif (skipWaiting di SW). Saat controller berganti,
+// muat ulang sekali agar halaman memakai build terbaru — tanpa banner "Perbarui".
+const reloadOnControllerChange = (hadController) => {
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!hadController) return;
+        try {
+            if (sessionStorage.getItem(RELOAD_FLAG)) return;
+            sessionStorage.setItem(RELOAD_FLAG, '1');
+        } catch {
+            // sessionStorage bisa tidak tersedia; tetap reload sekali.
+        }
+        trackMobileEvent('service_worker_updated', { install_state: 'auto_reloaded' });
+        window.location.reload();
+    });
 };
 
 export const registerMobileServiceWorker = () => {
     if (!('serviceWorker' in navigator)) return;
+
+    try {
+        sessionStorage.removeItem(RELOAD_FLAG);
+    } catch {
+        // abaikan
+    }
+
+    reloadOnControllerChange(Boolean(navigator.serviceWorker.controller));
 
     window.addEventListener('load', async () => {
         try {
@@ -16,16 +36,9 @@ export const registerMobileServiceWorker = () => {
                 updateViaCache: 'none',
             });
 
-            if (registration.waiting) notifyUpdate(registration);
-
-            registration.addEventListener('updatefound', () => {
-                const worker = registration.installing;
-                worker?.addEventListener('statechange', () => {
-                    if (worker.state === 'installed' && navigator.serviceWorker.controller) {
-                        notifyUpdate(registration);
-                    }
-                });
-            });
+            // Worker lama yang masih "waiting" dari versi sebelumnya: aktifkan sekarang.
+            registration.waiting?.postMessage({ type: 'SKIP_WAITING' });
+            registration.update().catch(() => {});
         } catch {
             window.dispatchEvent(new CustomEvent('mobile-spa:service-worker-error'));
         }

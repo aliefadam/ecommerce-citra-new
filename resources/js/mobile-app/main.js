@@ -11,6 +11,9 @@ import '../../css/mobile-app.css';
 const root = document.querySelector('#mobile-app');
 
 if (root) {
+    // Membuka /app = memilih versi aplikasi; hapus preferensi "versi web" di perangkat ini.
+    try { localStorage.removeItem('boq:prefer-web'); } catch { /* abaikan */ }
+
     const config = Object.freeze({
         appName: root.dataset.appName || 'Ecommerce Citra',
         logoUrl: root.dataset.logoUrl || '/logo/BOQ.CO.ID/BOQ.CO.ID-1.png',

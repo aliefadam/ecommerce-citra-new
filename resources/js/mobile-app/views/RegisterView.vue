@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useSessionStore } from '../stores/session';
+import MobileGoogleButton from '../components/MobileGoogleButton.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -47,5 +48,7 @@ const submit = async () => {
             <p v-if="session.error" class="mobile-alert" role="alert">{{ session.error }}</p>
             <button class="mobile-primary-button" type="submit" :disabled="session.loading">{{ session.loading ? 'Memproses…' : 'Buat Akun' }}</button>
         </form>
+
+        <MobileGoogleButton :return-url="returnUrl" label="Daftar dengan Google" />
     </section>
 </template>

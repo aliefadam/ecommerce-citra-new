@@ -178,7 +178,7 @@ onBeforeUnmount(() => {
                         <small>{{ greeting }}</small>
                     </div>
                     <div class="mobile-astro-actions">
-                        <a href="/pages/pusat-bantuan?web=1" class="mobile-astro-chat">
+                        <a href="/pages/pusat-bantuan" class="mobile-astro-chat">
                             <MobileIcon name="headset" :size="18" /> Chat CS
                         </a>
                         <RouterLink :to="{ name: 'wishlist' }" class="mobile-astro-menu" aria-label="Produk tersimpan">
