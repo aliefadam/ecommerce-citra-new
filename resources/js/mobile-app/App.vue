@@ -136,7 +136,7 @@ onBeforeUnmount(() => {
                     :aria-label="item.label"
                 >
                     <span class="mobile-nav-icon" aria-hidden="true">
-                        <MobileIcon :name="item.icon" :size="23" :stroke="isActiveNav(item) ? 2.4 : 1.9" />
+                        <MobileIcon :name="item.icon" :size="22" :filled="isActiveNav(item)" />
                         <span v-if="item.name === 'cart' && cartCount" class="mobile-nav-badge">{{ cartCount > 99 ? '99+' : cartCount }}</span>
                     </span>
                     <span>{{ item.label }}</span>

@@ -1,4 +1,5 @@
 <script setup>
+import MobileIcon from './MobileIcon.vue';
 import { ref, watch } from 'vue';
 import { useImageFallback } from '../services/images';
 
@@ -65,10 +66,10 @@ watch(() => props.images, () => goTo(Math.max(props.images.indexOf(props.focusIm
 
         <template v-if="images.length > 1">
             <button type="button" class="mobile-gallery-arrow is-prev" aria-label="Foto sebelumnya" @click="goTo(active - 1)">
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
+                <MobileIcon name="back" :size="20" />
             </button>
             <button type="button" class="mobile-gallery-arrow is-next" aria-label="Foto berikutnya" @click="goTo(active + 1)">
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
+                <MobileIcon name="chevron" :size="20" />
             </button>
             <span class="mobile-gallery-count" aria-hidden="true">{{ active + 1 }}/{{ images.length }}</span>
             <div class="mobile-gallery-dots">
