@@ -141,4 +141,45 @@ class BannerResponsiveDesignTest extends TestCase
         $response->assertSessionHasErrors('is_active');
         $this->assertDatabaseCount('banners', 2);
     }
+
+    public function test_mobile_hero_banner_is_saved_as_four_by_five_webp_with_internal_target(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $response = $this->actingAs($admin)->post(route('banners.store'), [
+            'type' => 'mobile_hero',
+            'title' => 'Hitung BOQ gratis',
+            'image_file' => UploadedFile::fake()->image('hero.jpg', 1200, 1200),
+            'target_url' => '/app/search?sort=newest',
+            'sort_order' => 1,
+            'is_active' => 1,
+        ]);
+
+        $response->assertRedirect(route('banners.index'));
+        $banner = Banner::query()->sole();
+        $this->assertSame('mobile_hero', $banner->type);
+        $this->assertSame('/app/search?sort=newest', $banner->target_url);
+
+        $imageInfo = getimagesizefromstring(Storage::disk('public')->get($banner->image));
+        $this->assertSame(864, $imageInfo[0]);
+        $this->assertSame(1080, $imageInfo[1]);
+        $this->assertSame('image/webp', $imageInfo['mime']);
+    }
+
+    public function test_mobile_hero_banner_rejects_external_target_url(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($admin)->post(route('banners.store'), [
+            'type' => 'mobile_hero',
+            'image_file' => UploadedFile::fake()->image('hero.jpg', 864, 1080),
+            'target_url' => 'https://evil.example.com',
+            'sort_order' => 1,
+            'is_active' => 1,
+        ])->assertSessionHasErrors('target_url');
+
+        $this->assertSame(0, Banner::query()->count());
+    }
 }

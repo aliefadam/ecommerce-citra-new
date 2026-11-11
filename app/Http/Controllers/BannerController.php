@@ -8,6 +8,16 @@ use Illuminate\Http\Request;
 
 class BannerController extends Controller
 {
+    private const TYPES = ['carousel', 'side', 'mobile_hero'];
+
+    /** Output canvas (width, height) per placement. */
+    private const SIZES = [
+        'carousel' => [1600, 700],
+        'side' => [800, 350],
+        // Mobile app hero (4:5). The SPA anchors it to the bottom, so the top ~35% sits behind the header.
+        'mobile_hero' => [864, 1080],
+    ];
+
     public function index()
     {
         $banners = Banner::query()->orderBy('type')->orderBy('sort_order')->orderByDesc('id')->get();
@@ -24,16 +34,17 @@ class BannerController extends Controller
     {
         $validated = $request->validate([
             'title' => ['nullable', 'string', 'max:255'],
-            'type' => ['required', 'in:carousel,side'],
+            'type' => ['required', 'in:'.implode(',', self::TYPES)],
             'image_url' => ['nullable', 'string', 'max:2048'],
             'image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
-            'target_url' => ['nullable', 'url', 'max:2048'],
+            'target_url' => $this->targetUrlRules($request),
             'sort_order' => ['required', 'integer', 'min:1'],
             'is_active' => ['nullable', 'boolean'],
         ], [
             'image_file.uploaded' => $this->uploadFailureMessage($request),
             'image_file.mimes' => 'Format gambar harus JPG, PNG, atau WebP.',
             'image_file.max' => 'Ukuran file gambar maksimal 12 MB sebelum dikompres.',
+            'target_url.regex' => 'Target Hero Mobile harus path internal yang diawali "/", contoh: /app/search?sort=newest.',
         ]);
 
         $isActiveTarget = (bool) ($validated['is_active'] ?? false);
@@ -84,16 +95,17 @@ class BannerController extends Controller
     {
         $validated = $request->validate([
             'title' => ['nullable', 'string', 'max:255'],
-            'type' => ['required', 'in:carousel,side'],
+            'type' => ['required', 'in:'.implode(',', self::TYPES)],
             'image_url' => ['nullable', 'string', 'max:2048'],
             'image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
-            'target_url' => ['nullable', 'url', 'max:2048'],
+            'target_url' => $this->targetUrlRules($request),
             'sort_order' => ['required', 'integer', 'min:1'],
             'is_active' => ['nullable', 'boolean'],
         ], [
             'image_file.uploaded' => $this->uploadFailureMessage($request),
             'image_file.mimes' => 'Format gambar harus JPG, PNG, atau WebP.',
             'image_file.max' => 'Ukuran file gambar maksimal 12 MB sebelum dikompres.',
+            'target_url.regex' => 'Target Hero Mobile harus path internal yang diawali "/", contoh: /app/search?sort=newest.',
         ]);
 
         $isActiveTarget = (bool) ($validated['is_active'] ?? false);
@@ -178,9 +190,7 @@ class BannerController extends Controller
     private function resolveImageValue(Request $request, ImageOptimizer $imageOptimizer, string $type, string $imageUrl, ?string $fallback = null): ?string
     {
         if ($request->hasFile('image_file')) {
-            // Both placements use the same 16:7 design canvas. Side banners only need
-            // a smaller generated file because their rendered width is much smaller.
-            [$w, $h] = $type === 'side' ? [800, 350] : [1600, 700];
+            [$w, $h] = self::SIZES[$type] ?? self::SIZES['carousel'];
             return $imageOptimizer->storeWebpCover($request->file('image_file'), 'banners', $w, $h, 82);
         }
 
@@ -190,6 +200,16 @@ class BannerController extends Controller
         }
 
         return $fallback;
+    }
+
+    private function targetUrlRules(Request $request): array
+    {
+        // The mobile SPA only follows same-origin paths (see MobileCatalogController::safeTargetUrl).
+        if ($request->input('type') === 'mobile_hero') {
+            return ['nullable', 'string', 'max:2048', 'regex:#^/(?!/)#'];
+        }
+
+        return ['nullable', 'url', 'max:2048'];
     }
 
     private function uploadFailureMessage(Request $request): string

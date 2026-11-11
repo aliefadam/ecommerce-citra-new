@@ -18,6 +18,7 @@
                         <select name="type" class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200">
                             <option value="carousel" @selected(old('type', 'carousel') === 'carousel')>Carousel — Slider utama (kiri)</option>
                             <option value="side" @selected(old('type') === 'side')>Side — Banner kanan (maks 2)</option>
+                            <option value="mobile_hero" @selected(old('type') === 'mobile_hero')>Hero Mobile — Slider atas aplikasi mobile (864 x 1080)</option>
                         </select>
                         @error('type')
                             <p class="text-xs text-red-500 mt-1.5">{{ $message }}</p>
@@ -35,7 +36,7 @@
                         <div class="flex items-center gap-3">
                             <div id="bannerImagePreviewWrap" class="hidden shrink-0">
                                 <img id="bannerImagePreview" src="" alt="Preview Banner"
-                                    class="w-28 aspect-[16/7] object-cover rounded-lg border border-slate-200 dark:border-slate-600" />
+                                    class="w-28 aspect-[16/7] object-cover rounded-lg border border-slate-200 dark:border-slate-600" data-banner-preview />
                             </div>
                             <label
                                 class="flex-1 flex items-center gap-2 px-3 py-2.5 rounded-xl border border-dashed border-slate-300 dark:border-slate-500 cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 transition-colors bg-white dark:bg-slate-700/50">
@@ -52,8 +53,16 @@
                             </label>
                         </div>
                         <p id="bannerSizeHint" class="mt-1.5 text-xs text-slate-400 dark:text-slate-500">
-                            Rekomendasi <span id="bannerSizeHintText">1600 x 700 px (rasio 16:7)</span>. JPG/PNG/WebP otomatis di-crop ke 16:7, dikompres, dan disimpan sebagai WebP. Sisakan safe area 10%.
+                            Rekomendasi <span id="bannerSizeHintText">1600 x 700 px (rasio 16:7)</span>. JPG/PNG/WebP otomatis di-crop sesuai rasio, dikompres, dan disimpan sebagai WebP. Sisakan safe area 10%.
                         </p>
+                        <div id="bannerMobileHeroGuide" class="hidden mt-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-relaxed text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+                            <p class="font-semibold">Panduan Hero Mobile (kanvas 864 x 1080)</p>
+                            <ul class="mt-1 list-disc space-y-0.5 pl-4">
+                                <li>Gambar ditempel ke bawah: ±35% bagian atas terpotong / tertutup lokasi &amp; kolom cari. Isi area ini dengan latar saja.</li>
+                                <li>Taruh kartu promo, teks, dan produk di ±40% bagian bawah (y 650–1080 px), beri jarak 40 px dari kiri-kanan.</li>
+                                <li>Target URL wajib path internal, contoh <code>/app/search?sort=newest</code> atau <code>/app/categories</code>.</li>
+                            </ul>
+                        </div>
                         @error('image_file')
                             <p class="text-xs text-red-500 mt-1.5">{{ $message }}</p>
                         @enderror

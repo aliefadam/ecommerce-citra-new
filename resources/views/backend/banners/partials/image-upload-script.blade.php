@@ -3,6 +3,13 @@
         const form = document.getElementById('bannerForm');
         const typeSelect = document.querySelector('select[name="type"]');
         const hintText = document.getElementById('bannerSizeHintText');
+        const mobileHeroGuide = document.getElementById('bannerMobileHeroGuide');
+        const targetInput = document.querySelector('input[name="target_url"]');
+        const placements = {
+            carousel: { size: [1600, 700], hint: '1600 x 700 px (rasio 16:7)', aspect: 'aspect-[16/7]', target: 'https://example.com' },
+            side: { size: [800, 350], hint: '800 x 350 px (rasio 16:7)', aspect: 'aspect-[16/7]', target: 'https://example.com' },
+            mobile_hero: { size: [864, 1080], hint: '864 x 1080 px (rasio 4:5)', aspect: 'aspect-[4/5]', target: '/app/search?sort=newest' },
+        };
         const input = document.getElementById('bannerImageFile');
         const preview = document.getElementById('bannerImagePreview');
         const wrap = document.getElementById('bannerImagePreviewWrap');
@@ -15,8 +22,21 @@
 
         if (!form || !typeSelect || !input || !preview || !label || !submit) return;
 
+        function placement() {
+            return placements[typeSelect.value] || placements.carousel;
+        }
+
         function outputSize() {
-            return typeSelect.value === 'side' ? [800, 350] : [1600, 700];
+            return placement().size;
+        }
+
+        function syncPlacement() {
+            const current = placement();
+            if (hintText) hintText.textContent = current.hint;
+            mobileHeroGuide?.classList.toggle('hidden', typeSelect.value !== 'mobile_hero');
+            if (targetInput) targetInput.placeholder = current.target;
+            preview.classList.remove('aspect-[16/7]', 'aspect-[4/5]');
+            preview.classList.add(current.aspect);
         }
 
         function formatBytes(bytes) {
@@ -125,8 +145,10 @@
         });
 
         typeSelect.addEventListener('change', function() {
-            if (hintText) hintText.textContent = '1600 x 700 px (rasio 16:7)';
+            syncPlacement();
             if (originalFile) processImage(originalFile);
         });
+
+        syncPlacement();
     })();
 </script>

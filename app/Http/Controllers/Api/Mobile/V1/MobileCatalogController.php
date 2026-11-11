@@ -27,21 +27,8 @@ class MobileCatalogController extends Controller
 
         return response()->json([
             'data' => [
-                'banners' => Banner::query()
-                    ->where('is_active', true)
-                    ->where('type', 'carousel')
-                    ->where(fn ($query) => $query->whereNull('company_id')->orWhereHas('company', fn ($company) => $company->where('is_active', true)))
-                    ->orderBy('sort_order')
-                    ->orderByDesc('id')
-                    ->limit(5)
-                    ->get()
-                    ->map(fn (Banner $banner) => [
-                        'id' => (int) $banner->id,
-                        'title' => (string) ($banner->title ?? ''),
-                        'image' => CatalogImageUrl::make($banner->image),
-                        'target_url' => $this->safeTargetUrl($banner->target_url),
-                    ])
-                    ->values(),
+                'hero_banners' => $this->activeBanners('mobile_hero', 6),
+                'banners' => $this->activeBanners('carousel', 5),
                 'categories' => $this->categoryTree(8),
                 'featured_products' => MobileProductListResource::collection($products)->resolve($request),
             ],
@@ -227,6 +214,25 @@ class MobileCatalogController extends Controller
                 'products_count' => (int) ($detailCounts[$detail->id] ?? 0),
             ])->values(),
         ])->values()->all();
+    }
+
+    private function activeBanners(string $type, int $limit)
+    {
+        return Banner::query()
+            ->where('is_active', true)
+            ->where('type', $type)
+            ->where(fn ($query) => $query->whereNull('company_id')->orWhereHas('company', fn ($company) => $company->where('is_active', true)))
+            ->orderBy('sort_order')
+            ->orderByDesc('id')
+            ->limit($limit)
+            ->get()
+            ->map(fn (Banner $banner) => [
+                'id' => (int) $banner->id,
+                'title' => (string) ($banner->title ?? ''),
+                'image' => CatalogImageUrl::make($banner->image),
+                'target_url' => $this->safeTargetUrl($banner->target_url),
+            ])
+            ->values();
     }
 
     private function safeTargetUrl(?string $target): ?string

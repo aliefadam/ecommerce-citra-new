@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Middleware\RedirectMobileToSpa;
+use App\Models\Banner;
+use App\Support\CatalogImageUrl;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -19,8 +21,21 @@ class MobileAppController extends Controller
 
         return response()->view('mobile-app', [
             'mobileAppVersion' => (string) config('mobile-spa.version'),
-            'mobilePreloadImage' => asset('imgs/mobile-hero/hero-1.svg'),
+            'mobilePreloadImage' => $this->heroPreloadImage(),
         ]);
+    }
+
+    private function heroPreloadImage(): string
+    {
+        $image = Banner::query()
+            ->where('is_active', true)
+            ->where('type', 'mobile_hero')
+            ->where(fn ($query) => $query->whereNull('company_id')->orWhereHas('company', fn ($company) => $company->where('is_active', true)))
+            ->orderBy('sort_order')
+            ->orderByDesc('id')
+            ->value('image');
+
+        return $image ? CatalogImageUrl::make($image) : asset('imgs/mobile-hero/hero-1.svg');
     }
 
     public function manifest(): JsonResponse

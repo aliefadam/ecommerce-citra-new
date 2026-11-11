@@ -60,6 +60,8 @@
                                 <td class="px-4 py-3.5">
                                     @if ($banner->type === 'side')
                                         <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">Side</span>
+                                    @elseif ($banner->type === 'mobile_hero')
+                                        <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">Hero Mobile</span>
                                     @else
                                         <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">Carousel</span>
                                     @endif

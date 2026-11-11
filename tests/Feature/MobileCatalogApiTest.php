@@ -28,6 +28,7 @@ class MobileCatalogApiTest extends TestCase
             ->assertHeader('Cache-Control')
             ->assertJsonStructure([
                 'data' => [
+                    'hero_banners',
                     'banners',
                     'categories' => [['id', 'name', 'slug', 'products_count', 'children']],
                     'featured_products',
@@ -113,5 +114,21 @@ class MobileCatalogApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.0.slug', $product->slug)
             ->assertJsonMissingPath('data.0.stock');
+    }
+
+    public function test_home_exposes_mobile_hero_banners_separately_from_desktop_carousel(): void
+    {
+        \App\Models\Banner::query()->create(['type' => 'carousel', 'image' => 'banners/desktop.webp', 'sort_order' => 1, 'is_active' => true]);
+        \App\Models\Banner::query()->create(['type' => 'mobile_hero', 'title' => 'Hero', 'image' => 'banners/hero.webp', 'target_url' => '/app/categories', 'sort_order' => 1, 'is_active' => true]);
+        \App\Models\Banner::query()->create(['type' => 'mobile_hero', 'image' => 'banners/off.webp', 'sort_order' => 2, 'is_active' => false]);
+
+        $response = $this->getJson('/api/mobile/v1/home')->assertOk();
+
+        $heroes = $response->json('data.hero_banners');
+        $this->assertCount(1, $heroes);
+        $this->assertSame('Hero', $heroes[0]['title']);
+        $this->assertSame('/app/categories', $heroes[0]['target_url']);
+        $this->assertStringContainsString('banners/hero.webp', $heroes[0]['image']);
+        $this->assertFalse(collect($response->json('data.banners'))->pluck('image')->contains(fn ($image) => str_contains($image, 'hero.webp')));
     }
 }

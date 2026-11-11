@@ -1,5 +1,6 @@
 <script setup>
 import { computed, inject, onBeforeUnmount, onMounted, ref } from 'vue';
+import { RouterLink } from 'vue-router';
 import MobileCatalogState from '../components/MobileCatalogState.vue';
 import MobileIcon from '../components/MobileIcon.vue';
 import MobileProductCard from '../components/MobileProductCard.vue';
@@ -22,14 +23,38 @@ const heroSearch = ref(null);
 const stickySearch = ref(false);
 let searchObserver;
 
-// Dummy hero artwork (public/imgs/mobile-hero). Replace with real campaign art when available.
-const heroSlides = [
+// Fallback hero artwork (public/imgs/mobile-hero), used until admins upload "Hero Mobile" banners.
+const fallbackHeroSlides = [
     { id: 'hero-1', image: '/imgs/mobile-hero/hero-1.svg', title: 'Material pilihan asli', to: { name: 'search', query: { sort: 'newest' } } },
     { id: 'hero-2', image: '/imgs/mobile-hero/hero-2.svg', title: 'Diskon hingga 30%', to: { name: 'search', query: { sort: 'price_asc' } } },
     { id: 'hero-3', image: '/imgs/mobile-hero/hero-3.svg', title: 'Gratis ongkir', to: { name: 'search', query: { in_stock: '1' } } },
     { id: 'hero-4', image: '/imgs/mobile-hero/hero-4.svg', title: 'Perkakas profesional', to: { name: 'categories' } },
 ];
-const banners = computed(() => heroSlides);
+// Map an internal target ("/app/search?x=1") to an in-app route; other same-origin paths open as normal links.
+const toAppRoute = (target) => {
+    if (!target) return null;
+    if (target === '/app' || target === '/app/') return '/';
+    if (target.startsWith('/app/')) return target.slice(4);
+    if (target.startsWith('/app?')) return `/${target.slice(4)}`;
+    return null;
+};
+const banners = computed(() => {
+    if (!home.value) {
+        return loading.value ? [{ id: 'hero-loading', image: '', title: 'Memuat promo' }] : fallbackHeroSlides;
+    }
+    const remote = home.value.hero_banners || [];
+    if (!remote.length) return fallbackHeroSlides;
+    return remote.map((banner) => {
+        const to = toAppRoute(banner.target_url);
+        return {
+            id: `hero-${banner.id}`,
+            image: banner.image,
+            title: banner.title || 'Promo pilihan',
+            to,
+            href: to ? null : banner.target_url,
+        };
+    });
+});
 const promoBanners = computed(() => home.value?.banners || []);
 const greeting = computed(() => (session.user ? `Halo, ${session.user.name.split(' ')[0]}` : 'Material & perlengkapan proyek'));
 
@@ -110,16 +135,18 @@ onBeforeUnmount(() => {
                 @pointerdown="stopAutoplay"
                 @focusin="stopAutoplay"
             >
-                <RouterLink
+                <component
+                    :is="slide.to ? RouterLink : (slide.href ? 'a' : 'div')"
                     v-for="(slide, index) in banners"
                     :key="slide.id"
-                    :to="slide.to"
+                    :to="slide.to || undefined"
+                    :href="slide.href || undefined"
                     class="mobile-astro-hero-slide"
                     :aria-label="slide.title"
                     :tabindex="activeBanner === index ? 0 : -1"
                 >
-                    <img :src="slide.image" alt="" :fetchpriority="index === 0 ? 'high' : 'auto'" :loading="index === 0 ? 'eager' : 'lazy'" draggable="false" @error="useImageFallback" />
-                </RouterLink>
+                    <img v-if="slide.image" :src="slide.image" alt="" :fetchpriority="index === 0 ? 'high' : 'auto'" :loading="index === 0 ? 'eager' : 'lazy'" draggable="false" @error="useImageFallback" />
+                </component>
             </div>
 
             <div class="mobile-astro-hero-overlay">
