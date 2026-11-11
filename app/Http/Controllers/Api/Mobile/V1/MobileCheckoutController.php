@@ -123,6 +123,8 @@ class MobileCheckoutController extends Controller
             'tax_invoice.taxpayer_address' => ['nullable', 'string', 'max:2000'],
             'tax_invoice.taxpayer_email' => ['nullable', 'email', 'max:255'],
             'tax_invoice.customer_note' => ['nullable', 'string', 'max:1000'],
+            'tax_invoice.save_profile' => ['nullable', 'boolean'],
+            'tax_invoice.set_default_profile' => ['nullable', 'boolean'],
         ]);
         $key = trim((string) $request->header('Idempotency-Key'));
         if (! preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i', $key)) {
