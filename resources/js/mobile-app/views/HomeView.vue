@@ -75,6 +75,7 @@ const greeting = computed(() => (session.user ? `Halo, ${session.user.name.split
 
 const shortcuts = [
     { label: 'Produk Terbaru', icon: 'sparkle', tone: 'sky', to: { name: 'search', query: { sort: 'newest' } } },
+    { label: 'Produk Terlaris', icon: 'flame', tone: 'rose', to: { name: 'search', query: { sort: 'best_selling' } } },
     { label: 'Harga Termurah', icon: 'tag', tone: 'mint', to: { name: 'search', query: { sort: 'price_asc' } } },
     { label: 'Stok Tersedia', icon: 'box', tone: 'sun', to: { name: 'search', query: { in_stock: '1' } } },
     { label: 'Semua Kategori', icon: 'grid', tone: 'lilac', to: { name: 'categories' } },

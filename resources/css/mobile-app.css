@@ -311,7 +311,7 @@ a, button, input { -webkit-tap-highlight-color: transparent; }
 .mobile-section-heading h2 { margin: 0; font-size: 1.1rem; font-weight: 850; letter-spacing: -.02em; }
 .mobile-home-body > .mobile-section-heading:first-child { margin-top: .6rem; }
 
-.mobile-shortcut-grid { contain: layout paint; display: grid; grid-auto-columns: 118px; grid-auto-flow: column; gap: .6rem; margin-inline: -1rem; padding: .1rem 1rem .4rem; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; }
+.mobile-shortcut-grid { contain: layout paint; display: grid; grid-auto-columns: 118px; grid-auto-flow: column; gap: .6rem; margin-inline: -1rem; padding: .1rem 1rem .4rem; overflow-x: auto; scroll-padding-inline: 1rem; scroll-snap-type: x proximity; scrollbar-width: none; }
 .mobile-shortcut-grid::-webkit-scrollbar { display: none; }
 .mobile-shortcut {
     position: relative;
@@ -332,6 +332,7 @@ a, button, input { -webkit-tap-highlight-color: transparent; }
 .mobile-shortcut.is-sky { background: linear-gradient(160deg, #e3efff, #c7ddff); color: #163a8c; }
 .mobile-shortcut.is-mint { background: linear-gradient(160deg, #e2f8ef, #bfeedb); color: #0d5b41; }
 .mobile-shortcut.is-sun { background: linear-gradient(160deg, #fff4dc, #ffe0a3); color: #7a4600; }
+.mobile-shortcut.is-rose { background: linear-gradient(160deg, #ffe8e4, #ffc9bf); color: #9a2a17; }
 .mobile-shortcut.is-lilac { background: linear-gradient(160deg, #efeaff, #d9ceff); color: #45289a; }
 
 .mobile-foundation-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .65rem; }

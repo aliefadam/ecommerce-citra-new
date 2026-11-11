@@ -95,6 +95,7 @@ watch(() => route.fullPath, () => {
                 <label>Urutkan
                     <select v-model="filters.sort">
                         <option value="newest">Terbaru</option>
+                        <option value="best_selling">Terlaris</option>
                         <option value="price_asc">Harga terendah</option>
                         <option value="price_desc">Harga tertinggi</option>
                         <option value="name_asc">Nama A–Z</option>

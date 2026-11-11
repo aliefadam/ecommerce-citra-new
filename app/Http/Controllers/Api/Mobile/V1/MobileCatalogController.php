@@ -10,14 +10,18 @@ use App\Models\CategoryDetail;
 use App\Models\MainCategory;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\TransactionDetail;
 use App\Support\CatalogImageUrl;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class MobileCatalogController extends Controller
 {
+    private const SOLD_TRANSACTION_STATUSES = ['paid', 'settlement', 'capture', 'process', 'processing', 'kirim', 'shipping', 'shipped', 'selesai', 'completed', 'delivered'];
+
     public function home(Request $request): JsonResponse
     {
         $products = $this->baseProductQuery()
@@ -49,7 +53,7 @@ class MobileCatalogController extends Controller
             'in_stock' => ['nullable', 'boolean'],
             'min_price' => ['nullable', 'integer', 'min:0'],
             'max_price' => ['nullable', 'integer', 'min:0', 'gte:min_price'],
-            'sort' => ['nullable', Rule::in(['newest', 'name_asc', 'name_desc', 'price_asc', 'price_desc'])],
+            'sort' => ['nullable', Rule::in(['newest', 'best_selling', 'name_asc', 'name_desc', 'price_asc', 'price_desc'])],
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:24'],
         ]);
@@ -166,6 +170,13 @@ class MobileCatalogController extends Controller
     private function applySort(Builder $query, string $sort): void
     {
         match ($sort) {
+            'best_selling' => $query
+                ->orderByDesc(TransactionDetail::query()
+                    ->selectRaw('COALESCE(SUM(transaction_details.quantity), 0)')
+                    ->whereColumn('transaction_details.product_id', 'products.id')
+                    ->whereHas('transaction', fn ($transaction) => $transaction
+                        ->whereIn(DB::raw('LOWER(status)'), self::SOLD_TRANSACTION_STATUSES)))
+                ->latest('id'),
             'name_asc' => $query->orderBy('name'),
             'name_desc' => $query->orderByDesc('name'),
             'price_asc' => $query->orderBy(ProductVariant::query()
