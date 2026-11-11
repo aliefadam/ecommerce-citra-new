@@ -14,7 +14,7 @@ class BannerController extends Controller
     private const SIZES = [
         'carousel' => [1600, 700],
         'side' => [800, 350],
-        // Mobile app hero (4:5). The SPA anchors it to the bottom, so the top ~35% sits behind the header.
+        // Mobile app hero (4:5). The SPA shows the bottom half below the header overlay; the top half is backdrop.
         'mobile_hero' => [864, 1080],
     ];
 

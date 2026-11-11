@@ -673,10 +673,11 @@ a, button, input { -webkit-tap-highlight-color: transparent; }
 .mobile-wishlist-item > button { position: absolute; right: .45rem; bottom: .3rem; left: .45rem; min-height: 44px; border: 0; color: var(--mobile-danger); background: transparent; font-size: .7rem; font-weight: 750; }
 
 /* ---------- Home hero (Astro style: full-bleed art + overlay) ---------- */
-.mobile-astro-hero { position: relative; overflow: hidden; background: #f9c9da; }
+.mobile-astro-hero { --hero-overlay-h: calc(9.6rem + env(safe-area-inset-top)); position: relative; overflow: hidden; container-type: inline-size; background: #f9c9da; }
 .mobile-astro-hero-track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; }
 .mobile-astro-hero-track::-webkit-scrollbar { display: none; }
-.mobile-astro-hero-slide { flex: 0 0 100%; display: block; aspect-ratio: 860 / 700; scroll-snap-align: start; scroll-snap-stop: always; }
+/* Banner canvas is 864x1080 (4:5), anchored to the bottom. Slot = header overlay + bottom half of the art (50% x 1.25 = 62.5% of width). */
+.mobile-astro-hero-slide { flex: 0 0 100%; display: block; height: calc(var(--hero-overlay-h) + 62.5vw); height: calc(var(--hero-overlay-h) + 62.5cqw); max-height: 125cqw; scroll-snap-align: start; scroll-snap-stop: always; }
 .mobile-astro-hero-slide img { width: 100%; height: 100%; display: block; object-fit: cover; object-position: center bottom; user-select: none; -webkit-user-drag: none; }
 .mobile-astro-hero-overlay { position: absolute; inset: 0 0 auto; display: grid; gap: .85rem; padding: calc(.9rem + env(safe-area-inset-top)) 1rem 0; pointer-events: none; }
 .mobile-astro-hero-overlay > * { pointer-events: auto; }

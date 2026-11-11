@@ -58,8 +58,9 @@
                         <div id="bannerMobileHeroGuide" class="hidden mt-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-relaxed text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
                             <p class="font-semibold">Panduan Hero Mobile (kanvas 864 x 1080)</p>
                             <ul class="mt-1 list-disc space-y-0.5 pl-4">
-                                <li>Gambar ditempel ke bawah: ±35% bagian atas terpotong / tertutup lokasi &amp; kolom cari. Isi area ini dengan latar saja.</li>
-                                <li>Taruh kartu promo, teks, dan produk di ±40% bagian bawah (y 650–1080 px), beri jarak 40 px dari kiri-kanan.</li>
+                                <li>Setengah atas gambar (y 0–540 px) tertutup logo, sapaan &amp; kolom cari. Isi dengan latar saja.</li>
+                                <li>Taruh kartu promo, judul, dan produk di setengah bawah (y 540–1080 px), beri jarak 40 px dari kiri-kanan.</li>
+                                <li>Gambar yang bukan 4:5 tidak dipotong kiri-kanannya: lebar dipertahankan dan bagian atas diisi latar blur.</li>
                                 <li>Target URL wajib path internal, contoh <code>/app/search?sort=newest</code> atau <code>/app/categories</code>.</li>
                             </ul>
                         </div>

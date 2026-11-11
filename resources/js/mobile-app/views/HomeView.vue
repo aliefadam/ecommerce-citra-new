@@ -22,6 +22,16 @@ const config = inject('mobileConfig');
 const heroSearch = ref(null);
 const stickySearch = ref(false);
 let searchObserver;
+const heroRoot = ref(null);
+const heroOverlay = ref(null);
+let overlayObserver;
+
+// The hero slot is "header height + art zone", so the art zone (bottom 50% of the 4:5 banner) is never covered.
+const syncOverlayHeight = () => {
+    if (heroRoot.value && heroOverlay.value) {
+        heroRoot.value.style.setProperty('--hero-overlay-h', `${heroOverlay.value.offsetHeight}px`);
+    }
+};
 
 // Fallback hero artwork (public/imgs/mobile-hero), used until admins upload "Hero Mobile" banners.
 const fallbackHeroSlides = [
@@ -110,18 +120,24 @@ onMounted(() => {
         searchObserver = new IntersectionObserver(([entry]) => { stickySearch.value = !entry.isIntersecting; }, { threshold: 0 });
         searchObserver.observe(heroSearch.value);
     }
+    syncOverlayHeight();
+    if ('ResizeObserver' in window && heroOverlay.value) {
+        overlayObserver = new ResizeObserver(syncOverlayHeight);
+        overlayObserver.observe(heroOverlay.value);
+    }
     load();
 });
 onBeforeUnmount(() => {
     stopAutoplay();
     searchObserver?.disconnect();
+    overlayObserver?.disconnect();
     window.removeEventListener('mobile-spa:route-started', stopAutoplay);
 });
 </script>
 
 <template>
     <section class="mobile-screen mobile-home" aria-labelledby="mobile-route-heading">
-        <div class="mobile-astro-hero">
+        <div ref="heroRoot" class="mobile-astro-hero">
             <h1 id="mobile-route-heading" class="mobile-visually-hidden" tabindex="-1">
                 {{ session.user ? `Halo, ${session.user.name}` : 'Temukan material yang tepat' }}
             </h1>
@@ -149,7 +165,7 @@ onBeforeUnmount(() => {
                 </component>
             </div>
 
-            <div class="mobile-astro-hero-overlay">
+            <div ref="heroOverlay" class="mobile-astro-hero-overlay">
                 <div class="mobile-astro-hero-top">
                     <div class="mobile-astro-brand">
                         <span class="mobile-astro-logo"><img :src="config.logoUrl" :alt="config.appName" width="116" height="52" /></span>

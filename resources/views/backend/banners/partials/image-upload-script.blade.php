@@ -78,6 +78,26 @@
             });
         }
 
+        // Hero Mobile is shown bottom-anchored, so never cut the sides or the bottom:
+        // a wider source keeps its full width at the bottom and the top is filled with a blurred copy;
+        // a taller source is trimmed from the top only.
+        function drawMobileHero(context, image, width, height) {
+            const fitScale = width / image.naturalWidth;
+            const fitHeight = image.naturalHeight * fitScale;
+            if (fitHeight >= height) {
+                context.drawImage(image, 0, height - fitHeight, width, fitHeight);
+                return;
+            }
+
+            const coverScale = height / image.naturalHeight;
+            const coverWidth = image.naturalWidth * coverScale;
+            context.save();
+            context.filter = 'blur(28px)';
+            context.drawImage(image, (width - coverWidth) / 2, 0, coverWidth, height);
+            context.restore();
+            context.drawImage(image, 0, height - fitHeight, width, fitHeight);
+        }
+
         async function processImage(file) {
             const version = ++processVersion;
             setProcessing(true);
@@ -97,13 +117,17 @@
                 const context = canvas.getContext('2d', { alpha: false });
                 context.imageSmoothingEnabled = true;
                 context.imageSmoothingQuality = 'high';
-                context.drawImage(
-                    image,
-                    (width - drawWidth) / 2,
-                    (height - drawHeight) / 2,
-                    drawWidth,
-                    drawHeight
-                );
+                if (typeSelect.value === 'mobile_hero') {
+                    drawMobileHero(context, image, width, height);
+                } else {
+                    context.drawImage(
+                        image,
+                        (width - drawWidth) / 2,
+                        (height - drawHeight) / 2,
+                        drawWidth,
+                        drawHeight
+                    );
+                }
 
                 const blob = await canvasToWebp(canvas);
                 if (version !== processVersion) return;
