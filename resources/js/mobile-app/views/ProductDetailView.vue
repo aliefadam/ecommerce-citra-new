@@ -2,6 +2,7 @@
 import { computed, nextTick, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import MobileCatalogState from '../components/MobileCatalogState.vue';
+import MobileIcon from '../components/MobileIcon.vue';
 import MobileProductGallery from '../components/MobileProductGallery.vue';
 import MobileVariantSelector from '../components/MobileVariantSelector.vue';
 import { request } from '../services/api';
@@ -169,8 +170,9 @@ watch(() => route.params.slug, load, { immediate: true });
             <div class="mobile-detail-action">
                 <p aria-live="polite">{{ actionStatus }}</p>
                 <div>
-                    <button type="button" class="mobile-secondary-button" :disabled="commerce.loading" @click="toggleWishlist">
-                        {{ commerce.isWished(product.slug) ? '♥ Tersimpan' : '♡ Wishlist' }}
+                    <button type="button" class="mobile-secondary-button mobile-wishlist-toggle" :disabled="commerce.loading" :aria-pressed="commerce.isWished(product.slug)" @click="toggleWishlist">
+                        <MobileIcon name="heart" :size="18" :filled="commerce.isWished(product.slug)" />
+                        <span>{{ commerce.isWished(product.slug) ? 'Tersimpan' : 'Wishlist' }}</span>
                     </button>
                     <button type="button" class="mobile-primary-button" :disabled="!selectedVariant?.in_stock || commerce.loading" @click="addToCart">
                         Tambah ke Keranjang

@@ -23,6 +23,7 @@ const glyphs = {
     chevronDown: [0xf153, 0xf154],
     clock: [0xf453, 0xf44b],
     wifiOff: [0xff07, 0xfedd],
+    logout: [0xfc0c, 0xfbe6],
 };
 
 const props = defineProps({

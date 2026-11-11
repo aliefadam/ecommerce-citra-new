@@ -217,6 +217,7 @@ a, button, input { -webkit-tap-highlight-color: transparent; }
     color: var(--mobile-ink);
     background: white;
     box-shadow: var(--mobile-shadow);
+    text-decoration: none;
 }
 
 .mobile-pilot-badge {
@@ -415,7 +416,8 @@ a, button, input { -webkit-tap-highlight-color: transparent; }
 /* ---------- Auth & forms ---------- */
 .mobile-auth-screen { padding-top: 1.25rem; }
 .mobile-back-link, .mobile-web-link { display: inline-flex; min-height: 44px; align-items: center; gap: .35rem; color: var(--mobile-brand); font-size: .85rem; font-weight: 750; text-decoration: none; }
-.mobile-back-link { margin-bottom: .35rem; }
+.mobile-back-link { display: flex; width: fit-content; margin-bottom: .35rem; }
+.mobile-screen > .mobile-eyebrow { display: block; }
 .mobile-web-link { width: 100%; margin-top: 1rem; justify-content: center; font-size: .82rem; }
 .mobile-auth-form { display: grid; gap: 1rem; margin-top: .5rem; border-radius: 18px; padding: 1.1rem; background: white; box-shadow: var(--mobile-shadow); }
 .mobile-field { display: grid; gap: .4rem; }
@@ -457,6 +459,8 @@ a, button, input { -webkit-tap-highlight-color: transparent; }
 .mobile-profile-card span, .mobile-profile-card small { color: rgb(255 255 255 / .82); font-size: .78rem; }
 .mobile-profile-card small { width: max-content; margin-top: .2rem; border-radius: 999px; padding: .15rem .5rem; background: rgb(255 255 255 / .18); font-weight: 750; }
 .mobile-profile-avatar { width: 52px; height: 52px; display: grid; flex: 0 0 auto; place-items: center; border-radius: 999px; color: var(--mobile-brand-strong); background: white; font-size: 1.25rem; font-weight: 850; }
+.mobile-profile-card .mobile-profile-avatar { overflow: hidden; color: var(--mobile-brand-strong); font-size: 1.25rem; white-space: normal; }
+.mobile-profile-avatar img { width: 100%; height: 100%; display: block; object-fit: cover; }
 .mobile-profile-card + .mobile-state-card { margin-bottom: 1rem; }
 
 .mobile-visually-hidden {
@@ -747,7 +751,7 @@ a, button, input { -webkit-tap-highlight-color: transparent; }
 .mobile-astro-eta em { overflow: hidden; font-style: normal; text-overflow: ellipsis; white-space: nowrap; }
 .mobile-astro-actions { display: flex; flex: 0 0 auto; align-items: center; gap: .5rem; }
 .mobile-astro-chat { min-height: 44px; display: inline-flex; align-items: center; gap: .35rem; border-radius: 999px; padding: 0 .9rem; color: #1b2233; background: #fff; font-size: .8rem; font-weight: 750; text-decoration: none; box-shadow: 0 2px 8px rgb(0 0 0 / .08); }
-.mobile-astro-menu { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 999px; color: #1b2233; background: #fff; box-shadow: 0 2px 8px rgb(0 0 0 / .08); }
+.mobile-astro-menu { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 999px; color: #1b2233; background: #fff; box-shadow: 0 2px 8px rgb(0 0 0 / .08); text-decoration: none; }
 .mobile-astro-search { width: 100%; min-height: 50px; display: flex; align-items: center; gap: .6rem; border: 1px solid rgb(0 0 0 / .05); border-radius: 12px; padding: 0 .9rem; color: #8a93a6; background: #fff; font-size: .95rem; text-align: left; box-shadow: 0 4px 14px rgb(0 0 0 / .08); }
 .mobile-astro-search .mobile-icon { color: #4b5568; }
 .mobile-astro-hero-dots { position: absolute; right: 0; bottom: .35rem; left: 0; display: flex; justify-content: center; }
@@ -909,6 +913,12 @@ a, button, input { -webkit-tap-highlight-color: transparent; }
 .mobile-notification-tabs button.is-active { border-color: var(--mobile-brand); color: white; background: var(--mobile-brand); }
 .mobile-notification-tabs b { min-width: 20px; border-radius: 999px; padding: 0 .35rem; background: rgb(27 34 51 / .08); font-size: .66rem; text-align: center; }
 .mobile-notification-tabs button.is-active b { background: rgb(255 255 255 / .25); }
+.mobile-account-tabs { margin: 1rem 0 0; padding-bottom: .1rem; }
+.mobile-account-tabs + .mobile-account-form, .mobile-account-tabs + .mobile-account-section { margin-top: .75rem; }
+.mobile-logout-button { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; border-color: #dc2626; color: #dc2626; }
+.mobile-logout-button:active:not(:disabled) { background: #fef2f2; }
 .mobile-notification-status { justify-self: start; border-radius: 999px; padding: .1rem .5rem; font-size: .62rem; font-weight: 800; color: var(--mobile-muted); background: rgb(27 34 51 / .06); }
 .mobile-notification-card.is-unread .mobile-notification-status { color: white; background: var(--mobile-brand); }
 .mobile-account-count { margin-left: .4rem; border-radius: 999px; padding: .05rem .45rem; color: white; background: var(--mobile-danger); font-size: .62rem; font-weight: 850; }
+
+.mobile-wishlist-toggle { display: inline-flex; align-items: center; justify-content: center; gap: .45rem; }

@@ -68,6 +68,15 @@ class MobileAccountApiTest extends TestCase
         $this->getJson('/api/mobile/v1/orders/'.$other->order_id)->assertNotFound();
     }
 
+    public function test_account_profile_includes_avatar_url(): void
+    {
+        $user = User::factory()->create(['avatar' => 'https://example.test/avatar.webp']);
+
+        $this->actingAs($user)->getJson('/api/mobile/v1/account')
+            ->assertOk()
+            ->assertJsonPath('data.profile.avatar', 'https://example.test/avatar.webp');
+    }
+
     public function test_profile_password_and_addresses_are_owned_and_validated(): void
     {
         $user = User::factory()->create(['password' => 'old-password']);

@@ -336,6 +336,7 @@ class MobileAccountController extends Controller
             'birth_date' => $user->birth_date?->toDateString(),
             'bio' => (string) $user->bio,
             'point_balance' => (int) $user->point_balance,
+            'avatar' => trim((string) ($user->avatar ?? '')) ?: null,
         ];
     }
 
