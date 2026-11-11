@@ -644,7 +644,35 @@ a, button, input { -webkit-tap-highlight-color: transparent; }
 .mobile-clear-button { min-height: 44px; border: 0; color: var(--mobile-danger); background: transparent; font-weight: 750; }
 .mobile-button-link { display: grid; min-height: 48px; place-items: center; text-decoration: none; }
 .mobile-button-link[aria-disabled="true"] { pointer-events: none; opacity: .5; }
-.mobile-checkout { padding-bottom: calc(8.5rem + env(safe-area-inset-bottom)); }
+.mobile-checkout { padding-bottom: calc(7.5rem + env(safe-area-inset-bottom)); }
+.mobile-cart-screen { padding-bottom: 6.5rem; }
+.mobile-shipping-block { display: grid; gap: .55rem; border-top: 1px solid #f0f2f7; padding-top: .7rem; }
+.mobile-shipping-block h3 { margin: 0; color: var(--mobile-ink); font-size: .8rem; font-weight: 850; }
+.mobile-shipping-block .mobile-choice-row:first-of-type { border-top: 0; padding-top: 0; }
+.mobile-shipping-loading { margin: 0; border-radius: 10px; padding: .7rem; color: var(--mobile-muted); background: #f3f6fb; font-size: .75rem; animation: mobile-pulse 1.2s ease-in-out infinite; }
+@keyframes mobile-pulse { 50% { opacity: .55; } }
+.mobile-text-button { justify-self: start; border: 0; padding: .2rem 0; color: var(--mobile-brand); background: none; font-size: .78rem; font-weight: 800; text-decoration: underline; }
+/* Bottom action bar (sama dengan bar detail produk) */
+.mobile-action-bar {
+    position: fixed;
+    z-index: 15;
+    right: max(calc((100vw - var(--mobile-shell-width)) / 2), 0px);
+    bottom: 0;
+    left: max(calc((100vw - var(--mobile-shell-width)) / 2), 0px);
+    padding: .5rem 1rem calc(.65rem + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--mobile-border);
+    background: #fff;
+    box-shadow: 0 -6px 18px rgb(27 34 51 / .06);
+}
+.mobile-action-bar.has-nav { bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom)); padding-bottom: .65rem; }
+.mobile-action-bar > div { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); align-items: center; gap: .55rem; }
+.mobile-action-bar .mobile-primary-button { width: 100%; padding-inline: .55rem; font-size: .85rem; }
+.mobile-action-bar .mobile-primary-button.is-disabled { pointer-events: none; opacity: .5; box-shadow: none; }
+.mobile-action-bar > p { min-height: 1rem; margin: 0 0 .3rem; color: var(--mobile-brand); font-size: .7rem; font-weight: 700; text-align: center; }
+.mobile-action-bar > p:empty { display: none; }
+.mobile-action-total { min-width: 0; display: grid; gap: .05rem; }
+.mobile-action-total small { color: var(--mobile-muted); font-size: .66rem; font-weight: 700; }
+.mobile-action-total strong { overflow: hidden; color: var(--mobile-ink); font-size: 1rem; font-weight: 900; text-overflow: ellipsis; white-space: nowrap; }
 .mobile-checkout-card { min-width: 0; min-inline-size: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: .7rem; margin: .8rem 0; border: 0; border-radius: 16px; padding: 1rem; background: white; box-shadow: var(--mobile-shadow); }
 .mobile-checkout-card legend, .mobile-checkout-card h2 { margin: 0; color: var(--mobile-ink); font-size: .92rem; font-weight: 850; }
 .mobile-checkout-card legend { float: left; width: 100%; margin-bottom: .2rem; }
@@ -662,10 +690,6 @@ a, button, input { -webkit-tap-highlight-color: transparent; }
 .mobile-tax-form { display: grid; gap: .6rem; }
 .mobile-tax-form > label:not(.mobile-choice-row) { display: grid; gap: .3rem; color: var(--mobile-muted); font-size: .74rem; font-weight: 700; }
 .mobile-tax-form input:not([type="checkbox"]), .mobile-tax-form textarea { width: 100%; min-width: 0; box-sizing: border-box; min-height: 44px; border: 1px solid var(--mobile-border); border-radius: 12px; padding: .6rem .8rem; color: var(--mobile-ink); background: #f8faff; font: inherit; font-size: 1rem; font-weight: 400; }
-.mobile-checkout-submit { display: grid; gap: .35rem; }
-.mobile-checkout-submit > small { border-radius: 10px; padding: .35rem .6rem; color: #475467; background: rgb(255 255 255 / .96); font-size: .72rem; text-align: center; box-shadow: var(--mobile-shadow); }
-.mobile-checkout-submit > button { width: 100%; min-height: 52px; box-shadow: 0 10px 24px rgb(47 99 232 / .35); }
-.mobile-checkout-submit { position: fixed; z-index: 20; right: max(calc((100vw - var(--mobile-shell-width)) / 2 + 1rem), 1rem); bottom: calc(.8rem + env(safe-area-inset-bottom)); left: max(calc((100vw - var(--mobile-shell-width)) / 2 + 1rem), 1rem); }
 .mobile-payment-status { width: max-content; border-radius: 999px; padding: .3rem .6rem; color: #7a4a00; background: #fff1cc; font-size: .66rem; font-weight: 800; text-transform: uppercase; }
 .mobile-payment-total { color: var(--mobile-ink); font-size: 1.45rem; font-weight: 900; }
 .mobile-payment-code { margin: 0; border-radius: 12px; padding: .7rem; background: var(--mobile-sky-light); font-size: 1.1rem; font-weight: 850; letter-spacing: .04em; word-break: break-all; }
@@ -876,3 +900,15 @@ a, button, input { -webkit-tap-highlight-color: transparent; }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
 }
+
+/* ---------- Header count badges (wishlist & notifications) ---------- */
+.mobile-header-button, .mobile-astro-menu { position: relative; }
+.mobile-header-badge { top: -4px; right: -4px; left: auto; }
+.mobile-notification-tabs { display: flex; gap: .5rem; margin: 0 0 .9rem; overflow-x: auto; }
+.mobile-notification-tabs button { min-height: 40px; display: inline-flex; align-items: center; gap: .4rem; border: 1px solid rgb(27 34 51 / .1); border-radius: 999px; padding: 0 .9rem; color: var(--mobile-ink); background: white; font-size: .74rem; font-weight: 750; white-space: nowrap; }
+.mobile-notification-tabs button.is-active { border-color: var(--mobile-brand); color: white; background: var(--mobile-brand); }
+.mobile-notification-tabs b { min-width: 20px; border-radius: 999px; padding: 0 .35rem; background: rgb(27 34 51 / .08); font-size: .66rem; text-align: center; }
+.mobile-notification-tabs button.is-active b { background: rgb(255 255 255 / .25); }
+.mobile-notification-status { justify-self: start; border-radius: 999px; padding: .1rem .5rem; font-size: .62rem; font-weight: 800; color: var(--mobile-muted); background: rgb(27 34 51 / .06); }
+.mobile-notification-card.is-unread .mobile-notification-status { color: white; background: var(--mobile-brand); }
+.mobile-account-count { margin-left: .4rem; border-radius: 999px; padding: .05rem .45rem; color: white; background: var(--mobile-danger); font-size: .62rem; font-weight: 850; }

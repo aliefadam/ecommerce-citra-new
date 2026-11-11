@@ -8,6 +8,9 @@ export const useCommerceStore = defineStore('mobile-commerce', () => {
     const wishlist = ref([]);
     const cartReady = ref(false);
     const wishlistReady = ref(false);
+    const notifications = ref([]);
+    const notificationMeta = ref({ unread: 0, read: 0, total: 0 });
+    const notificationsReady = ref(false);
     const loading = ref(false);
     const error = ref('');
 
@@ -81,16 +84,49 @@ export const useCommerceStore = defineStore('mobile-commerce', () => {
         await fetchWishlist(true);
     };
 
+    const wishlistCount = computed(() => wishlist.value.length);
+    const unreadNotifications = computed(() => Number(notificationMeta.value.unread || 0));
+
+    const fetchNotifications = async (force = false) => {
+        if (notificationsReady.value && !force) return;
+        const response = await request(`${config.apiBase}/notifications`);
+        notifications.value = response.data || [];
+        const meta = response.meta || {};
+        const total = Number(meta.total ?? notifications.value.length);
+        const unread = Number(meta.unread ?? notifications.value.filter((item) => !item.read).length);
+        notificationMeta.value = { unread, total, read: Number(meta.read ?? Math.max(0, total - unread)) };
+        notificationsReady.value = true;
+    };
+
+    const markNotificationRead = async (item) => {
+        if (item.read) return;
+        await mutate(`/notifications/${item.id}/read`, { method: 'POST', body: {} });
+        item.read = true;
+        const unread = Math.max(0, notificationMeta.value.unread - 1);
+        notificationMeta.value = { ...notificationMeta.value, unread, read: Math.max(0, notificationMeta.value.total - unread) };
+    };
+
+    const markAllNotificationsRead = async () => {
+        await mutate('/notifications/read-all', { method: 'POST', body: {} });
+        notifications.value.forEach((item) => { item.read = true; });
+        notificationMeta.value = { ...notificationMeta.value, unread: 0, read: notificationMeta.value.total };
+    };
+
     const reset = () => {
         cart.value = { items: [], summary: { line_count: 0, quantity: 0, subtotal: 0, has_issues: false } };
         wishlist.value = [];
         cartReady.value = false;
         wishlistReady.value = false;
+        notifications.value = [];
+        notificationMeta.value = { unread: 0, read: 0, total: 0 };
+        notificationsReady.value = false;
     };
 
     return {
         cart, wishlist, cartReady, wishlistReady, loading, error, isWished,
         fetchCart, addCartItem, updateCartItem, removeCartItem, clearCart,
         fetchWishlist, setWishlist, reset,
+        notifications, notificationMeta, notificationsReady, wishlistCount, unreadNotifications,
+        fetchNotifications, markNotificationRead, markAllNotificationsRead,
     };
 });

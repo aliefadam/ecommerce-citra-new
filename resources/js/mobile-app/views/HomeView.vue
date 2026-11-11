@@ -8,8 +8,10 @@ import MobileSearchLauncher from '../components/MobileSearchLauncher.vue';
 import { request } from '../services/api';
 import { useImageFallback } from '../services/images';
 import { useSessionStore } from '../stores/session';
+import { useCommerceStore } from '../stores/commerce';
 
 const session = useSessionStore();
+const commerce = useCommerceStore();
 const home = ref(null);
 const loading = ref(true);
 const error = ref('');
@@ -178,8 +180,13 @@ onBeforeUnmount(() => {
                         <a href="/pages/pusat-bantuan?web=1" class="mobile-astro-chat">
                             <MobileIcon name="headset" :size="18" /> Chat CS
                         </a>
-                        <RouterLink :to="{ name: 'notifications' }" class="mobile-astro-menu" aria-label="Pemberitahuan">
+                        <RouterLink :to="{ name: 'wishlist' }" class="mobile-astro-menu" aria-label="Produk tersimpan">
+                            <MobileIcon name="heart" :size="20" />
+                            <span v-if="commerce.wishlistCount" class="mobile-nav-badge mobile-header-badge">{{ commerce.wishlistCount > 99 ? '99+' : commerce.wishlistCount }}</span>
+                        </RouterLink>
+                        <RouterLink :to="{ name: 'notifications' }" class="mobile-astro-menu" :aria-label="`Pemberitahuan, ${commerce.unreadNotifications} belum dibaca`">
                             <MobileIcon name="bell" :size="20" />
+                            <span v-if="commerce.unreadNotifications" class="mobile-nav-badge mobile-header-badge">{{ commerce.unreadNotifications > 99 ? '99+' : commerce.unreadNotifications }}</span>
                         </RouterLink>
                     </div>
                 </div>

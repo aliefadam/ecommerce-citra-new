@@ -203,7 +203,9 @@ class MobileAccountController extends Controller
                 'action_url' => '/app/orders',
             ]),
             'meta' => [
-                'unread' => UserNotification::query()->where('user_id', $request->user()->id)->whereNull('read_at')->count(),
+                'unread' => $unread = UserNotification::query()->where('user_id', $request->user()->id)->whereNull('read_at')->count(),
+                'total' => $notifications->total(),
+                'read' => max(0, $notifications->total() - $unread),
                 'current_page' => $notifications->currentPage(),
                 'last_page' => $notifications->lastPage(),
             ],

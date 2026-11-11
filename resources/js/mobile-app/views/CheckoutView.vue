@@ -45,6 +45,12 @@ const submitBlocker = computed(() => {
 
     return '';
 });
+const selectedShippingOption = (companyId) => shipping[companyId]?.find((option) => option.quote_token === selectedShipping[companyId]) || null;
+const allShippingSelected = computed(() => Boolean(checkout.value?.groups.length) && checkout.value.groups.every((group) => selectedShippingOption(group.company_id)));
+const grandTotal = computed(() => (checkout.value?.groups || []).reduce(
+    (total, group) => total + Number(group.total_before_shipping || 0) + Number(selectedShippingOption(group.company_id)?.cost || 0),
+    0,
+));
 const canSubmit = computed(() => Boolean(checkout.value?.groups.length) && !submitBlocker.value && !submitting.value);
 const taxInvoicePayload = () => {
     if (!invoiceRequested.value) return { requested: false };
@@ -193,9 +199,16 @@ onMounted(async () => {
                 <p v-if="couponErrors[group.company_id]" class="mobile-inline-error" role="alert">{{ couponErrors[group.company_id] }}</p>
                 <div class="mobile-checkout-line"><span>Diskon</span><strong>−{{ formatPrice(group.discount_amount) }}</strong></div>
                 <div class="mobile-checkout-line"><span>{{ group.tax_name || 'Pajak' }}</span><strong>{{ formatPrice(group.tax_amount) }}</strong></div>
-                <p v-if="shippingErrors[group.company_id]" class="mobile-inline-error" role="alert">{{ shippingErrors[group.company_id] }}</p>
-                <button v-if="!shipping[group.company_id]?.length" type="button" class="mobile-secondary-button" :disabled="shippingLoading[group.company_id]" :aria-busy="shippingLoading[group.company_id] ? 'true' : 'false'" @click="loadShipping(group)">{{ shippingLoading[group.company_id] ? 'Memuat ongkos kirim…' : (shippingErrors[group.company_id] ? 'Coba Lagi' : 'Pilih Pengiriman') }}</button>
-                <label v-for="option in shipping[group.company_id]" :key="option.quote_token" class="mobile-choice-row"><input v-model="selectedShipping[group.company_id]" type="radio" :value="option.quote_token" /><span><strong>{{ option.name || option.code }} {{ option.service }}</strong><small>{{ option.etd }} · {{ formatPrice(option.cost) }}</small></span></label>
+                <div v-if="selectedShippingOption(group.company_id)" class="mobile-checkout-line"><span>Ongkos kirim</span><strong>{{ formatPrice(selectedShippingOption(group.company_id).cost) }}</strong></div>
+                <div class="mobile-shipping-block" :aria-busy="shippingLoading[group.company_id] ? 'true' : 'false'">
+                    <h3>Pengiriman</h3>
+                    <p v-if="shippingLoading[group.company_id]" class="mobile-shipping-loading">Memuat pilihan pengiriman…</p>
+                    <template v-else-if="shippingErrors[group.company_id]">
+                        <p class="mobile-inline-error" role="alert">{{ shippingErrors[group.company_id] }}</p>
+                        <button type="button" class="mobile-text-button" @click="loadShipping(group)">Muat ulang pengiriman</button>
+                    </template>
+                    <label v-for="option in shipping[group.company_id]" :key="option.quote_token" class="mobile-choice-row"><input v-model="selectedShipping[group.company_id]" type="radio" :name="`shipping-${group.company_id}`" :value="option.quote_token" /><span><strong>{{ option.name || option.code }} {{ option.service }}</strong><small>{{ option.etd ? `${option.etd} · ` : '' }}{{ formatPrice(option.cost) }}</small></span></label>
+                </div>
             </article>
 
             <fieldset class="mobile-checkout-card">
@@ -214,9 +227,12 @@ onMounted(async () => {
                 </template>
             </fieldset>
 
-            <div class="mobile-checkout-submit">
-                <small v-if="submitBlocker" aria-live="polite">{{ submitBlocker }}</small>
-                <button type="button" class="mobile-primary-button" :disabled="!canSubmit" @click="submit">{{ submitting ? 'Membuat pesanan…' : 'Buat Pesanan' }}</button>
+            <div class="mobile-action-bar mobile-checkout-submit">
+                <p aria-live="polite">{{ submitBlocker }}</p>
+                <div>
+                    <span class="mobile-action-total"><small>{{ allShippingSelected ? 'Total pembayaran' : 'Total (belum ongkir)' }}</small><strong>{{ formatPrice(grandTotal) }}</strong></span>
+                    <button type="button" class="mobile-primary-button" :disabled="!canSubmit" @click="submit">{{ submitting ? 'Memproses…' : 'Buat Pesanan' }}</button>
+                </div>
             </div>
         </template>
     </section>

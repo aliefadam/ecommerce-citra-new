@@ -27,7 +27,7 @@ onMounted(() => commerce.fetchCart(true).catch(() => {}));
 </script>
 
 <template>
-    <section class="mobile-screen" aria-labelledby="mobile-route-heading">
+    <section class="mobile-screen mobile-cart-screen" aria-labelledby="mobile-route-heading">
         <span class="mobile-eyebrow">Belanja member</span>
         <h1 id="mobile-route-heading" tabindex="-1">Keranjang</h1>
         <p v-if="actionError" class="mobile-alert" role="alert">{{ actionError }}</p>
@@ -54,14 +54,20 @@ onMounted(() => commerce.fetchCart(true).catch(() => {}));
             </article>
             <div class="mobile-cart-summary">
                 <span>Subtotal produk tersedia</span><strong>{{ formatPrice(commerce.cart.summary.subtotal) }}</strong>
-                <p v-if="commerce.cart.summary.has_issues">Selesaikan item bermasalah sebelum checkout.</p>
-                <RouterLink
-                    :to="{ name: 'checkout' }"
-                    class="mobile-primary-button mobile-button-link"
-                    :aria-disabled="commerce.cart.summary.has_issues"
-                    @click="commerce.cart.summary.has_issues && $event.preventDefault()"
-                >Lanjut Checkout</RouterLink>
                 <button type="button" class="mobile-clear-button" @click="commerce.clearCart">Kosongkan keranjang</button>
+            </div>
+            <div class="mobile-action-bar has-nav">
+                <p aria-live="polite">{{ commerce.cart.summary.has_issues ? 'Selesaikan item bermasalah sebelum checkout.' : '' }}</p>
+                <div>
+                    <span class="mobile-action-total"><small>Subtotal</small><strong>{{ formatPrice(commerce.cart.summary.subtotal) }}</strong></span>
+                    <RouterLink
+                        :to="{ name: 'checkout' }"
+                        class="mobile-primary-button mobile-button-link"
+                        :aria-disabled="commerce.cart.summary.has_issues"
+                        :class="{ 'is-disabled': commerce.cart.summary.has_issues }"
+                        @click="commerce.cart.summary.has_issues && $event.preventDefault()"
+                    >Lanjut Checkout</RouterLink>
+                </div>
             </div>
         </div>
     </section>

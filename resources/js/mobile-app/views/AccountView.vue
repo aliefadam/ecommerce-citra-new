@@ -61,8 +61,8 @@ onMounted(load);
             <div class="mobile-profile-card"><span class="mobile-profile-avatar" aria-hidden="true">{{ profile.name?.charAt(0) || 'U' }}</span><div><strong>{{ profile.name }}</strong><span>{{ profile.email }}</span><small>{{ profile.point_balance }} poin</small></div></div>
             <nav class="mobile-account-menu" aria-label="Menu akun">
                 <RouterLink :to="{ name: 'orders' }" class="mobile-account-link"><span><strong>Pesanan</strong><small>Riwayat, tracking, dan invoice</small></span><span>›</span></RouterLink>
-                <RouterLink :to="{ name: 'notifications' }" class="mobile-account-link"><span><strong>Notifikasi</strong><small>Pembaruan transaksi Anda</small></span><span>›</span></RouterLink>
-                <RouterLink :to="{ name: 'wishlist' }" class="mobile-account-link"><span><strong>Wishlist</strong><small>Produk yang Anda simpan</small></span><span>›</span></RouterLink>
+                <RouterLink :to="{ name: 'notifications' }" class="mobile-account-link"><span><strong>Notifikasi<span v-if="commerce.unreadNotifications" class="mobile-account-count">{{ commerce.unreadNotifications }}</span></strong><small>{{ commerce.notificationMeta.unread }} belum dibaca · {{ commerce.notificationMeta.read }} sudah dibaca</small></span><span>›</span></RouterLink>
+                <RouterLink :to="{ name: 'wishlist' }" class="mobile-account-link"><span><strong>Wishlist</strong><small>{{ commerce.wishlistCount }} produk disimpan</small></span><span>›</span></RouterLink>
             </nav>
             <form class="mobile-account-form" @submit.prevent="saveProfile">
                 <h2>Biodata</h2><div class="mobile-form-grid"><label>Nama depan<input v-model="profile.first_name" required maxlength="100" /></label><label>Nama belakang<input v-model="profile.last_name" maxlength="100" /></label></div>

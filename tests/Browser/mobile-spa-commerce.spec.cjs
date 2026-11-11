@@ -33,7 +33,6 @@ test('member can add cart, checkout safely, and manage wishlist', async ({ page 
     await expect(page.locator('.mobile-cart-item')).toContainText('2');
     await page.getByRole('link', { name: 'Lanjut Checkout' }).click();
     await expect(page.getByRole('heading', { name: 'Checkout' })).toBeVisible();
-    await page.getByRole('button', { name: 'Pilih Pengiriman' }).click();
     await expect(page.getByText(/JNE.*REG/)).toBeVisible();
     await page.getByRole('button', { name: 'Buat Pesanan' }).click();
     await expect(page.getByRole('heading', { name: 'Pembayaran' })).toBeVisible();
@@ -93,7 +92,6 @@ test('checkout retry reuses idempotency key after a lost server response', async
     await page.getByRole('button', { name: 'Tambah ke Keranjang' }).click();
     await page.getByRole('link', { name: 'Keranjang' }).click();
     await page.getByRole('link', { name: 'Lanjut Checkout' }).click();
-    await page.getByRole('button', { name: 'Pilih Pengiriman' }).click();
     await expect(page.getByText(/JNE.*REG/)).toBeVisible();
 
     const idempotencyKeys = [];

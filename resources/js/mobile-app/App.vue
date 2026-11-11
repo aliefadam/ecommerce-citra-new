@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { RouterLink, RouterView, useRoute } from 'vue-router';
 import MobileIcon from './components/MobileIcon.vue';
 import { useCommerceStore } from './stores/commerce';
@@ -28,6 +28,23 @@ const navigation = [
 ];
 
 const cartCount = computed(() => (commerce.cartReady ? Number(commerce.cart.summary?.quantity || 0) : 0));
+// Load the cart once a signed-in user is known so the nav badge shows on first load.
+watch(
+    () => Boolean(session.user),
+    (signedIn) => {
+        if (!signedIn) return;
+        if (!commerce.cartReady) commerce.fetchCart().catch(() => {});
+        if (!commerce.wishlistReady) commerce.fetchWishlist().catch(() => {});
+        commerce.fetchNotifications(true).catch(() => {});
+    },
+    { immediate: true },
+);
+const badgeText = (count) => (count > 99 ? '99+' : String(count));
+// Refresh the unread count when leaving/entering screens so new order updates appear.
+watch(
+    () => route.name,
+    () => { if (session.user) commerce.fetchNotifications(true).catch(() => {}); },
+);
 const isHome = computed(() => route.name === 'home');
 const isActiveNav = (item) => route.name === item.name || route.meta.navSection === item.name;
 
@@ -93,9 +110,11 @@ onBeforeUnmount(() => {
                 <div class="mobile-header-actions">
                     <RouterLink :to="{ name: 'wishlist' }" class="mobile-header-button" aria-label="Produk tersimpan">
                         <MobileIcon name="heart" :size="20" />
+                        <span v-if="commerce.wishlistCount" class="mobile-nav-badge mobile-header-badge">{{ badgeText(commerce.wishlistCount) }}</span>
                     </RouterLink>
-                    <RouterLink :to="{ name: 'notifications' }" class="mobile-header-button" aria-label="Pemberitahuan">
+                    <RouterLink :to="{ name: 'notifications' }" class="mobile-header-button" :aria-label="`Pemberitahuan, ${commerce.unreadNotifications} belum dibaca`">
                         <MobileIcon name="bell" :size="20" />
+                        <span v-if="commerce.unreadNotifications" class="mobile-nav-badge mobile-header-badge">{{ badgeText(commerce.unreadNotifications) }}</span>
                     </RouterLink>
                 </div>
             </header>
