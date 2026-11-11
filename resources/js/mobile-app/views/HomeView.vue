@@ -62,9 +62,12 @@ const banners = computed(() => {
             title: banner.title || 'Promo pilihan',
             to,
             href: to ? null : banner.target_url,
+            tone: banner.header_tone === 'dark' ? 'dark' : 'light',
         };
     });
 });
+// Fallback/loading slides have light tops; admins set the tone per "Hero Mobile" banner.
+const headerTone = computed(() => banners.value[activeBanner.value]?.tone || 'light');
 const promoBanners = computed(() => home.value?.banners || []);
 const greeting = computed(() => (session.user ? `Halo, ${session.user.name.split(' ')[0]}` : 'Material & perlengkapan proyek'));
 
@@ -166,7 +169,7 @@ onBeforeUnmount(() => {
             </div>
 
             <div ref="heroOverlay" class="mobile-astro-hero-overlay">
-                <div class="mobile-astro-hero-top">
+                <div class="mobile-astro-hero-top" :class="`is-tone-${headerTone}`">
                     <div class="mobile-astro-brand">
                         <span class="mobile-astro-logo"><img :src="config.logoUrl" :alt="config.appName" width="116" height="52" /></span>
                         <small>{{ greeting }}</small>

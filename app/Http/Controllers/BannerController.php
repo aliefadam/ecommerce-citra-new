@@ -10,6 +10,9 @@ class BannerController extends Controller
 {
     private const TYPES = ['carousel', 'side', 'mobile_hero'];
 
+    /** Tone of the banner's top area: light = original logo + dark text, dark = white logo + white text. */
+    private const HEADER_TONES = ['light', 'dark'];
+
     /** Output canvas (width, height) per placement. */
     private const SIZES = [
         'carousel' => [1600, 700],
@@ -35,6 +38,7 @@ class BannerController extends Controller
         $validated = $request->validate([
             'title' => ['nullable', 'string', 'max:255'],
             'type' => ['required', 'in:'.implode(',', self::TYPES)],
+            'header_tone' => ['nullable', 'in:'.implode(',', self::HEADER_TONES)],
             'image_url' => ['nullable', 'string', 'max:2048'],
             'image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
             'target_url' => $this->targetUrlRules($request),
@@ -77,6 +81,7 @@ class BannerController extends Controller
         Banner::query()->create([
             'title' => $validated['title'] ?? null,
             'type' => $type,
+            'header_tone' => $validated['header_tone'] ?? 'light',
             'image' => $image,
             'target_url' => $validated['target_url'] ?? null,
             'sort_order' => (int) $validated['sort_order'],
@@ -96,6 +101,7 @@ class BannerController extends Controller
         $validated = $request->validate([
             'title' => ['nullable', 'string', 'max:255'],
             'type' => ['required', 'in:'.implode(',', self::TYPES)],
+            'header_tone' => ['nullable', 'in:'.implode(',', self::HEADER_TONES)],
             'image_url' => ['nullable', 'string', 'max:2048'],
             'image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
             'target_url' => $this->targetUrlRules($request),
@@ -143,6 +149,7 @@ class BannerController extends Controller
         $banner->update([
             'title' => $validated['title'] ?? null,
             'type' => $type,
+            'header_tone' => $validated['header_tone'] ?? 'light',
             'image' => $image,
             'target_url' => $validated['target_url'] ?? null,
             'sort_order' => (int) $validated['sort_order'],

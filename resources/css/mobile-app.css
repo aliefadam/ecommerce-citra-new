@@ -749,10 +749,13 @@ a, button, input { -webkit-tap-highlight-color: transparent; }
 
 /* ---------- Brand logo, sticky search, variants, rich text ---------- */
 .mobile-brand-logo { width: auto; height: 38px; display: block; object-fit: contain; }
-.mobile-astro-brand { min-width: 0; display: grid; justify-items: start; gap: .3rem; }
-.mobile-astro-logo { height: 44px; display: inline-flex; align-items: center; border-radius: 12px; padding: 0 .6rem; background: #fff; box-shadow: 0 2px 8px rgb(0 0 0 / .08); }
-.mobile-astro-logo img { width: auto; height: 34px; display: block; object-fit: contain; }
-.mobile-astro-brand small { overflow: hidden; max-width: 100%; color: #2a1622; font-size: .74rem; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.mobile-astro-brand { min-width: 0; display: grid; justify-items: start; gap: .2rem; }
+.mobile-astro-logo { height: 30px; display: inline-flex; align-items: center; }
+.mobile-astro-logo img { width: auto; height: 30px; display: block; object-fit: contain; transition: filter 250ms ease; }
+.mobile-astro-brand small { overflow: hidden; max-width: 100%; color: #1b2233; font-size: .76rem; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; transition: color 250ms ease; }
+/* Banner tone (Banner.header_tone): dark tops get a white logo and white greeting. */
+.mobile-astro-hero-top.is-tone-dark .mobile-astro-logo img { filter: brightness(0) invert(1) drop-shadow(0 1px 2px rgb(0 0 0 / .25)); }
+.mobile-astro-hero-top.is-tone-dark .mobile-astro-brand small { color: #fff; text-shadow: 0 1px 2px rgb(0 0 0 / .3); }
 .mobile-astro-search > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mobile-astro-search.has-value { color: var(--mobile-ink); }
 .mobile-search-sticky { position: sticky; z-index: 15; top: calc(60px + env(safe-area-inset-top)); margin: .85rem -1rem 0; padding: .5rem 1rem; background: var(--mobile-background); }

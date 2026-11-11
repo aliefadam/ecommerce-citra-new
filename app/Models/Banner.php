@@ -10,6 +10,7 @@ class Banner extends Model
         'company_id',
         'title',
         'type',
+        'header_tone',
         'image',
         'target_url',
         'sort_order',

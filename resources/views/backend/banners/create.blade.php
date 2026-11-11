@@ -99,6 +99,18 @@
                             @enderror
                         </div>
 
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Latar Atas Banner</label>
+                            <select name="header_tone" class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200">
+                                <option value="light" @selected(old('header_tone', 'light') === 'light')>Terang — logo asli, teks gelap</option>
+                                <option value="dark" @selected(old('header_tone', 'light') === 'dark')>Gelap — logo &amp; teks putih</option>
+                            </select>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5">Khusus Hero Mobile: sesuaikan dengan warna bagian atas gambar, tempat logo dan sapaan tampil.</p>
+                            @error('header_tone')
+                                <p class="text-xs text-red-500 mt-1.5">{{ $message }}</p>
+                            @enderror
+                        </div>
+
                         <label class="inline-flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
                             <input type="hidden" name="is_active" value="0" />
                             <input type="checkbox" name="is_active" value="1" class="accent-blue-500" @checked(old('is_active', 1)) />

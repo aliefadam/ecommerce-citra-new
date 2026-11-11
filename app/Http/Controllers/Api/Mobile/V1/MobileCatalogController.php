@@ -231,6 +231,7 @@ class MobileCatalogController extends Controller
                 'title' => (string) ($banner->title ?? ''),
                 'image' => CatalogImageUrl::make($banner->image),
                 'target_url' => $this->safeTargetUrl($banner->target_url),
+                'header_tone' => $banner->header_tone === 'dark' ? 'dark' : 'light',
             ])
             ->values();
     }
