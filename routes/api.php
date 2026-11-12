@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\Mobile\V1\MobileAccountController;
 use App\Http\Controllers\Api\Mobile\V1\MobileCatalogController;
 use App\Http\Controllers\Api\Mobile\V1\MobileCheckoutController;
 use App\Http\Controllers\Api\Mobile\V1\MobileCommerceController;
+use App\Http\Controllers\Api\Mobile\V1\MobileHelpController;
 use App\Http\Controllers\Api\Mobile\V1\MobileSessionController;
 use App\Http\Controllers\Api\Mobile\V1\MobileTelemetryController;
 use App\Http\Controllers\Api\V1\CategoryController;
@@ -26,6 +27,7 @@ Route::prefix('mobile/v1')
             Route::get('products', [MobileCatalogController::class, 'products'])->name('products.index');
             Route::get('products/{slug}', [MobileCatalogController::class, 'product'])->name('products.show');
             Route::get('search/suggestions', [MobileCatalogController::class, 'suggestions'])->name('search.suggestions');
+            Route::get('help/faqs', [MobileHelpController::class, 'faqs'])->name('help.faqs');
         });
         Route::post('auth/login', [MobileSessionController::class, 'login'])
             ->middleware('throttle:login')

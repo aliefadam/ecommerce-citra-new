@@ -37,23 +37,29 @@ onMounted(load);
         <MobileCatalogState v-else-if="error" title="Katalog gagal dimuat" :message="error" :retry="load" />
         <MobileCatalogState v-else-if="!categories.length" title="Belum ada kategori" message="Produk akan tampil setelah katalog tersedia." />
 
-        <div v-else class="mobile-category-list">
-            <article v-for="category in categories" :key="category.id" class="mobile-category-group">
-                <RouterLink :to="{ name: 'category-products', params: { slug: category.slug } }" class="mobile-category-main">
-                    <img :src="category.image || '/imgs/product-placeholder.svg'" alt="" @error="useImageFallback" />
-                    <span><strong>{{ category.name }}</strong><small>{{ category.products_count }} produk</small></span>
-                    <span aria-hidden="true">›</span>
+        <template v-else>
+            <div class="mobile-home-categories mobile-catalog-grid">
+                <RouterLink v-for="category in categories" :key="category.id" :to="{ name: 'category-products', params: { slug: category.slug } }">
+                    <strong>{{ category.name }}</strong>
+                    <small>{{ category.products_count }} produk</small>
+                    <img :src="category.image || '/imgs/product-placeholder.svg'" alt="" loading="lazy" @error="useImageFallback" />
                 </RouterLink>
-                <div v-if="category.children.length" class="mobile-category-children">
-                    <RouterLink
-                        v-for="child in category.children"
-                        :key="child.id"
-                        :to="{ name: 'category-products', params: { slug: child.slug } }"
-                    >
-                        {{ child.name }} <small>{{ child.products_count }}</small>
-                    </RouterLink>
-                </div>
-            </article>
-        </div>
+            </div>
+
+            <template v-for="category in categories" :key="`sub-${category.id}`">
+                <section v-if="category.children?.length" class="mobile-catalog-subgroup">
+                    <h2>{{ category.name }}</h2>
+                    <div class="mobile-category-children">
+                        <RouterLink
+                            v-for="child in category.children"
+                            :key="child.id"
+                            :to="{ name: 'category-products', params: { slug: child.slug } }"
+                        >
+                            {{ child.name }} <small>{{ child.products_count }}</small>
+                        </RouterLink>
+                    </div>
+                </section>
+            </template>
+        </template>
     </section>
 </template>

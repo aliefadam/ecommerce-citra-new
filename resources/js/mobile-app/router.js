@@ -76,6 +76,30 @@ const routes = [
         meta: { label: 'Profil', nav: true, requiresAuth: true },
     },
     {
+        path: '/account/profile',
+        name: 'account-profile',
+        component: () => import('./views/AccountProfileView.vue'),
+        meta: { label: 'Biodata', requiresAuth: true, navSection: 'account' },
+    },
+    {
+        path: '/account/addresses',
+        name: 'account-addresses',
+        component: () => import('./views/AccountAddressesView.vue'),
+        meta: { label: 'Alamat Tersimpan', requiresAuth: true, navSection: 'account' },
+    },
+    {
+        path: '/account/password',
+        name: 'account-password',
+        component: () => import('./views/AccountPasswordView.vue'),
+        meta: { label: 'Ubah Password', requiresAuth: true, navSection: 'account' },
+    },
+    {
+        path: '/help/faq',
+        name: 'help-faq',
+        component: () => import('./views/FaqView.vue'),
+        meta: { label: 'FAQ', navSection: 'account' },
+    },
+    {
         path: '/wishlist',
         name: 'wishlist',
         component: () => import('./views/WishlistView.vue'),

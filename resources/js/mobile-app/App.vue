@@ -62,7 +62,12 @@ const showRouteFeedback = () => {
 const hideRouteFeedback = () => {
     routeFeedbackTimer = window.setTimeout(() => { routeLoading.value = false; }, 150);
 };
-const applyUpdate = () => window.__mobilePwaUpdate?.();
+// Service worker baru sudah aktif sendiri (skipWaiting), jadi cukup muat ulang halaman
+// agar memakai build terbaru. Jangan bergantung pada registration.waiting yang bisa null.
+const applyUpdate = () => {
+    try { window.__mobilePwaUpdate?.(); } catch { /* abaikan */ }
+    window.location.reload();
+};
 const retryBootstrap = () => session.bootstrap();
 const focusRouteHeading = () => {
     document.querySelector('#mobile-route-heading')?.focus({ preventScroll: true });
