@@ -168,6 +168,71 @@ class StorefrontAiChatTest extends TestCase
         Http::assertSent(fn (Request $request) => str_contains(json_encode($request->data()), 'Elbow PVC 15 mm'));
     }
 
+    public function test_conversational_product_question_ranks_relevant_products_first(): void
+    {
+        $makeProduct = function (string $name, string $slug, string $diameter, int $price) {
+            $product = Product::query()->create([
+                'name' => $name,
+                'slug' => $slug,
+                'description' => 'Produk dengan pilihan diameter.',
+                'status' => 'active',
+            ]);
+            $variant = Variant::query()->create(['name' => 'Diameter', 'value' => $diameter]);
+            ProductVariant::query()->create([
+                'product_id' => $product->id,
+                'variant_id' => $variant->id,
+                'sku' => strtoupper($slug),
+                'price' => $price,
+                'stock' => 3,
+            ]);
+        };
+        $makeProduct('Elbow 90 SS304', 'elbow-90-ss304', '15 mm', 18000);
+        // Produk lebih baru yang hanya cocok dengan kata "diameter" tidak boleh menggeser elbow.
+        $makeProduct('Testing Data Pipe', 'testing-data-pipe', '15 mm', 1000);
+        $makeProduct('Equal Tee SS304', 'equal-tee-ss304', '15 mm', 20000);
+
+        Http::fake([
+            'https://koboi.example/v1/chat/completions' => Http::response([
+                'choices' => [['message' => ['content' => '{"in_scope":true,"answer":"Ada Elbow 90 SS304 diameter 15 mm."}']]],
+            ]),
+        ]);
+
+        $this->postJson(route('storefront.chat-ai'), [
+            'message' => 'Kamu punya produk elbow diameter 15 tidak',
+        ])->assertOk()
+            ->assertJsonCount(1, 'products')
+            ->assertJsonPath('products.0.slug', 'elbow-90-ss304');
+    }
+
+    public function test_wrongly_rejected_shopping_question_is_not_reset(): void
+    {
+        Http::fake([
+            'https://koboi.example/v1/chat/completions' => Http::response([
+                'choices' => [['message' => ['content' => '{"in_scope":false,"answer":""}']]],
+            ]),
+        ]);
+
+        $this->postJson(route('storefront.chat-ai'), [
+            'message' => 'Barang apa saja yang dijual disini?',
+        ])->assertOk()
+            ->assertJsonPath('reset', false);
+
+        Http::assertSent(fn (Request $request) => str_contains(json_encode($request->data()), 'KATEGORI PRODUK YANG DIJUAL'));
+    }
+
+    public function test_markdown_links_in_answer_are_flattened(): void
+    {
+        Http::fake([
+            'https://koboi.example/v1/chat/completions' => Http::response([
+                'choices' => [['message' => ['content' => '{"in_scope":true,"answer":"Lihat di [sini](https://boq.co.id/detail-produk/elbow)."}']]],
+            ]),
+        ]);
+
+        $this->postJson(route('storefront.chat-ai'), ['message' => 'link elbow'])
+            ->assertOk()
+            ->assertJsonPath('message', 'Lihat di sini: https://boq.co.id/detail-produk/elbow.');
+    }
+
     public function test_only_the_signed_in_customers_orders_are_sent_to_koboi(): void
     {
         $customer = User::factory()->create();
