@@ -44,7 +44,7 @@
         </form>
     </section>
 
-    <button id="storefrontAiToggle" type="button" class="flex min-h-14 items-center gap-2.5 rounded-full bg-white py-1.5 pl-1.5 pr-5 text-[#18222d] shadow-[0_10px_35px_rgba(10,50,104,.28)] ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-xl" aria-label="Buka Tanya BOQI" aria-expanded="false" aria-controls="storefrontAiPanel" data-testid="boqi-launcher">
+    <button id="storefrontAiToggle" type="button" class="boqi-glow flex min-h-14 items-center gap-2.5 rounded-full bg-white py-1.5 pl-1.5 pr-5 text-[#18222d] shadow-[0_10px_35px_rgba(10,50,104,.28)] ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-xl" aria-label="Buka Tanya BOQI" aria-expanded="false" aria-controls="storefrontAiPanel" data-testid="boqi-launcher">
         <span class="grid h-12 w-12 place-items-center overflow-hidden rounded-full bg-blue-50"><img src="{{ asset('imgs/boqi/boqi-mascot.webp') }}" alt="" class="h-14 w-14 object-contain object-top" /></span>
         <span class="text-base font-bold">Tanya BOQI</span>
     </button>

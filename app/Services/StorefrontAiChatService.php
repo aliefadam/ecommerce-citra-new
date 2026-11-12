@@ -154,6 +154,10 @@ PROMPT;
                 'jual', 'dijual', 'disini', 'sini', 'dong', 'mau', 'beli', 'tersedia', 'stok', 'ready',
                 'ini', 'jenis', 'macam', 'kah', 'tanya', 'mohon', 'minta', 'kak', 'min', 'toko', 'tahu',
                 'jualan', 'menjual', 'apakah', 'gimana', 'bagaimana', 'adakah', 'masih',
+                // Kata layanan/instruksi (quick reply) bukan kata kunci produk.
+                'ingin', 'mencari', 'berdasarkan', 'nama', 'merek', 'atau', 'jelaskan', 'cara', 'metode',
+                'pembayaran', 'bayar', 'membayar', 'transfer', 'lacak', 'pengiriman', 'kirim', 'dikirim',
+                'cek', 'status', 'terbaru', 'resi', 'invoice', 'order', 'ongkir',
             ], true))
             ->reject(function (string $term) use ($priceRange) {
                 if (! is_numeric($term)) {
@@ -459,7 +463,20 @@ PROMPT;
 
         return "INFORMASI CS PUBLIK:\n"
             .'- Nama toko: '.(string) config('app.name')."\n"
-            .'- WhatsApp/nomor CS: '.($whatsApp !== '' ? $whatsApp : 'belum tersedia');
+            .'- WhatsApp/nomor CS: '.($whatsApp !== '' ? $whatsApp : 'belum tersedia')."\n\n"
+            .$this->paymentMethodContext($settings);
+    }
+
+    private function paymentMethodContext(array $settings): string
+    {
+        $manualBank = trim((string) ($settings['manual_payment_bank_name'] ?? ''));
+
+        // Sesuai metode yang diterima checkout (MidtransController & MobileCheckoutController).
+        return "METODE PEMBAYARAN:\n"
+            ."- Virtual Account (otomatis terverifikasi): BCA, BNI, BRI, Mandiri, CIMB Niaga.\n"
+            ."- QRIS (otomatis terverifikasi): scan dengan aplikasi m-banking atau e-wallet.\n"
+            .'- Transfer manual'.($manualBank !== '' ? ' ke rekening '.$manualBank : '').": nomor rekening ditampilkan setelah checkout, lalu upload bukti transfer untuk diverifikasi admin.\n"
+            ."- Alur: tambahkan produk ke keranjang, checkout, pilih alamat dan kurir, pilih metode pembayaran, lalu bayar sesuai nominal sebelum batas waktu. Status pembayaran dapat dicek di menu Transaksi/Pesanan.";
     }
 
     private function productCards(): array

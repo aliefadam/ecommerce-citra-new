@@ -1,12 +1,10 @@
 <script setup>
 import { computed, inject, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
 import { request } from '../services/api';
 import { useImageFallback } from '../services/images';
 import { useSessionStore } from '../stores/session';
 
 const session = useSessionStore();
-const route = useRoute();
 const config = inject('mobileConfig');
 const open = ref(false);
 const loading = ref(false);
@@ -168,9 +166,5 @@ const handleKeydown = (event) => {
                 <button type="submit" :disabled="loading" aria-label="Kirim pesan">➤</button>
             </form>
         </section>
-        <button v-else-if="route.name !== 'home'" type="button" class="mobile-ai-toggle" aria-label="Buka Tanya BOQI" data-testid="boqi-launcher-mobile" @click="show">
-            <img :src="config.boqiMascotUrl" alt="" />
-            <span>Tanya BOQI</span>
-        </button>
     </div>
 </template>

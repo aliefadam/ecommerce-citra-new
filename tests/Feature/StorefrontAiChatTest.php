@@ -307,6 +307,46 @@ class StorefrontAiChatTest extends TestCase
         });
     }
 
+    public function test_payment_question_returns_payment_context_without_product_cards(): void
+    {
+        Product::query()->create([
+            'name' => 'Elbow 45 M.F ISO4144 SS304',
+            'slug' => 'elbow-45-mf-iso4144-ss304',
+            'description' => 'Cara pembayaran tersedia melalui transfer.',
+            'status' => 'active',
+        ]);
+
+        Http::fake([
+            'https://koboi.example/v1/chat/completions' => Http::response([
+                'choices' => [['message' => ['content' => '{"in_scope":false,"answer":""}']]],
+            ]),
+        ]);
+
+        $this->postJson(route('storefront.chat-ai'), [
+            'message' => 'Jelaskan cara pembayaran yang tersedia.',
+        ])->assertOk()
+            ->assertJsonMissingPath('products.0');
+
+        Http::assertSent(fn (Request $request) => str_contains(json_encode($request->data(), JSON_THROW_ON_ERROR), 'METODE PEMBAYARAN'));
+    }
+
+    public function test_chat_rate_limit_returns_friendly_message(): void
+    {
+        Http::fake([
+            'https://koboi.example/v1/chat/completions' => Http::response([
+                'choices' => [['message' => ['content' => '{"in_scope":true,"answer":"Halo."}']]],
+            ]),
+        ]);
+
+        for ($attempt = 0; $attempt < 20; $attempt++) {
+            $this->postJson(route('storefront.chat-ai'), ['message' => 'nomor CS'])->assertOk();
+        }
+
+        $this->postJson(route('storefront.chat-ai'), ['message' => 'nomor CS'])
+            ->assertStatus(429)
+            ->assertJsonPath('message', 'Pertanyaan Anda terlalu banyak dalam waktu singkat. Tunggu sekitar 1 menit, lalu coba lagi ya.');
+    }
+
     public function test_chat_input_is_bounded(): void
     {
         $this->postJson(route('storefront.chat-ai'), [

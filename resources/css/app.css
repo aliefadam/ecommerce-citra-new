@@ -436,3 +436,35 @@
         display: none;
     }
 }
+
+/* BOQI launcher: cincin kilau tipis yang berputar pelan + glow lembut (sengaja samar). */
+@property --boqi-glow-angle {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+}
+
+.boqi-glow { position: relative; isolation: isolate; }
+.boqi-glow::before,
+.boqi-glow::after {
+    content: '';
+    position: absolute;
+    inset: -1.5px;
+    z-index: -1;
+    border-radius: inherit;
+    padding: 1.5px;
+    background: conic-gradient(from var(--boqi-glow-angle), transparent 0deg, transparent 200deg, rgb(96 165 250 / .85) 260deg, rgb(167 139 250 / .8) 300deg, rgb(251 146 60 / .7) 335deg, transparent 360deg);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+    animation: boqi-glow-spin 4.5s linear infinite;
+    pointer-events: none;
+}
+/* Lapisan kedua diburamkan menjadi glow halus di sekitar cincin. */
+.boqi-glow::after { filter: blur(5px); opacity: .45; }
+
+@keyframes boqi-glow-spin { to { --boqi-glow-angle: 360deg; } }
+
+@media (prefers-reduced-motion: reduce) {
+    .boqi-glow::before, .boqi-glow::after { animation: none; }
+}

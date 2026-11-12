@@ -77,7 +77,7 @@ Route::get('/language/{locale}', LocaleController::class)
     ->name('locale.switch');
 
 Route::get('/docs/api-catalog', [ApiDocController::class, 'publicIndex'])->name('api-docs.public');
-Route::post('/chat-ai', StorefrontAiChatController::class)->middleware('throttle:12,1')->name('storefront.chat-ai');
+Route::post('/chat-ai', StorefrontAiChatController::class)->middleware('throttle:storefront-chat')->name('storefront.chat-ai');
 Route::get('/internal/ready', [OperationalHealthController::class, 'readiness'])->name('ops.readiness')->middleware('throttle:30,1');
 
 Route::middleware('guest')->group(function () {
