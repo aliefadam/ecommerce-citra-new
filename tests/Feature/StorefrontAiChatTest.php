@@ -2,8 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Models\Variant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
@@ -45,7 +48,124 @@ class StorefrontAiChatTest extends TestCase
     {
         $this->get(route('frontend.index'))
             ->assertOk()
-            ->assertSee('Chat CS');
+            ->assertSee('Tanya BOQI')
+            ->assertSee('imgs/boqi/boqi-mascot.webp');
+    }
+
+    public function test_string_true_scope_from_provider_is_accepted_for_product_question(): void
+    {
+        Http::fake([
+            'https://koboi.example/v1/chat/completions' => Http::response([
+                'choices' => [['message' => ['content' => '{"in_scope":"true","answer":"Saya akan cek varian elbow diameter 15."}']]],
+            ]),
+        ]);
+
+        $this->postJson(route('storefront.chat-ai'), [
+            'message' => 'Produk elbow diamter 15 apakah ada?',
+        ])->assertOk()
+            ->assertJsonPath('reset', false)
+            ->assertJsonPath('message', 'Saya akan cek varian elbow diameter 15.');
+
+        Http::assertSent(function (Request $request) {
+            $payload = collect($request->data()['messages'] ?? [])->pluck('content')->implode("\n");
+
+            return str_contains($payload, 'Produk elbow diamter 15 apakah ada?')
+                && str_contains($payload, 'WhatsApp/nomor CS:');
+        });
+    }
+
+    public function test_invalid_provider_format_does_not_clear_the_conversation(): void
+    {
+        Http::fake([
+            'https://koboi.example/v1/chat/completions' => Http::response([
+                'choices' => [['message' => ['content' => 'format tidak sesuai']]],
+            ]),
+        ]);
+
+        $this->postJson(route('storefront.chat-ai'), [
+            'message' => 'Kapan pesanan saya sampai?',
+        ])->assertOk()
+            ->assertJsonPath('reset', false);
+    }
+
+    public function test_matching_products_are_returned_as_clickable_card_data(): void
+    {
+        $product = Product::query()->create([
+            'name' => 'Equal Tee PVC Diameter 15 mm',
+            'slug' => 'equal-tee-pvc-15-mm',
+            'description' => 'Sambungan pipa equal tee.',
+            'status' => 'active',
+        ]);
+        $variant = Variant::query()->create(['name' => 'Diameter', 'value' => '15 mm']);
+        ProductVariant::query()->create([
+            'product_id' => $product->id,
+            'variant_id' => $variant->id,
+            'sku' => 'TEE-15',
+            'price' => 25000,
+            'stock' => 8,
+        ]);
+        $expensiveProduct = Product::query()->create([
+            'name' => 'Equal Tee Premium Diameter 25 mm',
+            'slug' => 'equal-tee-premium-25-mm',
+            'description' => 'Sambungan pipa premium.',
+            'status' => 'active',
+        ]);
+        $expensiveVariant = Variant::query()->create(['name' => 'Diameter', 'value' => '25 mm']);
+        ProductVariant::query()->create([
+            'product_id' => $expensiveProduct->id,
+            'variant_id' => $expensiveVariant->id,
+            'sku' => 'TEE-25-PREMIUM',
+            'price' => 125000,
+            'stock' => 5,
+        ]);
+
+        Http::fake([
+            'https://koboi.example/v1/chat/completions' => Http::response([
+                'choices' => [['message' => ['content' => '{"in_scope":true,"answer":"Equal tee adalah sambungan pipa tiga arah."}']]],
+            ]),
+        ]);
+
+        $this->postJson(route('storefront.chat-ai'), [
+            'message' => 'Cari equal tee ukuran 15 di bawah 30 ribu',
+        ])->assertOk()
+            ->assertJsonCount(1, 'products')
+            ->assertJsonPath('products.0.name', 'Equal Tee PVC Diameter 15 mm')
+            ->assertJsonPath('products.0.slug', 'equal-tee-pvc-15-mm')
+            ->assertJsonPath('products.0.price_min', 25000)
+            ->assertJsonPath('products.0.in_stock', true)
+            ->assertJsonPath('products.0.url', route('frontend.detail-produk', ['slug' => 'equal-tee-pvc-15-mm']));
+    }
+
+    public function test_misspelled_product_name_still_finds_matching_product(): void
+    {
+        $product = Product::query()->create([
+            'name' => 'Elbow PVC 15 mm',
+            'slug' => 'elbow-pvc-15-mm',
+            'description' => 'Sambungan pipa siku.',
+            'status' => 'active',
+        ]);
+        $variant = Variant::query()->create(['name' => 'Diameter', 'value' => '15 mm']);
+        ProductVariant::query()->create([
+            'product_id' => $product->id,
+            'variant_id' => $variant->id,
+            'sku' => 'ELB-15',
+            'price' => 12000,
+            'stock' => 4,
+        ]);
+
+        Http::fake([
+            'https://koboi.example/v1/chat/completions' => Http::response([
+                'choices' => [['message' => ['content' => '{"in_scope":true,"answer":"Mungkin maksud Anda Elbow PVC 15 mm."}']]],
+            ]),
+        ]);
+
+        $this->postJson(route('storefront.chat-ai'), [
+            'message' => 'cari elbouw',
+        ])->assertOk()
+            ->assertJsonCount(1, 'products')
+            ->assertJsonPath('products.0.slug', 'elbow-pvc-15-mm');
+
+        Http::assertSent(fn (Request $request) => str_contains(json_encode($request->data()), 'Elbow PVC 15 mm'));
     }
 
     public function test_only_the_signed_in_customers_orders_are_sent_to_koboi(): void

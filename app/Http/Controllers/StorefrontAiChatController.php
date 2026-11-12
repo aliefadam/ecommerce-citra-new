@@ -26,7 +26,7 @@ class StorefrontAiChatController extends Controller
             ));
         } catch (RuntimeException) {
             return response()->json([
-                'message' => 'Chat AI sedang tidak tersedia. Silakan coba lagi beberapa saat.',
+                'message' => 'BOQI sedang tidak tersedia. Silakan coba lagi beberapa saat.',
             ], 503);
         }
     }

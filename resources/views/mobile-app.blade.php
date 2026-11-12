@@ -26,6 +26,8 @@
             id="mobile-app"
             data-app-name="{{ config('app.name') }}"
             data-logo-url="{{ !empty($appStoreLogoUrl) ? $appStoreLogoUrl : asset('logo/BOQ.CO.ID/BOQ.CO.ID-1.png') }}"
+            data-boqi-mascot-url="{{ asset('imgs/boqi/boqi-mascot.webp') }}"
+            data-support-whatsapp="{{ trim((string) ($appStoreSettings['social_whatsapp'] ?? '')) }}"
             data-app-version="{{ $mobileAppVersion }}"
             data-api-base="/api/mobile/v1"
             data-pilot="{{ config('mobile-spa.pilot') ? 'true' : 'false' }}"

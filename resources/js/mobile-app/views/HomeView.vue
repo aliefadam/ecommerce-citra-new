@@ -21,6 +21,7 @@ let autoplayTimer;
 let autoplayDelay;
 
 const config = inject('mobileConfig');
+const openAiChat = () => window.dispatchEvent(new CustomEvent('mobile-spa:open-ai-chat'));
 const heroSearch = ref(null);
 const stickySearch = ref(false);
 let searchObserver;
@@ -178,9 +179,9 @@ onBeforeUnmount(() => {
                         <small>{{ greeting }}</small>
                     </div>
                     <div class="mobile-astro-actions">
-                        <a href="/pages/pusat-bantuan" class="mobile-astro-chat">
-                            <MobileIcon name="headset" :size="18" /> Chat CS
-                        </a>
+                        <button type="button" class="mobile-astro-chat" @click="openAiChat">
+                            <img :src="config.boqiMascotUrl" alt="" /> Tanya BOQI
+                        </button>
                         <RouterLink :to="{ name: 'wishlist' }" class="mobile-astro-menu" aria-label="Produk tersimpan">
                             <MobileIcon name="heart" :size="20" />
                             <span v-if="commerce.wishlistCount" class="mobile-nav-badge mobile-header-badge">{{ commerce.wishlistCount > 99 ? '99+' : commerce.wishlistCount }}</span>
