@@ -29,6 +29,7 @@
         @endphp
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="csrf-token" content="{{ csrf_token() }}" />
         @include('partials.pwa-meta')
         <title>{{ $seoTitle }}</title>
         <meta name="description" content="{{ $seoDescription }}" />
@@ -62,6 +63,7 @@
             @yield('content')
         </div>
         @include('partials.footer-user')
+        <x-storefront-ai-chat :mobile-chat-offset="$mobileChatOffset" />
 
         <div id="ecToastRegion" class="ec-toast-region" aria-live="polite" aria-atomic="true"></div>
 
@@ -130,55 +132,6 @@
                 </svg>
             </a>
         @endif
-
-        @production
-        <!--Start of Tawk.to Script-->
-        <script type="text/javascript">
-            var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
-
-            Tawk_API.customStyle = {
-                visibility: {
-                    desktop: {
-                        position: 'br',
-                        xOffset: '16px',
-                        yOffset: '16px'
-                    },
-                    mobile: {
-                        position: 'br',
-                        xOffset: '16px',
-                        yOffset: '{{ $mobileChatOffset }}'
-                    }
-                }
-            };
-
-            @auth
-                Tawk_API.visitor = {
-                    name: @json(auth()->user()->name),
-                    email: @json(auth()->user()->email)
-                };
-            @endauth
-
-            function loadTawkChat() {
-                if (window.__tawkLoaded) return;
-                window.__tawkLoaded = true;
-                var s1 = document.createElement("script"), s0 = document.getElementsByTagName("script")[0];
-                s1.async = true;
-                s1.src = 'https://embed.tawk.to/6a2247048705f01c35096780/1jqauarb4';
-                s1.charset = 'UTF-8';
-                s1.setAttribute('crossorigin', '*');
-                s0.parentNode.insertBefore(s1, s0);
-            }
-
-            if ('requestIdleCallback' in window) {
-                window.requestIdleCallback(loadTawkChat, { timeout: 5000 });
-            } else {
-                window.addEventListener('load', function () {
-                    window.setTimeout(loadTawkChat, 2500);
-                }, { once: true });
-            }
-        </script>
-        <!--End of Tawk.to Script-->
-        @endproduction
 
         @include('partials.file-dropzone')
         @yield('script')

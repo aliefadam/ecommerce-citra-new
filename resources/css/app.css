@@ -306,6 +306,11 @@
     .ec-bottom-link[aria-current="page"] { min-width: 5.75rem; flex: 1 1 5.75rem; gap: .5rem; background: var(--ec-cobalt-100); color: var(--ec-primary-900); box-shadow: 0 4px 14px rgb(0 0 0 / .18); }
     .ec-bottom-link[aria-current="page"] .ec-bottom-label { position: static; width: auto; height: auto; overflow: visible; clip: auto; }
     .ec-chat { z-index: var(--ec-z-chat); }
+    .ec-ai-chat { bottom: var(--ec-ai-mobile-offset, 1rem); }
+
+    @media (min-width: 768px) {
+        .ec-ai-chat { bottom: 1.5rem; }
+    }
     .ec-product-card { display: flex; min-width: 0; flex-direction: column; overflow: hidden; border: 1px solid var(--ec-steel-200); border-radius: var(--ec-radius-md); background: var(--ec-white); transition: border-color var(--ec-motion-base), transform var(--ec-motion-base), box-shadow var(--ec-motion-base); }
     .ec-product-card:hover { border-color: var(--ec-steel-300); transform: translateY(-2px); box-shadow: 0 12px 30px rgb(17 24 32 / .09); }
     .store-product-card { display: flex; min-width: 0; height: 100%; flex-direction: column; overflow: hidden; border: 1px solid #dbe3ed; border-radius: 8px; background: #fff; box-shadow: 0 1px 2px rgb(15 23 42 / .025); transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease; }

@@ -51,6 +51,7 @@ use App\Http\Controllers\SalesReportController;
 use App\Http\Controllers\SeoController;
 use App\Http\Controllers\SpecificationTemplateController;
 use App\Http\Controllers\StockController;
+use App\Http\Controllers\StorefrontAiChatController;
 use App\Http\Controllers\StorefrontSearchSuggestionController;
 use App\Http\Controllers\StoreLocationController;
 use App\Http\Controllers\TransactionController;
@@ -76,6 +77,7 @@ Route::get('/language/{locale}', LocaleController::class)
     ->name('locale.switch');
 
 Route::get('/docs/api-catalog', [ApiDocController::class, 'publicIndex'])->name('api-docs.public');
+Route::post('/chat-ai', StorefrontAiChatController::class)->middleware('throttle:12,1')->name('storefront.chat-ai');
 Route::get('/internal/ready', [OperationalHealthController::class, 'readiness'])->name('ops.readiness')->middleware('throttle:30,1');
 
 Route::middleware('guest')->group(function () {

@@ -73,6 +73,14 @@ return [
         'retry_sleep' => (int) env('RAJAONGKIR_SAFE_RETRY_SLEEP', 250),
     ],
 
+    'koboi_llm' => [
+        'api_key' => env('KOBOI_LLM_API', ''),
+        'base_url' => env('KOBOI_LLM_BASE_URL', 'https://lite.koboillm.com'),
+        'model' => env('KOBOI_LLM_CHATBOT_FRONTEND', env('KOBOI_LLM_MODEL', 'openai/gpt-4o-mini')),
+        'connect_timeout' => (int) env('KOBOI_LLM_CONNECT_TIMEOUT', 5),
+        'timeout' => (int) env('KOBOI_LLM_TIMEOUT', 30),
+    ],
+
     'integration_certification' => [
         'email_allowlist' => array_values(array_filter(array_map('trim', explode(',', (string) env('INTEGRATION_SMOKE_EMAIL_ALLOWLIST', ''))))),
         'whatsapp_allowlist' => array_values(array_filter(array_map('trim', explode(',', (string) env('INTEGRATION_SMOKE_WHATSAPP_ALLOWLIST', ''))))),

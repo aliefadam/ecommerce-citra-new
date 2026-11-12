@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { RouterLink, RouterView, useRoute } from 'vue-router';
 import MobileIcon from './components/MobileIcon.vue';
+import MobileAiChat from './components/MobileAiChat.vue';
 import { useCommerceStore } from './stores/commerce';
 import { useSessionStore } from './stores/session';
 import { trackMobileEvent } from './services/telemetry';
@@ -166,6 +167,7 @@ onBeforeUnmount(() => {
                     <span>{{ item.label }}</span>
                 </RouterLink>
             </nav>
+            <MobileAiChat />
         </div>
     </div>
 </template>
