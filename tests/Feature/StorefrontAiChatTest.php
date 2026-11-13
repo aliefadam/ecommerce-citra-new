@@ -177,7 +177,7 @@ class StorefrontAiChatTest extends TestCase
                 'description' => 'Produk dengan pilihan diameter.',
                 'status' => 'active',
             ]);
-            $variant = Variant::query()->create(['name' => 'Diameter', 'value' => $diameter]);
+            $variant = Variant::query()->firstOrCreate(['name' => 'Diameter', 'value' => $diameter]);
             ProductVariant::query()->create([
                 'product_id' => $product->id,
                 'variant_id' => $variant->id,

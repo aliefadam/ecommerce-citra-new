@@ -117,7 +117,7 @@ onBeforeUnmount(() => {
                 </RouterLink>
                 <div class="mobile-header-actions">
                     <button type="button" class="mobile-astro-chat mobile-header-chat boqi-glow" aria-label="Buka Tanya BOQI" data-testid="boqi-launcher-mobile" @click="openAiChat">
-                        <img :src="config.boqiMascotUrl" alt="" /> BOQI
+                        <img :src="config.boqiMascotUrl" alt="" /> <span><span class="mobile-header-chat-prefix">Tanya </span>BOQI</span>
                     </button>
                     <RouterLink :to="{ name: 'wishlist' }" class="mobile-header-button" aria-label="Produk tersimpan">
                         <MobileIcon name="heart" :size="20" />

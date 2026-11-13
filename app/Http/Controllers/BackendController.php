@@ -12,6 +12,7 @@ use App\Models\Transaction;
 use App\Models\TransactionDetail;
 use App\Models\User;
 use App\Services\ImageOptimizer;
+use App\Support\BoqiFaq;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -19,7 +20,6 @@ use Illuminate\Support\Facades\Hash;
 class BackendController extends Controller
 {
     use ScopesToActiveCompany;
-
 
     private function dashboardPeriod(Request $request): array
     {
@@ -357,6 +357,18 @@ class BackendController extends Controller
             StoreSetting::setMany(array_map(fn ($v) => $v ?? '', $validated));
 
             return redirect()->route('pages.settings', ['tab' => 'social'])->with('success', 'Link social media berhasil disimpan.');
+        }
+
+        if ($section === 'boqi_faq') {
+            $rules = [];
+            foreach (array_keys(BoqiFaq::topics()) as $topic) {
+                $rules[BoqiFaq::key($topic)] = ['nullable', 'string', 'max:'.BoqiFaq::MAX_LENGTH];
+            }
+            $validated = $request->validate($rules);
+
+            StoreSetting::setMany(array_map(fn ($value) => trim((string) ($value ?? '')), $validated));
+
+            return redirect()->route('pages.settings', ['tab' => 'boqi'])->with('success', 'FAQ BOQI berhasil disimpan.');
         }
 
         if ($section === 'seo') {

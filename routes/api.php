@@ -25,6 +25,7 @@ Route::prefix('mobile/v1')
             Route::get('home', [MobileCatalogController::class, 'home'])->name('home');
             Route::get('categories', [MobileCatalogController::class, 'categories'])->name('categories.index');
             Route::get('products', [MobileCatalogController::class, 'products'])->name('products.index');
+            Route::get('products/{slug}/related', [MobileCatalogController::class, 'related'])->name('products.related');
             Route::get('products/{slug}', [MobileCatalogController::class, 'product'])->name('products.show');
             Route::get('search/suggestions', [MobileCatalogController::class, 'suggestions'])->name('search.suggestions');
             Route::get('help/faqs', [MobileHelpController::class, 'faqs'])->name('help.faqs');

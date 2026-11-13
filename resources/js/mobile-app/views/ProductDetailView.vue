@@ -3,6 +3,7 @@ import { computed, nextTick, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import MobileCatalogState from '../components/MobileCatalogState.vue';
 import MobileIcon from '../components/MobileIcon.vue';
+import MobileProductCard from '../components/MobileProductCard.vue';
 import MobileProductGallery from '../components/MobileProductGallery.vue';
 import MobileVariantSelector from '../components/MobileVariantSelector.vue';
 import { request } from '../services/api';
@@ -23,6 +24,8 @@ const error = ref('');
 const shareStatus = ref('');
 const actionStatus = ref('');
 const headingElement = ref(null);
+const relatedProducts = ref([]);
+const relatedLoading = ref(false);
 
 const selectedVariant = computed(() => product.value?.variants.find((variant) => variant.id === selectedVariantId.value) || product.value?.variants[0]);
 const descriptionHtml = computed(() => sanitizeHtml(product.value?.description));
@@ -49,6 +52,7 @@ const load = async () => {
     try {
         const response = await request(`/api/mobile/v1/products/${encodeURIComponent(route.params.slug)}`);
         product.value = response.data;
+        loadRelated(route.params.slug);
         selectedVariantId.value = response.data.variants.find((variant) => variant.in_stock)?.id || response.data.variants[0]?.id;
         if (session.user) await commerce.fetchWishlist().catch(() => {});
         await nextTick();
@@ -57,6 +61,19 @@ const load = async () => {
         error.value = exception.status === 404 ? 'Produk tidak ditemukan atau sudah tidak tersedia.' : exception.message;
     } finally {
         loading.value = false;
+    }
+};
+
+const loadRelated = async (slug) => {
+    relatedLoading.value = true;
+    relatedProducts.value = [];
+    try {
+        const response = await request(`/api/mobile/v1/products/${encodeURIComponent(slug)}/related`);
+        if (route.params.slug === slug) relatedProducts.value = response.data || [];
+    } catch {
+        relatedProducts.value = [];
+    } finally {
+        if (route.params.slug === slug) relatedLoading.value = false;
     }
 };
 
@@ -165,6 +182,23 @@ watch(() => route.params.slug, load, { immediate: true });
                         <dd>{{ specification.values.join(', ') }}{{ specification.unit ? ` ${specification.unit}` : '' }}</dd>
                     </template>
                 </dl>
+            </section>
+
+            <section
+                v-if="relatedLoading || relatedProducts.length"
+                class="mobile-related-products"
+                aria-labelledby="mobile-related-heading"
+                data-testid="mobile-related-products"
+            >
+                <div class="mobile-section-heading">
+                    <h2 id="mobile-related-heading">Produk yang mungkin kamu suka</h2>
+                </div>
+                <div v-if="relatedLoading" class="mobile-product-grid" aria-label="Memuat rekomendasi produk" aria-busy="true">
+                    <div v-for="item in 4" :key="item" class="mobile-product-skeleton"></div>
+                </div>
+                <div v-else class="mobile-product-grid">
+                    <MobileProductCard v-for="related in relatedProducts" :key="related.id" :product="related" />
+                </div>
             </section>
 
             <div class="mobile-detail-action">

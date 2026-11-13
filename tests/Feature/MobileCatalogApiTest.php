@@ -103,6 +103,40 @@ class MobileCatalogApiTest extends TestCase
         $this->getJson('/api/mobile/v1/products/'.$product->slug)->assertNotFound();
     }
 
+    public function test_related_products_exclude_current_and_hidden_products_and_prioritize_same_category(): void
+    {
+        $product = Product::query()->storefrontVisible()->whereHas('productVariants')->whereNotNull('main_category_id')->firstOrFail();
+        $sibling = Product::query()->storefrontVisible()->whereHas('productVariants')->whereKeyNot($product->id)->firstOrFail();
+        $sibling->update([
+            'main_category_id' => $product->main_category_id,
+            'category_detail_id' => $product->category_detail_id,
+        ]);
+        $hidden = Product::query()->storefrontVisible()->whereHas('productVariants')->whereKeyNot([$product->id, $sibling->id])->first();
+        $hidden?->update([
+            'status' => 'inactive',
+            'main_category_id' => $product->main_category_id,
+            'category_detail_id' => $product->category_detail_id,
+        ]);
+
+        $response = $this->getJson('/api/mobile/v1/products/'.$product->slug.'/related')
+            ->assertOk()
+            ->assertJsonStructure(['data' => [['id', 'name', 'slug', 'image', 'price_min', 'price_max', 'seller', 'category']]])
+            ->assertJsonMissingPath('data.0.company_id')
+            ->assertJsonMissingPath('data.0.stock');
+
+        $slugs = collect($response->json('data'))->pluck('slug');
+        $this->assertLessThanOrEqual(8, $slugs->count());
+        $this->assertSame($slugs->unique()->count(), $slugs->count());
+        $this->assertFalse($slugs->contains($product->slug));
+        $this->assertTrue($slugs->contains($sibling->slug));
+        if ($hidden) {
+            $this->assertFalse($slugs->contains($hidden->slug));
+        }
+
+        $product->update(['status' => 'inactive']);
+        $this->getJson('/api/mobile/v1/products/'.$product->slug.'/related')->assertNotFound();
+    }
+
     public function test_suggestions_require_two_characters_and_match_sku_without_exposing_stock_count(): void
     {
         $product = Product::query()->storefrontVisible()->whereHas('productVariants')->with('productVariants')->firstOrFail();

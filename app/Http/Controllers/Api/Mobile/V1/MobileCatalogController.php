@@ -76,6 +76,45 @@ class MobileCatalogController extends Controller
         return new MobileProductDetailResource($product);
     }
 
+    public function related(Request $request, string $slug): JsonResponse
+    {
+        $product = Product::query()
+            ->storefrontVisible()
+            ->where('slug', $slug)
+            ->firstOrFail(['id', 'company_id', 'main_category_id', 'category_detail_id']);
+
+        $limit = 8;
+        $related = collect();
+        $candidates = [
+            fn (Builder $query) => $product->category_detail_id ? $query->where('category_detail_id', $product->category_detail_id) : null,
+            fn (Builder $query) => $product->main_category_id ? $query->where('main_category_id', $product->main_category_id) : null,
+            fn (Builder $query) => $product->company_id ? $query->where('company_id', $product->company_id) : null,
+            fn (Builder $query) => $query,
+        ];
+
+        foreach ($candidates as $scope) {
+            $remaining = $limit - $related->count();
+            if ($remaining <= 0) {
+                break;
+            }
+
+            $query = $this->baseProductQuery()->whereKeyNot($product->id);
+            if ($scope($query) === null) {
+                continue;
+            }
+
+            $related = $related->merge($query
+                ->whereNotIn('products.id', $related->pluck('id'))
+                ->latest('id')
+                ->limit($remaining)
+                ->get());
+        }
+
+        return response()->json([
+            'data' => MobileProductListResource::collection($related->values())->resolve($request),
+        ]);
+    }
+
     public function suggestions(Request $request): JsonResponse
     {
         $validated = $request->validate([

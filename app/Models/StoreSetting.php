@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\BoqiFaq;
 use Illuminate\Database\Eloquent\Model;
 
 class StoreSetting extends Model
@@ -40,6 +41,7 @@ class StoreSetting extends Model
             'wa_gateway_per_minute' => '10',
             'wa_gateway_per_day' => '200',
             'wa_gateway_per_month' => '3000',
+            ...BoqiFaq::defaults(),
         ];
     }
 

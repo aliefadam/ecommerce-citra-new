@@ -4,7 +4,7 @@
 
 @section('content')
     @php
-        $activeTab = in_array(request('tab', 'store'), ['store', 'seo', 'location', 'payment', 'tax', 'whatsapp', 'social'], true) ? request('tab', 'store') : 'store';
+        $activeTab = in_array(request('tab', 'store'), ['store', 'seo', 'location', 'payment', 'tax', 'whatsapp', 'social', 'boqi'], true) ? request('tab', 'store') : 'store';
         $logoPath = (string) ($storeSettings['store_logo_path'] ?? '');
         $logoUrl = $logoPath !== '' ? asset('storage/' . ltrim($logoPath, '/')) : null;
         $waGatewayRoutes = [
@@ -75,6 +75,11 @@
                             class="settings-tab {{ $activeTab === 'social' ? 'active' : '' }} w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white transition-all text-left">
                             <i data-lucide="share-2" class="w-[17px] h-[17px]"></i>
                             Social Media
+                        </button>
+                        <button type="button" onclick="showTab('boqi')" id="nav-boqi"
+                            class="settings-tab {{ $activeTab === 'boqi' ? 'active' : '' }} w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white transition-all text-left">
+                            <i data-lucide="bot" class="w-[17px] h-[17px]"></i>
+                            BOQI / FAQ
                         </button>
                     </nav>
                 </div>
@@ -434,6 +439,37 @@
 
                         <div class="flex justify-end mt-5">
                             <button type="submit" class="px-5 py-2.5 text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors">Simpan Pembayaran</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="tab-boqi" class="settings-content {{ $activeTab === 'boqi' ? '' : 'hidden' }}">
+                    <form method="POST" action="{{ route('pages.settings.update') }}"
+                        class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
+                        @csrf
+                        <input type="hidden" name="section" value="boqi_faq">
+
+                        <h2 class="font-bold text-slate-800 dark:text-white mb-1">FAQ &amp; Kebijakan Toko untuk BOQI</h2>
+                        <p class="text-xs text-slate-400 mb-2">Jawaban ini dipakai asisten BOQI saat customer bertanya soal layanan toko. Tulis singkat dan sesuai kebijakan yang berlaku; kosongkan topik yang tidak ingin dijawab BOQI (BOQI akan mengarahkan ke CS).</p>
+                        <p class="text-xs text-slate-400 mb-6">Placeholder otomatis: <code>{whatsapp}</code>, <code>{url_daftar}</code>, <code>{url_lupa_password}</code>, <code>{url_lacak_pesanan}</code>, <code>{url_flash_sale}</code>, <code>{url_blog}</code>.</p>
+
+                        <div class="space-y-4">
+                            @foreach (\App\Support\BoqiFaq::topics() as $topic => $faqTopic)
+                                @php($faqKey = \App\Support\BoqiFaq::key($topic))
+                                <div>
+                                    <label for="{{ $faqKey }}" class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">{{ $faqTopic['label'] }}</label>
+                                    <textarea id="{{ $faqKey }}" name="{{ $faqKey }}" rows="{{ $topic === 'tambahan' ? 5 : 3 }}" maxlength="{{ \App\Support\BoqiFaq::MAX_LENGTH }}"
+                                        @if ($topic === 'tambahan') placeholder="Contoh:&#10;T: Apakah bisa kirim ke luar negeri?&#10;J: Saat ini pengiriman hanya untuk wilayah Indonesia." @endif
+                                        class="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200">{{ old($faqKey, $storeSettings[$faqKey] ?? $faqTopic['default']) }}</textarea>
+                                    @error($faqKey)
+                                        <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <div class="flex justify-end mt-5">
+                            <button type="submit" class="px-5 py-2.5 text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors">Simpan FAQ BOQI</button>
                         </div>
                     </form>
                 </div>
