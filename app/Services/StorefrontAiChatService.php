@@ -29,7 +29,7 @@ class StorefrontAiChatService
 
     private const THANKS_WORDS = 'ok(?:e|ey|ay)?|sip+|siap|baik|mantap|thanks?|thank\s+you|thx|makasih|makasi|terima\s*kasih|trims|tq|ty|noted';
 
-    private const SMALL_TALK_FILLERS = 'kak|kakak|min|admin|gan|sis|bos|boqi|semua|bang|mas|mbak|ya|yah|yaa|banyak|atas|infonya|informasinya|bantuannya|jawabannya';
+    private const SMALL_TALK_FILLERS = 'kak|kakak|min|admin|gan|sis|bos|boqi|iboq|semua|bang|mas|mbak|ya|yah|yaa|banyak|atas|infonya|informasinya|bantuannya|jawabannya';
 
     private const SHIPPING_INTENT_PATTERN = '/\b(ongkir|ongkos\s*kirim|biaya\s*kirim|biaya\s*pengiriman|kirim\s+ke|dikirim\s+ke|pengiriman\s+ke)\b/iu';
 
@@ -54,7 +54,7 @@ class StorefrontAiChatService
         // Sapaan dan ucapan terima kasih dijawab langsung: tidak perlu LLM dan tidak boleh mereset chat.
         if ($this->isSmallTalk($message, self::GREETING_WORDS)) {
             return [
-                'message' => 'Halo! Saya BOQI, asisten belanja '.config('app.name').'. Saya bisa bantu cari produk, cek harga dan stok, info pengiriman, pembayaran, promo, dan status pesanan. Ada yang bisa saya bantu?',
+                'message' => 'Halo! Saya IBOQ, asisten belanja '.config('app.name').'. Saya bisa bantu cari produk, cek harga dan stok, info pengiriman, pembayaran, promo, dan status pesanan. Ada yang bisa saya bantu?',
                 'reset' => false,
             ];
         }
@@ -174,7 +174,7 @@ class StorefrontAiChatService
 
         if ($this->looksLikeShoppingQuestion($message)) {
             return [
-                'message' => 'Maaf, informasi tersebut belum tersedia di BOQI. Silakan hubungi CS kami melalui WhatsApp: '.BoqiFaq::fill('{whatsapp}', $this->settings),
+                'message' => 'Maaf, informasi tersebut belum tersedia di IBOQ. Silakan hubungi CS kami melalui WhatsApp: '.BoqiFaq::fill('{whatsapp}', $this->settings),
                 'reset' => false,
             ];
         }
@@ -189,7 +189,7 @@ class StorefrontAiChatService
     private function systemPrompt(): string
     {
         return <<<'PROMPT'
-Anda adalah BOQI, asisten AI belanja resmi toko ecommerce BOQ. Jawab dalam Bahasa Indonesia yang ringkas, ramah, dan berdasarkan DATA TOKO TERBATAS.
+Anda adalah IBOQ, asisten AI belanja resmi toko ecommerce BOQ. Jawab dalam Bahasa Indonesia yang ringkas, ramah, dan berdasarkan DATA TOKO TERBATAS.
 
 BATAS WAJIB:
 1. Layani seluruh kebutuhan customer service ecommerce: pencarian produk berdasarkan nama, merek, ukuran, spesifikasi, rentang harga (termasuk nama atau ukuran yang mungkin salah eja), rekomendasi, harga publik, ketersediaan, cara belanja, pembayaran, pengiriman, estimasi kedatangan, retur, promo, kebijakan toko, alamat/kontak/nomor CS publik, serta pesanan milik user yang sedang login.

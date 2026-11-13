@@ -437,7 +437,7 @@
     }
 }
 
-/* BOQI launcher: cincin kilau tipis yang berputar pelan + glow lembut (sengaja samar). */
+/* IBOQ launcher: cincin kilau tipis yang berputar pelan + glow lembut (sengaja samar). */
 @property --boqi-glow-angle {
     syntax: '<angle>';
     initial-value: 0deg;

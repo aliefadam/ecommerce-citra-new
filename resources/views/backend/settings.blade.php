@@ -79,7 +79,7 @@
                         <button type="button" onclick="showTab('boqi')" id="nav-boqi"
                             class="settings-tab {{ $activeTab === 'boqi' ? 'active' : '' }} w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white transition-all text-left">
                             <i data-lucide="bot" class="w-[17px] h-[17px]"></i>
-                            BOQI / FAQ
+                            IBOQ / FAQ
                         </button>
                     </nav>
                 </div>
@@ -449,8 +449,8 @@
                         @csrf
                         <input type="hidden" name="section" value="boqi_faq">
 
-                        <h2 class="font-bold text-slate-800 dark:text-white mb-1">FAQ &amp; Kebijakan Toko untuk BOQI</h2>
-                        <p class="text-xs text-slate-400 mb-2">Jawaban ini dipakai asisten BOQI saat customer bertanya soal layanan toko. Tulis singkat dan sesuai kebijakan yang berlaku; kosongkan topik yang tidak ingin dijawab BOQI (BOQI akan mengarahkan ke CS).</p>
+                        <h2 class="font-bold text-slate-800 dark:text-white mb-1">FAQ &amp; Kebijakan Toko untuk IBOQ</h2>
+                        <p class="text-xs text-slate-400 mb-2">Jawaban ini dipakai asisten IBOQ saat customer bertanya soal layanan toko. Tulis singkat dan sesuai kebijakan yang berlaku; kosongkan topik yang tidak ingin dijawab IBOQ (IBOQ akan mengarahkan ke CS).</p>
                         <p class="text-xs text-slate-400 mb-6">Placeholder otomatis: <code>{whatsapp}</code>, <code>{url_daftar}</code>, <code>{url_lupa_password}</code>, <code>{url_lacak_pesanan}</code>, <code>{url_flash_sale}</code>, <code>{url_blog}</code>.</p>
 
                         <div class="space-y-4">
@@ -469,7 +469,7 @@
                         </div>
 
                         <div class="flex justify-end mt-5">
-                            <button type="submit" class="px-5 py-2.5 text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors">Simpan FAQ BOQI</button>
+                            <button type="submit" class="px-5 py-2.5 text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors">Simpan FAQ IBOQ</button>
                         </div>
                     </form>
                 </div>

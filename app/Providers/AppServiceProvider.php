@@ -31,7 +31,7 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('password-reset', fn (Request $request) => Limit::perMinute(3)->by(strtolower((string) $request->input('email')).'|'.$request->ip()));
         RateLimiter::for('payment-proof', fn (Request $request) => Limit::perMinute(5)->by(($request->user()?->id ?? $request->ip()).'|'.$request->route('transaction')));
         RateLimiter::for('storefront-search', fn (Request $request) => Limit::perMinute(60)->by($request->ip()));
-        // BOQI memanggil LLM per pesan; batasi per user/IP dan kirim pesan yang ramah saat terkena limit.
+        // IBOQ memanggil LLM per pesan; batasi per user/IP dan kirim pesan yang ramah saat terkena limit.
         RateLimiter::for('storefront-chat', fn (Request $request) => Limit::perMinute(20)
             ->by('boqi|'.($request->user()?->id ?? $request->ip()))
             ->response(fn (Request $request, array $headers) => response()->json([

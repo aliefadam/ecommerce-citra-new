@@ -3,8 +3,8 @@
 namespace App\Support;
 
 /**
- * FAQ & kebijakan toko untuk BOQI. Jawaban disimpan di StoreSetting
- * (key "boqi_faq_<topik>") dan direvisi admin dari Setting > BOQI / FAQ.
+ * FAQ & kebijakan toko untuk IBOQ. Jawaban disimpan di StoreSetting
+ * (key "boqi_faq_<topik>") dan direvisi admin dari Setting > IBOQ / FAQ.
  *
  * Placeholder yang diganti otomatis: {whatsapp}, {url_daftar}, {url_lupa_password},
  * {url_lacak_pesanan}, {url_flash_sale}, {url_blog}.

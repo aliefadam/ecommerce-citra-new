@@ -12,8 +12,8 @@ const input = ref('');
 const history = ref([]);
 const messageList = ref(null);
 const welcome = computed(() => session.user
-    ? 'Halo, saya BOQI! Saya bisa mencarikan produk atau mengecek pesanan Anda. Mau tanya apa?'
-    : 'Halo, saya BOQI! Saya bisa mencarikan produk dan membantu kebutuhan belanja Anda. Login untuk menanyakan pesanan.');
+    ? 'Halo, saya IBOQ! Saya bisa mencarikan produk atau mengecek pesanan Anda. Mau tanya apa?'
+    : 'Halo, saya IBOQ! Saya bisa mencarikan produk dan membantu kebutuhan belanja Anda. Login untuk menanyakan pesanan.');
 const messages = ref([]);
 const quickReplies = [
     ['Cari Produk', 'Saya ingin mencari produk berdasarkan nama, merek, ukuran, spesifikasi, atau harga.'],
@@ -30,7 +30,7 @@ const whatsappUrl = computed(() => {
         : '';
     try {
         const url = new URL(config.supportWhatsapp, window.location.origin);
-        url.searchParams.set('text', `Halo CS BOQ, saya membutuhkan bantuan setelah menggunakan Tanya BOQI.${summary}`);
+        url.searchParams.set('text', `Halo CS BOQ, saya membutuhkan bantuan setelah menggunakan Tanya IBOQ.${summary}`);
         return url.toString();
     } catch {
         return config.supportWhatsapp;
@@ -106,7 +106,7 @@ const submit = async () => {
             history.value = [...previousHistory, { role: 'user', content }, { role: 'assistant', content: data.message }].slice(-6);
         }
     } catch (error) {
-        messages.value.push({ role: 'assistant', content: error.message || 'BOQI sedang tidak tersedia.' });
+        messages.value.push({ role: 'assistant', content: error.message || 'IBOQ sedang tidak tersedia.' });
     } finally {
         loading.value = false;
         scrollToBottom();
@@ -126,9 +126,9 @@ const handleKeydown = (event) => {
         <section v-if="open" class="mobile-ai-panel" role="dialog" aria-labelledby="mobile-ai-title">
             <header class="mobile-ai-header">
                 <img :src="config.boqiMascotUrl" alt="" class="mobile-ai-header-avatar" />
-                <div><h2 id="mobile-ai-title">BOQI</h2><span>Asisten belanja BOQ</span></div>
+                <div><h2 id="mobile-ai-title">IBOQ</h2><span>Asisten belanja BOQ</span></div>
                 <button type="button" class="mobile-ai-new-chat" data-testid="boqi-new-chat-mobile" @click="reset()">Chat Baru</button>
-                <button type="button" aria-label="Tutup Tanya BOQI" @click="open = false">×</button>
+                <button type="button" aria-label="Tutup Tanya IBOQ" @click="open = false">×</button>
             </header>
             <div ref="messageList" class="mobile-ai-messages" aria-live="polite">
                 <div v-for="(message, index) in messages" :key="index" :class="['mobile-ai-message', `is-${message.role}`]">
@@ -155,14 +155,14 @@ const handleKeydown = (event) => {
                     </RouterLink>
                 </div>
             </div>
-            <p v-if="loading" class="mobile-ai-loading" role="status">BOQI sedang menyiapkan jawaban…</p>
-            <div class="mobile-ai-quick" aria-label="Pilihan cepat Tanya BOQI">
+            <p v-if="loading" class="mobile-ai-loading" role="status">IBOQ sedang menyiapkan jawaban…</p>
+            <div class="mobile-ai-quick" aria-label="Pilihan cepat Tanya IBOQ">
                 <button v-for="reply in quickReplies" :key="reply[0]" type="button" @click="sendQuickReply(reply[1])">{{ reply[0] }}</button>
                 <a v-if="whatsappUrl" :href="whatsappUrl" target="_blank" rel="noopener noreferrer">Hubungi CS</a>
             </div>
             <form class="mobile-ai-form" @submit.prevent="submit">
-                <label class="mobile-visually-hidden" for="mobile-ai-input">Tulis pertanyaan untuk BOQI</label>
-                <textarea id="mobile-ai-input" v-model="input" rows="1" maxlength="1000" required placeholder="Tanya BOQI…" @keydown="handleKeydown"></textarea>
+                <label class="mobile-visually-hidden" for="mobile-ai-input">Tulis pertanyaan untuk IBOQ</label>
+                <textarea id="mobile-ai-input" v-model="input" rows="1" maxlength="1000" required placeholder="Tanya IBOQ…" @keydown="handleKeydown"></textarea>
                 <button type="submit" :disabled="loading" aria-label="Kirim pesan">➤</button>
             </form>
         </section>

@@ -48,7 +48,7 @@ class StorefrontAiChatTest extends TestCase
     {
         $this->get(route('frontend.index'))
             ->assertOk()
-            ->assertSee('Tanya BOQI')
+            ->assertSee('Tanya IBOQ')
             ->assertSee('imgs/boqi/boqi-mascot.webp');
     }
 

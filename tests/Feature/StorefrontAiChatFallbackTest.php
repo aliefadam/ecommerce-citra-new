@@ -88,7 +88,7 @@ class StorefrontAiChatFallbackTest extends TestCase
             ->assertOk()
             ->assertJsonPath('reset', false)
             ->assertJsonMissingPath('products')
-            ->assertJsonPath('message', fn (string $message) => str_contains($message, 'BOQI'));
+            ->assertJsonPath('message', fn (string $message) => str_contains($message, 'IBOQ'));
 
         Http::assertNothingSent();
     }
@@ -354,7 +354,7 @@ class StorefrontAiChatFallbackTest extends TestCase
         $this->actingAs($admin)
             ->get(route('pages.settings', ['tab' => 'boqi']))
             ->assertOk()
-            ->assertSee('FAQ &amp; Kebijakan Toko untuk BOQI', false)
+            ->assertSee('FAQ &amp; Kebijakan Toko untuk IBOQ', false)
             ->assertSee(BoqiFaq::key('retur'));
 
         $this->actingAs($admin)

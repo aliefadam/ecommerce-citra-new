@@ -26,7 +26,7 @@ class StorefrontAiChatController extends Controller
             ));
         } catch (RuntimeException) {
             return response()->json([
-                'message' => 'BOQI sedang tidak tersedia. Silakan coba lagi beberapa saat.',
+                'message' => 'IBOQ sedang tidak tersedia. Silakan coba lagi beberapa saat.',
             ], 503);
         }
     }

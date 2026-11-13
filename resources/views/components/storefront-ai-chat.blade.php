@@ -1,7 +1,7 @@
 @php
     $chatWelcome = auth()->check()
-        ? 'Halo, saya BOQI! Saya bisa mencarikan produk atau mengecek pesanan Anda. Mau tanya apa?'
-        : 'Halo, saya BOQI! Saya bisa mencarikan produk dan membantu kebutuhan belanja Anda. Login untuk menanyakan pesanan.';
+        ? 'Halo, saya IBOQ! Saya bisa mencarikan produk atau mengecek pesanan Anda. Mau tanya apa?'
+        : 'Halo, saya IBOQ! Saya bisa mencarikan produk dan membantu kebutuhan belanja Anda. Login untuk menanyakan pesanan.';
     $boqiWhatsapp = trim((string) ($appStoreSettings['social_whatsapp'] ?? ''));
 @endphp
 
@@ -11,20 +11,20 @@
             <div class="flex min-w-0 items-center gap-2.5">
                 <span class="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-full bg-white/95"><img src="{{ asset('imgs/boqi/boqi-mascot.webp') }}" alt="" class="h-12 w-12 object-contain object-top" /></span>
                 <div>
-                    <h2 id="storefrontAiTitle" class="text-base font-bold">BOQI</h2>
+                    <h2 id="storefrontAiTitle" class="text-base font-bold">IBOQ</h2>
                     <p class="text-xs text-blue-100">Asisten belanja BOQ</p>
                 </div>
             </div>
             <div class="flex items-center gap-1">
                 <button id="storefrontAiNewChat" type="button" class="rounded-lg px-2 py-2 text-xs font-semibold hover:bg-white/10" data-testid="boqi-new-chat">Chat Baru</button>
-                <button id="storefrontAiClose" type="button" class="grid h-9 w-9 place-items-center rounded-lg hover:bg-white/10" aria-label="Tutup Tanya BOQI">
+                <button id="storefrontAiClose" type="button" class="grid h-9 w-9 place-items-center rounded-lg hover:bg-white/10" aria-label="Tutup Tanya IBOQ">
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
                 </button>
             </div>
         </header>
 
         <div id="storefrontAiMessages" class="flex-1 space-y-3 overflow-y-auto bg-slate-50 p-4" aria-live="polite"></div>
-        <div id="storefrontAiQuickReplies" class="flex gap-2 overflow-x-auto border-t border-slate-100 bg-white px-3 py-2" aria-label="Pilihan cepat Tanya BOQI">
+        <div id="storefrontAiQuickReplies" class="flex gap-2 overflow-x-auto border-t border-slate-100 bg-white px-3 py-2" aria-label="Pilihan cepat Tanya IBOQ">
             <button type="button" data-boqi-prompt="Saya ingin mencari produk berdasarkan nama, merek, ukuran, spesifikasi, atau harga." class="shrink-0 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-800">Cari Produk</button>
             <button type="button" data-boqi-prompt="Cek status pesanan terbaru saya." class="shrink-0 rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700">Cek Pesanan</button>
             <button type="button" data-boqi-prompt="Lacak pengiriman pesanan saya." class="shrink-0 rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700">Lacak Pengiriman</button>
@@ -33,20 +33,20 @@
                 <a href="{{ $boqiWhatsapp }}" target="_blank" rel="noopener noreferrer" data-boqi-whatsapp class="shrink-0 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800">Hubungi CS</a>
             @endif
         </div>
-        <div id="storefrontAiStatus" class="hidden px-4 py-1 text-xs text-slate-500" role="status">BOQI sedang menyiapkan jawaban…</div>
+        <div id="storefrontAiStatus" class="hidden px-4 py-1 text-xs text-slate-500" role="status">IBOQ sedang menyiapkan jawaban…</div>
 
         <form id="storefrontAiForm" class="flex gap-2 border-t border-slate-200 bg-white p-3">
-            <label for="storefrontAiInput" class="sr-only">Tulis pertanyaan untuk BOQI</label>
-            <textarea id="storefrontAiInput" rows="1" maxlength="1000" required class="max-h-28 min-h-11 flex-1 resize-none rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:border-blue-700 focus:outline-none" placeholder="Tanya BOQI…"></textarea>
+            <label for="storefrontAiInput" class="sr-only">Tulis pertanyaan untuk IBOQ</label>
+            <textarea id="storefrontAiInput" rows="1" maxlength="1000" required class="max-h-28 min-h-11 flex-1 resize-none rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:border-blue-700 focus:outline-none" placeholder="Tanya IBOQ…"></textarea>
             <button type="submit" class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-orange-600 text-white hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50" aria-label="Kirim pesan">
                 <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
             </button>
         </form>
     </section>
 
-    <button id="storefrontAiToggle" type="button" class="boqi-glow flex min-h-14 items-center gap-2.5 rounded-full bg-white py-1.5 pl-1.5 pr-5 text-[#18222d] shadow-[0_10px_35px_rgba(10,50,104,.28)] ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-xl" aria-label="Buka Tanya BOQI" aria-expanded="false" aria-controls="storefrontAiPanel" data-testid="boqi-launcher">
+    <button id="storefrontAiToggle" type="button" class="boqi-glow flex min-h-14 items-center gap-2.5 rounded-full bg-white py-1.5 pl-1.5 pr-5 text-[#18222d] shadow-[0_10px_35px_rgba(10,50,104,.28)] ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-xl" aria-label="Buka Tanya IBOQ" aria-expanded="false" aria-controls="storefrontAiPanel" data-testid="boqi-launcher">
         <span class="grid h-12 w-12 place-items-center overflow-hidden rounded-full bg-blue-50"><img src="{{ asset('imgs/boqi/boqi-mascot.webp') }}" alt="" class="h-14 w-14 object-contain object-top" /></span>
-        <span class="text-base font-bold">Tanya BOQI</span>
+        <span class="text-base font-bold">Tanya IBOQ</span>
     </button>
 </div>
 
@@ -158,7 +158,7 @@
                 whatsappLinks.forEach(({ link, base }) => {
                     try {
                         const url = new URL(base, window.location.origin);
-                        url.searchParams.set('text', `Halo CS BOQ, saya membutuhkan bantuan setelah menggunakan Tanya BOQI.${summary}`);
+                        url.searchParams.set('text', `Halo CS BOQ, saya membutuhkan bantuan setelah menggunakan Tanya IBOQ.${summary}`);
                         link.href = url.toString();
                     } catch (_) {
                         // URL pengaturan tetap digunakan apa adanya jika tidak dapat diproses.
@@ -234,7 +234,7 @@
                         body: JSON.stringify({ message: content, history: previousHistory }),
                     });
                     const data = await response.json();
-                    if (!response.ok) throw new Error(data.message || 'BOQI sedang tidak tersedia.');
+                    if (!response.ok) throw new Error(data.message || 'IBOQ sedang tidak tersedia.');
 
                     if (data.reset) {
                         history = [];
@@ -244,7 +244,7 @@
                         history = [...previousHistory, { role: 'user', content }, { role: 'assistant', content: data.message }].slice(-6);
                     }
                 } catch (error) {
-                    addMessage(error.message || 'BOQI sedang tidak tersedia. Silakan coba lagi.', 'assistant');
+                    addMessage(error.message || 'IBOQ sedang tidak tersedia. Silakan coba lagi.', 'assistant');
                 } finally {
                     submit.disabled = false;
                     status.classList.add('hidden');

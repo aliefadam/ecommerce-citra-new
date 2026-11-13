@@ -180,7 +180,7 @@ onBeforeUnmount(() => {
                     </div>
                     <div class="mobile-astro-actions">
                         <button type="button" class="mobile-astro-chat boqi-glow" @click="openAiChat">
-                            <img :src="config.boqiMascotUrl" alt="" /> Tanya BOQI
+                            <img :src="config.boqiMascotUrl" alt="" /> Tanya IBOQ
                         </button>
                         <RouterLink :to="{ name: 'wishlist' }" class="mobile-astro-menu" aria-label="Produk tersimpan">
                             <MobileIcon name="heart" :size="20" />

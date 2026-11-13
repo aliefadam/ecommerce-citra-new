@@ -47,7 +47,7 @@ watch(
     () => { if (session.user) commerce.fetchNotifications(true).catch(() => {}); },
 );
 const isHome = computed(() => route.name === 'home');
-// Launcher BOQI ada di header (seperti beranda) agar tidak menutupi tombol aksi di bagian bawah.
+// Launcher IBOQ ada di header (seperti beranda) agar tidak menutupi tombol aksi di bagian bawah.
 const openAiChat = () => window.dispatchEvent(new CustomEvent('mobile-spa:open-ai-chat'));
 const isActiveNav = (item) => route.name === item.name || route.meta.navSection === item.name;
 
@@ -116,8 +116,8 @@ onBeforeUnmount(() => {
                     <img :src="config.logoUrl" :alt="config.appName" class="mobile-brand-logo" width="116" height="52" />
                 </RouterLink>
                 <div class="mobile-header-actions">
-                    <button type="button" class="mobile-astro-chat mobile-header-chat boqi-glow" aria-label="Buka Tanya BOQI" data-testid="boqi-launcher-mobile" @click="openAiChat">
-                        <img :src="config.boqiMascotUrl" alt="" /> <span><span class="mobile-header-chat-prefix">Tanya </span>BOQI</span>
+                    <button type="button" class="mobile-astro-chat mobile-header-chat boqi-glow" aria-label="Buka Tanya IBOQ" data-testid="boqi-launcher-mobile" @click="openAiChat">
+                        <img :src="config.boqiMascotUrl" alt="" /> <span><span class="mobile-header-chat-prefix">Tanya </span>IBOQ</span>
                     </button>
                     <RouterLink :to="{ name: 'wishlist' }" class="mobile-header-button" aria-label="Produk tersimpan">
                         <MobileIcon name="heart" :size="20" />

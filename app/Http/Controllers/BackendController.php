@@ -368,7 +368,7 @@ class BackendController extends Controller
 
             StoreSetting::setMany(array_map(fn ($value) => trim((string) ($value ?? '')), $validated));
 
-            return redirect()->route('pages.settings', ['tab' => 'boqi'])->with('success', 'FAQ BOQI berhasil disimpan.');
+            return redirect()->route('pages.settings', ['tab' => 'boqi'])->with('success', 'FAQ IBOQ berhasil disimpan.');
         }
 
         if ($section === 'seo') {

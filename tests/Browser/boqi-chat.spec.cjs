@@ -27,16 +27,16 @@ const mockBoqi = async (page) => {
     return requests;
 };
 
-test('Tanya BOQI supports quick replies, product cards, new chat, and WhatsApp handoff', async ({ page }) => {
+test('Tanya IBOQ supports quick replies, product cards, new chat, and WhatsApp handoff', async ({ page }) => {
     const requests = await mockBoqi(page);
     await page.goto('/', { waitUntil: 'domcontentloaded' });
 
     const launcher = page.getByTestId('boqi-launcher');
-    await expect(launcher).toContainText('Tanya BOQI');
+    await expect(launcher).toContainText('Tanya IBOQ');
     await expect(launcher.locator('img')).toHaveAttribute('src', /boqi-mascot\.webp/);
     await launcher.click();
 
-    await expect(page.getByRole('heading', { name: 'BOQI' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'IBOQ' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Cari Produk' })).toBeVisible();
     const handoff = page.getByRole('link', { name: 'Hubungi CS' });
     await expect(handoff).toHaveAttribute('href', /wa\.me/);
@@ -55,18 +55,18 @@ test('Tanya BOQI supports quick replies, product cards, new chat, and WhatsApp h
 
     await page.getByTestId('boqi-new-chat').click();
     await expect(product).toHaveCount(0);
-    await expect(page.locator('#storefrontAiMessages')).toContainText('Halo, saya BOQI!');
+    await expect(page.locator('#storefrontAiMessages')).toContainText('Halo, saya IBOQ!');
 });
 
-test('mobile app opens BOQI from its single home launcher and keeps the same actions', async ({ page }) => {
+test('mobile app opens IBOQ from its single home launcher and keeps the same actions', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await mockBoqi(page);
     await page.goto('/app', { waitUntil: 'domcontentloaded' });
 
-    const launcher = page.getByRole('button', { name: /Tanya BOQI/ });
+    const launcher = page.getByRole('button', { name: /Tanya IBOQ/ });
     await expect(launcher).toHaveCount(1);
     await launcher.click();
-    await expect(page.getByRole('heading', { name: 'BOQI' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'IBOQ' })).toBeVisible();
 
     await page.getByRole('button', { name: 'Cari Produk' }).click();
     await expect(page.getByTestId('boqi-product-card-mobile')).toContainText('Equal Tee PVC Diameter 15 mm');
